@@ -62,7 +62,7 @@ class Mysql extends Pdo
 
         $dsn = !empty($config->dsn)
             ? $config->dsn
-            : (strpos($config->host, '/') !== false
+            : (strpos((string) $config->host, '/') !== false
                 ? "mysql:dbname={$config->database};unix_socket={$config->host}"
                 : "mysql:dbname={$config->database};host={$config->host};port={$config->port}");
 
@@ -73,16 +73,16 @@ class Mysql extends Pdo
             $options
         );
 
+        if ($config->charset) {
+            $pdo->exec("SET NAMES '{$config->charset}'");
+        }
+
         if (class_exists('\Pdo\Mysql')) {
             // 新版本写法
             $pdo->setAttribute(\Pdo\Mysql::ATTR_USE_BUFFERED_QUERY, true);
         } else {
             // 兼容旧版本
             $pdo->setAttribute(\PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, true);
-        }
-
-        if ($config->charset) {
-            $pdo->exec("SET NAMES '{$config->charset}'");
         }
 
         return $pdo;

@@ -59,7 +59,7 @@ class Mysqli implements Adapter
                     }
                 }
 
-                $host = $config->host;
+                $host = (string) $config->host;
                 $port = empty($config->port) ? null : $config->port;
                 $socket = null;
                 if (strpos($host, '/') !== false) {
@@ -80,7 +80,7 @@ class Mysqli implements Adapter
                 $this->dbLink = $mysqli;
 
                 if ($config->charset) {
-                    $this->dbLink->query("SET NAMES '{$config->charset}'");
+                    $this->dbLink->set_charset($config->charset);
                 }
             } catch (mysqli_sql_exception $e) {
                 throw new ConnectionException($e->getMessage(), $e->getCode());

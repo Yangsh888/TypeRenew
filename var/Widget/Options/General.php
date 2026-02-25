@@ -250,7 +250,7 @@ class General extends Options implements ActionInterface
         $form->addInput($timezone);
 
         /** 扩展名 */
-        $attachmentTypesOptionsResult = (null != trim($this->options->attachmentTypes)) ?
+        $attachmentTypesOptionsResult = (null != trim((string) $this->options->attachmentTypes)) ?
             array_map('trim', explode(',', $this->options->attachmentTypes)) : [];
         $attachmentTypesOptionsValue = [];
 

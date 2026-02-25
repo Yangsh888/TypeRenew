@@ -174,7 +174,7 @@ class Feed extends Contents
                 $feed->addItem([
                     'title'           => $archive->title,
                     'content'         => $this->options->feedFullText ? $archive->content
-                        : (false !== strpos($archive->text, '<!--more-->') ? $archive->excerpt .
+                        : (false !== strpos((string) $archive->text, '<!--more-->') ? $archive->excerpt .
                             "<p class=\"more\"><a href=\"{$archive->permalink}\" title=\"{$archive->title}\">[...]</a></p>"
                             : $archive->content),
                     'date'            => $archive->created,

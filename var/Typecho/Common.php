@@ -368,6 +368,10 @@ EOF;
          */
         public static function fixHtml(?string $string): ?string
         {
+            if (empty($string)) {
+                return $string;
+            }
+
             //关闭自闭合标签
             $startPos = strrpos($string, "<");
 

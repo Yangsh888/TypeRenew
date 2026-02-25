@@ -582,17 +582,17 @@ function install_js_support()
             </div>
             <div id="typecho-welcome">
                 <p class="keep-word">
-                    <?php _e('您选择了使用原有的数据, 您的用户名和密码和原来的一致'); ?>
+                    <?php _e('恭喜！您的 TypeRenew 安装已完成'); ?>
                 </p>
                 <p class="fresh-word">
-                    <?php _e('您的用户名是'); ?>: <strong class="warning" id="success-user"></strong><br>
-                    <?php _e('您的密码是'); ?>: <strong class="warning" id="success-password"></strong>
+                    <?php _e('您的用户名是'); ?>：<strong class="warning" id="success-user"></strong><br>
+                    <?php _e('您的密码是'); ?>：<strong class="warning" id="success-password"></strong>
                 </p>
                 <ul>
-                    <li><a id="login-url" href=""><?php _e('点击这里访问您的控制面板'); ?></a></li>
-                    <li><a id="site-url" href=""><?php _e('点击这里查看您的 Blog'); ?></a></li>
+                    <li><a id="login-url" href=""><?php _e('访问后台控制面板'); ?></a></li>
+                    <li><a id="site-url" href=""><?php _e('查看您的 Blog'); ?></a></li>
                 </ul>
-                <p><?php _e('希望您能尽情享用 Typecho 带来的乐趣!'); ?></p>
+                <p><?php _e('希望您能尽情享用 TypeRenew 带来的乐趣!'); ?></p>
             </div>
         </div>
     </div>
@@ -813,7 +813,7 @@ function install_step_2()
     <div class="row typecho-page-main">
         <div class="col-mb-12 col-tb-8 col-tb-offset-2">
             <div class="typecho-page-title">
-                <h2><?php _e('初始化配置'); ?></h2>
+                <h2><?php _e('站点配置初始化'); ?></h2>
             </div>
             <form autocomplete="off" action="install.php" method="post">
                 <ul class="typecho-option">
@@ -842,7 +842,7 @@ function install_step_2()
 
                 <ul class="typecho-option typecho-option-submit">
                     <li>
-                        <button id="confirm" type="submit" class="btn primary"><?php _e('确认, 开始安装 &raquo;'); ?></button>
+                        <button id="confirm" type="submit" class="btn primary"><?php _e('确认配置并开始安装 &raquo;'); ?></button>
                         <input type="hidden" name="step" value="2">
                     </li>
                 </ul>
@@ -1328,10 +1328,10 @@ function install_step_3_perform()
         // write first page and post
         $installDb->query(
             $installDb->insert('table.contents')->rows([
-                'title' => _t('欢迎使用 Typecho'),
+                'title' => _t('欢迎使用 TypeRenew'),
                 'slug' => 'start', 'created' => \Typecho\Date::time(),
                 'modified' => \Typecho\Date::time(),
-                'text' => '<!--markdown-->' . _t('如果您看到这篇文章,表示您的 blog 已经安装成功.'),
+                'text' => '<!--markdown-->' . _t('感恩相遇，TypeRenew 源自 Typecho，为你而来.'),
                 'authorId' => 1,
                 'type' => 'post',
                 'status' => 'publish',
@@ -1349,7 +1349,7 @@ function install_step_3_perform()
                 'slug' => 'start-page',
                 'created' => \Typecho\Date::time(),
                 'modified' => \Typecho\Date::time(),
-                'text' => '<!--markdown-->' . _t('本页面由 Typecho 创建, 这只是个测试页面.'),
+                'text' => '<!--markdown-->' . _t('本页面由 TypeRenew 创建, 这只是个测试页面.'),
                 'authorId' => 1,
                 'order' => 0,
                 'type' => 'page',
@@ -1366,12 +1366,12 @@ function install_step_3_perform()
         $installDb->query(
             $installDb->insert('table.comments')->rows([
                 'cid' => 1, 'created' => \Typecho\Date::time(),
-                'author' => 'Typecho',
+                'author' => 'TypeRenew',
                 'ownerId' => 1,
-                'url' => 'https://typecho.org',
+                'url' => 'https://github.com/Yangsh888/TypeRenew',
                 'ip' => '127.0.0.1',
                 'agent' => $options->generator,
-                'text' => _t('欢迎加入 Typecho 大家族'),
+                'text' => _t('Thank you for using TypeRenew, derived from Typecho'),
                 'type' => 'comment',
                 'status' => 'approved',
                 'parent' => 0
@@ -1493,7 +1493,7 @@ function install_dispatch()
 </head>
 <body>
     <div class="body container">
-        <h1><a href="https://typecho.org" target="_blank" class="i-logo">Typecho</a></h1>
+        <h1><a href="https://typecho.org" target="_blank" class="i-logo">TypeRenew</a></h1>
         <?php $method(); ?>
         <?php install_js_support(); ?>
     </div>

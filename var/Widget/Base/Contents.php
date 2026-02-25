@@ -379,9 +379,9 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
      */
     public function content($more = false)
     {
-        echo false !== $more && false !== strpos($this->text, '<!--more-->') ?
+        echo false !== $more && false !== strpos((string) $this->text, '<!--more-->') ?
             $this->excerpt
-                . "<p class=\"more\"><a href=\"{$this->permalink}\" title=\"{$this->title}\">{$more}</a></p>"
+            . "<p class=\"more\"><a href=\"{$this->permalink}\" title=\"{$this->title}\">{$more}</a></p>"
             : $this->content;
     }
 
@@ -582,7 +582,7 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
      */
     protected function ___isMarkdown(): bool
     {
-        return 0 === strpos($this->row['text'], '<!--markdown-->');
+        return 0 === strpos((string) $this->row['text'], '<!--markdown-->');
     }
 
     /**
@@ -593,7 +593,7 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
     protected function ___hidden(): bool
     {
         if (
-            strlen($this->password) > 0 &&
+            strlen((string) $this->password) > 0 &&
             $this->password !== Cookie::get('protectPassword_' . $this->cid) &&
             $this->authorId != $this->user->uid &&
             !$this->user->pass('editor', true)

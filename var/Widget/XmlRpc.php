@@ -1104,7 +1104,7 @@ class XmlRpc extends Contents implements ActionInterface, Hook
                 $path = $post->permalink;
             }
         } else {
-            $path = Common::url(substr($path, strlen($this->options->index)), '/');
+            $path = Common::url(substr($path, strlen((string) $this->options->index)), '/');
         }
 
         $input = [
@@ -1669,7 +1669,7 @@ class XmlRpc extends Contents implements ActionInterface, Hook
     public function pingbackPing(string $source, string $target): int
     {
         /** 检查目标地址是否正确*/
-        $pathInfo = Common::url(substr($target, strlen($this->options->index)), '/');
+        $pathInfo = Common::url(substr($target, strlen((string) $this->options->index)), '/');
         $post = Router::match($pathInfo);
 
         /** 检查源地址是否合法 */

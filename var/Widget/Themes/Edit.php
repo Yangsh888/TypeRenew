@@ -42,7 +42,7 @@ class Edit extends Options implements ActionInterface
             $this->update(['value' => $theme], $this->db->sql()->where('name = ?', 'theme'));
 
             /** 解除首页关联 */
-            if (0 === strpos($this->options->frontPage, 'file:')) {
+            if (0 === strpos((string) $this->options->frontPage, 'file:')) {
                 $this->update(['value' => 'recent'], $this->db->sql()->where('name = ?', 'frontPage'));
             }
 

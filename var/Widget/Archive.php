@@ -757,7 +757,7 @@ class Archive extends Contents
             $total = $this->getTotal();
             $query = Router::url(
                 $this->parameter->type .
-                (false === strpos($this->parameter->type, '_page') ? '_page' : null),
+                (false === strpos((string) $this->parameter->type, '_page') ? '_page' : null),
                 $this->pageRow,
                 $this->options->index
             );
@@ -807,7 +807,7 @@ class Archive extends Contents
             if (!isset($nav)) {
                 $query = Router::url(
                     $this->parameter->type .
-                    (false === strpos($this->parameter->type, '_page') ? '_page' : null),
+                    (false === strpos((string) $this->parameter->type, '_page') ? '_page' : null),
                     $this->pageRow,
                     $this->options->index
                 );

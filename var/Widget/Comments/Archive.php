@@ -411,7 +411,7 @@ class Archive extends Comments
             self::pluginHandle()->trigger($plugged)->call('reply', $word, $this);
 
             if (!$plugged) {
-                echo '<a href="' . substr($this->permalink, 0, - strlen($this->theId) - 1) . '?replyTo=' . $this->coid .
+                echo '<a href="' . substr($this->permalink, 0, - strlen((string) $this->theId) - 1) . '?replyTo=' . $this->coid .
                     '#' . $this->parameter->respondId . '" rel="nofollow" onclick="return TypechoComment.reply(\'' .
                     $this->theId . '\', ' . $this->coid . ', this);">' . $word . '</a>';
             }
