@@ -1,14 +1,8 @@
 # TypeRenew - 基于 Typecho 的现代化轻量博客程序
 
-<div align="center">
-  
   ![PHP Version](https://img.shields.io/badge/PHP-8.0%20|%208.1%20|%208.2%20|%208.3%20|%208.4%20|%208.5-777BB4?style=flat-square&logo=php)
   ![License](https://img.shields.io/badge/License-GPL%20v2-green?style=flat-square)
   ![Based on](https://img.shields.io/badge/Based%20on-Typecho%201.3.0-orange?style=flat-square)
-  
-  [项目简介](项目简介) · [功能特性](功能特性) · [技术架构](技术架构) · [环境要求](环境要求) · [贡献指南](贡献指南) · [开源协议](开源协议) · [联系方式](联系方式) · [致谢](致谢)
-  
-</div>
 
 ---
 
