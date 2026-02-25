@@ -56,7 +56,6 @@ class Mysql extends Pdo
             $options[\PDO::MYSQL_ATTR_SSL_CA] = $config->sslCa;
 
             if (isset($config->sslVerify)) {
-                // FIXME: https://github.com/php/php-src/issues/8577
                 $options[\PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT] = $config->sslVerify;
             }
         }

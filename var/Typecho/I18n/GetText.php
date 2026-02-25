@@ -91,8 +91,7 @@ class GetText
             return;
         }
 
-        // FIXME: Do we care about revision? We should.
-        $revision = $this->readInt();
+        $this->readInt();
 
         $this->total = $this->readInt();
         $this->originals = $this->readInt();

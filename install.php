@@ -704,25 +704,29 @@ function install_step_1()
     <div class="row typecho-page-main">
         <div class="col-mb-12 col-tb-8 col-tb-offset-2">
             <div class="typecho-page-title">
-                <h2><?php _e('欢迎使用 Typecho'); ?></h2>
+                <h2><?php _e('欢迎使用 TypeRenew'); ?></h2>
             </div>
             <div id="typecho-welcome">
                 <form autocomplete="off" method="post" action="install.php">
-                    <h3><?php _e('安装说明'); ?></h3>
                     <p class="warning">
-                        <strong><?php _e('本安装程序将自动检测服务器环境是否符合最低配置需求. 如果不符合, 将在上方出现提示信息, 请按照提示信息检查您的主机配置. 如果服务器环境符合要求, 将在下方出现 "开始下一步" 的按钮, 点击此按钮即可一步完成安装.'); ?></strong>
+                        <strong><?php _e('TypeRenew 脱胎于经典博客程序 <a href="https://typecho.org/">Typecho</a>，完整继承其一贯干净、克制、高效的内核基因，并优化对现代主流运行环境的适配，修复遗留的兼容性问题，原生集成更多实用特性，让跨越十余年的经典，在当下重焕新生。'); ?></strong>
                     </p>
+                    <h3><?php _e('安装说明'); ?></h3>
+                    <ul>
+                        <li><?php _e('本安装程序将自动检测您的服务器环境是否符合 TypeRenew 最低运行配置要求。'); ?>
+                        <li><?php _e('若环境不满足运行标准，页面顶部将出现明确提示，请您参照提示检查并调整主机配置。'); ?></li>
+                        <li><?php _e('若环境符合全部要求，页面下方将出现「开始下一步」按钮，点击即可快速完成程序安装。'); ?></li>
+                    </ul>
                     <h3><?php _e('许可及协议'); ?></h3>
                     <ul>
-                        <li><?php _e('Typecho 基于 <a href="https://www.gnu.org/copyleft/gpl.html">GPL</a> 协议发布, 我们允许用户在 GPL 协议许可的范围内使用, 拷贝, 修改和分发此程序.'); ?>
-                            <?php _e('在GPL许可的范围内, 您可以自由地将其用于商业以及非商业用途.'); ?></li>
-                        <li><?php _e('Typecho 软件由其社区提供支持, 核心开发团队负责维护程序日常开发工作以及新特性的制定.'); ?>
-                            <?php _e('如果您遇到使用上的问题, 程序中的 BUG, 以及期许的新功能, 欢迎您在社区中交流或者直接向我们贡献代码.'); ?>
-                            <?php _e('对于贡献突出者, 他的名字将出现在贡献者名单中.'); ?></li>
+                        <li><?php _e('本程序 TypeRenew 基于原项目 <a href="https://typecho.org/">Typecho</a> 进行二次开发，完整继承并严格遵守 GPL v2 开源许可协议。您可以在 <a href="https://www.gnu.org/copyleft/gpl.html">GPL</a> 协议允许的范围内，自由使用、拷贝、修改和分发本程序，无论是用于商业还是非商业目的。'); ?>
+                        <li><?php _e('TypeRenew 由开源社区驱动维护，旨在继承 <a href="https://typecho.org/">Typecho</a> 的轻量与优雅，并为其注入新的活力。'); ?></li>
+                        <li><?php _e('若在使用中遇到问题或是有新功能建议，欢迎在 <a href="https://github.com/Yangsh888/TypeRenew">GitHub</a> 中交流反馈，也可直接向项目提交代码贡献。'); ?></li>
+                        <li><?php _e('欢迎所有开发者、设计师和用户的反馈、建议与贡献，每一份力量都将帮助 TypeRenew 更好地成长。'); ?></li>
                     </ul>
 
                     <p class="submit">
-                        <button class="btn primary" type="submit"><?php _e('我准备好了, 开始下一步 &raquo;'); ?></button>
+                        <button class="btn primary" type="submit"><?php _e('我已阅读并同意上述协议内容，开始下一步 &raquo;'); ?></button>
                         <input type="hidden" name="step" value="1">
 
                         <?php if (count($langs) > 1) : ?>
@@ -740,7 +744,6 @@ function install_step_1()
         </div>
     </div>
     <?php
-    install_js_support();
 }
 
 /**
@@ -780,7 +783,7 @@ function install_step_1_perform()
     }
 
     if (!$writeable) {
-        $errors[] = _t('上传目录无法写入, 请手动将安装目录下的 %s 目录的权限设置为可写然后继续升级', $uploadDir);
+        $errors[] = _t('上传目录暂无写入权限，请先检查您的站点是否存在 %s 目录；若存在，请将该目录权限设置为可写状态，完成后再继续安装操作。', $uploadDir);
     }
 
     if (empty($errors)) {
@@ -823,7 +826,7 @@ function install_step_2()
                                                endif; ?>><?php echo $name; ?></option>
                             <?php endforeach; ?>
                         </select>
-                        <p class="description"><?php _e('请根据您的数据库类型选择合适的适配器'); ?></p>
+                        <p class="description"><?php _e('请根据您使用的数据库类型选择对应的适配器；若不确定，请保持默认选项'); ?></p>
                         <input type="hidden" id="dbNext" name="dbNext" value="none">
                     </li>
                 </ul>
@@ -831,7 +834,7 @@ function install_step_2()
                     <li>
                         <label class="typecho-label" for="dbPrefix"><?php _e('数据库前缀'); ?></label>
                         <input type="text" class="text" name="dbPrefix" id="dbPrefix" value="typecho_" />
-                        <p class="description"><?php _e('默认前缀是 "typecho_"'); ?></p>
+                        <p class="description"><?php _e('默认前缀是 "typecho_"，您也可以根据自己的博客名称自定义设置'); ?></p>
                     </li>
                 </ul>
                 <?php require_once './install/' . $type . '.php'; ?>
@@ -912,7 +915,6 @@ function install_step_2()
         <?php endif; ?>
     </script>
     <?php
-    install_js_support();
 }
 
 /**
@@ -1139,7 +1141,7 @@ function install_step_2_perform()
                 }
             }
         } catch (\Typecho\Db\Exception $e) {
-            install_raise_error(_t('安装程序捕捉到以下错误: "%s". 程序被终止, 请检查您的配置信息.', $e->getMessage()));
+            install_raise_error(_t('安装程序捕捉到以下错误: "%s"，程序被终止，请检查您的配置信息。', $e->getMessage()));
         }
     }
 
@@ -1212,7 +1214,7 @@ function install_step_3()
                     <li>
                         <label class="typecho-label" for="userUrl"><?php _e('网站地址'); ?></label>
                         <input autocomplete="new-password" type="text" name="userUrl" id="userUrl" class="text" value="<?php $options->rootUrl(); ?>" />
-                        <p class="description"><?php _e('这是程序自动匹配的网站路径, 如果不正确请修改它'); ?></p>
+                        <p class="description"><?php _e('当前为程序自动匹配的网站根目录路径，若与实际不符，请手动调整'); ?></p>
                     </li>
                 </ul>
                 <ul class="typecho-option">
@@ -1226,14 +1228,14 @@ function install_step_3()
                     <li>
                         <label class="typecho-label" for="userPassword"><?php _e('登录密码'); ?></label>
                         <input type="password" name="userPassword" id="userPassword" class="text" />
-                        <p class="description"><?php _e('请填写您的登录密码, 如果留空系统将为您随机生成一个'); ?></p>
+                        <p class="description"><?php _e('请设置您的登录密码。若留空，系统将自动生成随机密码（不推荐）'); ?></p>
                     </li>
                 </ul>
                 <ul class="typecho-option">
                     <li>
                         <label class="typecho-label" for="userMail"><?php _e('邮件地址'); ?></label>
                         <input autocomplete="new-password" type="text" name="userMail" id="userMail" class="text" />
-                        <p class="description"><?php _e('请填写一个您的常用邮箱'); ?></p>
+                        <p class="description"><?php _e('请填写您的邮箱地址'); ?></p>
                     </li>
                 </ul>
                 <ul class="typecho-option typecho-option-submit">
@@ -1246,7 +1248,6 @@ function install_step_3()
         </div>
     </div>
     <?php
-    install_js_support();
 }
 
 /**
@@ -1483,17 +1484,18 @@ function install_dispatch()
 <head>
     <meta charset="<?php _e('UTF-8'); ?>" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-    <title><?php _e('Typecho 安装程序'); ?></title>
-    <link rel="stylesheet" type="text/css" href="<?php $options->adminStaticUrl('css', 'normalize.css') ?>" />
-    <link rel="stylesheet" type="text/css" href="<?php $options->adminStaticUrl('css', 'grid.css') ?>" />
-    <link rel="stylesheet" type="text/css" href="<?php $options->adminStaticUrl('css', 'style.css') ?>" />
-    <link rel="stylesheet" type="text/css" href="<?php $options->adminStaticUrl('css', 'install.css') ?>" />
-    <script src="<?php $options->adminStaticUrl('js', 'jquery.js'); ?>"></script>
+    <title><?php _e('TypeRenew 安装程序'); ?></title>
+    <link rel="stylesheet" type="text/css" href="<?php $options->adminUrl('css/normalize.css'); ?>" />
+    <link rel="stylesheet" type="text/css" href="<?php $options->adminUrl('css/grid.css'); ?>" />
+    <link rel="stylesheet" type="text/css" href="<?php $options->adminUrl('css/style.css'); ?>" />
+    <link rel="stylesheet" type="text/css" href="<?php $options->adminUrl('css/install.css'); ?>" />
+    <script src="<?php $options->adminUrl('js/jquery.js'); ?>"></script>
 </head>
 <body>
     <div class="body container">
         <h1><a href="https://typecho.org" target="_blank" class="i-logo">Typecho</a></h1>
         <?php $method(); ?>
+        <?php install_js_support(); ?>
     </div>
 </body>
 </html>

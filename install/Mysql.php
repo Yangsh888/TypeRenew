@@ -4,7 +4,7 @@
     <li>
         <label class="typecho-label" for="dbHost"><?php _e('数据库地址'); ?></label>
         <input type="text" class="text" name="dbHost" id="dbHost" value="localhost"/>
-        <p class="description"><?php _e('您可能会使用 "%s"', 'localhost'); ?></p>
+        <p class="description"><?php _e('对于本地环境，通常使用 "%s"，其本质是指向本地服务器的域名，MySQL 连接时采用 Socket 方式，性能更佳；而 “127.0.0.1” 则是本地回环 IP 地址，通过 TCP/IP 方式连接', 'localhost'); ?></p>
     </li>
 </ul>
 
@@ -12,7 +12,7 @@
     <li>
         <label class="typecho-label" for="dbUser"><?php _e('数据库用户名'); ?></label>
         <input type="text" class="text" name="dbUser" id="dbUser" value="" />
-        <p class="description"><?php _e('您可能会使用 "%s"', 'root'); ?></p>
+        <p class="description"><?php _e('为保障数据库安全，不推荐使用 "%s"，建议您为当前项目创建专属的数据库账户并使用', 'root'); ?></p>
     </li>
 </ul>
 
@@ -39,7 +39,7 @@
         <li>
             <label class="typecho-label" for="dbPort"><?php _e('数据库端口'); ?></label>
             <input type="text" class="text" name="dbPort" id="dbPort" value="3306"/>
-            <p class="description"><?php _e('如果您不知道此选项的意义, 请保留默认设置'); ?></p>
+            <p class="description"><?php _e('若不确定，请保持默认选项'); ?></p>
         </li>
     </ul>
 
@@ -50,7 +50,7 @@
                 <option value="utf8mb4">utf8mb4</option>
                 <option value="utf8">utf8</option>
             </select>
-            <p class="description"><?php _e('选择 utf8mb4 编码至少需要 MySQL 5.5.3 版本'); ?></p>
+            <p class="description"><?php _e('推荐保持默认选项，除非您的 MySQL 低于 5.6 版本'); ?></p>
         </li>
     </ul>
 
@@ -61,6 +61,7 @@
                 <option value="InnoDB">InnoDB</option>
                 <option value="MyISAM">MyISAM</option>
             </select>
+            <p class="description"><?php _e('推荐保持默认选项，除非您的 MySQL 低于 5.7 版本'); ?></p>
         </li>
     </ul>
 

@@ -3,7 +3,7 @@
     <li>
         <label class="typecho-label" for="dbHost"><?php _e('数据库地址'); ?></label>
         <input type="text" class="text" name="dbHost" id="dbHost" value="localhost"/>
-        <p class="description"><?php _e('您可能会使用 "%s"', 'localhost'); ?></p>
+        <p class="description"><?php _e('对于本地环境，通常使用 "%s"，其本质是指向本地服务器的域名，PgSQL 连接时采用 Socket 方式，性能更佳；而 “127.0.0.1” 则是本地回环 IP 地址，通过 TCP/IP 方式连接', 'localhost'); ?></p>
     </li>
 </ul>
 <ul class="typecho-option">
@@ -36,7 +36,7 @@
         <li>
             <label class="typecho-label" for="dbPort"><?php _e('数据库端口'); ?></label>
             <input type="text" class="text" name="dbPort" id="dbPort" value="5432"/>
-            <p class="description"><?php _e('如果您不知道此选项的意义, 请保留默认设置'); ?></p>
+            <p class="description"><?php _e('若不确定，请保持默认选项'); ?></p>
         </li>
     </ul>
 

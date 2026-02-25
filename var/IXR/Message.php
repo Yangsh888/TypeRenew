@@ -157,7 +157,6 @@ class Message
                 break;
             case 'dateTime.iso8601':
                 $value = new Date(trim($this->currentTagContents));
-                // $value = $iso->getTimestamp();
                 $this->currentTagContents = '';
                 break;
             case 'value':
@@ -194,11 +193,6 @@ class Message
                 break;
         }
         if (isset($value)) {
-            /*
-            if (!is_array($value) && !is_object($value)) {
-                $value = trim($value);
-            }
-            */
             if (count($this->arrayStructs) > 0) {
                 // Add value to struct or array
                 if ($this->arrayStructsTypes[count($this->arrayStructsTypes) - 1] == 'struct') {
