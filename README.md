@@ -125,25 +125,10 @@ TypeRenew/
 
 ---
 
-## 贡献指南
+## 反馈方式
 
 欢迎所有开发者、设计师和用户的反馈、建议与贡献，每一份力量都将帮助 TypeRenew 更好地成长。
-
-### 如何贡献
-
-1. Fork 本仓库
-2. 创建您的特性分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交您的更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 创建 Pull Request
-
-### 贡献类型
-
-- Bug 修复
-- 新功能开发
-- 文档改进
-- 主题/界面优化
-- 性能优化
+- QQ交流群：1073739854
 
 ---
 
@@ -154,12 +139,6 @@ TypeRenew/
 您可以在 GPL 协议允许的范围内，自由使用、拷贝、修改和分发本程序，无论是用于商业还是非商业目的。
 
 详见 [LICENSE](LICENSE) 文件。
-
----
-
-## 联系方式
-
-- QQ交流群：1073739854
 
 ---
 
