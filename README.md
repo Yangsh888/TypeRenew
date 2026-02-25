@@ -125,9 +125,15 @@ TypeRenew/
 
 ---
 
-## 反馈方式
+## 贡献与反馈
 
 欢迎所有开发者、设计师和用户的反馈、建议与贡献，每一份力量都将帮助 TypeRenew 更好地成长。
+
+如果您在使用过程中遇到任何问题，或有更好的建议：
+
+1.  欢迎提交 [Issues](https://github.com/Yangsh888/TypeRenew/issues) 反馈 BUG。
+2.  欢迎提交 Pull Requests 贡献代码。
+3.  如果喜欢这个主题，请点亮右上角的 ⭐ **Star** 支持作者！
 - QQ交流群：1073739854
 
 ---
