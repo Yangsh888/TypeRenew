@@ -1,127 +1,87 @@
-# TypeRenew - 基于 Typecho 的现代化轻量博客程序
+# TypeRenew - 基于 Typecho 的现代化博客程序
 
-  ![PHP Version](https://img.shields.io/badge/PHP-8.0%20|%208.1%20|%208.2%20|%208.3%20|%208.4%20|%208.5-777BB4?style=flat-square&logo=php)
-  ![License](https://img.shields.io/badge/License-GPL%20v2-green?style=flat-square)
-  ![Based on](https://img.shields.io/badge/Based%20on-Typecho%201.3.0-orange?style=flat-square)
+![PHP Version](https://img.shields.io/badge/PHP-8.0%20|%208.1%20|%208.2%20|%208.3%20|%208.4%20|%208.5-777BB4?style=flat-square&logo=php)
+![MySQL](https://img.shields.io/badge/MySQL-8.0+-4479A1?style=flat-square&logo=mysql)
+![License](https://img.shields.io/badge/License-GPL%20v2-green?style=flat-square)
+![Based on](https://img.shields.io/badge/Based%20on-Typecho%201.3.0-orange?style=flat-square)
 
 ---
 
 ## 项目简介
 
-**TypeRenew** 是基于经典开源博客 CMS 系统 [Typecho](https://typecho.org/) 所**二次开发**的现代化轻量博客程序。项目完整继承 Typecho 一贯的干净、克制、轻量、高效的内核基因，针对主流的现代化 Web 运行环境做额外兼容适配，修复长期遗留的痛点问题，原生集成更多高频实用特性。
+**TypeRenew** 是基于经典开源博客 CMS 系统 [Typecho](https://typecho.org/) 所**二次开发**的现代化博客程序。在继承 Typecho 轻量、高效内核的基础上，引入了现代化的前端交互体验、后端架构以及 RESTful API 能力，使其能够胜任从个人博客到多端内容分发的各种场景。
 
-### 为什么选择 TypeRenew？
+### 核心进化
 
-| 原生 Typecho  | 二开 TypeRenew |
-|:---|:---|
-| PHP 8.x 兼容性问题频发 | ✅ 更好兼容 PHP 8.0 ~ 8.5 |
-| MySQL 8.x 适配不完善 | ✅ 更好适配 MySQL 8.x 新特性 |
-| 长期遗留 Bug 未修复 | ✅ 修复更多历史遗留问题 |
-| 高频功能依赖第三方插件 | ✅ Redis 等特性原生集成 |
-| 前端设计明显落后 | ✅ 现代化主题模板 |
-
----
-
-## 功能特性
-
-### 运行环境现代化适配
-- **PHP 8.x 兼容** - 修复 PHP 8 系列语法兼容问题，支持 PHP 8.0/8.1/8.2/8.3/8.4/8.5
-- **MySQL 8.x 适配** - 适配新版数据库语法规范，支持 utf8mb4、InnoDB 等现代特性
-- **多数据库支持** - 原生支持 MySQL、PostgreSQL、SQLite
-
-### 原生系统问题修复
-- 修复更多 Typecho 原生系统长期遗留的功能 Bug
-- 优化代码健壮性，解决边界场景异常问题
-- 修复安全隐患，提升系统安全性
-
-### 原生特性集成
-- **Redis 原生支持** - 系统缓存、会话等核心场景的 Redis 适配
-- 遵循克制、轻量原则，不偏离轻量级核心定位
-
-### 前端模板体系
-- 重新设计、优化的多套模板主题
-- 响应式布局设计
-- 完全兼容 Typecho 原生模板开发规范
-
----
-
-## 技术架构
-
-### 目录结构
-
-```
-TypeRenew/
-├── index.php              # 前台入口文件
-├── install.php            # 安装程序入口
-├── config.inc.php         # 配置文件（安装后生成）
-├── admin/                 # 后台管理模块
-│   ├── css/js/img/        # 静态资源
-│   ├── common.php         # 后台公共引导文件
-│   ├── menu.php           # 后台菜单
-│   └── *.php              # 各功能模块页面
-├── install/               # 安装脚本和 SQL
-├── usr/                   # 用户数据目录
-│   ├── plugins/           # 插件目录
-│   └── themes/            # 主题目录
-│   └── uploads/           # 上传文件目录
-└── var/                   # 核心框架目录
-    ├── Typecho/           # 核心类库
-    │   ├── Common.php     # 公共工具类
-    │   ├── Db.php         # 数据库抽象层
-    │   ├── Plugin.php     # 插件系统
-    │   ├── Router.php     # 路由系统
-    │   ├── Widget.php     # Widget 基类
-    │   └── Db/            # 数据库适配器
-    ├── Widget/            # 业务逻辑组件
-    │   ├── Base/          # 基础数据模型
-    │   ├── Contents/      # 内容相关组件
-    │   ├── Metas/         # 元数据组件
-    │   ├── Users/         # 用户组件
-    │   └── Options/       # 配置组件
-    ├── Utils/             # 工具类
-    └── IXR/               # XML-RPC 库
-```
-
-### 核心执行流程
-
-```
-请求 → index.php → Widget\Init::alloc() → 路由初始化
-                                      ↓
-                          Typecho\Router::dispatch()
-                                      ↓
-                          匹配路由 → 加载对应 Widget
-                                      ↓
-                          Widget::execute() → 业务逻辑
-                                      ↓
-                          渲染模板 → 输出响应
-```
-
-### 数据库表结构
-
-| 表名 | 说明 |
-|:---|:---|
-| `typecho_contents` | 文章/页面内容 |
-| `typecho_comments` | 评论数据 |
-| `typecho_metas` | 分类/标签元数据 |
-| `typecho_users` | 用户数据 |
-| `typecho_options` | 系统配置 |
-| `typecho_relationships` | 内容与元数据关联 |
-| `typecho_fields` | 自定义字段 |
-
----
-
-## 环境要求
-
-| 组件 | 最低版本 | 推荐版本 |
+| 特性维度 | 原生 Typecho | TypeRenew（本项目）|
 |:---|:---|:---|
-| PHP | 8.0 | 8.2+ |
-| MySQL | 5.7 | 8.0+ |
+| **编辑器** | 传统 Markdown 编辑器 | **Vditor 编辑器**（支持拖拽上传/粘贴上传）|
+| **交互体验** | 传统表单提交刷新 | **SPA 级体验**（AJAX 无刷新保存、Toast 通知、全局命令面板等）|
+| **视觉设计** | 仅支持浅色模式 | **原生深色模式** |
+| **性能架构** | 仅支持基础数据库 | **Redis 对象缓存**、PHP 8.x/MySQL 8.x 深度优化 |
+| **扩展能力** | 基础 XML-RPC | **RESTful API v1**（支持 Headless 模式开发）|
 
-**PHP 扩展要求：**
+---
+
+## ✨ 新增特性详解
+
+### 1. 现代化创作流
+- **Vditor 集成**：内置业界领先的 Markdown 编辑器 Vditor，支持分屏预览、即时渲染模式。
+- **沉浸式上传**：支持直接将图片拖入编辑器或粘贴剪贴板截图，自动调用系统接口上传并插入 Markdown 语法。
+- **字段增强**：自定义字段输入框新增“上传/插入图片”按钮。
+
+### 2. 现代化使用体验
+- **全局命令面板**：按下 `Ctrl + K`（或 `Cmd + K`）唤起全局搜索框，快速跳转设置、撰写文章或切换主题。
+- **AJAX 无刷新配置**：修改系统设置（常规、评论、阅读等）时，表单通过 AJAX 异步提交，配合右下角 Toast 通知，无需刷新页面。
+- **原生深色模式**：基于 CSS 变量实现的深色模式。
+
+### 3. 现代化后端架构
+- **RESTful API v1**：新增标准 API 接口，支持获取文章详情、页面、评论列表等，完美支持前后端分离开发（React/Vue/Flutter）。
+  - `GET /api/v1/posts/{cid}`
+  - `GET /api/v1/pages`
+  - `GET /api/v1/comments`
+- **Redis 缓存驱动**：重构缓存层，原生支持 Redis 对象缓存。启用后可将 `Options`、`User` 等高频读取数据常驻内存，大幅降低数据库压力。
+- **兼容性修复**：全面修复 PHP 8.0+ 的废弃函数调用及 MySQL 8.0+ 的保留字冲突问题。
+
+---
+
+## 🛠️ 安装与配置
+
+### 环境要求
+- **PHP**: 8.0 - 8.5 (推荐 8.2+)
+- **MySQL**: 5.7 - 8.0+ (推荐 8.0+)
+- **Redis**: 7.0+ (可选，推荐启用)
+
+### PHP 扩展要求：
 - mbstring
 - json
 - Reflection
 - PDO 或 MySQLi（根据选择的数据库驱动）
+
+---
+
+## 📂 目录结构
+
+```
+TypeRenew/
+├── index.php              # 前台入口
+├── admin/                 # 后台管理
+│   ├── css/               # 现代化 CSS
+│   ├── js/                # 核心交互逻辑
+│   │   ├── vditor/        # 编辑器核心
+│   │   ├── modern.js      # 现代化交互脚本
+│   │   └── command-palette.js # 命令面板逻辑
+│   └── ...
+├── var/                   # 核心框架
+│   ├── Typecho/
+│   │   ├── Router.php     # 路由系统
+│   │   ├── Db.php         # 数据库抽象层
+│   │   └── Cache/         # 缓存驱动
+│   ├── Widget/
+│   │   ├── Api/           # RESTful API 实现
+│   │   └── Options/       # 配置业务逻辑
+└── usr/                   # 用户数据
+```
 
 ---
 
@@ -133,7 +93,7 @@ TypeRenew/
 
 1.  欢迎提交 [Issues](https://github.com/Yangsh888/TypeRenew/issues) 反馈 BUG。
 2.  欢迎提交 Pull Requests 贡献代码。
-3.  如果喜欢这个主题，请点亮右上角的 ⭐ **Star** 支持作者！
+3.  如果喜欢 TypeRenew，请点亮右上角的 ⭐ **Star** 支持作者！
 - QQ交流群：1073739854
 
 ---
