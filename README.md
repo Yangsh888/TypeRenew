@@ -6,7 +6,7 @@
   ![License](https://img.shields.io/badge/License-GPL%20v2-green?style=flat-square)
   ![Based on](https://img.shields.io/badge/Based%20on-Typecho%201.3.0-orange?style=flat-square)
   
-  [项目简介](项目简介) · [功能特性](功能特性) · [技术架构](技术架构) · [环境要求](环境要求) · [贡献指南](贡献指南) · [开源协议](开源协议) · [致谢](致谢)
+  [项目简介](项目简介) · [功能特性](功能特性) · [技术架构](技术架构) · [环境要求](环境要求) · [贡献指南](贡献指南) · [开源协议](开源协议) · [联系方式](联系方式) · [致谢](致谢)
   
 </div>
 
@@ -160,6 +160,12 @@ TypeRenew/
 您可以在 GPL 协议允许的范围内，自由使用、拷贝、修改和分发本程序，无论是用于商业还是非商业目的。
 
 详见 [LICENSE](LICENSE) 文件。
+
+---
+
+## 联系方式
+
+- QQ交流群：1073739854
 
 ---
 
