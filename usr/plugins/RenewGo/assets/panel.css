@@ -1,0 +1,40 @@
+.renewgo-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.renewgo-form {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px;
+}
+
+.renewgo-result {
+    margin-top: 12px;
+    border: 1px solid var(--tr-border);
+    border-radius: 12px;
+    background: var(--tr-bg-elev);
+    padding: 12px;
+    min-height: 46px;
+    color: var(--tr-text-2);
+    word-break: break-all;
+}
+
+.renewgo-rules {
+    min-height: 220px;
+    border-radius: 12px;
+}
+
+.renewgo-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.renewgo-actions {
+    display: inline-flex;
+    gap: 8px;
+}

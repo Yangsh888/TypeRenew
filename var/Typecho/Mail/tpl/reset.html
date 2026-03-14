@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{subject}</title>
+</head>
+<body style="margin:0;padding:0;background:#f6f6f3;color:#222;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,'PingFang SC','Microsoft YaHei',sans-serif;">
+<div style="max-width:640px;margin:0 auto;padding:24px;">
+    <div style="background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:12px;overflow:hidden;">
+        <div style="padding:18px 20px;border-bottom:1px solid rgba(0,0,0,.06);">
+            <div style="font-size:14px;color:#666;">{siteTitle}</div>
+            <div style="font-size:18px;font-weight:600;line-height:1.3;margin-top:6px;">密码重置请求</div>
+        </div>
+        <div style="padding:18px 20px;">
+            <div style="font-size:14px;color:#666;margin-bottom:12px;">我们收到了账号密码重置请求，如非本人操作，请忽略本邮件。</div>
+            <div style="font-size:14px;color:#666;margin-bottom:16px;">账号：{mail}</div>
+            <div style="margin-top:18px;">
+                <a href="{raw:resetUrl}" style="display:inline-block;padding:10px 14px;border-radius:10px;background:#111;color:#fff;text-decoration:none;font-size:14px;">重置密码</a>
+            </div>
+            <div style="margin-top:16px;font-size:13px;color:#666;">
+                <div>链接有效期至：{expiresAt}</div>
+            </div>
+            <div style="margin-top:12px;font-size:12px;color:#777;word-break:break-all;">
+                若按钮不可用，请复制链接访问：<br>{raw:resetUrl}
+            </div>
+        </div>
+        <div style="padding:14px 20px;border-top:1px solid rgba(0,0,0,.06);font-size:12px;color:#777;">
+            <a href="{siteUrl}" style="color:#555;text-decoration:none;">{siteUrl}</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>

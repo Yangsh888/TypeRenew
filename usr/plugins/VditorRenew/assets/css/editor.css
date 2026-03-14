@@ -1,0 +1,129 @@
+.tr-vditor-hidden {
+    display: none !important;
+}
+
+.tr-vditor-host {
+    border: 1px solid var(--tr-border, #d9dee5);
+    border-radius: 12px;
+    overflow: visible;
+    background: var(--tr-card, #fff);
+}
+
+.tr-theme-dark .tr-vditor-host {
+    border-color: #2a2f3a;
+    background: #1b1f27;
+}
+
+body.tr-admin .tr-vditor-mode {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 8px;
+}
+
+body.tr-admin .tr-vditor-mode label {
+    font-size: 12px;
+    line-height: 1;
+    color: var(--tr-text-subtle, #6b7280);
+}
+
+body.tr-admin .tr-vditor-mode select {
+    min-width: 132px !important;
+    width: 148px !important;
+    height: 32px !important;
+    min-height: 32px !important;
+    padding: 0 24px 0 8px !important;
+    border-radius: 9px !important;
+    font-size: 13px !important;
+}
+
+.tr-vditor-host .vditor {
+    border-radius: 12px;
+}
+
+.tr-vditor-host .vditor-reset,
+.tr-vditor-host .vditor-sv,
+.tr-vditor-host .vditor-ir,
+.tr-vditor-host .vditor-wysiwyg {
+    min-height: 420px;
+}
+
+.tr-vditor-host .vditor-counter,
+.tr-vditor-host .vditor-hint,
+.tr-vditor-host .vditor-panel,
+.tr-vditor-host .vditor-tip {
+    z-index: 40;
+}
+
+.tr-vditor-host .vditor-outline {
+    z-index: 30;
+}
+
+body.tr-admin.tr-page-write .tr-vditor-fullscreen .tr-vditor-host .vditor--fullscreen {
+    z-index: 1200;
+}
+
+.tr-vditor-mask {
+    position: fixed;
+    inset: 0;
+    z-index: 1400;
+    background: rgba(0, 0, 0, .45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+.tr-vditor-dialog {
+    width: min(520px, 100%);
+    border-radius: 12px;
+    background: var(--tr-card, #fff);
+    border: 1px solid var(--tr-border, rgba(0,0,0,.08));
+    overflow: hidden;
+}
+
+.tr-theme-dark .tr-vditor-dialog {
+    background: #1b1f27;
+    border-color: #2a2f3a;
+}
+
+.tr-vditor-dialog-hd {
+    padding: 14px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    border-bottom: 1px solid var(--tr-border, rgba(0,0,0,.08));
+}
+
+.tr-vditor-dialog-bd {
+    padding: 14px 16px;
+    display: grid;
+    gap: 10px;
+}
+
+.tr-vditor-dialog-bd label {
+    font-size: 12px;
+    color: var(--tr-text-subtle, #6b7280);
+}
+
+.tr-vditor-dialog-bd input[type="text"] {
+    width: 100%;
+    height: 34px;
+    padding: 0 10px;
+    border-radius: 10px;
+}
+
+.tr-vditor-dialog-opt {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 14px;
+    align-items: center;
+    padding-top: 4px;
+}
+
+.tr-vditor-dialog-ft {
+    padding: 12px 16px;
+    border-top: 1px solid var(--tr-border, rgba(0,0,0,.08));
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
