@@ -20,7 +20,7 @@ if (!$isBody100) {
 
 $header = '';
 if (!empty($trAdminEnabled)) {
-    $header .= '<script>(function(){const key="trTheme";let preference="system";try{preference=localStorage.getItem(key)||"system";}catch(e){}let dark=false;if(preference==="dark"){dark=true;}else if(preference==="system"){try{dark=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches;}catch(e){}}const root=document.documentElement;root.classList.toggle("tr-theme-dark",dark);})();</script>';
+    $header .= '<script>(function(){var k="trTheme";var p;try{p=localStorage.getItem(k)||"system";}catch(e){p="system";}var d=false;if(p==="dark"){d=true;}else if(p==="system"){try{d=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches;}catch(e){d=false;}}var r=document.documentElement;if(d){r.classList.add("tr-theme-dark");}else{r.classList.remove("tr-theme-dark");}})();</script>';
 }
 $header .= '<link rel="stylesheet" href="' . $options->adminStaticUrl('css', 'normalize.css', true) . '">
 <link rel="stylesheet" href="' . $options->adminStaticUrl('css', 'grid.css', true) . '">

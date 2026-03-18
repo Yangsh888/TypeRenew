@@ -1,4 +1,23 @@
 <?php if (!defined('__TYPECHO_ADMIN__')) exit; ?>
+<?php
+$trSessionNotice = null;
+$trSessionNoticeType = null;
+$trSessionHighlight = null;
+if (session_status() === PHP_SESSION_ACTIVE) {
+    if (isset($_SESSION['__typecho_notice'])) {
+        $trSessionNotice = $_SESSION['__typecho_notice'];
+        unset($_SESSION['__typecho_notice']);
+    }
+    if (isset($_SESSION['__typecho_notice_type'])) {
+        $trSessionNoticeType = $_SESSION['__typecho_notice_type'];
+        unset($_SESSION['__typecho_notice_type']);
+    }
+    if (isset($_SESSION['__typecho_notice_highlight'])) {
+        $trSessionHighlight = $_SESSION['__typecho_notice_highlight'];
+        unset($_SESSION['__typecho_notice_highlight']);
+    }
+}
+?>
 <script src="<?php $options->adminStaticUrl('js', 'jquery.js'); ?>"></script>
 <script src="<?php $options->adminStaticUrl('js', 'jquery-ui.js'); ?>"></script>
 <script src="<?php $options->adminStaticUrl('js', 'typecho.js'); ?>"></script>
@@ -6,7 +25,10 @@
     (function () {
         $(document).ready(function() {
             (function () {
-                var prefix = '<?php echo \Typecho\Cookie::getPrefix(); ?>',
+                var sessionNotice = <?php echo json_encode($trSessionNotice, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>,
+                    sessionNoticeType = <?php echo json_encode($trSessionNoticeType, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>,
+                    sessionHighlight = <?php echo json_encode($trSessionHighlight, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>,
+                    prefix = '<?php echo \Typecho\Cookie::getPrefix(); ?>',
                     cookies = {
                         notice      :   $.cookie(prefix + '__typecho_notice'),
                         noticeType  :   $.cookie(prefix + '__typecho_notice_type'),
@@ -16,9 +38,22 @@
                     domain = '<?php echo \Typecho\Cookie::getDomain(); ?>',
                     secure = <?php echo json_encode(\Typecho\Cookie::getSecure()); ?>;
 
+                if (!cookies.notice && sessionNotice) {
+                    cookies.notice = JSON.stringify(sessionNotice);
+                    cookies.noticeType = sessionNoticeType || 'notice';
+                }
+                if (!cookies.highlight && sessionHighlight) {
+                    cookies.highlight = sessionHighlight;
+                }
+
                 if (!!cookies.notice && 'success|notice|error'.indexOf(cookies.noticeType) >= 0) {
-                    var messages = $.parseJSON(cookies.notice),
-                        isTrAdmin = document.body && (' ' + document.body.className + ' ').indexOf(' tr-admin ') >= 0;
+                    var messages = [];
+                    try {
+                        messages = $.parseJSON(cookies.notice);
+                    } catch (e) {
+                        messages = [cookies.notice];
+                    }
+                    var isTrAdmin = document.body && (' ' + document.body.className + ' ').indexOf(' tr-admin ') >= 0;
                     var sanitizeMessage = function (raw) {
                         var wrap = document.createElement('div');
                         wrap.innerHTML = String(raw == null ? '' : raw);
@@ -51,6 +86,24 @@
                         return wrap.innerHTML;
                     };
                     var normalized = (Array.isArray(messages) ? messages : [messages]).map(sanitizeMessage);
+                    var renderLegacyPopup = function () {
+                        var popup = $('<div class="message popup ' + cookies.noticeType + '">'
+                            + '<ul><li>' + normalized.join('</li><li>')
+                            + '</li></ul></div>');
+                        popup.prependTo(document.body);
+                        popup.slideDown(function () {
+                            var t = $(this), color = '#C6D880';
+                            if (t.hasClass('error')) {
+                                color = '#FBC2C4';
+                            } else if (t.hasClass('notice')) {
+                                color = '#FFD324';
+                            }
+                            t.effect('highlight', {color : color})
+                                .delay(5000).fadeOut(function () {
+                                $(this).remove();
+                            });
+                        });
+                    };
 
                     if (isTrAdmin) {
                         var payload = {
@@ -66,34 +119,12 @@
                                 $.cookie(prefix + '__typecho_notice_highlight', null, {path : path, domain: domain, secure: secure});
                                 cookies.highlight = null;
                             }
-                            window.__trNotice = null;
-                        }
-                    } else {
-                        var head = $('.typecho-head-nav'),
-                            p = $('<div class="message popup ' + cookies.noticeType + '">'
-                            + '<ul><li>' + normalized.join('</li><li>')
-                            + '</li></ul></div>'), offset = 0;
-
-                        if (head.length > 0) {
-                            p.insertAfter(head);
                         } else {
-                            p.prependTo(document.body);
+                            renderLegacyPopup();
                         }
-
-                        p.slideDown(function () {
-                            var t = $(this), color = '#C6D880';
-
-                            if (t.hasClass('error')) {
-                                color = '#FBC2C4';
-                            } else if (t.hasClass('notice')) {
-                                color = '#FFD324';
-                            }
-
-                            t.effect('highlight', {color : color})
-                                .delay(5000).fadeOut(function () {
-                                $(this).remove();
-                            });
-                        });
+                        window.__trNotice = null;
+                    } else {
+                        renderLegacyPopup();
                     }
 
                     $.cookie(prefix + '__typecho_notice', null, {path : path, domain: domain, secure: secure});
@@ -111,6 +142,9 @@
                         }
                         if (window.TypechoNotice && typeof window.TypechoNotice.highlight === 'function') {
                             window.TypechoNotice.highlight(cookies.highlight);
+                            window.__trNotice.highlight = null;
+                        } else {
+                            $('#' + cookies.highlight).effect('highlight', 1000);
                             window.__trNotice.highlight = null;
                         }
                     } else {

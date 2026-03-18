@@ -1259,7 +1259,7 @@ function install_step_3()
                     <li>
                         <label class="typecho-label" for="userPassword"><?php _e('登录密码'); ?></label>
                         <input type="password" name="userPassword" id="userPassword" class="text" />
-                        <p class="description"><?php _e('请设置 %d-%d 位登录密码；若留空，系统将自动生成随机密码（不推荐）', \Utils\Password::minLength(), \Utils\Password::maxLength()); ?></p>
+                        <p class="description"><?php _e('请设置 %d-%d 位登录密码。若留空，系统将自动生成随机密码（不推荐）', \Utils\Password::minLength(), \Utils\Password::maxLength()); ?></p>
                     </li>
                 </ul>
                 <ul class="typecho-option">

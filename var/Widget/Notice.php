@@ -35,6 +35,9 @@ class Notice extends Widget
             '__typecho_notice_highlight',
             $theId
         );
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            $_SESSION['__typecho_notice_highlight'] = $theId;
+        }
     }
 
     /**
@@ -69,5 +72,9 @@ class Notice extends Widget
             '__typecho_notice_type',
             $type
         );
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            $_SESSION['__typecho_notice'] = $notice;
+            $_SESSION['__typecho_notice_type'] = $type;
+        }
     }
 }
