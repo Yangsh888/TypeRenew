@@ -6,21 +6,26 @@ if ($user->hasLogin()) {
 }
 
 $db = \Typecho\Db::get();
-$token = htmlspecialchars($request->filter('trim')->get('token'), ENT_QUOTES, 'UTF-8');
+$tokenRaw = (string) $request->filter('trim')->get('token');
+$token = htmlspecialchars($tokenRaw, ENT_QUOTES, 'UTF-8');
 
 $tokenValid = false;
 $tokenError = '';
 $email = '';
 
-if ($token !== '') {
-    $tokenHash = hash_hmac('sha256', $token, (string) $options->secret);
-    $record = $db->fetchRow(
+if ($tokenRaw !== '') {
+    $records = $db->fetchAll(
         $db->select()->from('table.password_resets')
-            ->where('token = ?', $tokenHash)
             ->where('used = ?', 0)
             ->where('expires > ?', time())
-            ->limit(1)
     );
+    $record = null;
+    foreach ($records as $r) {
+        if (password_verify($tokenRaw, (string) ($r['token'] ?? ''))) {
+            $record = $r;
+            break;
+        }
+    }
     if ($record) {
         $tokenValid = true;
         $email = (string) ($record['email'] ?? '');
@@ -65,7 +70,7 @@ include 'header.php';
             <form action="<?php $security->index('/action/reset'); ?>" method="post" name="reset" role="form" class="tr-auth-form">
                 <div class="tr-auth-field">
                     <label for="password"><?php _e('新密码'); ?></label>
-                    <input type="password" id="password" name="password" placeholder="<?php _e('请输入 8-72 位密码'); ?>" required autofocus />
+                    <input type="password" id="password" name="password" placeholder="<?php _e('请输入 %d-%d 位密码', \Utils\Password::minLength(), \Utils\Password::maxLength()); ?>" required autofocus />
                 </div>
                 <div class="tr-auth-field">
                     <label for="confirm"><?php _e('确认密码'); ?></label>

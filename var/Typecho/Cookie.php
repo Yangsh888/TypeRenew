@@ -33,12 +33,12 @@ class Cookie
     /**
      * @var bool
      */
-    private static bool $secure = false;
+    private static bool $secure = true;
 
     /**
      * @var bool
      */
-    private static bool $httponly = false;
+    private static bool $httponly = true;
     private static string $sameSite = 'Lax';
 
     /**
@@ -62,6 +62,7 @@ class Cookie
 
         self::$domain = $parsed['host'];
         self::$path = empty($parsed['path']) ? '/' : Common::url(null, $parsed['path']);
+        self::$secure = isset($parsed['scheme']) && strtolower((string) $parsed['scheme']) === 'https';
     }
 
     /**
@@ -102,10 +103,17 @@ class Cookie
     public static function setOptions(array $options)
     {
         self::$domain = $options['domain'] ?: self::$domain;
-        self::$secure = !!$options['secure'];
-        self::$httponly = !!$options['httponly'];
+        if (array_key_exists('secure', $options)) {
+            self::$secure = (bool) $options['secure'];
+        }
+        if (array_key_exists('httponly', $options)) {
+            self::$httponly = (bool) $options['httponly'];
+        }
         $sameSite = ucfirst(strtolower((string) ($options['samesite'] ?? $options['sameSite'] ?? self::$sameSite)));
         self::$sameSite = in_array($sameSite, ['Lax', 'Strict', 'None'], true) ? $sameSite : 'Lax';
+        if (self::$sameSite === 'None' && !self::$secure) {
+            self::$sameSite = 'Lax';
+        }
     }
 
     /**

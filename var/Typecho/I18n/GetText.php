@@ -287,19 +287,285 @@ class GetText
      */
     private function selectString(int $n): int
     {
-        $string = $this->getPluralForms();
-        $string = str_replace('nplurals', "\$total", $string);
-        $string = str_replace("n", $n, $string);
-        $string = str_replace('plural', "\$plural", $string);
-
-        $total = 0;
+        [$total, $expression] = $this->parsePluralHeader($this->getPluralForms());
         $plural = 0;
 
-        eval("$string");
+        try {
+            $plural = $this->evaluatePluralExpression($expression, $n);
+        } catch (\Throwable) {
+            $plural = ($n == 1) ? 0 : 1;
+        }
+
+        if ($plural < 0) {
+            $plural = 0;
+        }
+
         if ($plural >= $total) {
             $plural = $total - 1;
         }
+
         return $plural;
+    }
+
+    private function parsePluralHeader(string $header): array
+    {
+        if (preg_match('/nplurals\s*=\s*(\d+)\s*;\s*plural\s*=\s*(.+?)\s*;?$/i', trim($header), $matches)) {
+            $total = (int) $matches[1];
+            $expression = trim($matches[2]);
+            if ($total < 1) {
+                $total = 1;
+            }
+            if ($expression !== '') {
+                return [$total, $expression];
+            }
+        }
+
+        return [2, 'n != 1'];
+    }
+
+    private function evaluatePluralExpression(string $expression, int $n): int
+    {
+        $tokens = $this->tokenizePluralExpression($expression);
+        $index = 0;
+        $result = $this->parsePluralTernary($tokens, $index, $n);
+        $token = $tokens[$index] ?? ['type' => 'eof'];
+
+        if (($token['type'] ?? 'eof') !== 'eof') {
+            throw new \RuntimeException('Invalid plural expression');
+        }
+
+        return (int) $result;
+    }
+
+    private function tokenizePluralExpression(string $expression): array
+    {
+        $tokens = [];
+        $length = strlen($expression);
+        $offset = 0;
+        $operators = ['||', '&&', '==', '!=', '<=', '>=', '?', ':', '(', ')', '+', '-', '*', '/', '%', '<', '>', '!'];
+
+        while ($offset < $length) {
+            $char = $expression[$offset];
+
+            if (ctype_space($char)) {
+                $offset++;
+                continue;
+            }
+
+            if (preg_match('/\G\d+/A', $expression, $match, 0, $offset)) {
+                $tokens[] = ['type' => 'number', 'value' => (int) $match[0]];
+                $offset += strlen($match[0]);
+                continue;
+            }
+
+            if (preg_match('/\Gn/A', $expression, $match, 0, $offset)) {
+                $tokens[] = ['type' => 'name', 'value' => $match[0]];
+                $offset += 1;
+                continue;
+            }
+
+            $matched = false;
+            foreach ($operators as $operator) {
+                $operatorLength = strlen($operator);
+                if (substr($expression, $offset, $operatorLength) === $operator) {
+                    $tokens[] = ['type' => 'op', 'value' => $operator];
+                    $offset += $operatorLength;
+                    $matched = true;
+                    break;
+                }
+            }
+
+            if ($matched) {
+                continue;
+            }
+
+            throw new \RuntimeException('Invalid plural expression');
+        }
+
+        $tokens[] = ['type' => 'eof', 'value' => null];
+        return $tokens;
+    }
+
+    private function parsePluralTernary(array $tokens, int &$index, int $n): int
+    {
+        $condition = $this->parsePluralOr($tokens, $index, $n);
+
+        if (!$this->matchPluralOperator($tokens, $index, '?')) {
+            return $condition;
+        }
+
+        $whenTrue = $this->parsePluralTernary($tokens, $index, $n);
+        $this->expectPluralOperator($tokens, $index, ':');
+        $whenFalse = $this->parsePluralTernary($tokens, $index, $n);
+
+        return $condition != 0 ? $whenTrue : $whenFalse;
+    }
+
+    private function parsePluralOr(array $tokens, int &$index, int $n): int
+    {
+        $left = $this->parsePluralAnd($tokens, $index, $n);
+
+        while ($this->matchPluralOperator($tokens, $index, '||')) {
+            $right = $this->parsePluralAnd($tokens, $index, $n);
+            $left = ($left != 0 || $right != 0) ? 1 : 0;
+        }
+
+        return $left;
+    }
+
+    private function parsePluralAnd(array $tokens, int &$index, int $n): int
+    {
+        $left = $this->parsePluralComparison($tokens, $index, $n);
+
+        while ($this->matchPluralOperator($tokens, $index, '&&')) {
+            $right = $this->parsePluralComparison($tokens, $index, $n);
+            $left = ($left != 0 && $right != 0) ? 1 : 0;
+        }
+
+        return $left;
+    }
+
+    private function parsePluralComparison(array $tokens, int &$index, int $n): int
+    {
+        $left = $this->parsePluralAdditive($tokens, $index, $n);
+
+        while (true) {
+            $operator = $this->peekPluralOperator($tokens, $index);
+            if (!in_array($operator, ['==', '!=', '<', '<=', '>', '>='], true)) {
+                break;
+            }
+
+            $index++;
+            $right = $this->parsePluralAdditive($tokens, $index, $n);
+
+            if ($operator === '==') {
+                $left = ($left == $right) ? 1 : 0;
+            } elseif ($operator === '!=') {
+                $left = ($left != $right) ? 1 : 0;
+            } elseif ($operator === '<') {
+                $left = ($left < $right) ? 1 : 0;
+            } elseif ($operator === '<=') {
+                $left = ($left <= $right) ? 1 : 0;
+            } elseif ($operator === '>') {
+                $left = ($left > $right) ? 1 : 0;
+            } else {
+                $left = ($left >= $right) ? 1 : 0;
+            }
+        }
+
+        return $left;
+    }
+
+    private function parsePluralAdditive(array $tokens, int &$index, int $n): int
+    {
+        $left = $this->parsePluralMultiplicative($tokens, $index, $n);
+
+        while (true) {
+            $operator = $this->peekPluralOperator($tokens, $index);
+            if ($operator !== '+' && $operator !== '-') {
+                break;
+            }
+
+            $index++;
+            $right = $this->parsePluralMultiplicative($tokens, $index, $n);
+            $left = $operator === '+' ? $left + $right : $left - $right;
+        }
+
+        return $left;
+    }
+
+    private function parsePluralMultiplicative(array $tokens, int &$index, int $n): int
+    {
+        $left = $this->parsePluralUnary($tokens, $index, $n);
+
+        while (true) {
+            $operator = $this->peekPluralOperator($tokens, $index);
+            if (!in_array($operator, ['*', '/', '%'], true)) {
+                break;
+            }
+
+            $index++;
+            $right = $this->parsePluralUnary($tokens, $index, $n);
+
+            if ($operator === '*') {
+                $left *= $right;
+            } elseif ($operator === '/') {
+                $left = $right === 0 ? 0 : (int) ($left / $right);
+            } else {
+                $left = $right === 0 ? 0 : $left % $right;
+            }
+        }
+
+        return $left;
+    }
+
+    private function parsePluralUnary(array $tokens, int &$index, int $n): int
+    {
+        if ($this->matchPluralOperator($tokens, $index, '!')) {
+            return $this->parsePluralUnary($tokens, $index, $n) == 0 ? 1 : 0;
+        }
+
+        if ($this->matchPluralOperator($tokens, $index, '-')) {
+            return -$this->parsePluralUnary($tokens, $index, $n);
+        }
+
+        if ($this->matchPluralOperator($tokens, $index, '+')) {
+            return $this->parsePluralUnary($tokens, $index, $n);
+        }
+
+        return $this->parsePluralPrimary($tokens, $index, $n);
+    }
+
+    private function parsePluralPrimary(array $tokens, int &$index, int $n): int
+    {
+        $token = $tokens[$index] ?? ['type' => 'eof'];
+        $type = $token['type'] ?? 'eof';
+
+        if ($type === 'number') {
+            $index++;
+            return (int) $token['value'];
+        }
+
+        if ($type === 'name' && ($token['value'] ?? '') === 'n') {
+            $index++;
+            return $n;
+        }
+
+        if ($this->matchPluralOperator($tokens, $index, '(')) {
+            $value = $this->parsePluralTernary($tokens, $index, $n);
+            $this->expectPluralOperator($tokens, $index, ')');
+            return $value;
+        }
+
+        throw new \RuntimeException('Invalid plural expression');
+    }
+
+    private function matchPluralOperator(array $tokens, int &$index, string $operator): bool
+    {
+        $token = $tokens[$index] ?? ['type' => 'eof', 'value' => null];
+        if (($token['type'] ?? null) === 'op' && ($token['value'] ?? null) === $operator) {
+            $index++;
+            return true;
+        }
+
+        return false;
+    }
+
+    private function expectPluralOperator(array $tokens, int &$index, string $operator): void
+    {
+        if (!$this->matchPluralOperator($tokens, $index, $operator)) {
+            throw new \RuntimeException('Invalid plural expression');
+        }
+    }
+
+    private function peekPluralOperator(array $tokens, int $index): ?string
+    {
+        $token = $tokens[$index] ?? ['type' => 'eof', 'value' => null];
+        if (($token['type'] ?? null) === 'op') {
+            return $token['value'];
+        }
+
+        return null;
     }
 
     private function getPluralForms(): string

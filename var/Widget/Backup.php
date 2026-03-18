@@ -89,6 +89,8 @@ class Backup extends BaseOptions implements ActionInterface
 
     private array $runtimeWarnings = [];
 
+    private bool $inTransaction = false;
+
     /**
      * 列出已有备份文件
      *
@@ -268,6 +270,7 @@ class Backup extends BaseOptions implements ActionInterface
             }
 
             $this->resetImportState();
+            $this->beginImportTransaction();
             $this->clearAllCoreTables();
             $this->importPayload($payload);
 
@@ -275,12 +278,19 @@ class Backup extends BaseOptions implements ActionInterface
                 $this->repairResult = $this->repairData();
             }
 
+            $this->commitImportTransaction();
+
             $messages = $this->buildReportMessages($payload, $preflight, false, false, $snapshotName, $doRepair, $doSnapshot);
             Notice::alloc()->set($messages, 'success');
         } catch (Throwable $e) {
+            $rolledBack = $this->rollbackImportTransaction();
             $messages = [_t('恢复过程中遇到如下错误: %s', $e->getMessage())];
             if (!empty($this->cleared)) {
-                $messages[] = _t('恢复在清表后中断，数据库可能处于部分恢复状态，请使用快照或备份回滚');
+                if ($rolledBack) {
+                    $messages[] = _t('恢复事务已自动回滚，数据库保持原状态');
+                } else {
+                    $messages[] = _t('恢复在清表后中断，数据库可能处于部分恢复状态，请使用快照或备份回滚');
+                }
             }
             Notice::alloc()->set($messages, 'error');
         }
@@ -585,6 +595,7 @@ class Backup extends BaseOptions implements ActionInterface
     {
         $this->lastIds = [];
         $this->cleared = [];
+        $this->inTransaction = false;
         $this->login = false;
         $this->repairResult = [
             'ownerFixed' => 0,
@@ -599,10 +610,63 @@ class Backup extends BaseOptions implements ActionInterface
 
     private function clearAllCoreTables(): void
     {
-        foreach (array_keys($this->types) as $table) {
-            $this->db->truncate('table.' . $table);
+        $tables = array_keys($this->types);
+        if ($this->inTransaction) {
+            $tables = array_reverse($tables);
+        }
+
+        foreach ($tables as $table) {
+            if ($this->inTransaction) {
+                $this->db->query($this->db->delete('table.' . $table));
+            } else {
+                $this->db->truncate('table.' . $table);
+            }
             $this->cleared[$table] = true;
         }
+    }
+
+    private function beginImportTransaction(): void
+    {
+        if (!$this->supportsTransaction()) {
+            return;
+        }
+
+        $this->db->query('BEGIN');
+        $this->inTransaction = true;
+    }
+
+    private function commitImportTransaction(): void
+    {
+        if (!$this->inTransaction) {
+            return;
+        }
+
+        $this->db->query('COMMIT');
+        $this->inTransaction = false;
+    }
+
+    private function rollbackImportTransaction(): bool
+    {
+        if (!$this->inTransaction) {
+            return false;
+        }
+
+        try {
+            $this->db->query('ROLLBACK');
+            return true;
+        } catch (Throwable) {
+            return false;
+        } finally {
+            $this->inTransaction = false;
+        }
+    }
+
+    private function supportsTransaction(): bool
+    {
+        $adapter = strtolower($this->db->getAdapterName());
+        return false !== strpos($adapter, 'mysql')
+            || false !== strpos($adapter, 'pgsql')
+            || false !== strpos($adapter, 'sqlite');
     }
 
     private function importPayload(array $payload): void

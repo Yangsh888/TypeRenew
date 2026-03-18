@@ -255,19 +255,21 @@ class VditorRenew_Plugin implements PluginInterface
 
     private static function ensureConfigStored(): void
     {
-        $defaults = self::defaults();
+        $defaults = self::normalize(self::defaults());
         try {
+            $existing = (array) Helper::options()->plugin(self::NAME)->toArray();
+            $merged = self::normalize(array_merge($defaults, $existing));
             \Widget\Plugins\Edit::configPlugin(self::NAME, [
-                'enabled' => (string) $defaults['enabled'],
-                'mode' => (string) $defaults['mode'],
-                'legacy' => (string) $defaults['legacy'],
-                'features' => (array) $defaults['features'],
-                'lang' => (string) $defaults['lang'],
-                'icon' => (string) $defaults['icon'],
-                'editorHeight' => (string) $defaults['editorHeight'],
-                'fullStrategy' => (string) $defaults['fullStrategy'],
-                'cacheTtl' => (string) $defaults['cacheTtl'],
-                'toolbar' => (string) $defaults['toolbar']
+                'enabled' => (string) $merged['enabled'],
+                'mode' => (string) $merged['mode'],
+                'legacy' => (string) $merged['legacy'],
+                'features' => (array) $merged['features'],
+                'lang' => (string) $merged['lang'],
+                'icon' => (string) $merged['icon'],
+                'editorHeight' => (string) $merged['editorHeight'],
+                'fullStrategy' => (string) $merged['fullStrategy'],
+                'cacheTtl' => (string) $merged['cacheTtl'],
+                'toolbar' => (string) $merged['toolbar']
             ]);
         } catch (Throwable $e) {
             self::reportException('ensureConfigStored', $e);

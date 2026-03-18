@@ -60,4 +60,4 @@
         </section>
     <?php endif; ?>
 
-</div><!-- end #sidebar -->
+</div>

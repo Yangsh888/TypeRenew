@@ -69,9 +69,13 @@ class Security extends Base
         $referer = (string) $this->request->getReferer();
         $requestUrl = (string) $this->request->getRequestUrl();
         $valid = hash_equals($this->getToken($referer), $current)
-            || hash_equals($this->getToken($requestUrl), $current)
-            || hash_equals($this->legacyToken($referer), $current)
-            || hash_equals($this->legacyToken($requestUrl), $current);
+            || hash_equals($this->getToken($requestUrl), $current);
+
+        if (!$valid && $this->allowLegacyToken()) {
+            $valid = hash_equals($this->legacyToken($referer), $current)
+                || hash_equals($this->legacyToken($requestUrl), $current);
+        }
+
         if (!$valid) {
             $this->response->goBack();
         }
@@ -166,6 +170,11 @@ class Security extends Base
     private function legacyToken(?string $suffix): string
     {
         return md5($this->token . '&' . $suffix);
+    }
+
+    private function allowLegacyToken(): bool
+    {
+        return defined('__TYPECHO_ALLOW_LEGACY_TOKEN__') && __TYPECHO_ALLOW_LEGACY_TOKEN__;
     }
 }
  

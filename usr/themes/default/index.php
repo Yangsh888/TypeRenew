@@ -37,7 +37,7 @@ $this->need('header.php');
     <?php endif; ?>
 
     <?php $this->pageNav('&laquo; ' . _t('前一页'), _t('后一页') . ' &raquo;'); ?>
-</div><!-- end #main-->
+</div>
 
 <?php $this->need('sidebar.php'); ?>
 <?php $this->need('footer.php'); ?>

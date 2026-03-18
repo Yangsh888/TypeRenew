@@ -43,7 +43,7 @@ include 'header.php';
                 </div>
                 <div class="tr-auth-field">
                     <label for="password"><?php _e('密码'); ?></label>
-                    <input type="password" id="password" name="password" placeholder="<?php _e('请输入 8-72 位密码'); ?>" required />
+                    <input type="password" id="password" name="password" placeholder="<?php _e('请输入 %d-%d 位密码', \Utils\Password::minLength(), \Utils\Password::maxLength()); ?>" required />
                 </div>
                 <div class="tr-auth-field">
                     <label for="confirm"><?php _e('确认密码'); ?></label>

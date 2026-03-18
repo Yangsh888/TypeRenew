@@ -53,8 +53,11 @@ class Register extends Users implements ActionInterface
         $validator->addRule('mail', 'maxLength', _t('电子邮箱最多包含64个字符'), 64);
 
         $validator->addRule('password', 'required', _t('必须填写密码'));
-        $validator->addRule('password', 'minLength', _t('为了保证账户安全, 请输入至少八位的密码'), 8);
-        $validator->addRule('password', 'maxLength', _t('为了便于记忆, 密码长度请不要超过七十二位'), 72);
+        $validator->addRule(
+            'password',
+            [Password::class, 'validateLength'],
+            _t('密码长度需在 %d-%d 位之间', Password::minLength(), Password::maxLength())
+        );
         $validator->addRule('confirm', 'confirm', _t('两次输入的密码不一致'), 'password');
 
         /** 截获验证异常 */

@@ -1,22 +1,11 @@
 <?php
 
 if (!file_exists(dirname(__FILE__) . '/config.inc.php')) {
-    // site root path
     define('__TYPECHO_ROOT_DIR__', dirname(__FILE__));
-
-    // plugin directory (relative path)
     define('__TYPECHO_PLUGIN_DIR__', '/usr/plugins');
-
-    // theme directory (relative path)
     define('__TYPECHO_THEME_DIR__', '/usr/themes');
-
-    // admin directory (relative path)
     define('__TYPECHO_ADMIN_DIR__', '/admin/');
-
-    // register autoload
     require_once __TYPECHO_ROOT_DIR__ . '/var/Typecho/Common.php';
-
-    // init
     \Typecho\Common::init();
 } else {
     require_once dirname(__FILE__) . '/config.inc.php';
@@ -66,6 +55,16 @@ function install_get_site_url(): string
 function install_is_cli(): bool
 {
     return \Typecho\Request::getInstance()->isCli();
+}
+
+function install_default_db_prefix(): string
+{
+    return 'typerenew_';
+}
+
+function install_default_sqlite_file(): string
+{
+    return __TYPECHO_ROOT_DIR__ . '/usr/' . uniqid() . '.db';
 }
 
 /**
@@ -340,7 +339,7 @@ function install_get_default_options(): array
             'mailSubjectPending' => '',
             'secret' => \Typecho\Common::randString(32, true),
             'installed' => 0,
-            'allowXmlRpc' => 2
+            'allowXmlRpc' => 1
         ];
     }
 
@@ -744,13 +743,13 @@ function install_step_1()
                     </p>
                     <h3><?php _e('安装说明'); ?></h3>
                     <ul>
-                        <li><?php _e('本安装程序将自动检测您的服务器环境是否符合 TypeRenew 最低运行配置要求。'); ?>
+                        <li><?php _e('本安装程序将自动检测您的服务器环境是否符合 TypeRenew 最低运行配置要求。'); ?></li>
                         <li><?php _e('若环境不满足运行标准，页面顶部将出现明确提示，请您参照提示检查并调整主机配置。'); ?></li>
                         <li><?php _e('若环境符合全部要求，页面下方将出现「开始下一步」按钮，点击即可快速完成程序安装。'); ?></li>
                     </ul>
                     <h3><?php _e('许可及协议'); ?></h3>
                     <ul>
-                        <li><?php _e('本程序 TypeRenew 基于原项目 <a href="https://typecho.org/">Typecho</a> 进行二次开发，完整继承并严格遵守 GPL v2 开源许可协议。您可以在 <a href="https://www.gnu.org/copyleft/gpl.html">GPL</a> 协议允许的范围内，自由使用、拷贝、修改和分发本程序，无论是用于商业还是非商业目的。'); ?>
+                        <li><?php _e('本程序 TypeRenew 基于原项目 <a href="https://typecho.org/">Typecho</a> 进行二次开发，完整继承并严格遵守 GPL v2 开源许可协议。您可以在 <a href="https://www.gnu.org/copyleft/gpl.html">GPL</a> 协议允许的范围内，自由使用、拷贝、修改和分发本程序，无论是用于商业还是非商业目的。'); ?></li>
                         <li><?php _e('TypeRenew 由开源社区驱动维护，旨在继承 <a href="https://typecho.org/">Typecho</a> 的轻量与优雅，并为其注入新的活力。'); ?></li>
                         <li><?php _e('若在使用中遇到问题或是有新功能建议，欢迎在 <a href="https://github.com/Yangsh888/TypeRenew">GitHub</a> 中交流反馈，也可直接向项目提交代码贡献。'); ?></li>
                         <li><?php _e('欢迎所有开发者、设计师和用户的反馈、建议与贡献，每一份力量都将帮助 TypeRenew 更好地成长。'); ?></li>
@@ -867,8 +866,8 @@ function install_step_2()
                 <ul class="typecho-option">
                     <li>
                         <label class="typecho-label" for="dbPrefix"><?php _e('数据库前缀'); ?></label>
-                        <input type="text" class="text" name="dbPrefix" id="dbPrefix" value="typerenew_" />
-                        <p class="description"><?php _e('默认前缀是 "typerenew_"，您也可以根据自己的博客名称自定义设置'); ?></p>
+                        <input type="text" class="text" name="dbPrefix" id="dbPrefix" value="<?php echo install_default_db_prefix(); ?>" />
+                        <p class="description"><?php _e('默认前缀是 "%s"，您也可以根据自己的博客名称自定义设置', install_default_db_prefix()); ?></p>
                     </li>
                 </ul>
                 <?php require_once './install/' . $type . '.php'; ?>
@@ -983,7 +982,7 @@ function install_step_2_perform()
             'dbSslVerify' => 'off',
         ],
         'SQLite' => [
-            'dbFile' => __TYPECHO_ROOT_DIR__ . '/usr/' . uniqid() . '.db'
+            'dbFile' => install_default_sqlite_file()
         ]
     ];
 
@@ -998,7 +997,7 @@ function install_step_2_perform()
             'dbFile' => $request->getServer('TYPECHO_DB_FILE'),
             'dbDsn' => $request->getServer('TYPECHO_DB_DSN'),
             'dbEngine' => $request->getServer('TYPECHO_DB_ENGINE'),
-            'dbPrefix' => $request->getServer('TYPECHO_DB_PREFIX', 'typecho_'),
+            'dbPrefix' => $request->getServer('TYPECHO_DB_PREFIX', install_default_db_prefix()),
             'dbAdapter' => $request->getServer('TYPECHO_DB_ADAPTER', install_get_current_db_driver()),
             'dbNext' => $request->getServer('TYPECHO_DB_NEXT', 'none'),
             'dbSslCa' => $request->getServer('TYPECHO_DB_SSL_CA'),
@@ -1024,14 +1023,14 @@ function install_step_2_perform()
     }
 
     $error = (new \Typecho\Validate())
-        ->addRule('dbPrefix', 'required', _t('确认您的配置'))
-        ->addRule('dbPrefix', 'minLength', _t('确认您的配置'), 1)
-        ->addRule('dbPrefix', 'maxLength', _t('确认您的配置'), 16)
-        ->addRule('dbPrefix', 'alphaDash', _t('确认您的配置'))
-        ->addRule('dbAdapter', 'required', _t('确认您的配置'))
-        ->addRule('dbAdapter', 'enum', _t('确认您的配置'), array_keys($drivers))
-        ->addRule('dbNext', 'required', _t('确认您的配置'))
-        ->addRule('dbNext', 'enum', _t('确认您的配置'), ['none', 'delete', 'keep', 'config'])
+        ->addRule('dbPrefix', 'required', _t('数据库前缀不能为空'))
+        ->addRule('dbPrefix', 'minLength', _t('数据库前缀至少 1 个字符'), 1)
+        ->addRule('dbPrefix', 'maxLength', _t('数据库前缀不能超过 16 个字符'), 16)
+        ->addRule('dbPrefix', 'alphaDash', _t('数据库前缀仅允许字母、数字、下划线和中划线'))
+        ->addRule('dbAdapter', 'required', _t('请选择数据库适配器'))
+        ->addRule('dbAdapter', 'enum', _t('数据库适配器无效'), array_keys($drivers))
+        ->addRule('dbNext', 'required', _t('安装流程状态无效'))
+        ->addRule('dbNext', 'enum', _t('安装流程状态无效'), ['none', 'delete', 'keep', 'config'])
         ->run($config);
 
     if (!empty($error)) {
@@ -1048,45 +1047,45 @@ function install_step_2_perform()
     switch ($type) {
         case 'Mysql':
             $error = (new \Typecho\Validate())
-                ->addRule('dbHost', 'required', _t('确认您的配置'))
-                ->addRule('dbPort', 'required', _t('确认您的配置'))
-                ->addRule('dbPort', 'isInteger', _t('确认您的配置'))
-                ->addRule('dbUser', 'required', _t('确认您的配置'))
-                ->addRule('dbCharset', 'required', _t('确认您的配置'))
-                ->addRule('dbCharset', 'enum', _t('确认您的配置'), ['utf8', 'utf8mb4'])
-                ->addRule('dbDatabase', 'required', _t('确认您的配置'))
-                ->addRule('dbEngine', 'required', _t('确认您的配置'))
-                ->addRule('dbEngine', 'enum', _t('确认您的配置'), ['InnoDB', 'MyISAM'])
-                ->addRule('dbSslCa', 'file_exists', _t('确认您的配置'))
-                ->addRule('dbSslVerify', 'enum', _t('确认您的配置'), ['on', 'off'])
+                ->addRule('dbHost', 'required', _t('数据库地址不能为空'))
+                ->addRule('dbPort', 'required', _t('数据库端口不能为空'))
+                ->addRule('dbPort', 'isInteger', _t('数据库端口必须是整数'))
+                ->addRule('dbUser', 'required', _t('数据库用户名不能为空'))
+                ->addRule('dbCharset', 'required', _t('数据库字符集不能为空'))
+                ->addRule('dbCharset', 'enum', _t('数据库字符集仅支持 utf8 或 utf8mb4'), ['utf8', 'utf8mb4'])
+                ->addRule('dbDatabase', 'required', _t('数据库名不能为空'))
+                ->addRule('dbEngine', 'required', _t('数据表引擎不能为空'))
+                ->addRule('dbEngine', 'enum', _t('数据表引擎仅支持 InnoDB 或 MyISAM'), ['InnoDB', 'MyISAM'])
+                ->addRule('dbSslCa', 'file_exists', _t('SSL CA 证书路径无效'))
+                ->addRule('dbSslVerify', 'enum', _t('SSL 校验选项无效'), ['on', 'off'])
                 ->run($config);
             break;
         case 'Pgsql':
             $error = (new \Typecho\Validate())
-                ->addRule('dbHost', 'required', _t('确认您的配置'))
-                ->addRule('dbPort', 'required', _t('确认您的配置'))
-                ->addRule('dbPort', 'isInteger', _t('确认您的配置'))
-                ->addRule('dbUser', 'required', _t('确认您的配置'))
-                ->addRule('dbCharset', 'required', _t('确认您的配置'))
-                ->addRule('dbCharset', 'enum', _t('确认您的配置'), ['utf8'])
-                ->addRule('dbDatabase', 'required', _t('确认您的配置'))
-                ->addRule('dbSslVerify', 'enum', _t('确认您的配置'), ['on', 'off'])
+                ->addRule('dbHost', 'required', _t('数据库地址不能为空'))
+                ->addRule('dbPort', 'required', _t('数据库端口不能为空'))
+                ->addRule('dbPort', 'isInteger', _t('数据库端口必须是整数'))
+                ->addRule('dbUser', 'required', _t('数据库用户名不能为空'))
+                ->addRule('dbCharset', 'required', _t('数据库字符集不能为空'))
+                ->addRule('dbCharset', 'enum', _t('PostgreSQL 字符集仅支持 utf8'), ['utf8'])
+                ->addRule('dbDatabase', 'required', _t('数据库名不能为空'))
+                ->addRule('dbSslVerify', 'enum', _t('SSL 校验选项无效'), ['on', 'off'])
                 ->run($config);
             break;
         case 'SQLite':
             $error = (new \Typecho\Validate())
-                ->addRule('dbFile', 'required', _t('确认您的配置'))
+                ->addRule('dbFile', 'required', _t('数据库文件路径不能为空'))
                 ->addRule('dbFile', function (string $path) {
                     $pattern = "/^(\/[._a-z0-9-]+)*[a-z0-9]+\.[a-z0-9]{2,}$/i";
                     if (strstr(PHP_OS, 'WIN')) {
                         $pattern = "/(\/[._a-z0-9-]+)*[a-z0-9]+\.[a-z0-9]{2,}$/i";
                     }
                     return !!preg_match($pattern, $path);
-                }, _t('确认您的配置'))
+                }, _t('数据库文件路径格式不正确'))
                 ->run($config);
             break;
         default:
-            install_raise_error(_t('确认您的配置'));
+            install_raise_error(_t('数据库配置无效'));
             break;
     }
 
@@ -1098,7 +1097,6 @@ function install_step_2_perform()
         $dbConfig[lcfirst(substr($key, 2))] = $config[$key];
     }
 
-    // intval port number
     if (isset($dbConfig['port'])) {
         if (strpos($dbConfig['host'], '/') !== false && $type == 'Mysql') {
             $dbConfig['port'] = null;
@@ -1107,7 +1105,6 @@ function install_step_2_perform()
         }
     }
 
-    // bool ssl verify
     if (isset($dbConfig['sslVerify'])) {
         $dbConfig['sslVerify'] = $dbConfig['sslVerify'] == 'on' || !empty($dbConfig['sslCa']);
     }
@@ -1262,7 +1259,7 @@ function install_step_3()
                     <li>
                         <label class="typecho-label" for="userPassword"><?php _e('登录密码'); ?></label>
                         <input type="password" name="userPassword" id="userPassword" class="text" />
-                        <p class="description"><?php _e('请设置您的登录密码。若留空，系统将自动生成随机密码（不推荐）'); ?></p>
+                        <p class="description"><?php _e('请设置 %d-%d 位登录密码；若留空，系统将自动生成随机密码（不推荐）', \Utils\Password::minLength(), \Utils\Password::maxLength()); ?></p>
                     </li>
                 </ul>
                 <ul class="typecho-option">
@@ -1320,6 +1317,11 @@ function install_step_3_perform()
         ->addRule('userMail', 'required', _t('必须填写电子邮箱'))
         ->addRule('userMail', 'email', _t('电子邮箱格式错误'))
         ->addRule('userMail', 'maxLength', _t('邮箱长度超过限制, 请不要超过 200 个字符'), 200)
+        ->addRule(
+            'userPassword',
+            [\Utils\Password::class, 'validateLength'],
+            _t('密码长度需在 %d-%d 位之间', \Utils\Password::minLength(), \Utils\Password::maxLength())
+        )
         ->run($config);
 
     if (!empty($error)) {

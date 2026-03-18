@@ -43,6 +43,9 @@ class Reading extends Permalink
             'feedFullText'
         );
 
+        $settings['pageSize'] = max(1, (int) $settings['pageSize']);
+        $settings['postsListSize'] = max(1, (int) $settings['postsListSize']);
+
         if (
             'page' == $settings['frontPage'] && $this->request->is('frontPagePage') &&
             $this->db->fetchRow($this->db->select('cid')

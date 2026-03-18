@@ -398,7 +398,8 @@ class Archive extends Contents
      */
     public function getTotalPage(): int
     {
-        return ceil($this->getTotal() / $this->parameter->pageSize);
+        $pageSize = max(1, (int) $this->parameter->pageSize);
+        return (int) ceil($this->getTotal() / $pageSize);
     }
 
     /**

@@ -449,7 +449,8 @@ class Comments extends Base implements QueryInterface, RowFilterInterface, Prima
                 }
             }
 
-            return ceil($total / $this->options->commentsPageSize);
+            $pageSize = max(1, (int) $this->options->commentsPageSize);
+            return (int) ceil($total / $pageSize);
         }
 
         return 0;

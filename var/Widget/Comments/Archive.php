@@ -131,8 +131,9 @@ class Archive extends Comments
 
         /** 对评论进行分页 */
         if ($this->options->commentsPageBreak) {
+            $pageSize = max(1, (int) $this->options->commentsPageSize);
             if ('last' == $this->options->commentsPageDisplay && !$this->parameter->commentPage) {
-                $this->currentPage = ceil($this->total / $this->options->commentsPageSize);
+                $this->currentPage = (int) ceil($this->total / $pageSize);
             } else {
                 $this->currentPage = $this->parameter->commentPage ? $this->parameter->commentPage : 1;
             }
@@ -140,8 +141,8 @@ class Archive extends Comments
             /** 截取评论 */
             $this->stack = array_slice(
                 $this->stack,
-                ($this->currentPage - 1) * $this->options->commentsPageSize,
-                $this->options->commentsPageSize
+                ($this->currentPage - 1) * $pageSize,
+                $pageSize
             );
         }
 

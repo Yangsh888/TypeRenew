@@ -193,7 +193,10 @@ class Edit extends Users implements ActionInterface
             $mail->addRule('required', _t('必须填写电子邮箱'));
             $mail->addRule([$this, 'mailExists'], _t('电子邮箱地址已经存在'));
             $mail->addRule('email', _t('电子邮箱格式错误'));
-            $password->addRule('minLength', _t('为了保证账户安全, 请输入至少六位的密码'), 6);
+            $password->addRule(
+                [Password::class, 'validateLength'],
+                _t('密码长度需在 %d-%d 位之间', Password::minLength(), Password::maxLength())
+            );
             $confirm->addRule('confirm', _t('两次输入的密码不一致'), 'password');
         }
 

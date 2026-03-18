@@ -62,3 +62,17 @@ function postMeta(
 <?php
 }
 
+function renderSingle(\Widget\Archive $archive, string $metaType = 'post'): void
+{
+?>
+    <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+        <?php postMeta($archive, $metaType); ?>
+        <div class="post-content" itemprop="articleBody">
+            <?php $archive->content(); ?>
+        </div>
+        <?php if ($metaType === 'post'): ?>
+            <p itemprop="keywords" class="tags"><?php _e('标签'); ?>: <?php $archive->tags(', ', true, 'none'); ?></p>
+        <?php endif; ?>
+    </article>
+<?php
+}

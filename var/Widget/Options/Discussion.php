@@ -73,7 +73,8 @@ class Discussion extends Options implements ActionInterface
         $settings['commentsPageBreak'] = $this->isEnableByCheckbox($settings['commentsShow'], 'commentsPageBreak');
         $settings['commentsThreaded'] = $this->isEnableByCheckbox($settings['commentsShow'], 'commentsThreaded');
 
-        $settings['commentsPageSize'] = intval($settings['commentsPageSize']);
+        $settings['commentsListSize'] = max(1, (int) $settings['commentsListSize']);
+        $settings['commentsPageSize'] = max(1, (int) $settings['commentsPageSize']);
         $settings['commentsMaxNestingLevels'] = min(7, max(2, intval($settings['commentsMaxNestingLevels'])));
         $settings['commentsPageDisplay'] = ('first' == $settings['commentsPageDisplay']) ? 'first' : 'last';
         $settings['commentsOrder'] = ('DESC' == $settings['commentsOrder']) ? 'DESC' : 'ASC';

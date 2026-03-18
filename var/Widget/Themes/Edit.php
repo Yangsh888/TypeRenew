@@ -140,14 +140,19 @@ class Edit extends Options implements ActionInterface
         $settings = $form->getAllRequest();
 
         if (!$this->configHandle($settings, false)) {
+            $name = 'theme:' . $theme;
+            $saved = json_decode((string) $this->options->__get($name), true);
+            $saved = is_array($saved) ? $saved : [];
+            $settings = array_merge($saved, $settings);
+
             if ($this->options->__get('theme:' . $theme)) {
                 $this->update(
                     ['value' => json_encode($settings)],
-                    $this->db->sql()->where('name = ?', 'theme:' . $theme)
+                    $this->db->sql()->where('name = ?', $name)
                 );
             } else {
                 $this->insert([
-                    'name'  => 'theme:' . $theme,
+                    'name'  => $name,
                     'value' => json_encode($settings),
                     'user'  => 0
                 ]);

@@ -7,16 +7,38 @@ use Typecho\Common;
 class Password
 {
     private const BCRYPT_COST = 12;
+    public const MIN_LENGTH = 8;
+    public const MAX_LENGTH = 72;
 
     public static function hash(string $password): string
     {
         return password_hash($password, PASSWORD_BCRYPT, ['cost' => self::BCRYPT_COST]);
     }
 
+    public static function minLength(): int
+    {
+        return self::MIN_LENGTH;
+    }
+
+    public static function maxLength(): int
+    {
+        return self::MAX_LENGTH;
+    }
+
+    public static function validateLength(string $password): bool
+    {
+        $length = Common::strLen($password);
+        return $length >= self::MIN_LENGTH && $length <= self::MAX_LENGTH;
+    }
+
     public static function verify(string $password, string $hash): bool
     {
         if (self::isModernHash($hash)) {
             return password_verify($password, $hash);
+        }
+
+        if (!self::allowLegacy()) {
+            return false;
         }
 
         return self::verifyLegacy($password, $hash);
@@ -33,18 +55,32 @@ class Password
 
     private static function isModernHash(string $hash): bool
     {
-        return strpos($hash, '$2y$') === 0;
+        return (password_get_info($hash)['algo'] ?? 0) !== 0;
+    }
+
+    private static function allowLegacy(): bool
+    {
+        return !defined('__TYPECHO_DISABLE_LEGACY_PASSWORD__') || !__TYPECHO_DISABLE_LEGACY_PASSWORD__;
+    }
+
+    private static function allowMd5Legacy(): bool
+    {
+        return defined('__TYPECHO_ALLOW_MD5_PASSWORD__') && __TYPECHO_ALLOW_MD5_PASSWORD__;
     }
 
     private static function verifyLegacy(string $password, string $hash): bool
     {
         if (strpos($hash, '$P$') === 0) {
             $computed = self::verifyPhpass($password, $hash);
-            return $computed === $hash;
+            return hash_equals($hash, $computed);
         }
 
         if (strpos($hash, '$T$') === 0) {
             return Common::hashValidate($password, $hash);
+        }
+
+        if (!self::allowMd5Legacy()) {
+            return false;
         }
 
         $computed = md5($password);

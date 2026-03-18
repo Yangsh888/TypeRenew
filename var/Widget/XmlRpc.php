@@ -1664,17 +1664,21 @@ class XmlRpc extends Contents implements ActionInterface, Hook
      */
     public function pingbackPing(string $source, string $target): int
     {
+        if ((int) $this->options->allowXmlRpc !== 2) {
+            throw new Exception(_t('Pingback 接口已关闭'), 49);
+        }
+
         /** 检查目标地址是否正确*/
         $pathInfo = Common::url(substr($target, strlen((string) $this->options->index)), '/');
         $post = Router::match($pathInfo);
 
         /** 检查源地址是否合法 */
         $params = parse_url($source);
-        if (false === $params || !in_array($params['scheme'], ['http', 'https'])) {
+        if (false === $params || !isset($params['host']) || !in_array($params['scheme'], ['http', 'https'])) {
             throw new Exception(_t('源地址服务器错误'), 16);
         }
 
-        if (!Common::checkSafeHost($params['host'])) {
+        if (!$this->isSafePingbackHost((string) $params['host'])) {
             throw new Exception(_t('源地址服务器错误'), 16);
         }
 
@@ -1736,6 +1740,40 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         } else {
             throw new Exception(_t('这个目标地址不存在'), 33);
         }
+    }
+
+    private function isSafePingbackHost(string $host): bool
+    {
+        if (!Common::checkSafeHost($host)) {
+            return false;
+        }
+
+        $ipv4s = gethostbynamel($host);
+        if (is_array($ipv4s) && !empty($ipv4s)) {
+            foreach ($ipv4s as $ip) {
+                if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        $records = @dns_get_record($host, DNS_AAAA);
+        if (!is_array($records) || empty($records)) {
+            return false;
+        }
+
+        foreach ($records as $record) {
+            $ipv6 = (string) ($record['ipv6'] ?? '');
+            if (
+                $ipv6 === ''
+                || filter_var($ipv6, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false
+            ) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**

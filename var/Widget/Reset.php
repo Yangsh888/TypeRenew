@@ -24,8 +24,11 @@ class Reset extends Users implements ActionInterface
         $password = (string) $this->request->get('password');
         $confirm = (string) $this->request->get('confirm');
 
-        if (strlen($password) < 8 || strlen($password) > 72) {
-            Notice::alloc()->set(_t('密码长度需在 8-72 位之间'), 'error');
+        if (!Password::validateLength($password)) {
+            Notice::alloc()->set(
+                _t('密码长度需在 %d-%d 位之间', Password::minLength(), Password::maxLength()),
+                'error'
+            );
             $this->response->goBack();
         }
 

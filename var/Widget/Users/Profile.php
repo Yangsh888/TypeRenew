@@ -347,7 +347,10 @@ class Profile extends Users implements ActionInterface
         $form->addItem($submit);
 
         $password->addRule('required', _t('必须填写密码'));
-        $password->addRule('minLength', _t('为了保证账户安全, 请输入至少六位的密码'), 6);
+        $password->addRule(
+            [Password::class, 'validateLength'],
+            _t('密码长度需在 %d-%d 位之间', Password::minLength(), Password::maxLength())
+        );
         $confirm->addRule('confirm', _t('两次输入的密码不一致'), 'password');
 
         return $form;

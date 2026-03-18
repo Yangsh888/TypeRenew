@@ -319,8 +319,9 @@ class Query
      */
     public function page(int $page, int $pageSize): Query
     {
-        $this->sqlPreBuild['limit'] = $pageSize;
-        $this->sqlPreBuild['offset'] = (max($page, 1) - 1) * $pageSize;
+        $safePageSize = max($pageSize, 1);
+        $this->sqlPreBuild['limit'] = $safePageSize;
+        $this->sqlPreBuild['offset'] = (max($page, 1) - 1) * $safePageSize;
         return $this;
     }
 

@@ -168,6 +168,7 @@ class Edit extends Options implements ActionInterface
             } else {
                 foreach ($options as $option) {
                     $value = json_decode($option['value'], true);
+                    $value = is_array($value) ? $value : [];
                     $value = array_merge($value, $settings);
 
                     $db->query($db->update('table.options')

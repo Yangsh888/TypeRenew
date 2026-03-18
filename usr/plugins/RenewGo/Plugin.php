@@ -349,7 +349,7 @@ class RenewGo_Plugin implements PluginInterface
                         ->limit(1)
                 );
                 if ($row) {
-                    $config = @unserialize((string) ($row['value'] ?? ''));
+                    $config = self::decodeOptionValue((string) ($row['value'] ?? ''));
                     if (is_array($config) && !empty($config['signSecret'])) {
                         return (string) $config['signSecret'];
                     }
@@ -368,7 +368,7 @@ class RenewGo_Plugin implements PluginInterface
             );
 
             if ($existing) {
-                $config = @unserialize((string) ($existing['value'] ?? ''));
+                $config = self::decodeOptionValue((string) ($existing['value'] ?? ''));
                 if (is_array($config) && !empty($config['signSecret'])) {
                     $finalSecret = (string) $config['signSecret'];
                     if ($cache->enabled()) {
@@ -381,7 +381,7 @@ class RenewGo_Plugin implements PluginInterface
                 $config['signSecret'] = $newSecret;
                 $db->query(
                     $db->update($prefix . 'options')
-                        ->rows(['value' => serialize($config)])
+                        ->rows(['value' => self::encodeOptionValue($config)])
                         ->where('name = ?', 'plugin:RenewGo')
                 );
             } else {
@@ -391,7 +391,7 @@ class RenewGo_Plugin implements PluginInterface
                         ->rows([
                             'name' => 'plugin:RenewGo',
                             'user' => 0,
-                            'value' => serialize($config)
+                            'value' => self::encodeOptionValue($config)
                         ])
                 );
             }
@@ -748,7 +748,7 @@ class RenewGo_Plugin implements PluginInterface
             $since = time() - 3600;
             $row = $db->fetchObject($db->select(['COUNT(*)' => 'num'])
                 ->from($prefix . 'renew_go_logs')
-                ->where('ip = ? AND action = ? AND created_at > ?', $ip, 'jump', $since));
+                ->where('ip = ? AND action IN (?, ?) AND created_at > ?', $ip, 'jump', 'go', $since));
             $count = (int) ($row->num ?? 0);
             if ($count >= $limit) {
                 return false;
@@ -1137,5 +1137,26 @@ class RenewGo_Plugin implements PluginInterface
     private static function reportException(string $scope, Throwable $e): void
     {
         error_log('RenewGo.' . $scope . ': ' . $e->getMessage());
+    }
+
+    private static function decodeOptionValue(string $value): array
+    {
+        $value = trim($value);
+        if ($value === '') {
+            return [];
+        }
+
+        $decoded = json_decode($value, true);
+        if (is_array($decoded)) {
+            return $decoded;
+        }
+
+        $legacy = @unserialize($value, ['allowed_classes' => false]);
+        return is_array($legacy) ? $legacy : [];
+    }
+
+    private static function encodeOptionValue(array $value): string
+    {
+        return json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     }
 }

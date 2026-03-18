@@ -30,20 +30,44 @@ class Pingback
     {
         $client = HttpClient::get();
         $this->target = $target;
+        $sourceHost = $this->extractHost($url);
 
         if (!isset($client)) {
             throw new Exception('No available http client', 50);
         }
 
+        if ($sourceHost === '' || !Common::checkSafeHost($sourceHost)) {
+            throw new Exception('Pingback source host is not safe', 50);
+        }
+
         try {
             $client->setTimeout(5)
+                ->setOption(CURLOPT_FOLLOWLOCATION, false)
+                ->setOption(CURLOPT_MAXREDIRS, 0)
                 ->send($url);
         } catch (HttpException $e) {
             throw new Exception('Pingback http error', 50);
         }
 
-        if ($client->getResponseStatus() != 200) {
+        $status = $client->getResponseStatus();
+        if ($status >= 300 && $status < 400) {
+            throw new Exception('Pingback redirect is not allowed', 50);
+        }
+
+        if ($status != 200) {
             throw new Exception('Pingback wrong http status', 50);
+        }
+
+        $responseUrl = $client->getResponseUrl();
+        if ($responseUrl !== '') {
+            $responseHost = $this->extractHost($responseUrl);
+            if ($responseHost === '' || !Common::checkSafeHost($responseHost)) {
+                throw new Exception('Pingback source host is not safe', 50);
+            }
+
+            if (strcasecmp($sourceHost, $responseHost) !== 0) {
+                throw new Exception('Pingback redirect is not allowed', 50);
+            }
         }
 
         $response = $client->getResponseBody();
@@ -64,6 +88,16 @@ class Pingback
         ) {
             throw new Exception("Source server doesn't support pingback", 50);
         }
+    }
+
+    private function extractHost(string $url): string
+    {
+        $parts = parse_url($url);
+        if (!is_array($parts)) {
+            return '';
+        }
+
+        return (string) ($parts['host'] ?? '');
     }
 
     /**

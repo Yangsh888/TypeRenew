@@ -105,6 +105,13 @@ class Client
     private string $responseBody;
 
     /**
+     * 回执最终地址
+     *
+     * @var string
+     */
+    private string $responseUrl = '';
+
+    /**
      * 设置指定的COOKIE值
      *
      * @param string $key 指定的参数
@@ -344,6 +351,7 @@ class Client
         }
 
         $this->responseStatus = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $this->responseUrl = (string) curl_getinfo($ch, CURLINFO_EFFECTIVE_URL);
         $this->responseBody = $response;
         if (PHP_VERSION_ID >= 80000) {
             unset($ch);
@@ -382,6 +390,11 @@ class Client
     public function getResponseBody(): string
     {
         return $this->responseBody;
+    }
+
+    public function getResponseUrl(): string
+    {
+        return $this->responseUrl;
     }
 
     /**
