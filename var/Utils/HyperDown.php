@@ -456,7 +456,6 @@ class HyperDown
             $text
         );
 
-        // encode unsafe tags
         $text = preg_replace_callback(
             "/<(\/?)([a-z0-9-]+)(\s+[^>]*)?>/i",
             function ($matches) use ($whiteList) {
@@ -729,7 +728,6 @@ class HyperDown
     {
         if ($this->isBlock('list') && !preg_match("/^\s*\[((?:[^\]]|\\]|\\[)+?)\]:\s*(.+)$/", $line)) {
             if (preg_match("/^(\s*)(~{3,}|`{3,})([^`~]*)$/i", $line)) {
-                // ignore code
                 return true;
             } elseif ($state['empty'] <= 1
                 && preg_match("/^(\s*)\S+/", $line, $matches)

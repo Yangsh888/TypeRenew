@@ -443,10 +443,8 @@ define('__TYPECHO_THEME_DIR__', '/usr/themes');
 // admin directory (relative path)
 define('__TYPECHO_ADMIN_DIR__', '/admin/');
 
-// register autoload
 require_once __TYPECHO_ROOT_DIR__ . '/var/Typecho/Common.php';
 
-// init
 \Typecho\Common::init();
 
 // config db
@@ -496,7 +494,6 @@ function install_check(string $type): bool
             }
 
             try {
-                // check if table exists
                 $installed = $installDb->fetchRow($installDb->select()->from('table.options')
                     ->where('user = 0 AND name = ?', 'installed'));
 
@@ -1113,12 +1110,10 @@ function install_step_2_perform()
         $dbConfig['file'] = __DIR__ . '/usr/' . $dbConfig['file'];
     }
 
-    // check config file
     if ($config['dbNext'] == 'config' && !install_check('config')) {
         $code = install_config_file($config['dbAdapter'], $config['dbPrefix'], $dbConfig, true);
         install_raise_error(_t('没有检测到您手动创建的配置文件, 请检查后再次创建'), ['code' => $code]);
     } elseif (empty($installDb)) {
-        // detect db config
         try {
             $installDb = new \Typecho\Db($config['dbAdapter'], $config['dbPrefix']);
             $installDb->addServer($dbConfig, \Typecho\Db::READ | \Typecho\Db::WRITE);
@@ -1147,7 +1142,6 @@ function install_step_2_perform()
         }
     }
 
-    // delete exists db
     if ($config['dbNext'] == 'delete') {
         $tables = [
             $config['dbPrefix'] . 'comments',
@@ -1176,7 +1170,6 @@ function install_step_2_perform()
         }
     }
 
-    // init db structure
     try {
         $scripts = file_get_contents(__TYPECHO_ROOT_DIR__ . '/install/' . $type . '.sql');
         $scripts = str_replace('typecho_', $config['dbPrefix'], $scripts);
@@ -1345,7 +1338,6 @@ function install_step_3_perform()
             ])
         );
 
-        // write category
         $installDb->query(
             $installDb->insert('table.metas')
                 ->rows([
@@ -1359,7 +1351,6 @@ function install_step_3_perform()
 
         $installDb->query($installDb->insert('table.relationships')->rows(['cid' => 1, 'mid' => 1]));
 
-        // write first page and post
         $installDb->query(
             $installDb->insert('table.contents')->rows([
                 'title' => _t('欢迎使用 TypeRenew'),
@@ -1412,9 +1403,7 @@ function install_step_3_perform()
             ])
         );
 
-        // write options
         foreach (install_get_default_options() as $key => $value) {
-            // mark installing finished
             if ($key == 'installed') {
                 $value = 1;
             }
@@ -1449,28 +1438,23 @@ function install_step_3_perform()
  */
 function install_dispatch()
 {
-    // disable root url on cli mode
     if (install_is_cli()) {
         define('__TYPECHO_ROOT_URL__', 'http://localhost');
     }
 
-    // init default options
     $options = \Widget\Options::alloc(install_get_default_options());
     \Widget\Init::alloc();
 
-    // display version
     if (install_is_cli()) {
         echo $options->generator . "\n";
         echo 'PHP ' . PHP_VERSION . "\n";
     }
 
-    // install finished yet
     if (
         install_check('config')
         && install_check('db_structure')
         && install_check('db_data')
     ) {
-        // redirect to siteUrl if not cli
         if (!install_is_cli()) {
             install_redirect($options->siteUrl);
         }

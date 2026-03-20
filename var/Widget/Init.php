@@ -17,11 +17,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-/**
- * 初始化模块
- *
- * @package Widget
- */
 class Init extends Widget
 {
     public function execute()
@@ -46,7 +41,6 @@ class Init extends Widget
             });
         }
 
-        // init class
         define('__TYPECHO_CLASS_ALIASES__', [
             'Typecho_Plugin_Interface'    => '\Typecho\Plugin\PluginInterface',
             'Typecho_Widget_Helper_Empty' => '\Typecho\Widget\Helper\EmptyClass',
@@ -102,15 +96,11 @@ class Init extends Widget
         }
 
         Router::setRoutes($options->routingTable);
-
         Plugin::init($options->plugins);
-
         $this->response->setCharset($options->charset);
         $this->response->setContentType($options->contentType);
-
         Date::setTimezoneOffset($options->timezone);
 
-        /** 开始会话, 减小负载只针对后台打开session支持 */
         if ($options->installed && User::alloc()->hasLogin()) {
             @session_start();
         }

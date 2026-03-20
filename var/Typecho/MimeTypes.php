@@ -1,0 +1,66 @@
+<?php
+
+namespace Typecho;
+
+class MimeTypes
+{
+    public static function get(): array
+    {
+        return [
+            'hqx'      => 'application/mac-binhex40',
+            'cpt'      => 'image/x-corelphotopaint',
+            'doc'      => 'application/msword',
+            'dot'      => 'application/msword',
+            'bin'      => 'application/octet-stream',
+            'ogg'      => 'application/ogg',
+            'oga'      => 'audio/ogg',
+            'ogv'      => 'video/ogg',
+            'pdf'      => 'application/pdf',
+            'ps'       => 'application/postscript',
+            'ai'       => 'application/postscript',
+            'eps'      => 'application/postscript',
+            'rtf'      => 'text/rtf',
+            'xhtml'    => 'application/xhtml+xml',
+            'zip'      => 'application/zip',
+            'xls'      => 'application/vnd.ms-excel',
+            'ppt'      => 'application/vnd.ms-powerpoint',
+            'wk'       => 'application/x-123',
+            'dmg'      => 'application/octet-stream',
+            'tgz'      => 'application/x-gtar',
+            'gz'       => 'application/x-gtar',
+            'phtml'    => 'application/x-httpd-php',
+            'pht'      => 'application/x-httpd-php',
+            'php'      => 'application/x-httpd-php',
+            'phps'     => 'application/x-httpd-php-source',
+            'php3'     => 'application/x-httpd-php3',
+            'php4'     => 'application/x-httpd-php4',
+            'php5'     => 'application/x-httpd-php5',
+            'php6'     => 'application/x-httpd-php6',
+            'shtml'    => 'text/x-server-parsed-html',
+            'mpeg'     => 'video/mpeg',
+            'mpg'      => 'video/mpeg',
+            'qt'       => 'video/quicktime',
+            'mov'      => 'video/quicktime',
+            'avi'      => 'video/x-msvideo',
+            'rar'      => 'application/x-rar-compressed',
+            'cab'      => 'application/vnd.ms-cab-compressed',
+            'webp'     => 'image/webp',
+            'jpg'      => 'image/jpeg',
+            'jpeg'     => 'image/jpeg',
+            'png'      => 'image/png',
+            'gif'      => 'image/gif',
+            'svg'      => 'image/svg+xml',
+            'txt'      => 'text/plain',
+            'css'      => 'text/css',
+            'js'       => 'application/javascript',
+            'json'     => 'application/json',
+            'xml'      => 'application/xml',
+            'csv'      => 'text/csv',
+            'mp3'      => 'audio/mpeg',
+            'wav'      => 'audio/wav',
+            'mp4'      => 'video/mp4',
+            'webm'     => 'video/webm',
+            'mkv'      => 'video/webm',
+        ];
+    }
+}

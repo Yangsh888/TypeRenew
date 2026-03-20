@@ -24,11 +24,10 @@ class Date
     private string $timezone;
 
     /**
-     * @param int|string $time
+     * @param int|string $time A PHP timestamp or an ISO 8601 string
      */
     public function __construct($time)
     {
-        // $time can be a PHP timestamp or an ISO one
         if (is_numeric($time)) {
             $this->parseTimestamp(intval($time));
         } else {

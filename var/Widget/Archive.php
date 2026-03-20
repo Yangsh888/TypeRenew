@@ -26,9 +26,7 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
 }
 
 /**
- * 内容的文章基类
- * 定义的css类
- * p.more:阅读全文链接所属段落
+ * 内容归档组件
  *
  * @package Widget
  */

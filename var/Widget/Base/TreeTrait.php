@@ -159,7 +159,6 @@ trait TreeTrait
         $rows = $this->initTreeRows();
         $pk = $this->getPrimaryKey();
 
-        // Sort by order asc
         usort($rows, function ($a, $b) {
             return $a['order'] <=> $b['order'];
         });

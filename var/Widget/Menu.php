@@ -175,7 +175,6 @@ class Menu extends Base
             $firstUrl = null;
 
             foreach ($childNodes[$key] as $inKey => $childNode) {
-                // magic merge
                 $childNode += $defaultChildNode;
                 [$name, $title, $url, $access] = $childNode;
 
@@ -185,7 +184,6 @@ class Menu extends Base
                 // 保存最原始的hidden信息
                 $orgHidden = $hidden;
 
-                // parse url
                 $menuUrl = $url;
                 $url = Common::url($url, $adminUrl);
 

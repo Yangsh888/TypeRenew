@@ -179,14 +179,12 @@ class Response
 
         header('HTTP/1.1 ' . $this->status . ' ' . self::HTTP_CODE[$this->status], true, $this->status);
 
-        // set header
         foreach ($this->headers as $name => $value) {
             if (!in_array(strtolower($name), $sentHeaders)) {
                 header($name . ': ' . $value);
             }
         }
 
-        // set cookie
         foreach ($this->cookies as $cookie) {
             [$key, $value, $timeout, $path, $domain, $secure, $httponly, $sameSite] = $cookie;
 

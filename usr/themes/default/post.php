@@ -1,16 +1,15 @@
 <?php if (!defined('__TYPECHO_ROOT_DIR__')) exit; ?>
 <?php $this->need('header.php'); ?>
 
-<div class="col-mb-12 col-8" id="main" role="main">
-    <?php renderSingle($this, 'post'); ?>
+<?php renderSingle($this, 'post'); ?>
 
-    <?php $this->need('comments.php'); ?>
-
+<nav aria-label="<?php _e('文章导航'); ?>">
     <ul class="post-near">
-        <li>上一篇: <?php $this->thePrev('%s', _t('没有了')); ?></li>
-        <li>下一篇: <?php $this->theNext('%s', _t('没有了')); ?></li>
+        <li><strong><?php _e('上一篇'); ?></strong> <?php $this->thePrev('%s', _t('没有了')); ?></li>
+        <li><strong><?php _e('下一篇'); ?></strong> <?php $this->theNext('%s', _t('没有了')); ?></li>
     </ul>
-</div>
+</nav>
 
-<?php $this->need('sidebar.php'); ?>
+<?php $this->need('comments.php'); ?>
+
 <?php $this->need('footer.php'); ?>

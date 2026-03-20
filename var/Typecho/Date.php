@@ -2,56 +2,14 @@
 
 namespace Typecho;
 
-/**
- * 日期处理
- *
- * @author qining
- * @category typecho
- * @package Date
- */
 class Date
 {
-    /**
-     * 期望时区偏移
-     *
-     * @var integer
-     */
     public static int $timezoneOffset = 0;
-
-    /**
-     * 服务器时区偏移
-     *
-     * @var integer
-     */
     public static int $serverTimezoneOffset = 0;
-
-    /**
-     * 当前的服务器时间戳
-     *
-     * @var integer
-     */
     public static int $serverTimeStamp = 0;
-
-    /**
-     * 可以被直接转换的时间戳
-     *
-     * @var integer
-     */
     public int $timeStamp = 0;
-
-    /**
-     * @var string
-     */
     public string $year;
-
-    /**
-     * @var string
-     */
     public string $month;
-
-    /**
-     * @var string
-     */
     public string $day;
 
     /**

@@ -55,16 +55,13 @@ class Message
      */
     public function parse(): bool
     {
-        // first remove the XML declaration
         $this->message = preg_replace('/<\?xml(.*)?\?' . '>/', '', $this->message);
         if (trim($this->message) == '') {
             return false;
         }
 
-        // remove the DOCTYPE, avoid using a regexp, so we can save memory
         $count = 0;
         while (true) {
-            // Fail if there is an endless loop
             if ($count >= 10) {
                 return false;
             }
@@ -80,9 +77,7 @@ class Message
         }
 
         $parser = xml_parser_create();
-        // Set XML parser to take the case of tags in to account
         xml_parser_set_option($parser, XML_OPTION_CASE_FOLDING, false);
-        // Set XML parser callback functions
         xml_set_object($parser, $this);
         xml_set_element_handler($parser, [$this, 'tagOpen'], [$this, 'tagClose']);
         xml_set_character_data_handler($parser, [$this, 'cdata']);
@@ -93,7 +88,6 @@ class Message
             return false;
         }
         xml_parser_free($parser);
-        // Grab the error messages, if any
         if ($this->messageType == 'fault') {
             $this->faultCode = intval($this->params[0]['faultCode']);
             $this->faultString = $this->params[0]['faultString'];
@@ -194,17 +188,13 @@ class Message
         }
         if (isset($value)) {
             if (count($this->arrayStructs) > 0) {
-                // Add value to struct or array
                 if ($this->arrayStructsTypes[count($this->arrayStructsTypes) - 1] == 'struct') {
-                    // Add to struct
                     $this->arrayStructs[count($this->arrayStructs) - 1]
                         [$this->currentStructName[count($this->currentStructName) - 1]] = $value;
                 } else {
-                    // Add to array
                     $this->arrayStructs[count($this->arrayStructs) - 1][] = $value;
                 }
             } else {
-                // Just add as a paramater
                 $this->params[] = $value;
             }
         }

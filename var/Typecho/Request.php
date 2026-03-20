@@ -260,7 +260,6 @@ class Request
         $requestUri = $this->getRequestUri();
         $finalBaseUrl = $this->getBaseUrl();
 
-        // Remove the query string from REQUEST_URI
         if ($pos = strpos($requestUri, '?')) {
             $requestUri = substr($requestUri, 0, $pos);
         }
@@ -283,7 +282,6 @@ class Request
             $pathInfo = '/';
         }
 
-        // fix issue 456
         return ($this->pathInfo = '/' . ltrim(urldecode($pathInfo), '/'));
     }
 
@@ -605,7 +603,6 @@ class Request
                         . ((empty($parts['query'])) ? '' : '?' . $parts['query']);
                 }
             } elseif (!empty($_SERVER['QUERY_STRING']) && empty($parts['query'])) {
-                // fix query missing
                 $requestUri .= '?' . $_SERVER['QUERY_STRING'];
             }
         } elseif (isset($_SERVER['ORIG_PATH_INFO'])) { // IIS 5.0, PHP as CGI

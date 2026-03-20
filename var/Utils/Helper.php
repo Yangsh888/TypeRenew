@@ -13,34 +13,13 @@ use Widget\Plugins\Edit;
 use Widget\Security;
 use Widget\Service;
 
-/**
- * 插件帮手将默认出现在所有的typecho发行版中.
- * 因此你可以放心使用它的功能, 以方便你的插件安装在用户的系统里.
- *
- * @package Helper
- * @author qining
- * @version 1.0.0
- * @link http://typecho.org
- */
 class Helper
 {
-    /**
-     * 获取Security对象
-     *
-     * @return Security
-     */
     public static function security(): Security
     {
         return Security::alloc();
     }
 
-    /**
-     * 根据ID获取单个Widget对象
-     *
-     * @param string $table 表名, 支持 contents, comments, metas, users
-     * @param int $pkId
-     * @return Widget|null
-     */
     public static function widgetById(string $table, int $pkId): ?Widget
     {
         $table = ucfirst($table);
@@ -56,7 +35,6 @@ class Helper
         ];
 
         $className = '\Widget\Base\\' . $table;
-
         $key = $keys[$table];
         $db = Db::get();
         $widget = Widget::widget($className . '@' . $pkId);
@@ -69,22 +47,11 @@ class Helper
         return $widget;
     }
 
-    /**
-     * 请求异步服务
-     *
-     * @param $method
-     * @param $params
-     */
     public static function requestService($method, ... $params)
     {
         Service::alloc()->requestService($method, ... $params);
     }
 
-    /**
-     * 强行删除某个插件
-     *
-     * @param string $pluginName 插件名称
-     */
     public static function removePlugin(string $pluginName)
     {
         try {
@@ -120,11 +87,6 @@ class Helper
         $db->query($db->delete('table.options')->where('name = ?', 'plugin:' . $pluginName));
     }
 
-    /**
-     * 导入语言项
-     *
-     * @param string $domain
-     */
     public static function lang(string $domain)
     {
         $currentLang = I18n::getLang();
@@ -137,21 +99,11 @@ class Helper
         }
     }
 
-    /**
-     * 获取Options对象
-     *
-     * @return Options
-     */
     public static function options(): Options
     {
         return Options::alloc();
     }
 
-    /**
-     * @param string $name
-     * @param $value
-     * @return int
-     */
     public static function setOption(string $name, $value): int
     {
         $options = self::options();
@@ -163,16 +115,6 @@ class Helper
         );
     }
 
-    /**
-     * 增加路由
-     *
-     * @param string $name 路由名称
-     * @param string $url 路由路径
-     * @param string $widget 组件名称
-     * @param string|null $action 组件动作
-     * @param string|null $after 在某个路由后面
-     * @return integer
-     */
     public static function addRoute(
         string $name,
         string $url,
@@ -208,12 +150,6 @@ class Helper
         return self::setOption('routingTable', $routingTable);
     }
 
-    /**
-     * 移除路由
-     *
-     * @param string $name 路由名称
-     * @return integer
-     */
     public static function removeRoute(string $name): int
     {
         $routingTable = self::options()->routingTable;
@@ -225,13 +161,6 @@ class Helper
         return self::setOption('routingTable', $routingTable);
     }
 
-    /**
-     * 增加action扩展
-     *
-     * @param string $actionName 需要扩展的action名称
-     * @param string $widgetName 需要扩展的widget名称
-     * @return integer
-     */
     public static function addAction(string $actionName, string $widgetName): int
     {
         $actionTable = self::options()->actionTable;
@@ -241,12 +170,6 @@ class Helper
         return self::setOption('actionTable', $actionTable);
     }
 
-    /**
-     * 删除action扩展
-     *
-     * @param string $actionName
-     * @return int
-     */
     public static function removeAction(string $actionName): int
     {
         $actionTable = self::options()->actionTable;
@@ -260,12 +183,6 @@ class Helper
         return self::setOption('actionTable', $actionTable);
     }
 
-    /**
-     * 增加一个菜单
-     *
-     * @param string $menuName 菜单名
-     * @return integer
-     */
     public static function addMenu(string $menuName): int
     {
         $panelTable = self::options()->panelTable;
@@ -278,12 +195,6 @@ class Helper
         return key($panelTable['parent']) + 10;
     }
 
-    /**
-     * 移除一个菜单
-     *
-     * @param string $menuName 菜单名
-     * @return integer
-     */
     public static function removeMenu(string $menuName): int
     {
         $panelTable = self::options()->panelTable;
@@ -298,18 +209,6 @@ class Helper
         return $index + 10;
     }
 
-    /**
-     * 增加一个面板
-     *
-     * @param integer $index 菜单索引
-     * @param string $fileName 文件名称
-     * @param string $title 面板标题
-     * @param string $subTitle 面板副标题
-     * @param string $level 进入权限
-     * @param boolean $hidden 是否隐藏
-     * @param string $addLink 新增项目链接, 会显示在页面标题之后
-     * @return integer
-     */
     public static function addPanel(
         int $index,
         string $fileName,
@@ -336,13 +235,6 @@ class Helper
         return key($panelTable['child'][$index]);
     }
 
-    /**
-     * 移除一个面板
-     *
-     * @param integer $index 菜单索引
-     * @param string $fileName 文件名称
-     * @return integer
-     */
     public static function removePanel(int $index, string $fileName): int
     {
         $panelTable = self::options()->panelTable;
@@ -367,24 +259,11 @@ class Helper
         return $return;
     }
 
-    /**
-     * 获取面板url
-     *
-     * @param string $fileName
-     * @return string
-     */
     public static function url(string $fileName): string
     {
         return Common::url('extending.php?panel=' . (trim($fileName, '/')), self::options()->adminUrl);
     }
 
-    /**
-     * 手动配置插件变量
-     *
-     * @param mixed $pluginName 插件名称
-     * @param array $settings 变量键值对
-     * @param bool $isPersonal . (default: false) 是否为私人变量
-     */
     public static function configPlugin($pluginName, array $settings, bool $isPersonal = false)
     {
         if (empty($settings)) {
@@ -394,15 +273,6 @@ class Helper
         Edit::configPlugin($pluginName, $settings, $isPersonal);
     }
 
-    /**
-     * 评论回复按钮
-     * @param string $theId 评论元素id
-     * @param integer $coid 评论id
-     * @param string $word 按钮文字
-     * @param string $formId 表单id
-     * @param integer $style 样式类型
-     * @return void
-     */
     public static function replyLink(
         string $theId,
         int $coid,
@@ -416,12 +286,6 @@ class Helper
         }
     }
 
-    /**
-     * 评论取消按钮
-     *
-     * @param string $word 按钮文字
-     * @param string $formId 表单id
-     */
     public static function cancelCommentReplyLink(string $word = 'Cancel', string $formId = 'respond')
     {
         if (self::options()->commentsThreaded) {
@@ -430,9 +294,6 @@ class Helper
         }
     }
 
-    /**
-     * 评论回复js脚本
-     */
     public static function threadedCommentsScript()
     {
         if (self::options()->commentsThreaded) {

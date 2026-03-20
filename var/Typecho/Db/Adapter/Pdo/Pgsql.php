@@ -4,7 +4,6 @@ namespace Typecho\Db\Adapter\Pdo;
 
 use Typecho\Config;
 use Typecho\Db;
-use Typecho\Db\Adapter\SQLException;
 use Typecho\Db\Adapter\Pdo;
 use Typecho\Db\Adapter\PgsqlTrait;
 

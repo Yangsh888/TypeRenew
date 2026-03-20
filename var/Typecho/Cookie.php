@@ -90,11 +90,6 @@ class Cookie
         return self::$secure ?: false;
     }
 
-    public static function getSameSite(): string
-    {
-        return self::$sameSite;
-    }
-
     /**
      * 设置额外的选项
      *

@@ -58,23 +58,16 @@ class User extends Users
         $components = self::INIT_OPTIONS;
     }
 
-    /**
-     * 执行函数
-     *
-     * @throws DbException
-     */
     public function execute()
     {
         if ($this->hasLogin()) {
             $this->push($this->currentUser);
 
-            // update last activated time
             $this->db->query($this->db
                 ->update('table.users')
                 ->rows(['activated' => $this->options->time])
                 ->where('uid = ?', $this->currentUser['uid']));
 
-            // merge personal options
             $options = $this->personalOptions->toArray();
 
             foreach ($options as $key => $val) {
@@ -87,7 +80,6 @@ class User extends Users
      * 判断用户是否已经登录
      *
      * @return boolean
-     * @throws DbException
      */
     public function hasLogin(): ?bool
     {
@@ -182,7 +174,6 @@ class User extends Users
     /**
      * @param $user
      * @param int $expire
-     * @throws DbException
      */
     public function commitLogin(&$user, int $expire = 0)
     {
@@ -208,7 +199,6 @@ class User extends Users
      * @param boolean $temporarily 是否为临时登录，默认为临时登录以兼容以前的方法
      * @param integer $expire 过期时间
      * @return boolean
-     * @throws DbException
      */
     public function simpleLogin($uid, bool $temporarily = true, int $expire = 0): bool
     {

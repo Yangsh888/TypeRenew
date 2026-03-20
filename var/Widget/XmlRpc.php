@@ -186,7 +186,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
      * @param string $methodName
      * @param ReflectionMethod $reflectionMethod
      * @param array $parameters
-     * @throws Exception
      */
     public function beforeRpcCall(string $methodName, ReflectionMethod $reflectionMethod, array $parameters)
     {
@@ -300,7 +299,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
      * @param array $content
      * @param bool $publish
      * @return int
-     * @throws \Typecho\Db\Exception
      */
     public function wpNewPage(int $blogId, string $userName, string $password, array $content, bool $publish): int
     {
@@ -318,7 +316,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
      * @param array $content
      * @param bool $publish
      * @return int
-     * @throws \Typecho\Db\Exception
      */
     public function mwNewPost(int $blogId, string $userName, string $password, array $content, bool $publish): int
     {
@@ -331,7 +328,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         if (isset($content['slug'])) {
             $input['slug'] = $content['slug'];
         } elseif (isset($content['wp_slug'])) {
-            //fix issue 338, wlw只发送这个
             $input['slug'] = $content['wp_slug'];
         }
 
@@ -441,7 +437,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
      * @param string $password
      * @param array $category
      * @return int
-     * @throws \Typecho\Db\Exception
      */
     public function wpNewCategory(int $blogId, string $userName, string $password, array $category): int
     {
@@ -471,7 +466,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
      * @param string $password
      * @param int $pageId
      * @return bool
-     * @throws \Typecho\Db\Exception
      */
     public function wpDeletePage(int $blogId, string $userName, string $password, int $pageId): bool
     {
@@ -514,7 +508,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
      * @param array $content
      * @param bool $publish
      * @return int
-     * @throws \Typecho\Db\Exception
      */
     public function mwEditPost(
         int $postId,
@@ -536,7 +529,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
      * @param int $postId
      * @param array $content
      * @return bool
-     * @throws \Typecho\Db\Exception
      */
     public function wpEditPost(int $blogId, string $userName, string $password, int $postId, array $content): bool
     {
@@ -591,7 +583,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
      * @param string $userName
      * @param string $password
      * @return array
-     * @throws \Typecho\Db\Exception
      */
     public function wpGetAuthors(int $blogId, string $userName, string $password): array
     {
@@ -621,7 +612,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
      * @param string $category
      * @param int $maxResults
      * @return array
-     * @throws \Typecho\Db\Exception
      */
     public function wpSuggestCategories(
         int $blogId,
@@ -890,7 +880,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
      * @param string $password
      * @param array $options
      * @return array
-     * @throws \Typecho\Db\Exception
      */
     public function wpSetOptions(int $blogId, string $userName, string $password, array $options = []): array
     {
@@ -926,7 +915,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
      * @param string $password
      * @param integer $commentId
      * @return array
-     * @throws Exception
      */
     public function wpGetComment(int $blogId, string $userName, string $password, int $commentId): array
     {
@@ -1044,7 +1032,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
      * @param integer $commentId
      * @param array $struct
      * @return boolean
-     * @throws \Typecho\Db\Exception
      */
     public function wpEditComment(int $blogId, string $userName, string $password, int $commentId, array $struct): bool
     {
@@ -1091,7 +1078,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
      * @param mixed $path
      * @param array $struct
      * @return int
-     * @throws \Exception
      */
     public function wpNewComment(int $blogId, string $userName, string $password, $path, array $struct): int
     {
@@ -1359,8 +1345,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
      * @param string $password
      * @param array $data
      * @return array
-     * @throws Exception
-     * @throws \Typecho\Db\Exception
      */
     public function mwNewMediaObject(int $blogId, string $userName, string $password, array $data): array
     {
@@ -1913,7 +1897,6 @@ EOF;
 
                 /** PingBack */
                 'pingback.ping'             => [$this, 'pingbackPing'],
-                // 'pingback.extensions.getPingbacks' => array($this,'pingbackExtensionsGetPingbacks'),
             ];
 
             if (1 == $this->options->allowXmlRpc) {

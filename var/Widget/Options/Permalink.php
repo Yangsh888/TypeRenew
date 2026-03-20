@@ -212,7 +212,6 @@ RewriteRule . {$basePath}index.php [L]
                 . _t('开启后可将站点链接显示为纯静态地址形式')
             );
 
-            // disable rewrite check when rewrite opened
             if (!$this->options->rewrite && !$this->request->is('enableRewriteAnyway=1')) {
                 $errorStr = _t('重写功能检测失败，请检查你的服务器设置');
 

@@ -56,11 +56,6 @@ class Cipher
         return $decrypted === false ? '' : $decrypted;
     }
 
-    public static function isEncrypted(string $value): bool
-    {
-        return $value !== '' && str_starts_with($value, self::MARKER);
-    }
-
     public static function mask(string $value, int $visibleChars = 4): string
     {
         if ($value === '') {

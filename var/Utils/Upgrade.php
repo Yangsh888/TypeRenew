@@ -75,11 +75,6 @@ class Upgrade
         return $count;
     }
 
-    public static function clearBackup(): void
-    {
-        self::$backupStack = [];
-    }
-
     /**
      * @param Db $db
      * @param Options $options
@@ -111,12 +106,10 @@ class Upgrade
             ->rows(['name' => 'commentsRequireUrl'])
             ->where('name = ?', 'commentsRequireURL'));
 
-        // fix draft
         $db->query($db->update('table.contents')
             ->rows(['type' => 'revision'])
             ->where('parent <> 0 AND (type = ? OR type = ?)', 'post_draft', 'page_draft'));
 
-        // fix attachment serialize
         $lastId = 0;
         do {
             $rows = $db->fetchAll(

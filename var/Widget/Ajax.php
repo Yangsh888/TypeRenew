@@ -64,7 +64,6 @@ class Ajax extends BaseOptions implements ActionInterface
                     }
                 }
             } catch (\Exception $e) {
-                // do nothing
             }
         }
 

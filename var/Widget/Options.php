@@ -138,11 +138,6 @@ class Options extends Base
         }
     }
 
-    /**
-     * 执行函数
-     *
-     * @throws DbException
-     */
     public function execute()
     {
         $options = [];
@@ -151,7 +146,6 @@ class Options extends Base
             $values = $this->db->fetchAll($this->db->select()->from('table.options')
                 ->where('user = 0'));
 
-            // finish install
             if (empty($values)) {
                 $this->response->redirect(defined('__TYPECHO_ADMIN__')
                     ? '../install.php?step=3' : 'install.php?step=3');
@@ -305,7 +299,6 @@ class Options extends Base
      *
      * @param mixed $pluginName 插件名称
      * @return mixed
-     * @throws PluginException
      */
     public function plugin($pluginName)
     {
@@ -329,7 +322,6 @@ class Options extends Base
      * @param mixed $pluginName 插件名称
      *
      * @return mixed
-     * @throws PluginException
      */
     public function personalPlugin($pluginName)
     {
@@ -708,7 +700,6 @@ class Options extends Base
         [, $version] = explode(' ', $this->generator);
         $pos = strpos($version, '/');
 
-        // fix for old version
         if ($pos !== false) {
             $version = substr($version, 0, $pos) . '.0';
         }

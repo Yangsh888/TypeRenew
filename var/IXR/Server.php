@@ -70,7 +70,6 @@ class Server
      */
     public function multiCall(array $methodcalls): array
     {
-        // See http://www.xmlrpc.com/discuss/msgReader$1208
         $return = [];
         foreach ($methodcalls as $call) {
             $method = $call['methodName'];
@@ -294,16 +293,13 @@ class Server
         }
 
         $result = $this->call($message->methodName, $message->params);
-        // Is the result an error?
         if ($result instanceof Error) {
             $this->error($result);
         }
 
-        // Encode the result
         $r = new Value($result);
         $resultXml = $r->getXml();
 
-        // Create the XML
         $xml = <<<EOD
 <methodResponse>
   <params>
@@ -317,7 +313,6 @@ class Server
 
 EOD;
 
-        // Send it
         $this->output($xml);
     }
 }

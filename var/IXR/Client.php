@@ -94,13 +94,11 @@ class Client
             return false;
         }
 
-        // Is the message a fault?
         if ($this->message->messageType == 'fault') {
             $this->error = new Error($this->message->faultCode, $this->message->faultString);
             return false;
         }
 
-        // Message must be OK
         return true;
     }
 

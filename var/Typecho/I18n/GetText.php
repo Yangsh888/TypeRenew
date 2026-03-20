@@ -237,19 +237,15 @@ class GetText
                 return -1;
             }
         } elseif ($start > $end) {
-            // start > end -> turn around and start over
             return $this->findString($string, $end, $start);
         } else {
-            // Divide table in two parts
             $half = (int)(($start + $end) / 2);
             $cmp = strcmp($string, $this->getOriginalString($half));
             if ($cmp == 0) {
-                // string is exactly in the middle => return it
                 return $half;
             } elseif ($cmp < 0) {
-                // The string is in the upper half
                 return $this->findString($string, $start, $half);
-            } else { // The string is in the lower half
+            } else {
                 return $this->findString($string, $half, $end);
             }
         }
