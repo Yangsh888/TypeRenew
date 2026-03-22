@@ -1,9 +1,9 @@
 <?php
 /**
- * TypeRenew 官方默认模板
+ * TypeRenew 官方默认模板，风格简约清爽，为站点提供开箱即用的优雅体验
  *
  * @author TypeRenew Team
- * @version 6.0
+ * @version 1.0.0
  * @link https://github.com/TypeRenew
  */
 
