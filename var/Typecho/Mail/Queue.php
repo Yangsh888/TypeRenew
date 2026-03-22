@@ -123,9 +123,8 @@ class Queue
         if ($mode === 'sync') {
             self::deliverBatch($db, $options, 20);
         } elseif ($mode === 'async') {
-            if (!self::requestAsync($options)) {
-                self::deliverBatch($db, $options, min(20, (int) ($options->mailBatchSize ?? 20)));
-            }
+            self::deliverBatch($db, $options, min(20, (int) ($options->mailBatchSize ?? 20)));
+            self::requestAsync($options);
         }
     }
 

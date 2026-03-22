@@ -2807,7 +2807,7 @@ body.tr-admin .tr-main-content {
 
 body.tr-admin .typecho-foot {
     position: static;
-    padding: 14px 0 22px;
+    padding: 0;
     color: var(--tr-muted);
     margin-top: auto;
 }
@@ -2816,19 +2816,21 @@ body.tr-admin .typecho-foot .tr-foot-inner {
     width: min(var(--tr-content-max), calc(100% - var(--tr-content-gutter)));
     max-width: none;
     margin: 0 auto;
-    padding: 14px 0;
+    padding: 16px 0;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: var(--tr-gap-sm);
+    justify-content: center;
+    gap: 0;
     border-top: 1px solid rgba(15, 23, 42, 0.08);
 }
 
 body.tr-admin .typecho-foot .copyright {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     min-width: 0;
+    padding-right: 20px;
+    border-right: 1px solid rgba(15, 23, 42, 0.08);
 }
 
 body.tr-admin .typecho-foot .copyright p {
@@ -2837,8 +2839,20 @@ body.tr-admin .typecho-foot .copyright p {
     line-height: 1.5;
 }
 
+body.tr-admin .typecho-foot .tr-logo-link {
+    display: inline-flex;
+    align-items: center;
+}
+
+body.tr-admin .typecho-foot .tr-foot-logo {
+    height: 24px;
+    width: auto;
+    vertical-align: middle;
+}
+
 body.tr-admin .typecho-foot .resource {
     margin: 0;
+    padding-left: 20px;
     white-space: nowrap;
 }
 
@@ -5569,11 +5583,6 @@ html.tr-theme-dark body.tr-admin .tr-card .typecho-list-table,
 html.tr-theme-dark body.tr-admin .tr-compact-table {
     background: rgba(2, 6, 23, 0.26) !important;
     border-color: var(--tr-border) !important;
-}
-
-html.tr-theme-dark body.tr-admin .i-logo,
-html.tr-theme-dark body.tr-admin .i-logo-s {
-    filter: invert(1);
 }
 
 .tr-cmd-group {

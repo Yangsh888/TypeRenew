@@ -1511,7 +1511,7 @@ function install_dispatch()
 </head>
 <body>
     <div class="body container">
-        <h1><a href="https://typecho.org" target="_blank" class="i-logo">TypeRenew</a></h1>
+        <h1><a href="https://www.typerenew.com/" target="_blank"><img src="<?php $options->adminUrl('img/typerenew-logo.svg'); ?>" alt="TypeRenew" style="height:40px;display:inline-block;"></a></h1>
         <?php $method(); ?>
         <?php install_js_support(); ?>
     </div>

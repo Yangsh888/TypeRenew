@@ -19,6 +19,77 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
  */
 class Ajax extends BaseOptions implements ActionInterface
 {
+    private const OFFICIAL_FEED_SOURCES = [
+        'https://github.com/Yangsh888/TypeRenew/discussions/categories/%E5%AE%98%E6%96%B9%E5%85%AC%E5%91%8A.atom',
+        'https://github.com/Yangsh888/TypeRenew/discussions/categories/%E7%89%88%E6%9C%AC%E5%8F%91%E5%B8%83.atom',
+        'https://github.com/Yangsh888/TypeRenew/discussions/categories/%E7%A4%BE%E5%8C%BA%E5%8A%A8%E6%80%81.atom',
+    ];
+
+    private function decodeFeedText(string $text): string
+    {
+        $text = html_entity_decode($text, ENT_QUOTES | ENT_XML1, 'UTF-8');
+        $text = strip_tags($text);
+        return trim(preg_replace("/\s+/u", ' ', $text));
+    }
+
+    private function extractFeedTag(string $entry, string $tag): ?string
+    {
+        if (!preg_match('/<' . preg_quote($tag, '/') . '>\s*([\s\S]*?)\s*<\/' . preg_quote($tag, '/') . '>/i', $entry, $match)) {
+            return null;
+        }
+
+        $value = $this->decodeFeedText((string) ($match[1] ?? ''));
+        return $value === '' ? null : $value;
+    }
+
+    private function extractFeedLink(string $entry): ?string
+    {
+        if (
+            preg_match('/<link\b[^>]*\brel=["\']alternate["\'][^>]*\bhref=["\']([^"\']+)["\'][^>]*\/?>/i', $entry, $match)
+            || preg_match('/<link\b[^>]*\bhref=["\']([^"\']+)["\'][^>]*\brel=["\']alternate["\'][^>]*\/?>/i', $entry, $match)
+            || preg_match('/<link>\s*([\s\S]*?)\s*<\/link>/i', $entry, $match)
+        ) {
+            $link = trim(html_entity_decode((string) ($match[1] ?? ''), ENT_QUOTES | ENT_XML1, 'UTF-8'));
+            if ($link !== '' && preg_match('#^https://github\.com/Yangsh888/TypeRenew/discussions/\d+#i', $link)) {
+                return $link;
+            }
+        }
+
+        return null;
+    }
+
+    private function parseOfficialFeedEntries(string $response): array
+    {
+        $items = [];
+        if (!preg_match_all('/<entry\b[\s\S]*?<\/entry>/i', $response, $entries) || empty($entries[0])) {
+            return $items;
+        }
+
+        foreach ($entries[0] as $entry) {
+            $title = $this->extractFeedTag($entry, 'title');
+            $link = $this->extractFeedLink($entry);
+            $dateText = $this->extractFeedTag($entry, 'published') ?? $this->extractFeedTag($entry, 'updated');
+
+            if (empty($title) || empty($link) || empty($dateText)) {
+                continue;
+            }
+
+            $timestamp = strtotime($dateText);
+            if ($timestamp === false) {
+                continue;
+            }
+
+            $items[] = [
+                'title' => $title,
+                'link'  => $link,
+                'date'  => date('n.j', $timestamp),
+                'ts'    => $timestamp,
+            ];
+        }
+
+        return $items;
+    }
+
     public function remoteCallback()
     {
         if ($this->options->generator == $this->request->getAgent()) {
@@ -80,36 +151,77 @@ class Ajax extends BaseOptions implements ActionInterface
     {
         $this->user->pass('subscriber');
         $client = Client::get();
-        $data = [];
-        if ($client) {
-            $client->setHeader('User-Agent', $this->options->generator)
-                ->setTimeout(10)
-                ->send('https://typecho.org/feed/');
+        $result = [
+            'ok'      => false,
+            'items'   => [],
+            'message' => _t('暂时无法访问 GitHub，请检查网络后重试。'),
+            'partial' => false,
+        ];
 
-            /** 匹配内容体 */
-            $response = $client->getResponseBody();
-            preg_match_all(
-                "/<item>\s*<title>([^>]*)<\/title>\s*<link>([^>]*)<\/link>\s*<guid>[^>]*<\/guid>\s*<pubDate>([^>]*)<\/pubDate>/i",
-                $response,
-                $matches
-            );
+        if (!$client) {
+            $this->response->throwJson($result);
+            return;
+        }
 
-            if ($matches) {
-                foreach ($matches[0] as $key => $val) {
-                    $data[] = [
-                        'title' => $matches[1][$key],
-                        'link'  => $matches[2][$key],
-                        'date'  => date('n.j', strtotime($matches[3][$key]))
-                    ];
+        $items = [];
+        $failed = 0;
 
-                    if ($key > 8) {
-                        break;
-                    }
+        foreach (self::OFFICIAL_FEED_SOURCES as $source) {
+            try {
+                $client->setHeader('User-Agent', $this->options->generator)
+                    ->setTimeout(8)
+                    ->send($source);
+
+                if ($client->getResponseStatus() !== 200) {
+                    $failed++;
+                    continue;
                 }
+
+                $responseUrl = $client->getResponseUrl();
+                $parts = parse_url($responseUrl);
+                $host = strtolower((string) ($parts['host'] ?? ''));
+                if ($host !== 'github.com') {
+                    $failed++;
+                    continue;
+                }
+
+                $response = $client->getResponseBody();
+                $items = array_merge($items, $this->parseOfficialFeedEntries($response));
+            } catch (\Exception $e) {
+                $failed++;
             }
         }
 
-        $this->response->throwJson($data);
+        if (!empty($items)) {
+            usort($items, static function (array $a, array $b): int {
+                return ($b['ts'] ?? 0) <=> ($a['ts'] ?? 0);
+            });
+
+            $unique = [];
+            $seen = [];
+            foreach ($items as $item) {
+                $key = $item['link'];
+                if (isset($seen[$key])) {
+                    continue;
+                }
+                $seen[$key] = true;
+                unset($item['ts']);
+                $unique[] = $item;
+                if (count($unique) >= 9) {
+                    break;
+                }
+            }
+
+            $result['ok'] = true;
+            $result['items'] = $unique;
+            $result['message'] = $failed > 0 ? _t('部分官方动态读取失败。') : '';
+            $result['partial'] = $failed > 0;
+        } else {
+            $result['message'] = $failed > 0 ? _t('暂时无法访问 GitHub，请检查网络后重试。') : _t('暂无动态');
+            $result['partial'] = $failed > 0;
+        }
+
+        $this->response->throwJson($result);
     }
 
     /**

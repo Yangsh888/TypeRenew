@@ -4,7 +4,7 @@
 <footer class="site-footer" role="contentinfo">
     <div class="container">
         <p>&copy; <?php echo date('Y'); ?> <a href="<?php $this->options->siteUrl(); ?>"><?php $this->options->title(); ?></a>.</p>
-        <p>Powered by <a href="http://typecho.org">Typecho</a> & <a href="https://github.com/TypeRenew">TypeRenew</a>.</p>
+        <p>Powered by <a href="https://www.typerenew.com">TypeRenew</a>.</p>
     </div>
 </footer>
 

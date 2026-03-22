@@ -341,11 +341,11 @@ $donut = function (int $posts, int $pages, int $comments, int $total): string {
                 <div class="tr-card-b">
                     <div class="tr-section-head">
                         <div class="tr-section-title"><?php _e('官方动态'); ?></div>
-                        <a class="tr-pill" href="https://typecho.org" target="_blank" rel="noopener noreferrer"><?php _e('访问官网'); ?></a>
+                        <a class="tr-pill" href="https://github.com/Yangsh888/TypeRenew/discussions" target="_blank" rel="noopener noreferrer"><?php _e('访问讨论区'); ?></a>
                     </div>
                     <div class="tr-mt-8">
                         <ul class="tr-feed-list" id="trFeedList"></ul>
-                        <div class="tr-help tr-mt-8" id="trFeedHint"><?php _e('读取中...'); ?></div>
+                        <div class="tr-help tr-mt-8" id="trFeedHint"><?php _e('读取官方动态中...'); ?></div>
                     </div>
                 </div>
             </div>
@@ -366,11 +366,14 @@ include 'common-js.php';
         }
 
         var cache = window.sessionStorage;
-        var cacheKey = 'trDashboardFeedHtmlV2';
-        var tsKey = 'trDashboardFeedTsV2';
+        var cacheKey = 'trDashboardFeedDataV3';
+        var tsKey = 'trDashboardFeedTsV3';
         var ttlMs = 6 * 60 * 60 * 1000;
         var now = Date.now ? Date.now() : +new Date();
         var iconUrl = <?php echo json_encode($options->adminStaticUrl('img', 'icons.svg', true)); ?>;
+        var emptyText = <?php echo json_encode(_t('暂无动态')); ?>;
+        var failText = <?php echo json_encode(_t('暂时无法访问 GitHub，请检查网络后重试。')); ?>;
+        var cacheText = <?php echo json_encode(_t('当前网络不可达，已展示上次缓存内容。')); ?>;
 
         function esc(s) {
             return String(s)
@@ -381,25 +384,11 @@ include 'common-js.php';
                 .replace(/'/g, '&#39;');
         }
 
-        function applyHtml(html) {
-            list.innerHTML = html;
-            hint.style.display = 'none';
-        }
-
-        try {
-            var ts = cache ? parseInt(cache.getItem(tsKey) || '0', 10) : 0;
-            var html = cache ? (cache.getItem(cacheKey) || '') : '';
-            if (html && ts && (now - ts) < ttlMs) {
-                applyHtml(html);
-                return;
-            }
-        } catch (e) {}
-
-        $.get('<?php $options->index('/action/ajax?do=feed'); ?>', function (o) {
+        function buildHtml(items) {
             var html = '';
             var maxItems = 9;
-            for (var i = 0; i < o.length && maxItems > 0; i++) {
-                var item = o[i] || {};
+            for (var i = 0; i < items.length && maxItems > 0; i++) {
+                var item = items[i] || {};
                 var title = esc(item.title || '');
                 var link = esc(item.link || '');
                 var date = esc(item.date || '');
@@ -415,20 +404,102 @@ include 'common-js.php';
                     + '</li>';
             }
 
+            return html;
+        }
+
+        function applyItems(items) {
+            var html = buildHtml(items);
             if (!html) {
-                hint.textContent = <?php echo json_encode(_t('暂无动态')); ?>;
+                list.innerHTML = '';
+                return false;
+            }
+
+            list.innerHTML = html;
+            hint.style.display = 'none';
+            return true;
+        }
+
+        function showHint(text) {
+            hint.textContent = text;
+            hint.style.display = '';
+        }
+
+        function readCache() {
+            if (!cache) {
+                return [];
+            }
+
+            try {
+                var raw = cache.getItem(cacheKey) || '[]';
+                var parsed = JSON.parse(raw);
+                return Array.isArray(parsed) ? parsed : [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function saveCache(items) {
+            if (!cache) {
                 return;
             }
 
-            applyHtml(html);
             try {
-                if (cache) {
-                    cache.setItem(cacheKey, html);
-                    cache.setItem(tsKey, String(now));
-                }
+                cache.setItem(cacheKey, JSON.stringify(items || []));
+                cache.setItem(tsKey, String(now));
             } catch (e) {}
+        }
+
+        function applyCacheWithHint(text) {
+            var cached = readCache();
+            if (cached.length > 0 && applyItems(cached)) {
+                if (text) {
+                    showHint(text);
+                }
+                return true;
+            }
+            return false;
+        }
+
+        try {
+            var ts = cache ? parseInt(cache.getItem(tsKey) || '0', 10) : 0;
+            var cached = readCache();
+            if (cached.length > 0 && ts && (now - ts) < ttlMs && applyItems(cached)) {
+                return;
+            }
+        } catch (e) {}
+
+        $.get('<?php $options->index('/action/ajax?do=feed'); ?>', function (o) {
+            var items = [];
+            var message = '';
+
+            if (Array.isArray(o)) {
+                items = o;
+            } else if (o && typeof o === 'object') {
+                items = Array.isArray(o.items) ? o.items : [];
+                message = String(o.message || '');
+            }
+
+            if (items.length > 0 && applyItems(items)) {
+                saveCache(items);
+                if (message) {
+                    showHint(message);
+                }
+                return;
+            }
+
+            if (message && applyCacheWithHint(message)) {
+                return;
+            }
+
+            if (applyCacheWithHint(cacheText)) {
+                return;
+            }
+
+            showHint(message || emptyText);
         }, 'json').fail(function () {
-            hint.textContent = <?php echo json_encode(_t('读取失败')); ?>;
+            if (!applyCacheWithHint(cacheText)) {
+                showHint(failText);
+            }
         });
     })();
 </script>

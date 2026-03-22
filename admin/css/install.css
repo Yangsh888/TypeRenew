@@ -88,20 +88,29 @@ h1 {
     margin: 0 0 20px 0;
 }
 
-h1 .i-logo {
+h1 img {
+    height: 50px;
+    width: auto;
     display: inline-block;
-    width: 130px;
-    height: 38px;
-    background: url(../img/typecho-logo.svg) no-repeat center center;
-    background-size: contain;
-    text-indent: -9999px;
-    filter: saturate(0) brightness(0.2);
-    opacity: 0.85;
-    transition: opacity 0.3s var(--ease-out);
+    transition: transform 0.3s var(--ease-out);
 }
 
-h1 .i-logo:hover {
-    opacity: 1;
+h1 a:hover img {
+    transform: scale(1.02);
+}
+
+.i-logo-s {
+    display: inline-block;
+    height: 24px;
+    width: auto;
+    line-height: 1;
+}
+
+.i-logo-s img {
+    height: 24px;
+    width: auto;
+    display: inline-block;
+    vertical-align: middle;
 }
 
 /* Main Card */
