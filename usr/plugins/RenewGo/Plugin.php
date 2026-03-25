@@ -37,6 +37,7 @@ class RenewGo_Plugin implements PluginInterface
     private static array $runtimeRules = [];
     private static bool $buffering = false;
     private static int $bufferLevel = 0;
+    private static bool $clientScriptInjected = false;
 
     public static function activate()
     {
@@ -526,7 +527,16 @@ class RenewGo_Plugin implements PluginInterface
 
     public static function endBuffer(): void
     {
+        $settings = self::getSettings();
+
         if (!self::$buffering) {
+            if (self::shouldInjectClientScript($settings)) {
+                $script = self::buildClientScriptTag($settings);
+                if ($script !== '') {
+                    self::$clientScriptInjected = true;
+                    echo $script;
+                }
+            }
             return;
         }
         if (ob_get_level() <= self::$bufferLevel) {
@@ -534,13 +544,12 @@ class RenewGo_Plugin implements PluginInterface
             self::$bufferLevel = 0;
             return;
         }
-        $settings = self::getSettings();
         $content = (string) ob_get_contents();
         ob_end_clean();
         self::$buffering = false;
         self::$bufferLevel = 0;
         $content = self::rewriteHtml($content, 'fallback', $settings);
-        if (self::isRewriteEnabled($settings, 'client') && self::MODE_OFF !== $settings['mode']) {
+        if (self::shouldInjectClientScript($settings)) {
             $content = self::injectClientScript($content, $settings);
         }
         echo $content;
@@ -1063,9 +1072,35 @@ class RenewGo_Plugin implements PluginInterface
     private static function injectClientScript(string $html, array $settings): string
     {
         if (stripos($html, 'id="renewgo-client-script"') !== false) {
+            self::$clientScriptInjected = true;
             return $html;
         }
 
+        $script = self::buildClientScriptTag($settings);
+        if ($script === '') {
+            return $html;
+        }
+
+        self::$clientScriptInjected = true;
+        if (stripos($html, '</body>') !== false) {
+            return (string) preg_replace('/<\/body>/i', $script . '</body>', $html, 1);
+        }
+        if (stripos($html, '</html>') !== false) {
+            return (string) preg_replace('/<\/html>/i', $script . '</html>', $html, 1);
+        }
+        return $html . $script;
+    }
+
+    private static function shouldInjectClientScript(array $settings): bool
+    {
+        return !self::$clientScriptInjected
+            && self::isEnabled($settings)
+            && self::isRewriteEnabled($settings, 'client')
+            && self::MODE_OFF !== (string) ($settings['mode'] ?? self::MODE_OFF);
+    }
+
+    private static function buildClientScriptTag(array $settings): string
+    {
         $rules = self::parseRules((string) ($settings['whitelist'] ?? ''));
         $siteHost = strtolower((string) parse_url((string) Helper::options()->siteUrl, PHP_URL_HOST));
         $payload = [
@@ -1078,25 +1113,17 @@ class RenewGo_Plugin implements PluginInterface
         ];
         $json = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         if (!is_string($json) || $json === '') {
-            return $html;
+            return '';
         }
 
         $index = (string) Helper::options()->index;
         $pluginUrl = (string) Helper::options()->pluginUrl;
-        
         $scriptUrl = rtrim($pluginUrl, '/') . '/RenewGo/assets/client.js';
-        $script = '<script id="renewgo-client-script" src="' . htmlspecialchars($scriptUrl, ENT_QUOTES, 'UTF-8') 
-            . '" data-config="' . htmlspecialchars($json, ENT_QUOTES, 'UTF-8') 
-            . '" data-base="' . htmlspecialchars(rtrim($index, '/'), ENT_QUOTES, 'UTF-8') 
-            . '"></script>';
 
-        if (stripos($html, '</body>') !== false) {
-            return (string) preg_replace('/<\/body>/i', $script . '</body>', $html, 1);
-        }
-        if (stripos($html, '</html>') !== false) {
-            return (string) preg_replace('/<\/html>/i', $script . '</html>', $html, 1);
-        }
-        return $html . $script;
+        return '<script id="renewgo-client-script" src="' . htmlspecialchars($scriptUrl, ENT_QUOTES, 'UTF-8')
+            . '" data-config="' . htmlspecialchars($json, ENT_QUOTES, 'UTF-8')
+            . '" data-base="' . htmlspecialchars(rtrim($index, '/'), ENT_QUOTES, 'UTF-8')
+            . '"></script>';
     }
 
     private static function sanitizeJsString(string $value): string

@@ -73,7 +73,7 @@ class VditorRenew_Bridge
             'lang' => $settings['lang'],
             'icon' => $settings['icon'],
             'editorHeight' => (int) $settings['editorHeight'],
-            'fullStrategy' => (bool) $settings['fullStrategy'],
+            'fullStrategy' => (string) $settings['fullStrategy'],
             'legacy' => $legacy,
             'isMarkdown' => $isMarkdown,
             'isNew' => $isNew,

@@ -6,6 +6,20 @@
         return;
     }
 
+    const resolveFullStrategy = (value) => {
+        if (value === true) {
+            return 'compat';
+        }
+        if (value === false) {
+            return 'off';
+        }
+
+        value = String(value || 'compat');
+        return ['compat', 'native', 'off'].includes(value) ? value : 'compat';
+    };
+
+    cfg.fullStrategy = resolveFullStrategy(cfg.fullStrategy);
+
     const textarea = document.getElementById('text');
     if (!textarea) {
         return;

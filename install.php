@@ -1073,11 +1073,39 @@ function install_step_2_perform()
             $error = (new \Typecho\Validate())
                 ->addRule('dbFile', 'required', _t('数据库文件路径不能为空'))
                 ->addRule('dbFile', function (string $path) {
-                    $pattern = "/^(\/[._a-z0-9-]+)*[a-z0-9]+\.[a-z0-9]{2,}$/i";
-                    if (strstr(PHP_OS, 'WIN')) {
-                        $pattern = "/(\/[._a-z0-9-]+)*[a-z0-9]+\.[a-z0-9]{2,}$/i";
+                    $path = trim($path);
+
+                    if ($path === '' || str_contains($path, "\0")) {
+                        return false;
                     }
-                    return !!preg_match($pattern, $path);
+
+                    $normalized = str_replace('\\', '/', $path);
+                    if ($normalized === '' || str_ends_with($normalized, '/')) {
+                        return false;
+                    }
+
+                    if (preg_match('/^[a-zA-Z]:\//', $normalized)) {
+                        $normalized = substr($normalized, 3);
+                    } elseif (str_starts_with($normalized, '//')) {
+                        $normalized = preg_replace('/^\/\/[^\/]+\/[^\/]+\/?/u', '', $normalized, 1, $count);
+                        if (!is_string($normalized) || ($count ?? 0) === 0) {
+                            return false;
+                        }
+                    } elseif (str_starts_with($normalized, '/')) {
+                        $normalized = substr($normalized, 1);
+                    }
+
+                    if ($normalized === '' || preg_match('/[<>:"|?*\r\n]/u', $normalized)) {
+                        return false;
+                    }
+
+                    $segments = array_values(array_filter(explode('/', $normalized), static fn(string $segment) => $segment !== ''));
+                    if (empty($segments)) {
+                        return false;
+                    }
+
+                    $fileName = array_pop($segments);
+                    return preg_match('/\.[^\.\/\\\\]+$/u', $fileName) === 1;
                 }, _t('数据库文件路径格式不正确'))
                 ->run($config);
             break;
