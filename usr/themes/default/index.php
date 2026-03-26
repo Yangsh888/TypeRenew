@@ -4,7 +4,7 @@
  *
  * @author TypeRenew Team
  * @version 1.0.0
- * @link https://github.com/TypeRenew
+ * @link https://github.com/Yangsh888/TypeRenew
  */
 
 if (!defined('__TYPECHO_ROOT_DIR__')) exit;
