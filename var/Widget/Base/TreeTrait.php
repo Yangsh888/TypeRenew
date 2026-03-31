@@ -44,7 +44,9 @@ trait TreeTrait
 
         if (isset($this->parents[$id])) {
             foreach ($this->parents[$id] as $parent) {
-                $parents[] = $this->map[$parent]['slug'];
+                if (isset($this->map[$parent])) {
+                    $parents[] = $this->map[$parent]['slug'];
+                }
             }
         }
 
@@ -85,7 +87,9 @@ trait TreeTrait
 
         if (isset($this->parents[$id])) {
             foreach ($this->parents[$id] as $parent) {
-                $parents[] = $this->map[$parent];
+                if (isset($this->map[$parent])) {
+                    $parents[] = $this->map[$parent];
+                }
             }
         }
 
@@ -105,7 +109,7 @@ trait TreeTrait
 
         if (!empty($ids)) {
             foreach ($ids as $id) {
-                if (!$ignore || ($ignore != $id && !$this->hasParent($id, $ignore))) {
+                if (isset($this->map[$id]) && (!$ignore || ($ignore != $id && !$this->hasParent($id, $ignore)))) {
                     $result[] = $this->map[$id];
                 }
             }
