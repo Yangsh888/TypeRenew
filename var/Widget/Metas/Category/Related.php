@@ -26,9 +26,20 @@ class Related extends Metas
             ->where('table.relationships.cid = ?', $this->parameter->cid)
             ->where('table.metas.type = ?', 'category')), 'mid');
 
+        $ids = array_filter($ids, function ($id) {
+            return isset($this->map[$id]);
+        });
+
         usort($ids, function ($a, $b) {
             $orderA = array_search($a, $this->orders);
             $orderB = array_search($b, $this->orders);
+
+            if ($orderA === false) {
+                $orderA = PHP_INT_MAX;
+            }
+            if ($orderB === false) {
+                $orderB = PHP_INT_MAX;
+            }
 
             return $orderA <=> $orderB;
         });
