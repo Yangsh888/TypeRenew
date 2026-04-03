@@ -98,7 +98,6 @@ class Router
             }
         }
 
-        /** 载入路由异常支持 */
         throw new RouterException("Path '{$pathInfo}' not found", 404);
     }
 
@@ -121,7 +120,6 @@ class Router
 
         $route = self::$routingTable[$name];
 
-        //交换数组键值
         $pattern = [];
         foreach ($route['params'] as $param) {
             if (is_array($value) && isset($value[$param])) {

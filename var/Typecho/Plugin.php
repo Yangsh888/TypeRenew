@@ -38,11 +38,6 @@ class Plugin
      */
     private bool $signal = false;
 
-    /**
-     * 插件初始化
-     *
-     * @param string $handle 插件
-     */
     public function __construct(string $handle)
     {
         if (defined('__TYPECHO_CLASS_ALIASES__')) {
@@ -53,11 +48,6 @@ class Plugin
         $this->handle = Common::nativeClassName($handle);
     }
 
-    /**
-     * 插件初始化
-     *
-     * @param array $plugins 插件列表
-     */
     public static function init(array $plugins)
     {
         $plugins['activated'] = array_key_exists('activated', $plugins) ? $plugins['activated'] : [];
@@ -66,33 +56,17 @@ class Plugin
         self::$plugin = $plugins;
     }
 
-    /**
-     * 获取实例化插件对象
-     *
-     * @param string $handle 插件
-     * @return Plugin
-     */
     public static function factory(string $handle): Plugin
     {
         return self::$instances[$handle] ?? (self::$instances[$handle] = new self($handle));
     }
 
-    /**
-     * 启用插件
-     *
-     * @param string $pluginName 插件名称
-     */
     public static function activate(string $pluginName)
     {
         self::$plugin['activated'][$pluginName] = self::$tmp;
         self::$tmp = [];
     }
 
-    /**
-     * 禁用插件
-     *
-     * @param string $pluginName 插件名称
-     */
     public static function deactivate(string $pluginName)
     {
         if (
@@ -131,11 +105,6 @@ class Plugin
         return $pluginHandles;
     }
 
-    /**
-     * 导出当前插件设置
-     *
-     * @return array
-     */
     public static function export(): array
     {
         return self::$plugin;
@@ -324,23 +293,11 @@ class Plugin
         return version_compare(Common::VERSION, $version, '>=');
     }
 
-    /**
-     * 判断插件是否存在
-     *
-     * @param string $pluginName 插件名称
-     * @return bool
-     */
     public static function exists(string $pluginName): bool
     {
         return array_key_exists($pluginName, self::$plugin['activated']);
     }
 
-    /**
-     * 插件调用后的触发器
-     *
-     * @param boolean|null $signal 触发器
-     * @return Plugin
-     */
     public function trigger(?bool &$signal): Plugin
     {
         $signal = false;
@@ -348,24 +305,12 @@ class Plugin
         return $this;
     }
 
-    /**
-     * 通过魔术函数设置当前组件位置
-     *
-     * @param string $component 当前组件
-     * @return Plugin
-     */
     public function __get(string $component)
     {
         $this->component = $component;
         return $this;
     }
 
-    /**
-     * 设置回调函数
-     *
-     * @param string $component 当前组件
-     * @param callable $value 回调函数
-     */
     public function __set(string $component, callable $value)
     {
         $weight = 0;
@@ -402,13 +347,6 @@ class Plugin
         ksort(self::$plugin['handles'][$component], SORT_NUMERIC);
     }
 
-    /**
-     * 回调处理函数
-     *
-     * @param string $component 当前组件
-     * @param array $args 参数
-     * @return mixed
-     */
     public function call(string $component, ...$args)
     {
         $componentKey = $this->handle . ':' . $component;
@@ -427,14 +365,6 @@ class Plugin
         return $return;
     }
 
-    /**
-     * 过滤处理函数
-     *
-     * @param string $component 当前组件
-     * @param mixed $value 值
-     * @param array $args 参数
-     * @return mixed
-     */
     public function filter(string $component, $value, ...$args)
     {
         $componentKey = $this->handle . ':' . $component;

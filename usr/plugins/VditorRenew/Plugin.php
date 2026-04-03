@@ -17,6 +17,7 @@ use Typecho\Plugin\PluginInterface;
 use Typecho\Widget\Helper\Form;
 use Utils\Helper;
 use Utils\NoPersonal;
+use Utils\Pref;
 
 class VditorRenew_Plugin implements PluginInterface
 {
@@ -180,49 +181,17 @@ class VditorRenew_Plugin implements PluginInterface
     public static function getSettings(): array
     {
         static $runtime = null;
-        if (is_array($runtime)) {
-            return $runtime;
-        }
-
-        $defaults = self::defaults();
-        $raw = [];
-
-        try {
-            $raw = (array) Helper::options()->plugin(self::NAME)->toArray();
-        } catch (Throwable $e) {
-            $raw = [];
-            self::reportException('getSettings.settings.read', $e);
-        }
-
-        if (empty($raw)) {
-            self::ensureConfigStored();
-            try {
-                $raw = (array) Helper::options()->plugin(self::NAME)->toArray();
-            } catch (Throwable $e) {
-                $raw = [];
-                self::reportException('getSettings.settings.retry', $e);
+        return Pref::load(
+            $runtime,
+            self::CACHE_KEY,
+            self::defaults(),
+            static fn() => (array) Helper::options()->plugin(self::NAME)->toArray(),
+            static fn(array $settings): array => self::normalize($settings),
+            static fn() => self::ensureConfigStored(),
+            static function (string $scope, Throwable $e): void {
+                self::reportException('getSettings.' . $scope, $e);
             }
-        }
-
-        $pref = self::normalize(array_merge($defaults, $raw));
-        $cache = Cache::getInstance();
-
-        if (!empty($pref['typechoCache']) && $cache->enabled()) {
-            $hit = false;
-            $cached = $cache->get(self::CACHE_KEY, $hit);
-            if ($hit && is_array($cached)) {
-                $runtime = $cached;
-                return $runtime;
-            }
-        }
-
-        $runtime = $pref;
-
-        if (!empty($pref['typechoCache']) && $cache->enabled()) {
-            $cache->set(self::CACHE_KEY, $runtime, max(60, (int) $pref['cacheTtl']));
-        }
-
-        return $runtime;
+        );
     }
 
     public static function assetUrl(string $path): string

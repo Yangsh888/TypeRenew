@@ -256,7 +256,6 @@ class Request
 
         $pathInfo = null;
 
-        //处理requestUri
         $requestUri = $this->getRequestUri();
         $finalBaseUrl = $this->getBaseUrl();
 
@@ -580,7 +579,6 @@ class Request
             return $this->requestUri;
         }
 
-        //处理requestUri
         $requestUri = '/';
 
         if (isset($_SERVER['HTTP_X_REWRITE_URL'])) { // check this first so IIS will catch
@@ -645,7 +643,6 @@ class Request
             return $this->baseUrl;
         }
 
-        //处理baseUrl
         $filename = (isset($_SERVER['SCRIPT_FILENAME'])) ? basename($_SERVER['SCRIPT_FILENAME']) : '';
 
         if (isset($_SERVER['SCRIPT_NAME']) && basename($_SERVER['SCRIPT_NAME']) === $filename) {

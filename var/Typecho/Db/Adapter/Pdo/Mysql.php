@@ -71,13 +71,7 @@ class Mysql extends Pdo
             $pdo->exec("SET NAMES '{$config->charset}'");
         }
 
-        if (class_exists('\Pdo\Mysql')) {
-            // 新版本写法
-            $pdo->setAttribute(\Pdo\Mysql::ATTR_USE_BUFFERED_QUERY, true);
-        } else {
-            // 兼容旧版本
-            $pdo->setAttribute(\PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, true);
-        }
+        $pdo->setAttribute(\Pdo\Mysql::ATTR_USE_BUFFERED_QUERY, true);
 
         return $pdo;
     }

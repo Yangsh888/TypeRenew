@@ -270,8 +270,7 @@ class Db
     {
         $this->selectDb(self::READ);
 
-        $args = func_get_args();
-        return call_user_func_array([$this->sql(), 'select'], $args ?: ['*']);
+        return call_user_func_array([$this->sql(), 'select'], $ags ?: ['*']);
     }
 
     /**

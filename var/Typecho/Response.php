@@ -5,7 +5,7 @@ namespace Typecho;
 use Typecho\Widget\Terminal;
 
 /**
- * Typecho公用方法
+ * HTTP 响应封装
  *
  * @category typecho
  * @package Response

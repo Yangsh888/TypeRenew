@@ -325,7 +325,6 @@ EOF;
                 $string = substr($string, 0, $startPos);
             }
 
-            //非自闭合html标签列表
             preg_match_all("/<([_0-9a-zA-Z-:]+)\s*([^>]*)>/is", $string, $startTags);
             preg_match_all("/<\/([_0-9a-zA-Z-:]+)>/is", $string, $closeTags);
 
@@ -338,7 +337,6 @@ EOF;
                         continue;
                     }
 
-                    // 白名单
                     if (
                         preg_match(
                             "/^(area|base|br|col|embed|hr|img|input|keygen|link|meta|param|source|track|wbr)$/i",
@@ -479,7 +477,6 @@ EOF;
             }
             $params = parse_url(str_replace(["\r", "\n", "\t", ' '], '', $url));
 
-            /** 禁止非法的协议跳转 */
             if (isset($params['scheme'])) {
                 if (!in_array($params['scheme'], ['http', 'https'])) {
                     return '/';
@@ -964,7 +961,6 @@ EOF;
             $inet = inet_pton($address);
 
             if (false === $inet) {
-                // 有可能是ipv6的地址
                 $records = dns_get_record($host, DNS_AAAA);
 
                 if (empty($records)) {
@@ -990,7 +986,6 @@ EOF;
          */
         public static function mimeContentType(string $fileName): string
         {
-            //改为并列判断
             if (function_exists('mime_content_type')) {
                 return mime_content_type($fileName);
             }

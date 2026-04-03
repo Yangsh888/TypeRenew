@@ -358,25 +358,16 @@ class Options extends Base
         return $routingTable;
     }
 
-    /**
-     * @return array
-     */
     protected function ___actionTable(): array
     {
         return $this->tryDeserialize($this->row['actionTable']);
     }
 
-    /**
-     * @return array
-     */
     protected function ___panelTable(): array
     {
         return $this->tryDeserialize($this->row['panelTable']);
     }
 
-    /**
-     * @return array
-     */
     protected function ___plugins(): array
     {
         return $this->tryDeserialize($this->row['plugins']);
@@ -392,9 +383,6 @@ class Options extends Base
         return !is_dir($this->themeFile($this->row['theme'])) ? $this->row['theme'] : null;
     }
 
-    /**
-     * @return string
-     */
     protected function ___theme(): string
     {
         return $this->missingTheme ? 'default' : $this->row['theme'];
@@ -410,7 +398,6 @@ class Options extends Base
         $rootUrl = defined('__TYPECHO_ROOT_URL__') ? __TYPECHO_ROOT_URL__ : $this->request->getRequestRoot();
 
         if (defined('__TYPECHO_ADMIN__')) {
-            /** 识别在admin目录中的情况 */
             $adminDir = '/' . trim(defined('__TYPECHO_ADMIN_DIR__') ? __TYPECHO_ADMIN_DIR__ : '/admin/', '/');
             $rootUrl = substr($rootUrl, 0, - strlen($adminDir));
         }
@@ -418,9 +405,6 @@ class Options extends Base
         return $rootUrl;
     }
 
-    /**
-     * @return string
-     */
     protected function ___originalSiteUrl(): string
     {
         $siteUrl = $this->row['siteUrl'];
@@ -434,14 +418,10 @@ class Options extends Base
         return $siteUrl;
     }
 
-    /**
-     * @return string
-     */
     protected function ___siteUrl(): string
     {
         $siteUrl = Common::url(null, $this->originalSiteUrl);
 
-        /** 增加对SSL连接的支持 */
         if ($this->request->isSecure() && 0 === strpos($siteUrl, 'http://')) {
             $siteUrl = substr_replace($siteUrl, 'https', 0, 4);
         }
@@ -449,9 +429,6 @@ class Options extends Base
         return $siteUrl;
     }
 
-    /**
-     * @return string
-     */
     protected function ___siteDomain(): string
     {
         return parse_url($this->siteUrl, PHP_URL_HOST);
@@ -559,9 +536,6 @@ class Options extends Base
             Common::url(__TYPECHO_PLUGIN_DIR__, $this->siteUrl);
     }
 
-    /**
-     * @return string
-     */
     protected function ___pluginDir(): string
     {
         return Common::url(__TYPECHO_PLUGIN_DIR__, __TYPECHO_ROOT_DIR__);
@@ -669,32 +643,17 @@ class Options extends Base
         return Date::time();
     }
 
-    /**
-     * 获取格式
-     *
-     * @return string
-     */
     protected function ___contentType(): string
     {
         return $this->contentType ?? 'text/html';
     }
 
-    /**
-     * 软件名称
-     *
-     * @return string
-     */
     protected function ___software(): string
     {
         [$software] = explode(' ', $this->generator);
         return $software;
     }
 
-    /**
-     * 软件版本
-     *
-     * @return string
-     */
     protected function ___version(): string
     {
         [, $version] = explode(' ', $this->generator);
