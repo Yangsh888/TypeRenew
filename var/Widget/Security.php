@@ -20,19 +20,10 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
  */
 class Security extends Base
 {
-    /**
-     * @var string
-     */
     private string $token;
 
-    /**
-     * @var boolean
-     */
     private bool $enabled = true;
 
-    /**
-     * @param int $components
-     */
     public function initComponents(int &$components)
     {
         $components = self::INIT_OPTIONS | self::INIT_USER;

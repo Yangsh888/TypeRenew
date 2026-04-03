@@ -11,33 +11,14 @@ namespace Typecho;
  */
 class Cookie
 {
-    /**
-     * 前缀
-     *
-     * @var string
-     */
     private static string $prefix = '';
 
-    /**
-     * 路径
-     *
-     * @var string
-     */
     private static string $path = '/';
 
-    /**
-     * @var string
-     */
     private static string $domain = '';
 
-    /**
-     * @var bool
-     */
     private static bool $secure = true;
 
-    /**
-     * @var bool
-     */
     private static bool $httponly = true;
     private static string $sameSite = 'Lax';
 

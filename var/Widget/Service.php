@@ -36,7 +36,6 @@ class Service extends BaseOptions implements ActionInterface
      */
     public function sendPingHandle()
     {
-        /** 验证权限 */
         $data = $this->request->get('@json');
         $token = $data['token'] ?? '';
         $permalink = $data['permalink'] ?? '';
@@ -51,7 +50,6 @@ class Service extends BaseOptions implements ActionInterface
 
         $this->response->throwFinish();
 
-        /** 忽略超时 */
         if (function_exists('ignore_user_abort')) {
             ignore_user_abort(true);
         }
@@ -63,8 +61,6 @@ class Service extends BaseOptions implements ActionInterface
         if (!empty($data['pingback'])) {
             $links = $data['pingback'];
             $permalinkPart = parse_url($permalink);
-
-            /** 发送pingback */
             foreach ($links as $url) {
                 $urlPart = parse_url($url);
 
@@ -117,7 +113,6 @@ class Service extends BaseOptions implements ActionInterface
             }
         }
 
-        /** 发送trackback */
         if (!empty($data['trackback'])) {
             $links = $data['trackback'];
 
@@ -147,15 +142,6 @@ class Service extends BaseOptions implements ActionInterface
         $this->response->throwJson($response);
     }
 
-    /**
-     * 发送pingback
-     * <code>
-     * $this->sendPing($post);
-     * </code>
-     *
-     * @param Contents $content 内容url
-     * @param array|null $trackback
-     */
     public function sendPing(Contents $content, ?array $trackback = null)
     {
         $this->user->pass('contributor');
@@ -264,7 +250,6 @@ class Service extends BaseOptions implements ActionInterface
      */
     public function asyncHandle()
     {
-        /** 验证权限 */
         $data = $this->request->get('@json');
         $token = $data['token'] ?? '';
 
@@ -274,7 +259,6 @@ class Service extends BaseOptions implements ActionInterface
 
         $this->response->throwFinish();
 
-        /** 忽略超时 */
         if (function_exists('ignore_user_abort')) {
             ignore_user_abort(true);
         }

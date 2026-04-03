@@ -130,7 +130,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
      */
     public function insert(array $rows): int
     {
-        /** 构建插入结构 */
         $insertStruct = [
             'title'        => !isset($rows['title']) || strlen($rows['title']) === 0
                 ? null : htmlspecialchars($rows['title']),
@@ -154,10 +153,8 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
             $insertStruct['cid'] = $rows['cid'];
         }
 
-        /** 首先插入部分数据 */
         $insertId = $this->db->query($this->db->insert('table.contents')->rows($insertStruct));
 
-        /** 更新缩略名 */
         if ($insertId > 0) {
             $this->applySlug(Common::strBy($rows['slug'] ?? null), $insertId, $insertStruct['title']);
         }
@@ -181,7 +178,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
                 ->from('table.contents')->limit(1))->cid;
         }
 
-        /** 生成一个非空的缩略名 */
         if ((!isset($slug) || strlen($slug) === 0) && preg_match_all("/\w+/", $title, $matches)) {
             $slug = implode('-', $matches[0]);
         }
@@ -189,7 +185,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
         $slug = Common::slugName($slug, $cid);
         $result = $slug;
 
-        /** 对草稿的slug做特殊处理 */
         $draft = $this->db->fetchObject($this->db->select('type', 'parent')
             ->from('table.contents')->where('cid = ?', $cid));
 
@@ -197,7 +192,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
             $result = '@' . $result;
         }
 
-        /** 判断是否在数据库中已经存在 */
         $count = 1;
         while (
             $this->db->fetchObject($this->db->select(['COUNT(cid)' => 'num'])
@@ -223,12 +217,10 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
      */
     public function update(array $rows, Query $condition): int
     {
-        /** 首先验证写入权限 */
         if (!$this->isWriteable(clone $condition)) {
             return 0;
         }
 
-        /** 构建更新结构 */
         $preUpdateStruct = [
             'title'        => !isset($rows['title']) || strlen($rows['title']) === 0
                 ? null : htmlspecialchars($rows['title']),
@@ -251,18 +243,15 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
             }
         }
 
-        /** 更新创建时间 */
         if (isset($rows['created'])) {
             $updateStruct['created'] = $rows['created'];
         }
 
         $updateStruct['modified'] = $this->options->time;
 
-        /** 首先插入部分数据 */
         $updateCondition = clone $condition;
         $updateRows = $this->db->query($condition->update('table.contents')->rows($updateStruct));
 
-        /** 更新缩略名 */
         if ($updateRows > 0 && isset($rows['slug'])) {
             $this->applySlug(strlen($rows['slug']) === 0 ? null : $rows['slug'], $updateCondition);
         }
@@ -352,7 +341,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
      */
     public function filter(array $row): array
     {
-        /** 处理默认空值 */
         $row['title'] = $row['title'] ?? '';
         $row['text'] = $row['text'] ?? '';
         $row['slug'] = $row['slug'] ?? '';
@@ -442,7 +430,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
             if ('edit' == $permission) {
                 $allow &= ($this->user->pass('editor', true) || $this->authorId == $this->user->uid);
             } else {
-                /** 对自动关闭反馈功能的支持 */
                 if (
                     ('ping' == $permission || 'comment' == $permission) && $this->options->commentsPostTimeout > 0 &&
                     $this->options->commentsAutoClose
@@ -543,17 +530,11 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
         }
     }
 
-    /**
-     * @return string
-     */
     protected function ___title(): string
     {
         return $this->hidden ? _t('此内容被密码保护') : ($this->row['title'] ?? '');
     }
 
-    /**
-     * @return string
-     */
     protected function ___text(): string
     {
         if ('attachment' == $this->type) {
@@ -577,9 +558,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
         return $this->isMarkdown ? substr($this->row['text'], 15) : ($this->row['text'] ?? '');
     }
 
-    /**
-     * @return bool
-     */
     protected function ___isMarkdown(): bool
     {
         return isset($this->row['text']) && 0 === strpos($this->row['text'], '<!--markdown-->');
@@ -604,49 +582,31 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
         return false;
     }
 
-    /**
-     * @return string
-     */
     protected function ___path(): string
     {
         return Router::url($this->type, $this);
     }
 
-    /**
-     * @return string
-     */
     protected function ___permalink(): string
     {
         return Common::url($this->path, $this->options->index);
     }
 
-    /**
-     * @return string
-     */
     protected function ___url(): string
     {
         return $this->permalink;
     }
 
-    /**
-     * @return string
-     */
     protected function ___feedUrl(): string
     {
         return Router::url($this->type, $this, $this->options->feedUrl);
     }
 
-    /**
-     * @return string
-     */
     protected function ___feedRssUrl(): string
     {
         return Router::url($this->type, $this, $this->options->feedRssUrl);
     }
 
-    /**
-     * @return string
-     */
     protected function ___feedAtomUrl(): string
     {
         return Router::url($this->type, $this, $this->options->feedAtomUrl);
@@ -669,17 +629,11 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
         return $directory;
     }
 
-    /**
-     * @return string
-     */
     protected function ___category(): string
     {
         return empty($this->categories) ? '' : $this->categories[0]['slug'];
     }
 
-    /**
-     * @return array
-     */
     protected function ___categories(): array
     {
         return CategoryRelated::allocWithAlias($this->cid, ['cid' => $this->cid])
@@ -717,15 +671,11 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
         return $this->date->word();
     }
 
-    /**
-     * @return Config|null
-     */
     protected function ___attachment(): ?Config
     {
         if ('attachment' == $this->type && isset($this->row['text'])) {
             $content = json_decode($this->row['text'], true);
 
-            //增加数据信息
             $attachment = new Config($content);
             $attachment->isImage = in_array($content['type'], [
                 'jpg', 'jpeg', 'gif', 'png', 'tiff', 'bmp', 'webp', 'avif'
@@ -738,12 +688,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
         return null;
     }
 
-    /**
-     * ___fields
-     *
-     * @return Config
-     * @throws Exception
-     */
     protected function ___fields(): Config
     {
         $fields = [];
@@ -787,12 +731,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
         return Common::subStr($plainText, 0, 100);
     }
 
-    /**
-     * markdown
-     *
-     * @param string|null $text
-     * @return string|null
-     */
     protected function markdown(?string $text): ?string
     {
         $html = Contents::pluginHandle()->trigger($parsed)->filter('markdown', $text);
@@ -804,12 +742,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
         return $html;
     }
 
-    /**
-     * autoP
-     *
-     * @param string|null $text
-     * @return string|null
-     */
     protected function autoP(?string $text): ?string
     {
         $html = Contents::pluginHandle()->trigger($parsed)->filter('autoP', $text);
@@ -891,8 +823,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
      */
     protected function ___commentUrl(): string
     {
-        /** 生成反馈地址 */
-        /** 评论 */
         return Router::url(
             'feedback',
             ['type' => 'comment', 'permalink' => $this->path],
@@ -924,25 +854,16 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
         return $this->permalink . '#' . $this->respondId;
     }
 
-    /**
-     * @return string
-     */
     protected function ___year(): string
     {
         return $this->date->year;
     }
 
-    /**
-     * @return string
-     */
     protected function ___month(): string
     {
         return $this->date->month;
     }
 
-    /**
-     * @return string
-     */
     protected function ___day(): string
     {
         return $this->date->day;

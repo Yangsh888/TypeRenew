@@ -118,17 +118,11 @@ class Options extends Base
 
     private array $personalPluginConfig = [];
 
-    /**
-     * @param int $components
-     */
     protected function initComponents(int &$components)
     {
         $components = self::INIT_NONE;
     }
 
-    /**
-     * @param Config $parameter
-     */
     protected function initParameter(Config $parameter)
     {
         if (!$parameter->isEmpty()) {
@@ -153,7 +147,6 @@ class Options extends Base
 
             $options = array_column($values, 'value', 'name');
 
-            /** 支持皮肤变量重载 */
             $themeOptionsKey = 'theme:' . $options['theme'];
             if (!empty($options[$themeOptionsKey])) {
                 $themeOptions = $this->tryDeserialize($options[$themeOptionsKey]);
@@ -339,15 +332,11 @@ class Options extends Base
         return $this->personalPluginConfig[$pluginName];
     }
 
-    /**
-     * @return array
-     */
     protected function ___routingTable(): array
     {
         $routingTable = $this->tryDeserialize($this->row['routingTable']);
 
         if (isset($this->db) && !isset($routingTable[0])) {
-            /** 解析路由并缓存 */
             $parser = new Parser($routingTable);
             $parsedRoutingTable = $parser->parse();
             $routingTable = array_merge([$parsedRoutingTable], $routingTable);
@@ -455,7 +444,7 @@ class Options extends Base
     }
 
     /**
-     * ATOM1.O
+     * ATOM1.0
      *
      * @return string
      */

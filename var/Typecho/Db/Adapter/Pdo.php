@@ -17,16 +17,8 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
  */
 abstract class Pdo implements Adapter
 {
-    /**
-     * 数据库对象
-     * @var \PDO
-     */
     protected \PDO $object;
 
-    /**
-     * 最后一次操作的数据表
-     * @var string|null
-     */
     protected ?string $lastTable;
 
     /**
