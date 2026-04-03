@@ -4,28 +4,10 @@ namespace Typecho;
 
 use Typecho\Plugin\Exception as PluginException;
 
-/**
- * 插件处理类
- *
- * @category typecho
- * @package Plugin
- * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
- * @license GNU General Public License 2.0
- */
 class Plugin
 {
-    /**
-     * 所有启用的插件
-     *
-     * @var array
-     */
     private static array $plugin = [];
 
-    /**
-     * 实例化的插件对象
-     *
-     * @var array
-     */
     private static array $instances;
 
     /**

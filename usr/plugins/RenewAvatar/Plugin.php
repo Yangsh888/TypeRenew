@@ -177,7 +177,7 @@ class RenewAvatar_Plugin implements PluginInterface
         if (empty($settings['enabled']) || empty($settings['applyGlobalPrefix'])) {
             return;
         }
-        $prefix = self::mirrorPrefix(true, $settings);
+        $prefix = self::mirrorPrefix($settings);
         if ($prefix !== '') {
             define('__TYPECHO_GRAVATAR_PREFIX__', $prefix);
         }
@@ -207,7 +207,7 @@ class RenewAvatar_Plugin implements PluginInterface
 
     private static function gravatarWithHash(string $hash, int $size, string $rating, string $default, bool $isSecure, array $settings): string
     {
-        $prefix = self::mirrorPrefix($isSecure, $settings);
+        $prefix = self::mirrorPrefix($settings);
         $query = http_build_query([
             's' => $size,
             'r' => $rating,
@@ -347,9 +347,8 @@ class RenewAvatar_Plugin implements PluginInterface
         return is_string($body) ? $body : '';
     }
 
-    private static function mirrorPrefix(bool $isSecure, array $settings): string
+    private static function mirrorPrefix(array $settings): string
     {
-        unset($isSecure);
         $mirror = (string) ($settings['mirror'] ?? 'loli');
         if ($mirror === 'custom') {
             $custom = self::sanitizeCustomMirror((string) ($settings['customMirror'] ?? ''));

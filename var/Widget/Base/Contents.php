@@ -98,7 +98,7 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
             case 'directory':
                 return implode('/', array_map('urlencode', $this->directory));
             case 'category':
-                return empty($this->categories) ? '' : urlencode($this->categories[0]['slug']);
+                return empty($this->categories) ? 'uncategorized' : urlencode($this->categories[0]['slug']);
             case 'year':
                 return $this->date->year;
             case 'month':

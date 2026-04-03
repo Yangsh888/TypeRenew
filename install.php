@@ -213,17 +213,17 @@ function install_get_default_routers(): array
                 'widget' => '\Widget\Feed',
                 'action' => 'render',
             ],
-        'feedback'           =>
-            [
-                'url'    => '[permalink:string]/[type:alpha]',
-                'widget' => '\Widget\Feedback',
-                'action' => 'action',
-            ],
         'page'               =>
             [
                 'url'    => '/[slug].html',
                 'widget' => '\Widget\Archive',
                 'action' => 'render',
+            ],
+        'feedback'           =>
+            [
+                'url'    => '[permalink:string]/[type:alpha]',
+                'widget' => '\Widget\Feedback',
+                'action' => 'action',
             ],
     ];
 }

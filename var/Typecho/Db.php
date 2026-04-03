@@ -6,25 +6,14 @@ use Typecho\Db\Adapter;
 use Typecho\Db\Query;
 use Typecho\Db\Exception as DbException;
 
-/**
- * 包含获取数据支持方法的类.
- * 必须定义__TYPECHO_DB_HOST__, __TYPECHO_DB_PORT__, __TYPECHO_DB_NAME__,
- * __TYPECHO_DB_USER__, __TYPECHO_DB_PASS__, __TYPECHO_DB_CHAR__
- *
- * @package Db
- */
 class Db
 {
-    /** 读取数据库 */
     public const READ = 1;
 
-    /** 写入数据库 */
     public const WRITE = 2;
 
-    /** 升序方式 */
     public const SORT_ASC = 'ASC';
 
-    /** 降序方式 */
     public const SORT_DESC = 'DESC';
 
     /** 表内连接方式 */

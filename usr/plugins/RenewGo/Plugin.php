@@ -94,11 +94,6 @@ class RenewGo_Plugin implements PluginInterface
             _t('改写范围')
         );
         $form->addInput($rewrite->multiMode());
-        $form->addInput(new Form\Element\Hidden('rewriteContent', null, ''));
-        $form->addInput(new Form\Element\Hidden('rewriteComments', null, ''));
-        $form->addInput(new Form\Element\Hidden('rewriteAuthor', null, ''));
-        $form->addInput(new Form\Element\Hidden('rewriteClient', null, ''));
-        $form->addInput(new Form\Element\Hidden('rewriteFallback', null, ''));
 
         $rel = new Form\Element\Checkbox(
             'rel',
