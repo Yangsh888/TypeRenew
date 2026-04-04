@@ -1105,6 +1105,11 @@ function install_step_2_perform()
                     }
 
                     $fileName = array_pop($segments);
+                    $blocked = ['htaccess', 'htpasswd', 'gitignore', 'env', 'dockerenv', 'editorconfig', 'gitattributes', 'gitmodules'];
+                    if (in_array(strtolower(pathinfo($fileName, PATHINFO_FILENAME)), $blocked, true)) {
+                        return false;
+                    }
+
                     return preg_match('/\.[^\.\/\\\\]+$/u', $fileName) === 1;
                 }, _t('数据库文件路径格式不正确'))
                 ->run($config);
@@ -1175,8 +1180,11 @@ function install_step_2_perform()
             $config['dbPrefix'] . 'comments',
             $config['dbPrefix'] . 'contents',
             $config['dbPrefix'] . 'fields',
+            $config['dbPrefix'] . 'mail_queue',
+            $config['dbPrefix'] . 'mail_unsub',
             $config['dbPrefix'] . 'metas',
             $config['dbPrefix'] . 'options',
+            $config['dbPrefix'] . 'password_resets',
             $config['dbPrefix'] . 'relationships',
             $config['dbPrefix'] . 'users'
         ];

@@ -200,13 +200,14 @@ class Helper
         $panelTable = self::options()->panelTable;
         $panelTable['parent'] = empty($panelTable['parent']) ? [] : $panelTable['parent'];
 
-        if (false !== ($index = array_search($menuName, $panelTable['parent']))) {
+        $index = array_search($menuName, $panelTable['parent']);
+        if ($index !== false) {
             unset($panelTable['parent'][$index]);
         }
 
         self::setOption('panelTable', $panelTable);
 
-        return $index + 10;
+        return $index !== false ? (int) $index + 10 : -1;
     }
 
     public static function addPanel(
@@ -243,15 +244,19 @@ class Helper
         $panelTable['file'] = empty($panelTable['file']) ? [] : $panelTable['file'];
         $fileName = urlencode(trim($fileName, '/'));
 
-        if (false !== ($key = array_search($fileName, $panelTable['file']))) {
+        $key = array_search($fileName, $panelTable['file']);
+        if ($key !== false) {
             unset($panelTable['file'][$key]);
         }
 
-        $return = 0;
-        foreach ($panelTable['child'][$index] as $key => $val) {
-            if ($val[2] == 'extending.php?panel=' . $fileName) {
-                unset($panelTable['child'][$index][$key]);
-                $return = $key;
+        $return = -1;
+        if (!empty($panelTable['child'][$index])) {
+            foreach ($panelTable['child'][$index] as $k => $val) {
+                if ($val[2] == 'extending.php?panel=' . $fileName) {
+                    unset($panelTable['child'][$index][$k]);
+                    $return = (int) $k;
+                    break;
+                }
             }
         }
 

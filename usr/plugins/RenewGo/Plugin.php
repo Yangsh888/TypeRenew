@@ -347,7 +347,11 @@ class RenewGo_Plugin implements PluginInterface
                 if ($row) {
                     $config = self::decodeOptionValue((string) ($row['value'] ?? ''));
                     if (is_array($config) && !empty($config['signSecret'])) {
-                        return (string) $config['signSecret'];
+                        $result = (string) $config['signSecret'];
+                        if ($cache->enabled()) {
+                            $cache->set($cacheKey, $result, 3600);
+                        }
+                        return $result;
                     }
                 }
                 usleep(50000);
@@ -390,6 +394,19 @@ class RenewGo_Plugin implements PluginInterface
                             'value' => self::encodeOptionValue($config)
                         ])
                 );
+            }
+
+            $confirmed = $db->fetchRow(
+                $db->select('value')->from($prefix . 'options')
+                    ->where('name = ?', 'plugin:RenewGo')
+                    ->limit(1)
+            );
+
+            if ($confirmed) {
+                $confirmedConfig = self::decodeOptionValue((string) ($confirmed['value'] ?? ''));
+                if (is_array($confirmedConfig) && !empty($confirmedConfig['signSecret'])) {
+                    $newSecret = (string) $confirmedConfig['signSecret'];
+                }
             }
 
             if ($cache->enabled()) {

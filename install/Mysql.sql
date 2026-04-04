@@ -28,6 +28,8 @@ CREATE TABLE `typecho_comments` (
 
 --
 -- 表的结构 `typecho_contents`
+-- 注意: slug 字段设置了全局唯一约束，文章(post)与独立页面(page)之间不能存在相同的 slug 值。
+-- 如需解除此限制，可将唯一约束改为 UNIQUE KEY `slug` (`slug`,`type`)，但需配合数据迁移脚本执行。
 --
 
 CREATE TABLE `typecho_contents` (
@@ -97,7 +99,7 @@ CREATE TABLE `typecho_metas` (
 --
 
 CREATE TABLE `typecho_options` (
-  `name` varchar(32) NOT NULL,
+  `name` varchar(64) NOT NULL,
   `user` int unsigned NOT NULL default '0',
   `value` text,
   PRIMARY KEY  (`name`,`user`)
@@ -124,7 +126,7 @@ CREATE TABLE `typecho_relationships` (
 CREATE TABLE `typecho_users` (
   `uid` int unsigned NOT NULL auto_increment,
   `name` varchar(32) default NULL,
-  `password` varchar(64) default NULL,
+  `password` varchar(255) default NULL,
   `mail` varchar(150) default NULL,
   `url` varchar(150) default NULL,
   `screenName` varchar(32) default NULL,
@@ -153,7 +155,7 @@ CREATE TABLE `typecho_mail_queue` (
   `updated` int unsigned NOT NULL default '0',
   `lastError` varchar(500) NOT NULL default '',
   `dedupeKey` char(40) NOT NULL default '',
-  `payload` longtext,
+  `payload` text,
   PRIMARY KEY (`id`),
   KEY `idx_status_sendat` (`status`, `sendAt`),
   KEY `idx_locked` (`lockedUntil`),

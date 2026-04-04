@@ -207,16 +207,19 @@ class Queue
 
     private static function getClientIp(): string
     {
-        $ip = '';
-        $headers = ['HTTP_X_FORWARDED_FOR', 'HTTP_CLIENT_IP', 'REMOTE_ADDR'];
-        foreach ($headers as $header) {
-            $value = $_SERVER[$header] ?? '';
+        $ip = (string) ($_SERVER['REMOTE_ADDR'] ?? '');
+        if ($ip !== '' && filter_var($ip, FILTER_VALIDATE_IP)) {
+            return $ip;
+        }
+
+        foreach (['HTTP_X_FORWARDED_FOR', 'HTTP_CLIENT_IP'] as $header) {
+            $value = (string) ($_SERVER[$header] ?? '');
             if ($value !== '' && filter_var($value, FILTER_VALIDATE_IP)) {
-                $ip = $value;
-                break;
+                return $value;
             }
         }
-        return $ip !== '' ? $ip : '127.0.0.1';
+
+        return '127.0.0.1';
     }
 
     private static function parseAllowedIps(string $config): array
@@ -601,6 +604,7 @@ class Queue
             }
 
             if (!self::isMissingDedupeColumnError($e)) {
+                self::recordRuntimeError('insert', $e->getMessage());
                 return;
             }
         }
