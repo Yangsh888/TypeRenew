@@ -2,13 +2,6 @@
 
 namespace Typecho;
 
-/**
- * cookie支持
- *
- * @author qining
- * @category typecho
- * @package Cookie
- */
 class Cookie
 {
     private static string $prefix = '';

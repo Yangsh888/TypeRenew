@@ -188,7 +188,7 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
         $draft = $this->db->fetchObject($this->db->select('type', 'parent')
             ->from('table.contents')->where('cid = ?', $cid));
 
-        if ('revision' === $draft->type && $draft->parent) {
+        if ($draft && 'revision' === $draft->type && !empty($draft->parent)) {
             $result = '@' . $result;
         }
 
@@ -369,7 +369,8 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
     {
         echo false !== $more && false !== strpos((string) $this->text, '<!--more-->') ?
             $this->excerpt
-            . "<p class=\"more\"><a href=\"{$this->permalink}\" title=\"{$this->title}\">{$more}</a></p>"
+            . '<p class="more"><a href="' . htmlspecialchars($this->permalink, ENT_QUOTES, 'UTF-8') . '" title="'
+            . htmlspecialchars($this->title, ENT_QUOTES, 'UTF-8') . '">' . htmlspecialchars($more, ENT_QUOTES, 'UTF-8') . '</a></p>'
             : $this->content;
     }
 
@@ -459,7 +460,9 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
             $result = [];
 
             foreach ($this->categories as $category) {
-                $result[] = $link ? "<a href=\"{$category['permalink']}\">{$category['name']}</a>" : $category['name'];
+                $name = htmlspecialchars($category['name'], ENT_QUOTES, 'UTF-8');
+                $permalink = Common::safeUrl($category['permalink']);
+                $result[] = $link ? "<a href=\"{$permalink}\">{$name}</a>" : $name;
             }
 
             echo implode($split, $result);
@@ -478,6 +481,11 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
      */
     public function directory(string $split = '/', bool $link = true, ?string $default = null)
     {
+        if (empty($this->categories)) {
+            echo $default;
+            return;
+        }
+
         $category = $this->categories[0];
         $directory = Rows::alloc()->getAllParents($category['mid']);
         $directory[] = $category;
@@ -486,8 +494,10 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
             $result = [];
 
             foreach ($directory as $category) {
-                $result[] = $link ? '<a href="' . $category['permalink'] . '">'
-                    . $category['name'] . '</a>' : $category['name'];
+                $name = htmlspecialchars($category['name'], ENT_QUOTES, 'UTF-8');
+                $permalink = Common::safeUrl($category['permalink']);
+                $result[] = $link ? '<a href="' . $permalink . '">'
+                    . $name . '</a>' : $name;
             }
 
             echo implode($split, $result);
@@ -509,7 +519,9 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
             $result = [];
 
             foreach ($this->tags as $tag) {
-                $result[] = $link ? "<a href=\"{$tag['permalink']}\">{$tag['name']}</a>" : $tag['name'];
+                $name = htmlspecialchars($tag['name'], ENT_QUOTES, 'UTF-8');
+                $permalink = Common::safeUrl($tag['permalink']);
+                $result[] = $link ? "<a href=\"{$permalink}\">{$name}</a>" : $name;
             }
 
             echo implode($split, $result);
@@ -538,12 +550,12 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
     protected function ___text(): string
     {
         if ('attachment' == $this->type) {
+            $url = Common::safeUrl($this->attachment->url);
+            $title = htmlspecialchars($this->title, ENT_QUOTES, 'UTF-8');
             if ($this->attachment->isImage) {
-                return '<img src="' . $this->attachment->url . '" alt="' .
-                    $this->title . '" />';
+                return '<img src="' . $url . '" alt="' . $title . '" />';
             } else {
-                return '<a href="' . $this->attachment->url . '" title="' .
-                    $this->title . '">' . $this->title . '</a>';
+                return '<a href="' . $url . '" title="' . $title . '">' . $title . '</a>';
             }
         } elseif ($this->hidden) {
             return '<form class="protected" action="' . $this->security->getTokenUrl($this->permalink)

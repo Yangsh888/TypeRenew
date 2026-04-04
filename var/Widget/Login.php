@@ -70,7 +70,7 @@ class Login extends Users implements ActionInterface
                 'loginFailure',
                 $this->user,
                 $this->request->get('name'),
-                $this->request->get('password'),
+                null,
                 $this->request->is('remember=1')
             );
 
@@ -83,7 +83,7 @@ class Login extends Users implements ActionInterface
             'loginSuccess',
             $this->user,
             $this->request->get('name'),
-            $this->request->get('password'),
+            null,
             $this->request->is('remember=1')
         );
 

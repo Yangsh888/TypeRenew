@@ -6,32 +6,12 @@ use Typecho\Router\ParamsDelegateInterface;
 use Typecho\Router\Parser;
 use Typecho\Router\Exception as RouterException;
 
-/**
- * Typecho组件基类
- *
- * @package Router
- */
 class Router
 {
-    /**
-     * 当前路由名称
-     *
-     * @var string
-     */
     public static string $current;
 
-    /**
-     * 已经解析完毕的路由表配置
-     *
-     * @var array
-     */
     private static array $routingTable = [];
 
-    /**
-     * 是否已经匹配过，防止递归匹配
-     *
-     * @var bool
-     */
     private static bool $matched = false;
 
     /**

@@ -4,14 +4,6 @@ namespace Typecho;
 
 use Typecho\Widget\Terminal;
 
-/**
- * HTTP 响应封装
- *
- * @category typecho
- * @package Response
- * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
- * @license GNU General Public License 2.0
- */
 class Response
 {
     private const HTTP_CODE = [

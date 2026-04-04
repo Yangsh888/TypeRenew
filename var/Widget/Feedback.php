@@ -243,8 +243,9 @@ class Feedback extends Comments implements ActionInterface
         }
 
         if ($error = $validator->run($comment)) {
-            /** 记录文字 */
-            Cookie::set('__typecho_remember_text', $comment['text']);
+            /** 记录文字（安全转义后存储） */
+            $safeText = htmlspecialchars($comment['text'], ENT_QUOTES, 'UTF-8');
+            Cookie::set('__typecho_remember_text', $safeText);
             throw new Exception(implode("\n", $error));
         }
 

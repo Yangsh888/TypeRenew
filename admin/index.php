@@ -341,7 +341,10 @@ $donut = function (int $posts, int $pages, int $comments, int $total): string {
                 <div class="tr-card-b">
                     <div class="tr-section-head">
                         <div class="tr-section-title"><?php _e('官方动态'); ?></div>
-                        <a class="tr-pill" href="https://github.com/Yangsh888/TypeRenew/discussions" target="_blank" rel="noopener noreferrer"><?php _e('访问讨论区'); ?></a>
+                        <span class="tr-section-actions">
+                        <a class="tr-pill" href="https://www.typerenew.com/" target="_blank" rel="noopener noreferrer"><?php _e('访问官网'); ?></a>
+                        <a class="tr-pill" href="https://github.com/Yangsh888/TypeRenew/discussions" target="_blank" rel="noopener noreferrer"><?php _e('访问社区'); ?></a>
+                        </span>
                     </div>
                     <div class="tr-mt-8">
                         <ul class="tr-feed-list" id="trFeedList"></ul>
@@ -372,7 +375,7 @@ include 'common-js.php';
         var now = Date.now ? Date.now() : +new Date();
         var iconUrl = <?php echo json_encode($options->adminStaticUrl('img', 'icons.svg', true)); ?>;
         var emptyText = <?php echo json_encode(_t('暂无动态')); ?>;
-        var failText = <?php echo json_encode(_t('暂时无法访问 GitHub，请检查网络后重试。')); ?>;
+        var failText = <?php echo json_encode(_t('暂时无法获取官方动态，请检查网络后重试。')); ?>;
         var cacheText = <?php echo json_encode(_t('当前网络不可达，已展示上次缓存内容。')); ?>;
 
         function esc(s) {

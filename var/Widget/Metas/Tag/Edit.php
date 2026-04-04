@@ -360,7 +360,6 @@ class Edit extends Metas implements ActionInterface
         $this->response->goBack();
     }
 
-
     /**
      * 清理没有任何内容的标签
      *

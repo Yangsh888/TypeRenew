@@ -136,7 +136,6 @@ class GetText
         // this should contains all strings separated by NULLs
         $key = $single . chr(0) . $plural;
 
-
         if ($this->enable_cache) {
             if (!array_key_exists($key, $this->cache_translations)) {
                 return ($number != 1) ? $plural : $single;

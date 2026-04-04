@@ -2,11 +2,6 @@
 
 namespace Typecho;
 
-/**
- * 服务器请求处理类
- *
- * @package Request
- */
 class Request
 {
     private static Request $instance;
@@ -423,7 +418,7 @@ class Request
     public function getHeader(string $key, ?string $default = null): ?string
     {
         $key = strtoupper(str_replace('-', '_', $key));
-        
+
         // Content-Type 和 Content-Length 这两个 header 还需要从不带 HTTP_ 的 key 尝试获取
         if (in_array($key, ['CONTENT_TYPE', 'CONTENT_LENGTH'])) {
             $default = $this->getServer($key, $default);

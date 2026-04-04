@@ -548,9 +548,11 @@ class Backup extends BaseOptions implements ActionInterface
             }
 
             if (false !== strpos($adapter, 'pgsql')) {
-                $sql = "SELECT column_name FROM information_schema.columns WHERE table_schema = current_schema() AND table_name = '"
-                    . addslashes($tableName) . "'";
-                $rows = $this->db->fetchAll($this->db->query($sql));
+                $rows = $this->db->fetchAll(
+                    $this->db->select('column_name')->from('information_schema.columns')
+                        ->where('table_schema = current_schema()')
+                        ->where('table_name = ?', $tableName)
+                );
                 return array_values(array_map(static fn($row) => (string) ($row['column_name'] ?? ''), $rows));
             }
 

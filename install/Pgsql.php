@@ -27,7 +27,6 @@
     </li>
 </ul>
 
-
 <details>
     <summary>
         <strong><?php _e('高级选项'); ?></strong>

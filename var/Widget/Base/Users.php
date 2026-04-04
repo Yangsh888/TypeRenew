@@ -154,7 +154,7 @@ class Users extends Base implements QueryInterface, RowFilterInterface, PrimaryK
     {
         $url = Common::gravatarUrl($this->mail, $size, $rating, $default, $this->request->isSecure());
         echo '<img' . (empty($class) ? '' : ' class="' . $class . '"') . ' src="' . $url . '" alt="' .
-            $this->screenName . '" width="' . $size . '" height="' . $size . '" />';
+            htmlspecialchars($this->screenName, ENT_QUOTES, 'UTF-8') . '" width="' . $size . '" height="' . $size . '" />';
     }
 
     /**

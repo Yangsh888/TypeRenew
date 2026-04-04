@@ -74,7 +74,8 @@ trait TreeViewTrait
             echo " {$type}-parent-active";
         }
 
-        echo '"><a href="' . $this->permalink . '">' . $this->title . '</a>';
+        echo '"><a href="' . Common::safeUrl($this->permalink) . '">' .
+            htmlspecialchars($this->title, ENT_QUOTES, 'UTF-8') . '</a>';
 
         if ($rowOptions->showCount) {
             printf($rowOptions->countTemplate, intval($this->count));

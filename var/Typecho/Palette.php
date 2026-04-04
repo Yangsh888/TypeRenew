@@ -4,27 +4,10 @@ namespace Typecho;
 
 use Widget\User;
 
-/**
- * 命令面板类
- * 
- * 用于管理后台命令面板的命令注册、权限过滤和数据输出
- *
- * @package Typecho
- */
 class Palette
 {
-    /**
-     * 已注册的命令列表
-     *
-     * @var array
-     */
     private static array $commands = [];
 
-    /**
-     * 命令分类配置
-     *
-     * @var array
-     */
     private static array $categories = [
         'nav' => ['id' => 'nav', 'name' => '导航', 'order' => 10, 'icon' => 'i-external'],
         'create' => ['id' => 'create', 'name' => '创建', 'order' => 20, 'icon' => 'i-plus'],
@@ -36,11 +19,6 @@ class Palette
         'help' => ['id' => 'help', 'name' => '帮助', 'order' => 80, 'icon' => 'i-info']
     ];
 
-    /**
-     * 是否已初始化
-     *
-     * @var bool
-     */
     private static bool $initialized = false;
 
     /**

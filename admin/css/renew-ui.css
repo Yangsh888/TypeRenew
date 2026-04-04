@@ -2560,6 +2560,12 @@ body.tr-admin.tr-page-index .tr-actions-grid .tr-btn-square span {
     font-weight: 780;
 }
 
+.tr-section-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
 .tr-compact-table {
     width: 100%;
     table-layout: fixed;

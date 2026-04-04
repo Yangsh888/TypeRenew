@@ -88,7 +88,6 @@ $post = \Widget\Contents\Post\Edit::alloc()->prepare();
                     <li class="w-50"><a href="#tab-files" id="tab-files-btn"><?php _e('附件'); ?></a></li>
                 </ul>
 
-
                 <div id="tab-advance" class="tab-content">
                     <section class="typecho-post-option" role="application">
                         <label for="date" class="typecho-label"><?php _e('发布日期'); ?></label>

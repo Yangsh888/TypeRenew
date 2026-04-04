@@ -81,7 +81,6 @@ trait EditTrait
         $this->update(['count' => $num], $this->db->sql()->where('mid = ?', $mid));
     }
 
-
     /**
      * 根据内容的指定类别和状态更新相关meta的计数信息
      *

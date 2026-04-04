@@ -1062,7 +1062,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
             $input['mail'] = $struct['author_email'];
         }
 
-
         $comment = CommentsEdit::alloc(null, $input, function (CommentsEdit $comment) {
             $comment->editComment();
         });

@@ -20,9 +20,7 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
 class Ajax extends BaseOptions implements ActionInterface
 {
     private const OFFICIAL_FEED_SOURCES = [
-        'https://github.com/Yangsh888/TypeRenew/discussions/categories/%E5%AE%98%E6%96%B9%E5%85%AC%E5%91%8A.atom',
-        'https://github.com/Yangsh888/TypeRenew/discussions/categories/%E7%89%88%E6%9C%AC%E5%8F%91%E5%B8%83.atom',
-        'https://github.com/Yangsh888/TypeRenew/discussions/categories/%E7%A4%BE%E5%8C%BA%E5%8A%A8%E6%80%81.atom',
+        'https://www.typerenew.com/feed/',
     ];
 
     private function decodeFeedText(string $text): string
@@ -45,12 +43,10 @@ class Ajax extends BaseOptions implements ActionInterface
     private function extractFeedLink(string $entry): ?string
     {
         if (
-            preg_match('/<link\b[^>]*\brel=["\']alternate["\'][^>]*\bhref=["\']([^"\']+)["\'][^>]*\/?>/i', $entry, $match)
-            || preg_match('/<link\b[^>]*\bhref=["\']([^"\']+)["\'][^>]*\brel=["\']alternate["\'][^>]*\/?>/i', $entry, $match)
-            || preg_match('/<link>\s*([\s\S]*?)\s*<\/link>/i', $entry, $match)
+            preg_match('/<link>\s*([\s\S]*?)\s*<\/link>/i', $entry, $match)
         ) {
             $link = trim(html_entity_decode((string) ($match[1] ?? ''), ENT_QUOTES | ENT_XML1, 'UTF-8'));
-            if ($link !== '' && preg_match('#^https://github\.com/Yangsh888/TypeRenew/discussions/\d+#i', $link)) {
+            if ($link !== '' && preg_match('#^https://www\.typerenew\.com/#i', $link)) {
                 return $link;
             }
         }
@@ -61,14 +57,14 @@ class Ajax extends BaseOptions implements ActionInterface
     private function parseOfficialFeedEntries(string $response): array
     {
         $items = [];
-        if (!preg_match_all('/<entry\b[\s\S]*?<\/entry>/i', $response, $entries) || empty($entries[0])) {
+        if (!preg_match_all('/<item\b[\s\S]*?<\/item>/i', $response, $entries) || empty($entries[0])) {
             return $items;
         }
 
         foreach ($entries[0] as $entry) {
             $title = $this->extractFeedTag($entry, 'title');
             $link = $this->extractFeedLink($entry);
-            $dateText = $this->extractFeedTag($entry, 'published') ?? $this->extractFeedTag($entry, 'updated');
+            $dateText = $this->extractFeedTag($entry, 'pubDate');
 
             if (empty($title) || empty($link) || empty($dateText)) {
                 continue;
@@ -154,7 +150,7 @@ class Ajax extends BaseOptions implements ActionInterface
         $result = [
             'ok'      => false,
             'items'   => [],
-            'message' => _t('暂时无法访问 GitHub，请检查网络后重试。'),
+            'message' => _t('暂时无法获取官方动态，请检查网络后重试。'),
             'partial' => false,
         ];
 
@@ -180,7 +176,7 @@ class Ajax extends BaseOptions implements ActionInterface
                 $responseUrl = $client->getResponseUrl();
                 $parts = parse_url($responseUrl);
                 $host = strtolower((string) ($parts['host'] ?? ''));
-                if ($host !== 'github.com') {
+                if ($host !== 'www.typerenew.com') {
                     $failed++;
                     continue;
                 }
@@ -217,7 +213,7 @@ class Ajax extends BaseOptions implements ActionInterface
             $result['message'] = $failed > 0 ? _t('部分官方动态读取失败。') : '';
             $result['partial'] = $failed > 0;
         } else {
-            $result['message'] = $failed > 0 ? _t('暂时无法访问 GitHub，请检查网络后重试。') : _t('暂无动态');
+            $result['message'] = $failed > 0 ? _t('暂时无法获取官方动态，请检查网络后重试。') : _t('暂无动态');
             $result['partial'] = $failed > 0;
         }
 

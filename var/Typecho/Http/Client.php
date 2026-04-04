@@ -342,22 +342,14 @@ class Client
         $response = curl_exec($ch);
         if (false === $response) {
             $error = curl_error($ch);
-            if (PHP_VERSION_ID >= 80000) {
-                unset($ch);
-            } else {
-                curl_close($ch);
-            }
+            unset($ch);
             throw new Exception($error, 500);
         }
 
         $this->responseStatus = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $this->responseUrl = (string) curl_getinfo($ch, CURLINFO_EFFECTIVE_URL);
         $this->responseBody = $response;
-        if (PHP_VERSION_ID >= 80000) {
-            unset($ch);
-        } else {
-            curl_close($ch);
-        }
+        unset($ch);
     }
 
     /**

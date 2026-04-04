@@ -10,32 +10,12 @@ class Plugin
 
     private static array $instances;
 
-    /**
-     * 临时存储变量
-     *
-     * @var array
-     */
     private static array $tmp = [];
 
-    /**
-     * 唯一句柄
-     *
-     * @var string
-     */
     private string $handle;
 
-    /**
-     * 组件
-     *
-     * @var string
-     */
     private $component;
 
-    /**
-     * 是否触发插件的信号
-     *
-     * @var boolean
-     */
     private bool $signal = false;
 
     public function __construct(string $handle)

@@ -869,7 +869,6 @@ function install_step_2()
                 </ul>
                 <?php require_once './install/' . $type . '.php'; ?>
 
-
                 <ul class="typecho-option typecho-option-submit">
                     <li>
                         <button id="confirm" type="submit" class="btn primary"><?php _e('确认配置并开始安装 &raquo;'); ?></button>

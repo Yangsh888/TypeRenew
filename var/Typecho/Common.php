@@ -4,14 +4,6 @@ namespace {
 
     use Typecho\I18n;
 
-    /**
-     * I18n function
-     *
-     * @param string $string 需要翻译的文字
-     * @param mixed ...$args 参数
-     *
-     * @return string
-     */
     function _t(string $string, ...$args): string
     {
         if (empty($args)) {
@@ -21,27 +13,12 @@ namespace {
         }
     }
 
-    /**
-     * I18n function, translate and echo
-     *
-     * @param string $string 需要翻译的文字
-     * @param mixed ...$args 参数
-     */
     function _e(string $string, ...$args)
     {
         array_unshift($args, $string);
         echo call_user_func_array('_t', $args);
     }
 
-    /**
-     * 针对复数形式的翻译函数
-     *
-     * @param string $single 单数形式的翻译
-     * @param string $plural 复数形式的翻译
-     * @param integer $number 数字
-     *
-     * @return string
-     */
     function _n(string $single, string $plural, int $number): string
     {
         return str_replace('%d', $number, I18n::ngettext($single, $plural, $number));
@@ -131,26 +108,10 @@ namespace Typecho {
         }
     });
 
-    /**
-     * Typecho公用方法
-     *
-     * @category typecho
-     * @package Common
-     * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
-     * @license GNU General Public License 2.0
-     */
     class Common
     {
-        /** 程序版本 */
-        public const VERSION = '1.3.1';
+        public const VERSION = '1.4.0';
 
-        /**
-         * 将路径转化为链接
-         *
-         * @param string|null $path 路径
-         * @param string|null $prefix 前缀
-         * @return string
-         */
         public static function url(?string $path, ?string $prefix): string
         {
             $path = $path ?? '';
@@ -159,9 +120,6 @@ namespace Typecho {
                 . str_replace('//', '/', ltrim($path, '/'));
         }
 
-        /**
-         * 程序初始化方法
-         */
         public static function init()
         {
             Response::getInstance()->enableAutoSendHeaders(false);
@@ -180,11 +138,6 @@ namespace Typecho {
             });
         }
 
-        /**
-         * 输出错误页面
-         *
-         * @param \Throwable $exception 错误信息
-         */
         public static function error(\Throwable $exception)
         {
             $code = $exception->getCode() ?: 500;
@@ -211,7 +164,7 @@ namespace Typecho {
                 Response::getInstance()->setStatus($code);
             }
 
-            $message = nl2br($message);
+            $message = nl2br(htmlspecialchars($message, ENT_QUOTES, 'UTF-8'));
 
             if (defined('__TYPECHO_EXCEPTION_FILE__')) {
                 require_once __TYPECHO_EXCEPTION_FILE__;
@@ -265,25 +218,11 @@ EOF;
             exit(1);
         }
 
-        /**
-         * @param string $className
-         * @return string
-         */
         public static function nativeClassName(string $className): string
         {
             return trim(str_replace('\\', '_', $className), '_');
         }
 
-        /**
-         * 根据count数目来输出字符
-         * <code>
-         * echo splitByCount(20, 10, 20, 30, 40, 50);
-         * </code>
-         *
-         * @param int $count
-         * @param int ...$sizes
-         * @return int
-         */
         public static function splitByCount(int $count, int ...$sizes): int
         {
             foreach ($sizes as $size) {
@@ -295,18 +234,6 @@ EOF;
             return 0;
         }
 
-        /**
-         * 自闭合html修复函数
-         * 使用方法:
-         * <code>
-         * $input = '这是一段被截断的html文本<a href="#"';
-         * echo Common::fixHtml($input);
-         * //output: 这是一段被截断的html文本
-         * </code>
-         *
-         * @param string|null $string 需要修复处理的字符串
-         * @return string|null
-         */
         public static function fixHtml(?string $string): ?string
         {
             if (empty($string)) {
@@ -359,20 +286,6 @@ EOF;
             return preg_replace("/<br\s*\/>\s*<\/p>/is", '</p>', $string);
         }
 
-        /**
-         * 去掉字符串中的html标签
-         * 使用方法:
-         * <code>
-         * $input = '<a href="http://test/test.php" title="example">hello</a>';
-         * $output = Common::stripTags($input, <a href="">);
-         * echo $output;
-         * //display: '<a href="http://test/test.php">hello</a>'
-         * </code>
-         *
-         * @param string|null $html 需要处理的字符串
-         * @param string|null $allowableTags 需要忽略的html标签
-         * @return string
-         */
         public static function stripTags(?string $html, ?string $allowableTags = null): string
         {
             $normalizeTags = '';
@@ -417,25 +330,11 @@ EOF;
             );
         }
 
-        /**
-         * 过滤用于搜索的字符串
-         *
-         * @param string|null $query 搜索字符串
-         * @return string
-         */
         public static function filterSearchQuery(?string $query): string
         {
             return isset($query) ? str_replace('-', ' ', self::slugName($query) ?? '') : '';
         }
 
-        /**
-         * 生成缩略名
-         *
-         * @param string|null $str 需要生成缩略名的字符串
-         * @param string $default 默认的缩略名
-         * @param integer $maxLength 缩略名最大长度
-         * @return string
-         */
         public static function slugName(?string $str, string $default = '', int $maxLength = 128): string
         {
             $str = trim($str ?? '');
@@ -463,13 +362,6 @@ EOF;
             return substr($str, 0, $maxLength);
         }
 
-        /**
-         * 将url中的非法字符串
-         *
-         * @param string|null $url 需要过滤的url
-         *
-         * @return string
-         */
         public static function safeUrl(?string $url): string
         {
             if (empty($url)) {
@@ -496,13 +388,6 @@ EOF;
             return self::buildUrl($params);
         }
 
-        /**
-         * 根据parse_url的结果重新组合url
-         *
-         * @param array $params 解析后的参数
-         *
-         * @return string
-         */
         public static function buildUrl(array $params): string
         {
             return (isset($params['scheme']) ? $params['scheme'] . '://' : null)
@@ -515,12 +400,6 @@ EOF;
                 . (isset($params['fragment']) ? '#' . $params['fragment'] : null);
         }
 
-        /**
-         * 清理十六进制字符，用于 XSS 过滤
-         *
-         * @param string $val
-         * @return string
-         */
         public static function cleanHex(string $val): string
         {
             $search = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&*()~`";:?+/={}[]-_|\'\\';
@@ -531,12 +410,6 @@ EOF;
             return $val;
         }
 
-        /**
-         * 处理XSS跨站攻击的过滤函数
-         *
-         * @param string|null $val 需要处理的字符串
-         * @return string
-         */
         public static function removeXSS(?string $val): string
         {
             $val = preg_replace('/([\x00-\x08]|[\x0b-\x0c]|[\x0e-\x19])/', '', $val);
@@ -590,16 +463,6 @@ EOF;
             return $val;
         }
 
-        /**
-         * 宽字符串截字函数
-         *
-         * @param string $str 需要截取的字符串
-         * @param integer $start 开始截取的位置
-         * @param integer $length 需要截取的长度
-         * @param string $trim 截取后的截断标示符
-         *
-         * @return string
-         */
         public static function subStr(string $str, int $start, int $length, string $trim = "..."): string
         {
             if (!strlen($str)) {
@@ -613,36 +476,16 @@ EOF;
             return $length < $iLength ? ($str . $trim) : $str;
         }
 
-        /**
-         * 判断两个字符串是否为空并依次返回
-         *
-         * @param string|null $a
-         * @param string|null $b
-         * @return string|null
-         */
         public static function strBy(?string $a, ?string $b = null): ?string
         {
             return isset($a) && $a !== '' ? $a : $b;
         }
 
-        /**
-         * 获取宽字符串长度函数
-         *
-         * @param string $str 需要获取长度的字符串
-         * @return integer
-         */
         public static function strLen(string $str): int
         {
             return mb_strlen($str, 'UTF-8');
         }
 
-        /**
-         * 判断hash值是否相等
-         *
-         * @param string|null $from 源字符串
-         * @param string|null $to 目标字符串
-         * @return boolean
-         */
         public static function hashValidate(?string $from, ?string $to): bool
         {
             if (!isset($from) || !isset($to)) {
@@ -657,13 +500,6 @@ EOF;
             }
         }
 
-        /**
-         * 对字符串进行hash加密
-         *
-         * @param string|null $string 需要hash的字符串
-         * @param string|null $salt 扰码
-         * @return string
-         */
         public static function hash(?string $string, ?string $salt = null): string
         {
             if (!isset($string)) {
@@ -695,13 +531,6 @@ EOF;
             return '$T$' . $salt . md5($hash);
         }
 
-        /**
-         * 生成随机字符串
-         *
-         * @param integer $length 字符串长度
-         * @param boolean $specialChars 是否有特殊字符
-         * @return string
-         */
         public static function randString(int $length, bool $specialChars = false): string
         {
             $chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -724,12 +553,6 @@ EOF;
             return $result;
         }
 
-        /**
-         * 创建一个会过期的Token
-         *
-         * @param string $secret
-         * @return string
-         */
         public static function timeToken(string $secret): string
         {
             $ts = time();
@@ -742,14 +565,6 @@ EOF;
             return 'v2:' . $ts . ':' . $nonce . ':' . $sig;
         }
 
-        /**
-         * 在时间范围内验证token
-         *
-         * @param string $token
-         * @param string $secret
-         * @param int $timeout
-         * @return bool
-         */
         public static function timeTokenValidate(string $token, string $secret, int $timeout = 5): bool
         {
             $token = trim($token);
@@ -780,17 +595,6 @@ EOF;
             return false;
         }
 
-        /**
-         * 获取gravatar头像地址
-         *
-         * @param string|null $mail
-         * @param int $size
-         * @param string|null $rating
-         * @param string|null $default
-         * @param bool $isSecure
-         *
-         * @return string
-         */
         public static function gravatarUrl(
             ?string $mail,
             int $size,
@@ -822,13 +626,6 @@ EOF;
             return $url;
         }
 
-        /**
-         * 给javascript赋值加入扰码设计
-         *
-         * @param string $value
-         *
-         * @return string
-         */
         public static function shuffleScriptVar(string $value): string
         {
             $length = strlen($value);
@@ -872,15 +669,6 @@ EOF;
 })();";
         }
 
-        /**
-         * 创建备份文件缓冲
-         *
-         * @param string $type
-         * @param string $header
-         * @param string $body
-         *
-         * @return string
-         */
         public static function buildBackupBuffer(string $type, string $header, string $body): string
         {
             $buffer = '';
@@ -892,14 +680,6 @@ EOF;
             return $buffer;
         }
 
-        /**
-         * 从备份文件中解压
-         *
-         * @param resource $fp
-         * @param int|null $offset
-         * @param string $version
-         * @return array|bool
-         */
         public static function extractBackupBuffer($fp, ?int &$offset, string $version)
         {
             $realMetaLen = $version == 'FILE' ? 6 : 8;
@@ -945,12 +725,6 @@ EOF;
             return [$type, $header, $body];
         }
 
-        /**
-         * 检查是否是一个安全的主机名
-         *
-         * @param string $host
-         * @return bool
-         */
         public static function checkSafeHost(string $host): bool
         {
             if ('localhost' == $host) {
@@ -978,12 +752,6 @@ EOF;
             ) !== false;
         }
 
-        /**
-         * 获取图片
-         *
-         * @param string $fileName 文件名
-         * @return string
-         */
         public static function mimeContentType(string $fileName): string
         {
             if (function_exists('mime_content_type')) {
@@ -1015,12 +783,6 @@ EOF;
             return 'application/octet-stream';
         }
 
-        /**
-         * 寻找匹配的mime图标
-         *
-         * @param string $mime mime类型
-         * @return string
-         */
         public static function mimeIconType(string $mime): string
         {
             $parts = explode('/', $mime);
@@ -1054,12 +816,6 @@ EOF;
             }
         }
 
-        /**
-         * 解析属性
-         *
-         * @param string $attrs 属性字符串
-         * @return array
-         */
         private static function parseAttrs(string $attrs): array
         {
             $attrs = trim($attrs);
@@ -1114,12 +870,6 @@ EOF;
             return $result;
         }
 
-        /**
-         * IDN转UTF8
-         *
-         * @param string $url
-         * @return string
-         */
         public static function idnToUtf8(string $url): string
         {
             if (function_exists('idn_to_utf8') && !empty($url)) {
