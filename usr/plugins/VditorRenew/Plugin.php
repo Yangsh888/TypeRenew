@@ -341,6 +341,5 @@ class VditorRenew_Plugin implements PluginInterface
 
     private static function reportException(string $scope, Throwable $e): void
     {
-        error_log('VditorRenew.' . $scope . ': ' . $e->getMessage());
     }
 }

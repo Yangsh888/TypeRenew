@@ -9,22 +9,16 @@ namespace Typecho;
  */
 class Feed
 {
-    /** 定义RSS 1.0类型 */
     public const RSS1 = 'RSS 1.0';
 
-    /** 定义RSS 2.0类型 */
     public const RSS2 = 'RSS 2.0';
 
-    /** 定义ATOM 1.0类型 */
     public const ATOM1 = 'ATOM 1.0';
 
-    /** 定义RSS时间格式 */
     public const DATE_RFC822 = 'r';
 
-    /** 定义ATOM时间格式 */
     public const DATE_W3CDTF = 'c';
 
-    /** 定义行结束符 */
     public const EOL = "\n";
 
     /**

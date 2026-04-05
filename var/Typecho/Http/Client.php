@@ -13,16 +13,12 @@ use Typecho\Http\Client\Exception;
  */
 class Client
 {
-    /** POST方法 */
     public const METHOD_POST = 'POST';
 
-    /** GET方法 */
     public const METHOD_GET = 'GET';
 
-    /** PUT方法 */
     public const METHOD_PUT = 'PUT';
 
-    /** DELETE方法 */
     public const METHOD_DELETE = 'DELETE';
 
     /**
@@ -297,6 +293,9 @@ class Client
         curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
         curl_setopt($ch, CURLOPT_TIMEOUT, $this->timeout);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $this->method);
+        curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
 
         if (isset($this->agent)) {
             curl_setopt($ch, CURLOPT_USERAGENT, $this->agent);

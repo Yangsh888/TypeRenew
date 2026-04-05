@@ -10,13 +10,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-/**
- * 异步调用组件
- *
- * @author qining
- * @category typecho
- * @package Widget
- */
 class Ajax extends BaseOptions implements ActionInterface
 {
     private const OFFICIAL_FEED_SOURCES = [
@@ -93,11 +86,6 @@ class Ajax extends BaseOptions implements ActionInterface
         }
     }
 
-    /**
-     * 获取最新版本
-     *
-     * @throws Exception|\Typecho\Db\Exception
-     */
     public function checkVersion()
     {
         $this->user->pass('editor');
@@ -137,12 +125,6 @@ class Ajax extends BaseOptions implements ActionInterface
         $this->response->throwJson($result);
     }
 
-    /**
-     * 远程请求代理
-     *
-     * @throws Exception
-     * @throws Client\Exception|\Typecho\Db\Exception
-     */
     public function feed()
     {
         $this->user->pass('subscriber');
@@ -220,11 +202,6 @@ class Ajax extends BaseOptions implements ActionInterface
         $this->response->throwJson($result);
     }
 
-    /**
-     * 自定义编辑器大小
-     *
-     * @throws \Typecho\Db\Exception|Exception
-     */
     public function editorResize()
     {
         $this->user->pass('contributor');

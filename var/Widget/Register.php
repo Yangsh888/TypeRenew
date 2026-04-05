@@ -13,13 +13,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-/**
- * 注册组件
- *
- * @author qining
- * @category typecho
- * @package Widget
- */
 class Register extends Users implements ActionInterface
 {
     use EditTrait;

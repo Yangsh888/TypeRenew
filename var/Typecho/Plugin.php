@@ -67,13 +67,6 @@ class Plugin
         unset(self::$plugin['activated'][$pluginName]);
     }
 
-    /**
-     * 插件handle比对
-     *
-     * @param array $pluginHandles
-     * @param array $otherPluginHandles
-     * @return array
-     */
     private static function pluginHandlesDiff(array $pluginHandles, array $otherPluginHandles): array
     {
         foreach ($otherPluginHandles as $handle) {
@@ -265,7 +258,6 @@ class Plugin
      */
     public static function checkDependence(?string $version): bool
     {
-        //如果没有检测规则,直接掠过
         if (empty($version)) {
             return true;
         }

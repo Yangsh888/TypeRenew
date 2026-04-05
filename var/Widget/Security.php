@@ -10,14 +10,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-/**
- * 安全选项组件
- *
- * @link typecho
- * @package Widget
- * @copyright Copyright (c) 2014 Typecho team (http://typecho.org)
- * @license GNU General Public License 2.0
- */
 class Security extends Base
 {
     private string $token;

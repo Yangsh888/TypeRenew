@@ -47,8 +47,11 @@ class Upgrade extends BaseOptions implements ActionInterface
         $message = [];
 
         foreach ($ref->getMethods() as $method) {
-            preg_match("/^v([_0-9]+)$/", $method->getName(), $matches);
-            $version = str_replace('_', '.', $matches[1]);
+            if (!preg_match("/^v([_0-9]+)$/", $method->getName(), $matches)) {
+                continue;
+            }
+
+            $version = str_replace('_', '.', (string) $matches[1]);
 
             if (version_compare($currentVersion, $version, '>=')) {
                 continue;

@@ -17,46 +17,13 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-/**
- * 评论基类
- *
- * @property int $coid
- * @property int $cid
- * @property int $created
- * @property string author
- * @property int $authorId
- * @property int $ownerId
- * @property string $mail
- * @property string $url
- * @property string $ip
- * @property string $agent
- * @property string $text
- * @property string $type
- * @property string status
- * @property int $parent
- * @property int $commentPage
- * @property Date $date
- * @property string $dateWord
- * @property string $theId
- * @property Contents $parentContent
- * @property string $title
- * @property string $permalink
- * @property string $content
- */
 class Comments extends Base implements QueryInterface, RowFilterInterface, PrimaryKeyInterface, ParamsDelegateInterface
 {
-    /**
-     * @return string 获取主键
-     */
     public function getPrimaryKey(): string
     {
         return 'coid';
     }
 
-    /**
-     * @param string $key
-     * @return string
-     */
     public function getRouterParam(string $key): string
     {
         switch ($key) {
@@ -69,16 +36,8 @@ class Comments extends Base implements QueryInterface, RowFilterInterface, Prima
         }
     }
 
-    /**
-     * 增加评论
-     *
-     * @param array $rows 评论结构数组
-     * @return integer
-     * @throws Exception
-     */
     public function insert(array $rows): int
     {
-        /** 构建插入结构 */
         $insertStruct = [
             'cid'      => $rows['cid'],
             'created'  => empty($rows['created']) ? $this->options->time : $rows['created'],
@@ -99,15 +58,12 @@ class Comments extends Base implements QueryInterface, RowFilterInterface, Prima
             $insertStruct['coid'] = $rows['coid'];
         }
 
-        /** 过长的客户端字符串要截断 */
         if (Common::strLen($insertStruct['agent']) > 511) {
             $insertStruct['agent'] = Common::subStr($insertStruct['agent'], 0, 511, '');
         }
 
-        /** 首先插入部分数据 */
         $insertId = $this->db->query($this->db->insert('table.comments')->rows($insertStruct));
 
-        /** 更新评论数 */
         $num = $this->db->fetchObject($this->db->select(['COUNT(coid)' => 'num'])->from('table.comments')
             ->where('status = ? AND cid = ?', 'approved', $rows['cid']))->num;
 
@@ -117,17 +73,8 @@ class Comments extends Base implements QueryInterface, RowFilterInterface, Prima
         return $insertId;
     }
 
-    /**
-     * 更新评论
-     *
-     * @param array $rows 评论结构数组
-     * @param Query $condition 查询对象
-     * @return integer
-     * @throws Exception
-     */
     public function update(array $rows, Query $condition): int
     {
-        /** 获取内容主键 */
         $updateCondition = clone $condition;
         $updateComment = $this->db->fetchObject($condition->select('cid')->from('table.comments')->limit(1));
 
@@ -137,7 +84,6 @@ class Comments extends Base implements QueryInterface, RowFilterInterface, Prima
             return 0;
         }
 
-        /** 构建插入结构 */
         $preUpdateStruct = [
             'author' => Common::strBy($rows['author'] ?? null),
             'mail'   => Common::strBy($rows['mail'] ?? null),
@@ -153,15 +99,12 @@ class Comments extends Base implements QueryInterface, RowFilterInterface, Prima
             }
         }
 
-        /** 更新创建时间 */
         if (!empty($rows['created'])) {
             $updateStruct['created'] = $rows['created'];
         }
 
-        /** 更新评论数据 */
         $updateRows = $this->db->query($updateCondition->update('table.comments')->rows($updateStruct));
 
-        /** 更新评论数 */
         $num = $this->db->fetchObject($this->db->select(['COUNT(coid)' => 'num'])->from('table.comments')
             ->where('status = ? AND cid = ?', 'approved', $cid))->num;
 
@@ -171,16 +114,8 @@ class Comments extends Base implements QueryInterface, RowFilterInterface, Prima
         return $updateRows;
     }
 
-    /**
-     * 删除数据
-     *
-     * @param Query $condition 查询对象
-     * @return integer
-     * @throws Exception
-     */
     public function delete(Query $condition): int
     {
-        /** 获取内容主键 */
         $deleteCondition = clone $condition;
         $deleteComment = $this->db->fetchObject($condition->select('cid')->from('table.comments')->limit(1));
 
@@ -190,10 +125,8 @@ class Comments extends Base implements QueryInterface, RowFilterInterface, Prima
             return 0;
         }
 
-        /** 删除评论数据 */
         $deleteRows = $this->db->query($deleteCondition->delete('table.comments'));
 
-        /** 更新评论数 */
         $num = $this->db->fetchObject($this->db->select(['COUNT(coid)' => 'num'])->from('table.comments')
             ->where('status = ? AND cid = ?', 'approved', $cid))->num;
 
@@ -203,39 +136,19 @@ class Comments extends Base implements QueryInterface, RowFilterInterface, Prima
         return $deleteRows;
     }
 
-    /**
-     * 按照条件计算评论数量
-     *
-     * @param Query $condition 查询对象
-     * @return integer
-     * @throws Exception
-     */
     public function size(Query $condition): int
     {
         return $this->db->fetchObject($condition->select(['COUNT(coid)' => 'num'])->from('table.comments'))->num;
     }
 
-    /**
-     * 将每行的值压入堆栈
-     *
-     * @param array $value 每行的值
-     * @return array
-     */
     public function push(array $value): array
     {
         $value = $this->filter($value);
         return parent::push($value);
     }
 
-    /**
-     * 通用过滤器
-     *
-     * @param array $row 需要过滤的行数据
-     * @return array
-     */
     public function filter(array $row): array
     {
-        /** 处理默认空值 */
         $row['author'] = $row['author'] ?? '';
         $row['mail'] = $row['mail'] ?? '';
         $row['url'] = $row['url'] ?? '';
@@ -247,22 +160,11 @@ class Comments extends Base implements QueryInterface, RowFilterInterface, Prima
         return Comments::pluginHandle()->filter('filter', $row, $this);
     }
 
-    /**
-     * 输出文章发布日期
-     *
-     * @param string|null $format 日期格式
-     */
     public function date(?string $format = null)
     {
         echo $this->date->format(empty($format) ? $this->options->commentDateFormat : $format);
     }
 
-    /**
-     * 输出作者相关
-     *
-     * @param boolean|null $autoLink 是否自动加上链接
-     * @param boolean|null $noFollow 是否加上nofollow标签
-     */
     public function author(?bool $autoLink = null, ?bool $noFollow = null)
     {
         $autoLink = (null === $autoLink) ? $this->options->commentsShowUrl : $autoLink;
@@ -277,12 +179,6 @@ class Comments extends Base implements QueryInterface, RowFilterInterface, Prima
         }
     }
 
-    /**
-     * 调用gravatar输出用户头像
-     *
-     * @param integer $size 头像尺寸
-     * @param string|null $default 默认输出头像
-     */
     public function gravatar(int $size = 32, ?string $default = null, $highRes = false)
     {
         if ($this->options->commentsAvatar && 'comment' == $this->type) {
@@ -305,46 +201,22 @@ class Comments extends Base implements QueryInterface, RowFilterInterface, Prima
         }
     }
 
-    /**
-     * 输出评论摘要
-     *
-     * @param integer $length 摘要截取长度
-     * @param string $trim 摘要后缀
-     */
     public function excerpt(int $length = 100, string $trim = '...')
     {
         echo Common::subStr(strip_tags($this->content), 0, $length, $trim);
     }
 
-    /**
-     * 输出邮箱地址
-     *
-     * @param bool $link
-     * @return void
-     */
     public function mail(bool $link = false)
     {
         $mail = htmlspecialchars($this->mail);
         echo $link ? 'mailto:' . $mail : $mail;
     }
 
-    /**
-     * 获取查询对象
-     *
-     * @param mixed $fields
-     * @return Query
-     */
     public function select(...$fields): Query
     {
         return $this->db->select(...$fields)->from('table.comments');
     }
 
-    /**
-     * markdown
-     *
-     * @param string|null $text
-     * @return string|null
-     */
     public function markdown(?string $text): ?string
     {
         $html = Comments::pluginHandle()->trigger($parsed)->filter('markdown', $text);
@@ -356,12 +228,6 @@ class Comments extends Base implements QueryInterface, RowFilterInterface, Prima
         return $html;
     }
 
-    /**
-     * autoP
-     *
-     * @param string|null $text
-     * @return string|null
-     */
     public function autoP(?string $text): ?string
     {
         $html = Comments::pluginHandle()->trigger($parsed)->filter('autoP', $text);
@@ -379,31 +245,16 @@ class Comments extends Base implements QueryInterface, RowFilterInterface, Prima
         return $html;
     }
 
-    /**
-     * 获取当前内容结构
-     *
-     * @return Contents
-     */
     protected function ___parentContent(): Contents
     {
         return From::allocWithAlias($this->cid, ['cid' => $this->cid]);
     }
 
-    /**
-     * 获取当前评论标题
-     *
-     * @return string|null
-     */
     protected function ___title(): ?string
     {
         return $this->parentContent->title;
     }
 
-    /**
-     * 获取当前评论页码
-     *
-     * @return int
-     */
     protected function ___commentPage(): int
     {
         if ($this->options->commentsPageBreak) {
@@ -457,12 +308,6 @@ class Comments extends Base implements QueryInterface, RowFilterInterface, Prima
         return 0;
     }
 
-    /**
-     * 获取当前评论链接
-     *
-     * @return string
-     * @throws Exception
-     */
     protected function ___permalink(): string
     {
         if ($this->options->commentsPageBreak) {
@@ -476,11 +321,6 @@ class Comments extends Base implements QueryInterface, RowFilterInterface, Prima
         return $this->parentContent->permalink . '#' . $this->theId;
     }
 
-    /**
-     * 获取当前评论内容
-     *
-     * @return string|null
-     */
     protected function ___content(): ?string
     {
         $text = $this->parentContent->hidden ? _t('内容被隐藏') : $this->text;
@@ -495,21 +335,11 @@ class Comments extends Base implements QueryInterface, RowFilterInterface, Prima
         return Common::stripTags($text, '<p><br>' . $this->options->commentsHTMLTagAllowed);
     }
 
-    /**
-     * 输出词义化日期
-     *
-     * @return string
-     */
     protected function ___dateWord(): string
     {
         return $this->date->word();
     }
 
-    /**
-     * 锚点id
-     *
-     * @return string
-     */
     protected function ___theId(): string
     {
         return $this->type . '-' . $this->coid;

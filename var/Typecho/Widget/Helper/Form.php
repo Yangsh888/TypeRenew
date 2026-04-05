@@ -21,16 +21,12 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
  */
 class Form extends Layout
 {
-    /** 表单post方法 */
     public const POST_METHOD = 'post';
 
-    /** 表单get方法 */
     public const GET_METHOD = 'get';
 
-    /** 标准编码方法 */
     public const STANDARD_ENCODE = 'application/x-www-form-urlencoded';
 
-    /** 混合编码 */
     public const MULTIPART_ENCODE = 'multipart/form-data';
 
     /** 文本编码 */

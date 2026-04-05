@@ -281,7 +281,6 @@ class RenewGo_Action extends Typecho_Widget
         try {
             RenewGo_Plugin::cleanupLogs($keepDays);
         } catch (\Throwable $e) {
-            error_log('[RenewGo] cleanupLogs error: ' . $e->getMessage());
         }
     }
 }

@@ -32,15 +32,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-/**
- * XmlRpc接口
- *
- * @author blankyao
- * @category typecho
- * @package Widget
- * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
- * @license GNU General Public License 2.0
- */
 class XmlRpc extends Contents implements ActionInterface, Hook
 {
     /**

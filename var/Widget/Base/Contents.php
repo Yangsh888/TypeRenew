@@ -76,9 +76,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
  */
 class Contents extends Base implements QueryInterface, RowFilterInterface, PrimaryKeyInterface, ParamsDelegateInterface
 {
-    /**
-     * @return string 获取主键
-     */
     public function getPrimaryKey(): string
     {
         return 'cid';
@@ -350,21 +347,11 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
         return Contents::pluginHandle()->filter('filter', $row, $this);
     }
 
-    /**
-     * 输出文章发布日期
-     *
-     * @param string|null $format 日期格式
-     */
     public function date(?string $format = null)
     {
         echo $this->date->format(empty($format) ? $this->options->postDateFormat : $format);
     }
 
-    /**
-     * 输出文章内容
-     *
-     * @param mixed $more 文章截取后缀
-     */
     public function content($more = false)
     {
         echo false !== $more && false !== strpos((string) $this->text, '<!--more-->') ?
@@ -374,23 +361,11 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
             : $this->content;
     }
 
-    /**
-     * 输出文章摘要
-     *
-     * @param integer $length 摘要截取长度
-     * @param string $trim 摘要后缀
-     */
     public function excerpt(int $length = 100, string $trim = '...')
     {
         echo Common::subStr(strip_tags($this->excerpt), 0, $length, $trim);
     }
 
-    /**
-     * 输出标题
-     *
-     * @param integer $length 标题截取长度
-     * @param string $trim 截取后缀
-     */
     public function title(int $length = 0, string $trim = '...')
     {
         $title = Contents::pluginHandle()->trigger($plugged)->filter('title', $this->title, $this);

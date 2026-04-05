@@ -1152,7 +1152,6 @@ class RenewGo_Plugin implements PluginInterface
 
     private static function reportException(string $scope, Throwable $e): void
     {
-        error_log('RenewGo.' . $scope . ': ' . $e->getMessage());
     }
 
     private static function decodeOptionValue(string $value): array

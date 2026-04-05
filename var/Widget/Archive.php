@@ -32,138 +32,42 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
  */
 class Archive extends Contents
 {
-    /**
-     * 调用的风格文件
-     *
-     * @var string
-     */
     private string $themeFile;
 
-    /**
-     * 风格目录
-     *
-     * @var string
-     */
     private string $themeDir;
 
-    /**
-     * 分页计算对象
-     *
-     * @var Query
-     */
     private Query $countSql;
 
-    /**
-     * 所有文章个数
-     *
-     * @var int|null
-     */
     private ?int $total = null;
 
-    /**
-     * 标记是否为从外部调用
-     *
-     * @var boolean
-     */
     private bool $invokeFromOutside = false;
 
-    /**
-     * 是否由聚合调用
-     *
-     * @var boolean
-     */
     private bool $invokeByFeed = false;
 
-    /**
-     * 当前页
-     *
-     * @var integer
-     */
     private int $currentPage;
 
-    /**
-     * 生成分页的内容
-     *
-     * @var Router\ParamsDelegateInterface
-     */
     private Router\ParamsDelegateInterface $pageRow;
 
-    /**
-     * RSS 2.0聚合地址
-     *
-     * @var string
-     */
     private string $archiveFeedUrl;
 
-    /**
-     * RSS 1.0聚合地址
-     *
-     * @var string
-     */
     private string $archiveFeedRssUrl;
 
-    /**
-     * ATOM 聚合地址
-     *
-     * @var string
-     */
     private string $archiveFeedAtomUrl;
 
-    /**
-     * 本页关键字
-     *
-     * @var string|null
-     */
     private ?string $archiveKeywords = null;
 
-    /**
-     * 本页描述
-     *
-     * @var string|null
-     */
     private ?string $archiveDescription = null;
 
-    /**
-     * 归档标题
-     *
-     * @var string|null
-     */
     private ?string $archiveTitle = null;
 
-    /**
-     * 归档地址
-     *
-     * @var string|null
-     */
     private ?string $archiveUrl = null;
 
-    /**
-     * 归档类型
-     *
-     * @var string
-     */
     private string $archiveType = 'index';
 
-    /**
-     * 是否为单一归档
-     *
-     * @var boolean
-     */
     private bool $archiveSingle = false;
 
-    /**
-     * 是否为自定义首页, 主要为了标记自定义首页的情况
-     *
-     * (default value: false)
-     *
-     * @var boolean
-     */
     private bool $makeSinglePageAsFrontPage = false;
 
-    /**
-     * 归档缩略名
-     * @var string
-     */
     private string $archiveSlug;
 
     /**
@@ -180,7 +84,6 @@ class Archive extends Contents
             'commentPage'    => 0
         ]);
 
-        /** 用于判断是路由调用还是外部调用 */
         if (null == $parameter->type) {
             if (!isset(Router::$current)) {
                 throw new WidgetException('Archive type is not set', 500);
@@ -191,19 +94,13 @@ class Archive extends Contents
             $this->invokeFromOutside = true;
         }
 
-        /** 用于判断是否为feed调用 */
         if ($parameter->isFeed) {
             $this->invokeByFeed = true;
         }
 
-        /** 初始化皮肤路径 */
         $this->themeDir = rtrim($this->options->themeFile($this->options->theme), '/') . '/';
     }
 
-    /**
-     * 增加标题
-     * @param string $archiveTitle 标题
-     */
     public function addArchiveTitle(string $archiveTitle)
     {
         $current = $this->getArchiveTitle();

@@ -34,7 +34,6 @@ namespace Typecho {
         $isAlias = $isDefinedAlias && isset(__TYPECHO_CLASS_ALIASES__[$className]);
         $isPlugin = false;
 
-        // detect if class is predefined
         if ($isNamespace) {
             $isPlugin = strpos(ltrim($className, '\\'), PLUGIN_NAMESPACE . '\\') !== false;
 
@@ -830,7 +829,6 @@ EOF;
                 if ('=' != $attrs[$i] && !ctype_space($attrs[$i]) && -1 == $pos) {
                     $key .= $attrs[$i];
 
-                    /** 最后一个 */
                     if ($i == $len - 1) {
                         if ('' != ($key = trim($key))) {
                             $result[$key] = '';

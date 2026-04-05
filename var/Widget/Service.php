@@ -13,27 +13,10 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-/**
- * 通用异步服务组件
- *
- * @author qining
- * @category typecho
- * @package Widget
- */
 class Service extends BaseOptions implements ActionInterface
 {
-    /**
-     * 异步请求
-     *
-     * @var array
-     */
     public array $asyncRequests = [];
 
-    /**
-     * 发送pingback实现
-     *
-     * @throws Exception|Client\Exception
-     */
     public function sendPingHandle()
     {
         $data = $this->request->get('@json');
@@ -80,36 +63,40 @@ class Service extends BaseOptions implements ActionInterface
                 $spider = Client::get();
 
                 if ($spider) {
-                    $spider->setTimeout(10)
-                        ->send($url);
+                    try {
+                        $spider->setTimeout(10)
+                            ->setOption(CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1)
+                            ->send($url);
 
-                    if (!($xmlrpcUrl = $spider->getResponseHeader('x-pingback'))) {
-                        if (
-                            preg_match(
-                                "/<link[^>]*rel=[\"']pingback[\"'][^>]*href=[\"']([^\"']+)[\"'][^>]*>/i",
-                                $spider->getResponseBody(),
-                                $out
-                            )
-                        ) {
-                            $xmlrpcUrl = $out[1];
+                        if (!($xmlrpcUrl = $spider->getResponseHeader('x-pingback'))) {
+                            if (
+                                preg_match(
+                                    "/<link[^>]*rel=[\"']pingback[\"'][^>]*href=[\"']([^\"']+)[\"'][^>]*>/i",
+                                    $spider->getResponseBody(),
+                                    $out
+                                )
+                            ) {
+                                $xmlrpcUrl = $out[1];
+                            }
                         }
+
+                        if (!empty($xmlrpcUrl)) {
+                            $response['pingback'][] = $url;
+
+                            try {
+                                $xmlrpc = new \IXR\Client($xmlrpcUrl);
+                                $xmlrpc->pingback->ping($permalink, $url);
+                                unset($xmlrpc);
+                            } catch (\IXR\Exception $e) {
+                                $this->reportException('sendPingHandle.pingback', $e);
+                            }
+                        }
+                    } catch (Client\Exception $e) {
+                        $this->reportException('sendPingHandle.spider', $e);
                     }
 
-                    if (!empty($xmlrpcUrl)) {
-                        $response['pingback'][] = $url;
-
-                        try {
-                            $xmlrpc = new \IXR\Client($xmlrpcUrl);
-                            $xmlrpc->pingback->ping($permalink, $url);
-                            unset($xmlrpc);
-                        } catch (\IXR\Exception $e) {
-                            $this->reportException('sendPingHandle.pingback', $e);
-                            continue;
-                        }
-                    }
+                    unset($spider);
                 }
-
-                unset($spider);
             }
         }
 
@@ -123,6 +110,8 @@ class Service extends BaseOptions implements ActionInterface
                 if ($client) {
                     try {
                         $client->setTimeout(5)
+                            ->setOption(CURLOPT_CONNECTTIMEOUT, 3)
+                            ->setOption(CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1)
                             ->setData([
                                 'blog_name' => $this->options->title . ' &raquo ' . $title,
                                 'url' => $permalink,
@@ -133,7 +122,6 @@ class Service extends BaseOptions implements ActionInterface
                         unset($client);
                     } catch (Client\Exception $e) {
                         $this->reportException('sendPingHandle.trackback', $e);
-                        continue;
                     }
                 }
             }
@@ -169,22 +157,16 @@ class Service extends BaseOptions implements ActionInterface
                 }
 
                 $client->setHeader('User-Agent', $this->options->generator)
-                    ->setTimeout(2)
+                    ->setTimeout(5)
+                    ->setOption(CURLOPT_CONNECTTIMEOUT, 3)
                     ->setJson($input)
                     ->send($this->getServiceUrl('ping'));
             } catch (Client\Exception $e) {
                 $this->reportException('sendPing', $e);
-                return;
             }
         }
     }
 
-    /**
-     * 获取真实的 URL
-     *
-     * @param string $do 动作名
-     * @return string
-     */
     private function getServiceUrl(string $do): string
     {
         $url = Common::url('/action/service', $this->options->index);
@@ -209,12 +191,6 @@ class Service extends BaseOptions implements ActionInterface
         return $url . '?do=' . $do;
     }
 
-    /**
-     * 请求异步服务
-     *
-     * @param $method
-     * @param mixed $params
-     */
     public function requestService($method, ...$params)
     {
         static $called;
@@ -243,11 +219,6 @@ class Service extends BaseOptions implements ActionInterface
         $this->asyncRequests[] = [$method, $params];
     }
 
-    /**
-     * 执行回调
-     *
-     * @throws Exception
-     */
     public function asyncHandle()
     {
         $data = $this->request->get('@json');
@@ -278,9 +249,6 @@ class Service extends BaseOptions implements ActionInterface
         }
     }
 
-    /**
-     * 异步请求入口
-     */
     public function action()
     {
         $this->on($this->request->isPost() && $this->request->is('do=ping'))->sendPingHandle();

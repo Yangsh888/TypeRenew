@@ -77,11 +77,6 @@ class Config extends \stdClass implements \Iterator, \ArrayAccess
         $this->offsetSet($name, $value);
     }
 
-    public function __call(string $name, ?array $args)
-    {
-        echo $this->currentConfig[$name];
-    }
-
     public function __isSet(string $name): bool
     {
         return $this->offsetExists($name);
