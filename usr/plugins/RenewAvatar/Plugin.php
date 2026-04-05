@@ -564,5 +564,6 @@ class RenewAvatar_Plugin implements PluginInterface
 
     private static function reportException(string $scope, Throwable $e): void
     {
+        error_log(self::NAME . '.' . $scope . ': ' . $e->getMessage());
     }
 }
