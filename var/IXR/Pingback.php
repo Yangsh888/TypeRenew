@@ -111,7 +111,7 @@ class Pingback
             return Common::subStr(Common::removeXSS(trim(strip_tags($matchTitle[1]))), 0, 150, '...');
         }
 
-        return parse_url($this->target, PHP_URL_HOST);
+        return (string) (parse_url($this->target, PHP_URL_HOST) ?: '');
     }
 
     /**

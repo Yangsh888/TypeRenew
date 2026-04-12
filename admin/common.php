@@ -21,8 +21,8 @@ $response = $options->response;
 $currentMenu = $menu->getCurrentMenu();
 
 if (!empty($currentMenu)) {
-    $params = parse_url($currentMenu[2]);
-    $adminFile = basename($params['path']);
+    $params = \Typecho\Common::parseUrl((string) $currentMenu[2]);
+    $adminFile = basename((string) ($params['path'] ?? ''));
 
     if ($user->pass('administrator', true)) {
         $mustUpgrade = version_compare(\Typecho\Common::VERSION, $options->version, '>');

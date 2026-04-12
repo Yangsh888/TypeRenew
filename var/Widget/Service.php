@@ -43,9 +43,13 @@ class Service extends BaseOptions implements ActionInterface
 
         if (!empty($data['pingback'])) {
             $links = $data['pingback'];
-            $permalinkPart = parse_url($permalink);
+            $permalinkPart = Common::parseUrl((string) $permalink);
+            $permalinkHost = (string) ($permalinkPart['host'] ?? '');
             foreach ($links as $url) {
-                $urlPart = parse_url($url);
+                $urlPart = Common::parseUrl((string) $url);
+                if ($urlPart === [] || empty($urlPart['host'])) {
+                    continue;
+                }
 
                 if (isset($urlPart['scheme'])) {
                     if ('http' != $urlPart['scheme'] && 'https' != $urlPart['scheme']) {
@@ -56,7 +60,7 @@ class Service extends BaseOptions implements ActionInterface
                     $url = Common::buildUrl($urlPart);
                 }
 
-                if ($permalinkPart['host'] == $urlPart['host']) {
+                if ($permalinkHost !== '' && $permalinkHost == $urlPart['host']) {
                     continue;
                 }
 
@@ -172,20 +176,22 @@ class Service extends BaseOptions implements ActionInterface
         $url = Common::url('/action/service', $this->options->index);
 
         if (defined('__TYPECHO_SERVICE_URL__')) {
-            $rootPath = rtrim(parse_url($this->options->rootUrl, PHP_URL_PATH), '/');
-            $path = parse_url($url, PHP_URL_PATH);
-            $parts = parse_url(__TYPECHO_SERVICE_URL__);
+            $rootPath = rtrim((string) (parse_url($this->options->rootUrl, PHP_URL_PATH) ?: ''), '/');
+            $path = (string) (parse_url($url, PHP_URL_PATH) ?: '');
+            $parts = Common::parseUrl(__TYPECHO_SERVICE_URL__);
 
-            if (
+            if ($parts !== [] && (
                 !empty($parts['path'])
                 && $parts['path'] != '/'
                 && rtrim($parts['path'], '/') != $rootPath
-            ) {
+            )) {
                 $path = Common::url($path, $parts['path']);
             }
 
-            $parts['path'] = $path;
-            $url = Common::buildUrl($parts);
+            if ($parts !== []) {
+                $parts['path'] = $path;
+                $url = Common::buildUrl($parts);
+            }
         }
 
         return $url . '?do=' . $do;

@@ -1052,6 +1052,9 @@ function install_step_2_perform()
                 ->addRule('dbDatabase', 'required', _t('数据库名不能为空'))
                 ->addRule('dbEngine', 'required', _t('数据表引擎不能为空'))
                 ->addRule('dbEngine', 'enum', _t('数据表引擎仅支持 InnoDB 或 MyISAM'), ['InnoDB', 'MyISAM'])
+                ->addRule('dbEngine', function (string $engine) use ($config) {
+                    return !($engine === 'MyISAM' && ($config['dbCharset'] ?? '') === 'utf8mb4');
+                }, _t('MyISAM 不支持当前 utf8mb4 表结构，请改用 InnoDB 或将字符集切换为 utf8'))
                 ->addRule('dbSslCa', 'file_exists', _t('SSL CA 证书路径无效'))
                 ->addRule('dbSslVerify', 'enum', _t('SSL 校验选项无效'), ['on', 'off'])
                 ->run($config);
@@ -1211,6 +1214,8 @@ function install_step_2_perform()
 
         if (isset($dbConfig['charset'])) {
             $scripts = str_replace('%charset%', $dbConfig['charset'], $scripts);
+            $collation = $dbConfig['charset'] === 'utf8mb4' ? 'utf8mb4_unicode_ci' : 'utf8_unicode_ci';
+            $scripts = str_replace('%collate%', $collation, $scripts);
         }
 
         if (isset($dbConfig['engine'])) {

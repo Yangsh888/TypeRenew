@@ -145,13 +145,14 @@ class Menu extends Base
         $menu = [];
         $defaultChildNode = [null, null, null, 'administrator', false, null];
 
-        $currentUrlParts = parse_url($currentUrl);
+        $currentUrlParts = Common::parseUrl($currentUrl);
         $currentUrlParams = [];
         if (!empty($currentUrlParts['query'])) {
             parse_str($currentUrlParts['query'], $currentUrlParams);
         }
 
-        if ('/' == $currentUrlParts['path'][strlen($currentUrlParts['path']) - 1]) {
+        $currentPath = (string) ($currentUrlParts['path'] ?? '');
+        if ($currentPath !== '' && substr($currentPath, -1) === '/') {
             $currentUrlParts['path'] .= 'index.php';
         }
 
@@ -188,14 +189,14 @@ class Menu extends Base
                 $url = Common::url($url, $adminUrl);
 
                 // compare url
-                $urlParts = parse_url($url);
+                $urlParts = Common::parseUrl($url);
                 $urlParams = [];
                 if (!empty($urlParts['query'])) {
                     parse_str($urlParts['query'], $urlParams);
                 }
 
                 $validate = true;
-                if ($urlParts['path'] != $currentUrlParts['path']) {
+                if (($urlParts['path'] ?? null) != ($currentUrlParts['path'] ?? null)) {
                     $validate = false;
                 } else {
                     foreach ($urlParams as $paramName => $paramValue) {
@@ -208,7 +209,7 @@ class Menu extends Base
 
                 if (
                     $validate
-                    && basename($urlParts['path']) == 'extending.php'
+                    && basename((string) ($urlParts['path'] ?? '')) == 'extending.php'
                     && !empty($currentUrlParams['panel']) && !empty($urlParams['panel'])
                     && $urlParams['panel'] != $currentUrlParams['panel']
                 ) {

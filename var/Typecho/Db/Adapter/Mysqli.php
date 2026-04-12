@@ -60,6 +60,10 @@ class Mysqli implements Adapter
 
                 if ($config->charset) {
                     $this->dbLink->set_charset($config->charset);
+                    $collation = $this->resolveCollation((string) $config->charset);
+                    if ($collation !== null) {
+                        $this->dbLink->query("SET NAMES '{$config->charset}' COLLATE '{$collation}'");
+                    }
                 }
             } catch (mysqli_sql_exception $e) {
                 throw new ConnectionException($e->getMessage(), $e->getCode());

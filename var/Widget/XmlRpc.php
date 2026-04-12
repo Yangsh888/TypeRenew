@@ -1638,8 +1638,8 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         $post = Router::match($pathInfo);
 
         /** 检查源地址是否合法 */
-        $params = parse_url($source);
-        if (false === $params || !isset($params['host']) || !in_array($params['scheme'], ['http', 'https'])) {
+        $params = Common::parseUrl($source);
+        if (!isset($params['host']) || !isset($params['scheme']) || !in_array($params['scheme'], ['http', 'https'])) {
             throw new Exception(_t('源地址服务器错误'), 16);
         }
 

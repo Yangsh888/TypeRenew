@@ -32,9 +32,9 @@ class Cookie
     public static function setPrefix(string $url)
     {
         self::$prefix = md5($url);
-        $parsed = parse_url($url);
+        $parsed = Common::parseUrl($url);
 
-        self::$domain = $parsed['host'];
+        self::$domain = (string) ($parsed['host'] ?? '');
         self::$path = empty($parsed['path']) ? '/' : Common::url(null, $parsed['path']);
         self::$secure = isset($parsed['scheme']) && strtolower((string) $parsed['scheme']) === 'https';
     }

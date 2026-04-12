@@ -32,7 +32,7 @@ $trPanelIconMap = [
 ];
 
 $trIconOf = function (string $href) use ($trIconMap, $trPanelIconMap): ?string {
-    $parts = parse_url($href);
+    $parts = \Typecho\Common::parseUrl($href);
     $path = $parts['path'] ?? '';
     $base = $path !== '' ? basename($path) : basename($href);
     if ($base === 'extending.php') {

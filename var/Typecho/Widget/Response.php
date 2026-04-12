@@ -126,14 +126,14 @@ class Response
         if (!empty($referer)) {
             // ~ fix Issue 38
             if (!empty($suffix)) {
-                $parts = parse_url($referer);
-                $myParts = parse_url($suffix);
+                $parts = Common::parseUrl($referer);
+                $myParts = Common::parseUrl($suffix);
 
-                if (isset($myParts['fragment'])) {
+                if ($parts !== [] && isset($myParts['fragment'])) {
                     $parts['fragment'] = $myParts['fragment'];
                 }
 
-                if (isset($myParts['query'])) {
+                if ($parts !== [] && isset($myParts['query'])) {
                     $args = [];
                     if (isset($parts['query'])) {
                         parse_str($parts['query'], $args);
@@ -144,7 +144,9 @@ class Response
                     $parts['query'] = http_build_query($args);
                 }
 
-                $referer = Common::buildUrl($parts);
+                if ($parts !== []) {
+                    $referer = Common::buildUrl($parts);
+                }
             }
 
             $this->redirect($referer);

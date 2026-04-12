@@ -1062,10 +1062,13 @@ EOF;
 
         $requestUrl = $this->request->getRequestUrl();
 
-        $src = parse_url($permalink);
-        $target = parse_url($requestUrl);
+        $src = Common::parseUrl($permalink);
+        $target = Common::parseUrl($requestUrl);
 
-        if ($src['host'] != $target['host'] || urldecode($src['path']) != urldecode($target['path'])) {
+        if (
+            ($src['host'] ?? null) != ($target['host'] ?? null)
+            || urldecode((string) ($src['path'] ?? '')) != urldecode((string) ($target['path'] ?? ''))
+        ) {
             $this->response->redirect($permalink, true);
         }
     }

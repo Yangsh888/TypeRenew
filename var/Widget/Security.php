@@ -77,7 +77,10 @@ class Security extends Base
      */
     public function getTokenUrl($path, ?string $url = null): string
     {
-        $parts = parse_url($path);
+        $parts = Common::parseUrl((string) $path);
+        if ($parts === [] && $path !== '') {
+            $parts = ['path' => (string) $path];
+        }
         $params = [];
 
         if (!empty($parts['query'])) {

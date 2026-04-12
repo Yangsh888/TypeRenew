@@ -61,7 +61,7 @@
                 <option value="InnoDB">InnoDB</option>
                 <option value="MyISAM">MyISAM</option>
             </select>
-            <p class="description"><?php _e('推荐保持默认选项，除非您的 MySQL 低于 5.7 版本'); ?></p>
+            <p class="description"><?php _e('推荐保持默认的 InnoDB；若使用 utf8mb4，则必须选择 InnoDB 以避免索引长度兼容问题'); ?></p>
         </li>
     </ul>
 

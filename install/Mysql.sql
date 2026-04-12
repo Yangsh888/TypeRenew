@@ -22,7 +22,7 @@ CREATE TABLE `typecho_comments` (
   PRIMARY KEY  (`coid`),
   KEY `cid` (`cid`),
   KEY `created` (`created`)
-) ENGINE=%engine%  DEFAULT CHARSET=%charset%;
+) ENGINE=%engine%  DEFAULT CHARSET=%charset% COLLATE=%collate%;
 
 -- --------------------------------------------------------
 
@@ -53,7 +53,7 @@ CREATE TABLE `typecho_contents` (
   PRIMARY KEY  (`cid`),
   UNIQUE KEY `slug` (`slug`),
   KEY `created` (`created`)
-) ENGINE=%engine%  DEFAULT CHARSET=%charset%;
+) ENGINE=%engine%  DEFAULT CHARSET=%charset% COLLATE=%collate%;
 
 -- --------------------------------------------------------
 
@@ -71,7 +71,7 @@ CREATE TABLE `typecho_fields` (
   PRIMARY KEY  (`cid`,`name`),
   KEY `int_value` (`int_value`),
   KEY `float_value` (`float_value`)
-) ENGINE=%engine%  DEFAULT CHARSET=%charset%;
+) ENGINE=%engine%  DEFAULT CHARSET=%charset% COLLATE=%collate%;
 
 -- --------------------------------------------------------
 
@@ -90,7 +90,7 @@ CREATE TABLE `typecho_metas` (
   `parent` int unsigned default '0',
   PRIMARY KEY  (`mid`),
   KEY `slug` (`slug`)
-) ENGINE=%engine%  DEFAULT CHARSET=%charset%;
+) ENGINE=%engine%  DEFAULT CHARSET=%charset% COLLATE=%collate%;
 
 -- --------------------------------------------------------
 
@@ -103,7 +103,7 @@ CREATE TABLE `typecho_options` (
   `user` int unsigned NOT NULL default '0',
   `value` text,
   PRIMARY KEY  (`name`,`user`)
-) ENGINE=%engine% DEFAULT CHARSET=%charset%;
+) ENGINE=%engine% DEFAULT CHARSET=%charset% COLLATE=%collate%;
 
 -- --------------------------------------------------------
 
@@ -115,7 +115,7 @@ CREATE TABLE `typecho_relationships` (
   `cid` int unsigned NOT NULL,
   `mid` int unsigned NOT NULL,
   PRIMARY KEY  (`cid`,`mid`)
-) ENGINE=%engine% DEFAULT CHARSET=%charset%;
+) ENGINE=%engine% DEFAULT CHARSET=%charset% COLLATE=%collate%;
 
 -- --------------------------------------------------------
 
@@ -138,7 +138,7 @@ CREATE TABLE `typecho_users` (
   PRIMARY KEY  (`uid`),
   UNIQUE KEY `name` (`name`),
   UNIQUE KEY `mail` (`mail`)
-) ENGINE=%engine%  DEFAULT CHARSET=%charset%;
+) ENGINE=%engine%  DEFAULT CHARSET=%charset% COLLATE=%collate%;
 
 -- --------------------------------------------------------
 --
@@ -160,7 +160,7 @@ CREATE TABLE `typecho_mail_queue` (
   KEY `idx_status_sendat` (`status`, `sendAt`),
   KEY `idx_locked` (`lockedUntil`),
   UNIQUE KEY `uniq_dedupe` (`dedupeKey`)
-) ENGINE=%engine% DEFAULT CHARSET=%charset%;
+) ENGINE=%engine% DEFAULT CHARSET=%charset% COLLATE=%collate%;
 
 -- --------------------------------------------------------
 --
@@ -173,7 +173,7 @@ CREATE TABLE `typecho_mail_unsub` (
   `created` int unsigned NOT NULL default '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uniq_email_scope` (`email`, `scope`)
-) ENGINE=%engine% DEFAULT CHARSET=%charset%;
+) ENGINE=%engine% DEFAULT CHARSET=%charset% COLLATE=%collate%;
 
 -- --------------------------------------------------------
 --
@@ -190,4 +190,4 @@ CREATE TABLE `typecho_password_resets` (
   KEY `idx_email` (`email`),
   KEY `idx_token` (`token`),
   KEY `idx_expires` (`expires`)
-) ENGINE=%engine% DEFAULT CHARSET=%charset%;
+) ENGINE=%engine% DEFAULT CHARSET=%charset% COLLATE=%collate%;

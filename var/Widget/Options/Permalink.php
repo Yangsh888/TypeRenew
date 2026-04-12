@@ -58,7 +58,7 @@ class Permalink extends Options implements ActionInterface
 
             if (!file_exists(__TYPECHO_ROOT_DIR__ . '/.htaccess') && strpos(php_sapi_name(), 'apache') !== false) {
                 if (is_writable(__TYPECHO_ROOT_DIR__)) {
-                    $parsed = parse_url($this->options->siteUrl);
+                    $parsed = \Typecho\Common::parseUrl((string) $this->options->siteUrl);
                     $basePath = empty($parsed['path']) ? '/' : $parsed['path'];
                     $basePath = rtrim($basePath, '/') . '/';
 

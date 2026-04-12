@@ -49,7 +49,7 @@ class InstallMailAndResetInfrastructureStep implements StepInterface
                 . 'KEY `idx_status_sendat` (`status`,`sendAt`),'
                 . 'KEY `idx_locked` (`lockedUntil`),'
                 . 'UNIQUE KEY `uniq_dedupe` (`dedupeKey`)'
-                . ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4',
+                . ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci',
                 Db::WRITE
             );
 
@@ -61,7 +61,7 @@ class InstallMailAndResetInfrastructureStep implements StepInterface
                 . '`created` int unsigned NOT NULL default 0,'
                 . 'PRIMARY KEY (`id`),'
                 . 'UNIQUE KEY `uniq_email_scope` (`email`,`scope`)'
-                . ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4',
+                . ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci',
                 Db::WRITE
             );
 
@@ -77,7 +77,7 @@ class InstallMailAndResetInfrastructureStep implements StepInterface
                 . 'KEY `idx_email` (`email`),'
                 . 'KEY `idx_token` (`token`),'
                 . 'KEY `idx_expires` (`expires`)'
-                . ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4',
+                . ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci',
                 Db::WRITE
             );
         } elseif ($type === 'SQLite') {

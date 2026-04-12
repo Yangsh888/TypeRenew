@@ -156,7 +156,7 @@ class Ajax extends BaseOptions implements ActionInterface
                 }
 
                 $responseUrl = $client->getResponseUrl();
-                $parts = parse_url($responseUrl);
+                $parts = \Typecho\Common::parseUrl($responseUrl);
                 $host = strtolower((string) ($parts['host'] ?? ''));
                 if ($host !== 'www.typerenew.com') {
                     $failed++;

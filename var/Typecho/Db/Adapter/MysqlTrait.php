@@ -6,6 +6,15 @@ trait MysqlTrait
 {
     use QueryTrait;
 
+    protected function resolveCollation(string $charset): ?string
+    {
+        return match (strtolower($charset)) {
+            'utf8mb4' => 'utf8mb4_unicode_ci',
+            'utf8' => 'utf8_unicode_ci',
+            default => null,
+        };
+    }
+
     /**
      * @throws SQLException
      */

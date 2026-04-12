@@ -218,7 +218,7 @@ class Request
     public function makeUriByRequest($parameter = null): string
     {
         $requestUri = $this->getRequestUrl();
-        $parts = parse_url($requestUri);
+        $parts = Common::parseUrl($requestUri);
 
         if (is_string($parameter)) {
             parse_str($parameter, $args);

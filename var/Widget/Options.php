@@ -420,7 +420,7 @@ class Options extends Base
 
     protected function ___siteDomain(): string
     {
-        return parse_url($this->siteUrl, PHP_URL_HOST);
+        return (string) (parse_url($this->siteUrl, PHP_URL_HOST) ?: '');
     }
 
     /**

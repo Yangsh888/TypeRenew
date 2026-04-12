@@ -153,7 +153,7 @@ class Backup extends BaseOptions implements ActionInterface
     {
         $backupFile = tempnam(sys_get_temp_dir(), 'backup_');
         $fp = fopen($backupFile, 'wb');
-        $host = parse_url($this->options->siteUrl, PHP_URL_HOST);
+        $host = (string) (parse_url($this->options->siteUrl, PHP_URL_HOST) ?: 'site');
         $this->response->setContentType('application/octet-stream');
         $this->response->setHeader('Content-Disposition', 'attachment; filename="'
             . date('Ymd') . '_' . $host . '_' . uniqid() . '.dat"');

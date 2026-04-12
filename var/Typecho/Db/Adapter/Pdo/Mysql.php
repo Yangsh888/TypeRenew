@@ -49,7 +49,12 @@ class Mysql extends Pdo
         );
 
         if ($config->charset) {
-            $pdo->exec("SET NAMES '{$config->charset}'");
+            $collation = $this->resolveCollation((string) $config->charset);
+            $sql = "SET NAMES '{$config->charset}'";
+            if ($collation !== null) {
+                $sql .= " COLLATE '{$collation}'";
+            }
+            $pdo->exec($sql);
         }
 
         if (class_exists('\Pdo\Mysql')) {
@@ -63,6 +68,6 @@ class Mysql extends Pdo
 
     public function quoteValue($string): string
     {
-        return '\'' . str_replace(['\'', '\\'], ['\'\'', '\\\\'], $string) . '\'';
+        return parent::quoteValue($string);
     }
 }

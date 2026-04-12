@@ -273,7 +273,10 @@ class Client
      */
     public function send(string $url)
     {
-        $params = parse_url($url);
+        $params = Common::parseUrl($url);
+        if ($params === []) {
+            throw new Exception('Invalid request url');
+        }
         $query = $params['query'] ?? '';
 
         if ($this->query !== '') {

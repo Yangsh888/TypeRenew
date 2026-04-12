@@ -68,20 +68,20 @@ class Feedback extends Comments implements ActionInterface
                         throw new Exception(_t('评论来源页错误.'), 403);
                     }
 
-                    $refererPart = parse_url($referer);
-                    $currentPart = parse_url($this->content->permalink);
+                    $refererPart = Common::parseUrl($referer);
+                    $currentPart = Common::parseUrl((string) $this->content->permalink);
 
                     if (
-                        $refererPart['host'] != $currentPart['host'] ||
-                        0 !== strpos($refererPart['path'], $currentPart['path'])
+                        ($refererPart['host'] ?? null) != ($currentPart['host'] ?? null) ||
+                        strncmp((string) ($refererPart['path'] ?? ''), (string) ($currentPart['path'] ?? ''), strlen((string) ($currentPart['path'] ?? ''))) !== 0
                     ) {
                         //自定义首页支持
                         if ('page:' . $this->content->cid == $this->options->frontPage) {
-                            $currentPart = parse_url(rtrim($this->options->siteUrl, '/') . '/');
+                            $currentPart = Common::parseUrl(rtrim($this->options->siteUrl, '/') . '/');
 
                             if (
-                                $refererPart['host'] != $currentPart['host'] ||
-                                0 !== strpos($refererPart['path'], $currentPart['path'])
+                                ($refererPart['host'] ?? null) != ($currentPart['host'] ?? null) ||
+                                strncmp((string) ($refererPart['path'] ?? ''), (string) ($currentPart['path'] ?? ''), strlen((string) ($currentPart['path'] ?? ''))) !== 0
                             ) {
                                 throw new Exception(_t('评论来源页错误.'), 403);
                             }
@@ -182,7 +182,7 @@ class Feedback extends Comments implements ActionInterface
             $comment['url'] = $this->request->filter('trim', 'url')->get('url');
 
             if (!empty($comment['url'])) {
-                $urlParams = parse_url($comment['url']);
+                $urlParams = Common::parseUrl((string) $comment['url']);
                 if (!isset($urlParams['scheme'])) {
                     $comment['url'] = 'https://' . $comment['url'];
                 }

@@ -361,12 +361,26 @@ EOF;
             return substr($str, 0, $maxLength);
         }
 
+        public static function parseUrl(?string $url): array
+        {
+            if ($url === null || $url === '') {
+                return [];
+            }
+
+            $parts = parse_url($url);
+            return is_array($parts) ? $parts : [];
+        }
+
         public static function safeUrl(?string $url): string
         {
             if (empty($url)) {
                 return '/';
             }
-            $params = parse_url(str_replace(["\r", "\n", "\t", ' '], '', $url));
+            $params = self::parseUrl(str_replace(["\r", "\n", "\t", ' '], '', $url));
+
+            if ($params === []) {
+                return '/';
+            }
 
             if (isset($params['scheme'])) {
                 if (!in_array($params['scheme'], ['http', 'https'])) {
