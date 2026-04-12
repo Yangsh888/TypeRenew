@@ -68,8 +68,7 @@ class VditorRenew_Plugin implements PluginInterface
             'legacy',
             [
                 'raw' => _t('旧文按原样内容编辑（不推荐）'),
-                'convert' => _t('旧文自动转换为 Markdown'),
-                'classic' => _t('旧文继续使用旧编辑器')
+                'convert' => _t('旧文自动转换为 Markdown')
             ],
             (string) $defaults['legacy'],
             _t('旧文章兼容策略')
@@ -250,7 +249,7 @@ class VditorRenew_Plugin implements PluginInterface
         return [
             'enabled' => 1,
             'mode' => 'ir',
-            'legacy' => 'classic',
+            'legacy' => 'convert',
             'features' => ['modeSwitch', 'outline', 'counter', 'emoji', 'localCache', 'followTheme', 'typechoCache'],
             'lang' => 'zh_CN',
             'icon' => 'ant',
@@ -290,9 +289,12 @@ class VditorRenew_Plugin implements PluginInterface
             $mode = 'ir';
         }
 
-        $legacy = (string) ($settings['legacy'] ?? 'raw');
-        if (!in_array($legacy, ['raw', 'convert', 'classic'], true)) {
-            $legacy = 'raw';
+        $legacy = (string) ($settings['legacy'] ?? 'convert');
+        if ($legacy === 'classic') {
+            $legacy = 'convert';
+        }
+        if (!in_array($legacy, ['raw', 'convert'], true)) {
+            $legacy = 'convert';
         }
 
         $lang = (string) ($settings['lang'] ?? 'zh_CN');

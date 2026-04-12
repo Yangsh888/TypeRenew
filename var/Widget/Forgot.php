@@ -7,6 +7,7 @@ use Typecho\Db;
 use Typecho\Mail\Message;
 use Typecho\Mail\Queue;
 use Typecho\Mail\Template;
+use Utils\PasswordReset;
 use Widget\Base\Users;
 
 if (!defined('__TYPECHO_ROOT_DIR__')) {
@@ -63,9 +64,14 @@ class Forgot extends Users implements ActionInterface
             $this->response->goBack();
         }
 
-        $rawToken = bin2hex(random_bytes(32));
-        $tokenHash = password_hash($rawToken, PASSWORD_BCRYPT, ['cost' => 12]);
+        $rawToken = PasswordReset::generateToken();
+        $tokenHash = PasswordReset::hashToken($rawToken);
         $expires = time() + 1800;
+
+        $this->db->query(
+            $this->db->delete('table.password_resets')
+                ->where('email = ?', $mail)
+        );
 
         $this->db->query(
             $this->db->insert('table.password_resets')->rows([

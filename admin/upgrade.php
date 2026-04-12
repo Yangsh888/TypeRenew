@@ -11,6 +11,8 @@ $packageActionUrl = $security->getTokenUrl(
     \Typecho\Router::url('do', ['action' => 'upgrade-package', 'widget' => 'Upgrade\\Package'], \Typecho\Common::url('index.php', $options->rootUrl))
 );
 $needDbUpgrade = version_compare(\Typecho\Common::VERSION, $options->version, '>');
+$schemaStatus = \Utils\Upgrade::inspectCriticalSchema(\Typecho\Db::get(), $options);
+$needSchemaRepair = !$schemaStatus['healthy'];
 $state = null;
 
 try {
@@ -126,6 +128,22 @@ $progress = is_array($state) ? ($state['progress'] ?? null) : null;
                                     </div>
 
                                     <div class="tr-help tr-mt-12"><?php _e('数据库版本 %s', $options->version); ?></div>
+                                    <div class="tr-help tr-mt-12"><?php _e('关键结构状态：%s', $needSchemaRepair ? _t('需修复') : _t('正常')); ?></div>
+
+                                    <div class="tr-card tr-tone-muted tr-mt-16">
+                                        <div class="tr-card-b">
+                                            <div class="tr-subtitle"><?php _e('关键表自检'); ?></div>
+                                            <ul class="tr-help">
+                                                <?php foreach ($schemaStatus['items'] as $item): ?>
+                                                    <li>
+                                                        <?php echo htmlspecialchars($item['label'], ENT_QUOTES, 'UTF-8'); ?>
+                                                        ：<?php echo $item['exists'] ? _t('正常') : _t('缺失'); ?>
+                                                        <span class="tr-help">(<?php echo htmlspecialchars($item['table'], ENT_QUOTES, 'UTF-8'); ?>)</span>
+                                                    </li>
+                                                <?php endforeach; ?>
+                                            </ul>
+                                        </div>
+                                    </div>
 
                                     <?php if ($needDbUpgrade): ?>
                                         <div class="tr-help tr-tone-warning tr-mt-12">
@@ -136,6 +154,17 @@ $progress = is_array($state) ? ($state['progress'] ?? null) : null;
                                         </form>
                                         <div class="tr-help tr-mt-12">
                                             <?php _e('数据库升级会执行结构迁移，建议在低峰期操作并保持页面不刷新，直到完成。'); ?>
+                                        </div>
+                                    <?php elseif ($needSchemaRepair): ?>
+                                        <div class="tr-help tr-tone-warning tr-mt-12">
+                                            <strong><?php _e('检测到关键结构缺失，建议先执行数据库修复。'); ?></strong>
+                                        </div>
+                                        <form action="<?php echo $dbUpgradeUrl; ?>" method="post" class="tr-mt-12">
+                                            <input type="hidden" name="do" value="repairCriticalSchema">
+                                            <button class="tr-btn primary tr-block" type="submit"><?php _e('修复关键数据库结构'); ?></button>
+                                        </form>
+                                        <div class="tr-help tr-mt-12">
+                                            <?php _e('该操作会补齐邮件通知与密码找回依赖的关键表，不会覆盖已有业务数据。'); ?>
                                         </div>
                                     <?php else: ?>
                                         <div class="tr-help tr-mt-12"><?php _e('数据库结构已是最新状态'); ?></div>

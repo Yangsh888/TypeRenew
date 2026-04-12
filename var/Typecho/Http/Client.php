@@ -40,7 +40,7 @@ class Client
      *
      * @var string
      */
-    private string $query;
+    private string $query = '';
 
     /**
      * 设置超时
@@ -129,8 +129,8 @@ class Client
      */
     public function setQuery($query): Client
     {
-        $query = is_array($query) ? http_build_query($query) : $query;
-        $this->query = empty($this->query) ? $query : $this->query . '&' . $query;
+        $query = is_array($query) ? http_build_query($query) : (string) $query;
+        $this->query = $this->query === '' ? $query : $this->query . '&' . $query;
         return $this;
     }
 
@@ -274,13 +274,13 @@ class Client
     public function send(string $url)
     {
         $params = parse_url($url);
-        $query = empty($params['query']) ? '' : $params['query'];
+        $query = $params['query'] ?? '';
 
-        if (!empty($this->query)) {
-            $query = empty($query) ? $this->query : '&' . $this->query;
+        if ($this->query !== '') {
+            $query = $query === '' ? $this->query : $query . '&' . $this->query;
         }
 
-        if (!empty($query)) {
+        if ($query !== '') {
             $params['query'] = $query;
         }
 

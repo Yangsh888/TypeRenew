@@ -10,76 +10,33 @@ $post = \Widget\Contents\Post\Edit::alloc()->prepare();
     <div class="body container">
         <?php include 'page-title.php'; ?>
         <form class="row typecho-page-main typecho-post-area" action="<?php $security->index('/action/contents-post-edit'); ?>" method="post" name="write_post">
-            <div class="col-mb-12 col-tb-9" role="main">
-                <?php if ($post->draft): ?>
-                    <?php if ($post->draft['cid'] != $post->cid): ?>
-                        <?php $postModifyDate = new \Typecho\Date($post->draft['modified']); ?>
-                        <cite
-                            class="edit-draft-notice"><?php _e('你正在编辑的是保存于 %s 的修订版, 你也可以 <a href="%s">删除它</a>', $postModifyDate->word(),
-                                $security->getIndex('/action/contents-post-edit?do=deleteDraft&cid=' . $post->cid)); ?></cite>
-                    <?php else: ?>
-                        <cite class="edit-draft-notice"><?php _e('当前正在编辑的是未发布的草稿'); ?></cite>
-                    <?php endif; ?>
-                    <input name="draft" type="hidden" value="<?php echo $post->draft['cid'] ?>"/>
-                <?php endif; ?>
-
-                <div class="tr-editor-card">
-                <p class="title">
-                    <label for="title" class="sr-only"><?php _e('标题'); ?></label>
-                    <input type="text" id="title" name="title" autocomplete="off" value="<?php $post->title(); ?>"
-                           placeholder="<?php _e('标题'); ?>" class="w-100 text title"/>
-                </p>
-                <?php $permalink = \Typecho\Common::url($options->routingTable['post']['url'], $options->index);
-                [, $permalink] = explode(':', $permalink, 2);
-                $permalink = ltrim($permalink, '/');
-                $permalink = preg_replace("/\[([_a-z0-9-]+)[^\]]*\]/i", "{\\1}", $permalink);
-                if ($post->have()) {
-                    $permalink = preg_replace_callback(
-                        "/\{(cid|category|year|month|day)\}/i",
-                        function ($matches) use ($post) {
-                            $key = $matches[1];
-                            return $post->getRouterParam($key);
-                        },
-                        $permalink
-                    );
-                }
-                $input = '<input type="text" id="slug" name="slug" autocomplete="off" value="' . htmlspecialchars($post->slug ?? '') . '" class="mono" />';
-                ?>
-                <p class="mono url-slug">
-                    <label for="slug" class="sr-only"><?php _e('网址缩略名'); ?></label>
-                    <?php echo preg_replace("/\{slug\}/i", $input, $permalink); ?>
-                </p>
-                <p>
-                    <label for="text" class="sr-only"><?php _e('文章内容'); ?></label>
-                    <textarea style="--tr-editor-h: <?php $options->editorSize(); ?>px" autocomplete="off" id="text"
-                              name="text" class="w-100 mono tr-editor"><?php echo htmlspecialchars($post->text); ?></textarea>
-                </p>
-
-                <?php include 'custom-fields.php'; ?>
-                </div>
-
-                <p class="submit">
-                    <span class="left">
-                        <button type="button" id="btn-cancel-preview" class="btn"><i
-                                class="i-caret-left"></i> <?php _e('取消预览'); ?></button>
-                    </span>
-                    <span class="right">
-                        <input type="hidden" name="do" value="publish" />
-                        <input type="hidden" name="cid" value="<?php $post->cid(); ?>"/>
-                        <button type="button" id="btn-preview" class="btn"><i
-                                class="i-exlink"></i> <?php _e('预览文章'); ?></button>
-                        <button type="submit" name="do" value="save" id="btn-save"
-                                class="btn"><?php _e('保存草稿'); ?></button>
-                        <button type="submit" name="do" value="publish" class="btn primary"
-                                id="btn-submit"><?php _e('发布文章'); ?></button>
-                        <?php if ($post->isMarkdown || ($options->markdown && !$post->have()) || (class_exists('VditorRenew_Plugin') && !empty(\VditorRenew_Plugin::getSettings()['enabled']))): ?>
-                            <input type="hidden" name="markdown" value="1"/>
-                        <?php endif; ?>
-                    </span>
-                </p>
-
-                <?php \Typecho\Plugin::factory('admin/write-post.php')->call('content', $post); ?>
-            </div>
+            <?php
+            $permalink = \Typecho\Common::url($options->routingTable['post']['url'], $options->index);
+            [, $permalink] = explode(':', $permalink, 2);
+            $permalink = ltrim($permalink, '/');
+            $permalink = preg_replace("/\[([_a-z0-9-]+)[^\]]*\]/i", "{\\1}", $permalink);
+            if ($post->have()) {
+                $permalink = preg_replace_callback(
+                    "/\{(cid|category|year|month|day)\}/i",
+                    function ($matches) use ($post) {
+                        $key = $matches[1];
+                        return $post->getRouterParam($key);
+                    },
+                    $permalink
+                );
+            }
+            $input = '<input type="text" id="slug" name="slug" autocomplete="off" value="' . htmlspecialchars($post->slug ?? '') . '" class="mono" />';
+            $write = [
+                'content' => $post,
+                'draftAction' => 'contents-post-edit',
+                'hook' => 'write-post.php',
+                'textLabel' => _t('文章内容'),
+                'previewLabel' => _t('预览文章'),
+                'publishLabel' => _t('发布文章'),
+                'permalink' => preg_replace("/\{slug\}/i", $input, $permalink)
+            ];
+            include 'write.php';
+            ?>
 
             <div id="edit-secondary" class="col-mb-12 col-tb-3" role="complementary">
                 <div class="tr-side-stack">
@@ -200,18 +157,9 @@ $post = \Widget\Contents\Post\Edit::alloc()->prepare();
 </main>
 
 <?php
-include 'copyright.php';
-include 'common-js.php';
-include 'form-js.php';
-include 'write-js.php';
-
-\Typecho\Plugin::factory('admin/write-post.php')->trigger($plugged)->call('richEditor', $post);
-if (!$plugged) {
-    include 'editor-js.php';
-}
-
-include 'file-upload-js.php';
-include 'custom-fields-js.php';
-\Typecho\Plugin::factory('admin/write-post.php')->call('bottom', $post);
-include 'footer.php';
+$write = [
+    'content' => $post,
+    'hook' => 'write-post.php'
+];
+include 'write-foot.php';
 ?>

@@ -23,7 +23,6 @@ class RenewAvatar_Plugin implements PluginInterface
     use NoPersonal;
 
     private const NAME = 'RenewAvatar';
-    private const LEGACY_NAME = 'GravatarServer';
     private const CACHE_KEY = 'renewavatar:settings:v1';
     private const FAIL_MARK = '__FAIL__';
 
@@ -484,43 +483,19 @@ class RenewAvatar_Plugin implements PluginInterface
 
     private static function ensureConfigStored(): void
     {
-        $defaults = self::defaults();
-        $legacy = [];
         try {
-            $legacyRaw = (array) Widget_Options::alloc()->plugin(self::LEGACY_NAME)->toArray();
-            $legacy = self::legacyMap($legacyRaw);
+            $existing = (array) Widget_Options::alloc()->plugin(self::NAME)->toArray();
+            $merged = self::normalize(array_merge(self::defaults(), $existing));
         } catch (Throwable $e) {
-            $legacy = [];
-            self::reportException('ensureConfigStored.legacy', $e);
+            $merged = self::defaults();
+            self::reportException('ensureConfigStored.load', $e);
         }
-        $merged = self::normalize(array_merge($defaults, $legacy));
+
         try {
             \Widget\Plugins\Edit::configPlugin(self::NAME, $merged);
         } catch (Throwable $e) {
             self::reportException('ensureConfigStored.save', $e);
         }
-    }
-
-    private static function legacyMap(array $legacy): array
-    {
-        $mirror = 'loli';
-        $legacyServer = trim((string) ($legacy['server'] ?? ''));
-        foreach (self::mirrorMap() as $key => $value) {
-            if (rtrim($legacyServer, '/') === rtrim($value, '/')) {
-                $mirror = $key;
-                break;
-            }
-        }
-        if ($legacyServer !== '' && $mirror === 'loli' && rtrim($legacyServer, '/') !== rtrim(self::mirrorMap()['loli'], '/')) {
-            $mirror = 'custom';
-        }
-
-        return [
-            'mirror' => $mirror,
-            'customMirror' => $mirror === 'custom' ? $legacyServer : '',
-            'priority' => ((string) ($legacy['usePriority'] ?? 'qq') === 'gr') ? 'gr' : 'qq',
-            'defaultAvatar' => (string) ($legacy['default'] ?? 'mm')
-        ];
     }
 
     private static function clearCache(): void

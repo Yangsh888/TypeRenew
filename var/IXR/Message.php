@@ -82,9 +82,6 @@ class Message
         xml_set_element_handler($parser, [$this, 'tagOpen'], [$this, 'tagClose']);
         xml_set_character_data_handler($parser, [$this, 'cdata']);
         if (!xml_parse($parser, $this->message)) {
-            /* die(sprintf('XML error: %s at line %d',
-                xml_error_string(xml_get_error_code($this->parser)),
-                xml_get_current_line_number($this->parser))); */
             return false;
         }
         xml_parser_free($parser);

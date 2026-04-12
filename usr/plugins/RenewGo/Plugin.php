@@ -872,24 +872,7 @@ class RenewGo_Plugin implements PluginInterface
         $rewriteMap = ['content', 'comments', 'author', 'client', 'fallback'];
         $rewrite = array_values(array_intersect($rewriteMap, (array) ($settings['rewrite'] ?? [])));
         if (empty($rewrite)) {
-            if ((string) ($settings['rewriteContent'] ?? '') === '1') {
-                $rewrite[] = 'content';
-            }
-            if ((string) ($settings['rewriteComments'] ?? '') === '1') {
-                $rewrite[] = 'comments';
-            }
-            if ((string) ($settings['rewriteAuthor'] ?? '') === '1') {
-                $rewrite[] = 'author';
-            }
-            if ((string) ($settings['rewriteClient'] ?? '') === '1') {
-                $rewrite[] = 'client';
-            }
-            if ((string) ($settings['rewriteFallback'] ?? '') === '1') {
-                $rewrite[] = 'fallback';
-            }
-            if (empty($rewrite)) {
-                $rewrite = ['content', 'comments', 'author'];
-            }
+            $rewrite = ['content', 'comments', 'author'];
         }
 
         $rel = array_values(array_intersect(

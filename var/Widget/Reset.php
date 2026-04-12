@@ -5,6 +5,7 @@ namespace Widget;
 use Typecho\Common;
 use Typecho\Db;
 use Utils\Password;
+use Utils\PasswordReset;
 use Widget\Base\Users;
 
 if (!defined('__TYPECHO_ROOT_DIR__')) {
@@ -25,7 +26,7 @@ class Reset extends Users implements ActionInterface
         $password = (string) $this->request->get('password');
         $confirm = (string) $this->request->get('confirm');
 
-        if (!preg_match('/^[a-f0-9]{64}$/', $token)) {
+        if (!PasswordReset::isValidRawToken($token)) {
             Notice::alloc()->set(_t('重置链接无效或已过期，请重新获取'), 'error');
             $this->response->redirect($this->options->adminUrl('forgot.php'));
         }
@@ -45,19 +46,7 @@ class Reset extends Users implements ActionInterface
 
         $this->cleanupExpired();
 
-        $records = $this->db->fetchAll(
-            $this->db->select()->from('table.password_resets')
-                ->where('used = ?', 0)
-                ->where('expires > ?', time())
-        );
-
-        $record = null;
-        foreach ($records as $r) {
-            if (password_verify($token, (string) ($r['token'] ?? ''))) {
-                $record = $r;
-                break;
-            }
-        }
+        $record = PasswordReset::findActiveRecordByToken($this->db, $token);
 
         if (!$record) {
             Notice::alloc()->set(_t('重置链接无效或已过期，请重新获取'), 'error');

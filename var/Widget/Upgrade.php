@@ -43,52 +43,45 @@ class Upgrade extends BaseOptions implements ActionInterface
             $this->response->goBack();
         }
 
-        $ref = new \ReflectionClass(UpgradeAction::class);
-        $message = [];
-
-        foreach ($ref->getMethods() as $method) {
-            if (!preg_match("/^v([_0-9]+)$/", $method->getName(), $matches)) {
-                continue;
-            }
-
-            $version = str_replace('_', '.', (string) $matches[1]);
-
-            if (version_compare($currentVersion, $version, '>=')) {
-                continue;
-            }
-
-            $options = Options::allocWithAlias($version);
-
-            /** 执行升级脚本 */
-            try {
-                $result = $method->invoke(null, $this->db, $options);
-                if (!empty($result)) {
-                    $message[] = $result;
-                }
-            } catch (Exception $e) {
-                Notice::alloc()->set($e->getMessage(), 'error');
-                $this->response->goBack();
-            }
-
-            /** 更新版本号 */
-            $this->update(
-                ['value' => 'Typecho ' . $version],
-                $this->db->sql()->where('name = ?', 'generator')
-            );
-
-            Options::destroy($version);
+        try {
+            $result = UpgradeAction::runPendingMigrations($this->db, $currentVersion);
+        } catch (Exception $e) {
+            Notice::alloc()->set($e->getMessage(), 'error');
+            $this->response->goBack();
         }
 
-        /** 更新版本号 */
-        $this->update(
-            ['value' => 'Typecho ' . Common::VERSION],
-            $this->db->sql()->where('name = ?', 'generator')
-        );
-
         Notice::alloc()->set(
-            empty($message) ? _t("升级已经完成") : $message,
-            empty($message) ? 'success' : 'notice'
+            empty($result['messages']) ? _t("升级已经完成") : $result['messages'],
+            empty($result['messages']) ? 'success' : 'notice'
         );
+    }
+
+    public function repairCriticalSchema(): void
+    {
+        try {
+            $result = UpgradeAction::repairCriticalSchema($this->db, $this->options);
+        } catch (Exception $e) {
+            Notice::alloc()->set($e->getMessage(), 'error');
+            return;
+        }
+
+        if ($result['healthy']) {
+            if (!empty($result['repaired'])) {
+                $names = array_map(static fn(array $item): string => (string) ($item['label'] ?? ''), $result['repaired']);
+                Notice::alloc()->set(
+                    _t('数据库关键结构已修复：%s', implode('、', array_filter($names))),
+                    'success'
+                );
+            } else {
+                Notice::alloc()->set(_t('数据库关键结构已是最新状态'), 'success');
+            }
+        } else {
+            $names = array_map(static fn(array $item): string => (string) ($item['label'] ?? ''), $result['after']['missing']);
+            Notice::alloc()->set(
+                _t('仍有关键结构缺失：%s', implode('、', array_filter($names))),
+                'error'
+            );
+        }
     }
 
     /**
@@ -101,7 +94,13 @@ class Upgrade extends BaseOptions implements ActionInterface
     {
         $this->user->pass('administrator');
         $this->security->protect();
-        $this->on($this->request->isPost())->upgrade();
-        $this->response->redirect($this->options->adminUrl);
+        if ($this->request->isPost()) {
+            if ('repairCriticalSchema' === $this->request->get('do')) {
+                $this->repairCriticalSchema();
+            } else {
+                $this->upgrade();
+            }
+        }
+        $this->response->redirect($this->options->adminUrl('upgrade.php'));
     }
 }

@@ -985,6 +985,6 @@
     initDraftRestore();
 
     if (cfg.legacy === 'raw' && !cfg.isNew && !cfg.isMarkdown) {
-        showNotice('当前内容为旧文且未标记 Markdown，按原样编辑可能破坏排版，建议在插件设置中切换为"旧文继续使用旧编辑器"或"转换为 Markdown"。', 'notice');
+        showNotice('当前内容为旧文且未标记 Markdown，按原样编辑可能破坏排版，建议在插件设置中切换为“旧文自动转换为 Markdown”。', 'notice');
     }
 })();

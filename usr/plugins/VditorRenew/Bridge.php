@@ -29,11 +29,6 @@ class VditorRenew_Bridge
             return;
         }
 
-        if ($isLegacy && $settings['legacy'] === 'classic') {
-            self::fallback($content, $type);
-            return;
-        }
-
         if (!VditorRenew_Plugin::hasDist()) {
             self::fallback($content, $type);
             return;

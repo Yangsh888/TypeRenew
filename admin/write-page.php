@@ -21,81 +21,35 @@ while ($parents->next()) {
     <div class="body container">
         <?php include 'page-title.php'; ?>
         <form class="row typecho-page-main typecho-post-area" action="<?php $security->index('/action/contents-page-edit'); ?>" method="post" name="write_page">
-            <div class="col-mb-12 col-tb-9" role="main">
-                <?php if ($page->draft): ?>
-                    <?php if ($page->draft['cid'] != $page->cid): ?>
-                        <?php $pageModifyDate = new \Typecho\Date($page->draft['modified']); ?>
-                        <cite
-                            class="edit-draft-notice"><?php _e('你正在编辑的是保存于 %s 的修订版, 你也可以 <a href="%s">删除它</a>', $pageModifyDate->word(),
-                                $security->getIndex('/action/contents-page-edit?do=deleteDraft&cid=' . $page->cid)); ?></cite>
-                    <?php else: ?>
-                        <cite class="edit-draft-notice"><?php _e('当前正在编辑的是未发布的草稿'); ?></cite>
-                    <?php endif; ?>
-                    <input name="draft" type="hidden" value="<?php echo $page->draft['cid'] ?>"/>
-                <?php endif; ?>
-
-                <div class="tr-editor-card">
-                <p class="title">
-                    <label for="title" class="sr-only"><?php _e('标题'); ?></label>
-                    <input type="text" id="title" name="title" autocomplete="off" value="<?php $page->title(); ?>"
-                           placeholder="<?php _e('标题'); ?>" class="w-100 text title"/>
-                </p>
-                <?php $permalink = \Typecho\Common::url($options->routingTable['page']['url'], $options->index);
-                [, $permalink] = explode(':', $permalink, 2);
-                $permalink = ltrim($permalink, '/');
-                $permalink = preg_replace("/\[([_a-z0-9-]+)[^\]]*\]/i", "{\\1}", $permalink);
-                if ($page->have()) {
-                    $permalink = preg_replace_callback(
-                        "/\{(cid)\}/i",
-                        function ($matches) use ($page) {
-                            $key = $matches[1];
-                            return $page->getRouterParam($key);
-                        },
-                        $permalink
-                    );
-                }
-                $input = '<input type="text" id="slug" name="slug" autocomplete="off" value="' . htmlspecialchars($page->slug ?? '') . '" class="mono" />';
-                ?>
-                <p class="mono url-slug">
-                    <label for="slug" class="sr-only"><?php _e('网址缩略名'); ?></label>
-                    <?php echo preg_replace_callback("/\{(slug|directory)\}/i", function ($matches) use ($input) {
-                        if ($matches[1] == 'slug') {
-                            return $input;
-                        } else {
-                            return '{directory/' . $input . '}';
-                        }
-                    }, $permalink); ?>
-                </p>
-                <p>
-                    <label for="text" class="sr-only"><?php _e('页面内容'); ?></label>
-                    <textarea style="--tr-editor-h: <?php $options->editorSize(); ?>px" autocomplete="off" id="text"
-                              name="text" class="w-100 mono tr-editor"><?php echo htmlspecialchars($page->text); ?></textarea>
-                </p>
-
-                <?php include 'custom-fields.php'; ?>
-                </div>
-                <p class="submit">
-                    <span class="left">
-                        <button type="button" id="btn-cancel-preview" class="btn"><i
-                                class="i-caret-left"></i> <?php _e('取消预览'); ?></button>
-                    </span>
-                    <span class="right">
-                        <input type="hidden" name="do" value="publish" />
-                        <input type="hidden" name="cid" value="<?php $page->cid(); ?>"/>
-                        <button type="button" id="btn-preview" class="btn"><i
-                                class="i-exlink"></i> <?php _e('预览页面'); ?></button>
-                        <button type="submit" name="do" value="save" id="btn-save"
-                                class="btn"><?php _e('保存草稿'); ?></button>
-                        <button type="submit" name="do" value="publish" class="btn primary"
-                                id="btn-submit"><?php _e('发布页面'); ?></button>
-                        <?php if ($page->isMarkdown || ($options->markdown && !$page->have()) || (class_exists('VditorRenew_Plugin') && !empty(\VditorRenew_Plugin::getSettings()['enabled']))): ?>
-                            <input type="hidden" name="markdown" value="1"/>
-                        <?php endif; ?>
-                    </span>
-                </p>
-
-                <?php \Typecho\Plugin::factory('admin/write-page.php')->call('content', $page); ?>
-            </div>
+            <?php
+            $permalink = \Typecho\Common::url($options->routingTable['page']['url'], $options->index);
+            [, $permalink] = explode(':', $permalink, 2);
+            $permalink = ltrim($permalink, '/');
+            $permalink = preg_replace("/\[([_a-z0-9-]+)[^\]]*\]/i", "{\\1}", $permalink);
+            if ($page->have()) {
+                $permalink = preg_replace_callback(
+                    "/\{(cid)\}/i",
+                    function ($matches) use ($page) {
+                        $key = $matches[1];
+                        return $page->getRouterParam($key);
+                    },
+                    $permalink
+                );
+            }
+            $input = '<input type="text" id="slug" name="slug" autocomplete="off" value="' . htmlspecialchars($page->slug ?? '') . '" class="mono" />';
+            $write = [
+                'content' => $page,
+                'draftAction' => 'contents-page-edit',
+                'hook' => 'write-page.php',
+                'textLabel' => _t('页面内容'),
+                'previewLabel' => _t('预览页面'),
+                'publishLabel' => _t('发布页面'),
+                'permalink' => preg_replace_callback("/\{(slug|directory)\}/i", function ($matches) use ($input) {
+                    return $matches[1] == 'slug' ? $input : '{directory/' . $input . '}';
+                }, $permalink)
+            ];
+            include 'write.php';
+            ?>
             <div id="edit-secondary" class="col-mb-12 col-tb-3" role="complementary">
                 <div class="tr-side-stack">
                 <ul class="typecho-option-tabs">
@@ -204,18 +158,9 @@ while ($parents->next()) {
 </main>
 
 <?php
-include 'copyright.php';
-include 'common-js.php';
-include 'form-js.php';
-include 'write-js.php';
-
-\Typecho\Plugin::factory('admin/write-page.php')->trigger($plugged)->call('richEditor', $page);
-if (!$plugged) {
-    include 'editor-js.php';
-}
-
-include 'file-upload-js.php';
-include 'custom-fields-js.php';
-\Typecho\Plugin::factory('admin/write-page.php')->bottom($page);
-include 'footer.php';
+$write = [
+    'content' => $page,
+    'hook' => 'write-page.php'
+];
+include 'write-foot.php';
 ?>
