@@ -32,7 +32,7 @@ Typecho 作为知名的轻量级博客程序，以代码简洁、运行高效著
 
 ### 内置插件
 
-为 TypeRenew 提供官方专用拓展集合，请前往 TypeRenew 官方插件仓库：https://github.com/Yangsh888/TypeRenew-plugins
+为 TypeRenew 提供官方专用拓展集合，请前往官方插件仓库：https://github.com/Yangsh888/TypeRenew-plugins
 
 ## 运行环境
 
