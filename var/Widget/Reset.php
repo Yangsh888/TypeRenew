@@ -63,7 +63,7 @@ class Reset extends Users implements ActionInterface
 
         $locked = $this->db->query(
             $this->db->update('table.password_resets')
-                ->rows(['used' => 1, 'updated' => time()])
+                ->rows(['used' => 1])
                 ->where('id = ? AND used = ?', $recordId, 0)
         );
 

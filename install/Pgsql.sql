@@ -160,3 +160,19 @@ CREATE TABLE "typecho_mail_unsub" (
   PRIMARY KEY ("id"),
   UNIQUE ("email", "scope")
 );
+
+CREATE SEQUENCE "typecho_password_resets_seq";
+
+CREATE TABLE "typecho_password_resets" (
+  "id" BIGINT NOT NULL DEFAULT nextval('typecho_password_resets_seq'),
+  "email" VARCHAR(150) NOT NULL,
+  "token" VARCHAR(64) NOT NULL,
+  "created" INT NOT NULL DEFAULT '0',
+  "expires" INT NOT NULL DEFAULT '0',
+  "used" INT NOT NULL DEFAULT '0',
+  PRIMARY KEY ("id")
+);
+
+CREATE INDEX "typecho_password_resets_email" ON "typecho_password_resets" ("email");
+CREATE INDEX "typecho_password_resets_token" ON "typecho_password_resets" ("token");
+CREATE INDEX "typecho_password_resets_expires" ON "typecho_password_resets" ("expires");

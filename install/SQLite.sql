@@ -112,3 +112,16 @@ CREATE TABLE typecho_mail_unsub (
 );
 
 CREATE UNIQUE INDEX typecho_mail_unsub_email_scope ON typecho_mail_unsub ("email", "scope");
+
+CREATE TABLE typecho_password_resets (
+  "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  "email" varchar(150) NOT NULL,
+  "token" varchar(64) NOT NULL,
+  "created" int(10) NOT NULL default '0',
+  "expires" int(10) NOT NULL default '0',
+  "used" int(10) NOT NULL default '0'
+);
+
+CREATE INDEX typecho_password_resets_email ON typecho_password_resets ("email");
+CREATE INDEX typecho_password_resets_token ON typecho_password_resets ("token");
+CREATE INDEX typecho_password_resets_expires ON typecho_password_resets ("expires");

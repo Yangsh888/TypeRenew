@@ -501,7 +501,7 @@ function install_check(string $type): bool
                     return false;
                 }
             } catch (\Typecho\Db\Adapter\ConnectionException $e) {
-                return true;
+                return false;
             } catch (\Typecho\Db\Adapter\SQLException $e) {
                 return false;
             }
@@ -1196,7 +1196,7 @@ function install_step_2_perform()
                         break;
                     case 'Pgsql':
                     case 'SQLite':
-                        $installDb->query("DROP TABLE {$table}");
+                        $installDb->query("DROP TABLE IF EXISTS {$table}");
                         break;
                 }
             }
@@ -1451,18 +1451,16 @@ function install_step_3_perform()
         install_raise_error($e->getMessage());
     }
 
-    $parts = parse_url($options->loginAction);
-    $parts['query'] = http_build_query([
-            'name'  => $config['userName'],
-            'password' => $config['userPassword'],
-            'referer' => $options->adminUrl
-        ]);
-    $loginUrl = \Typecho\Common::buildUrl($parts);
+    \Typecho\Cookie::set('__typecho_remember_name', $config['userName']);
+    $loginUrl = \Typecho\Common::url(
+        'login.php?referer=' . urlencode((string) $options->adminUrl),
+        $options->adminUrl
+    );
 
     install_success(0, [
         $config['userName'],
         $config['userPassword'],
-        \Widget\Security::alloc()->getTokenUrl($loginUrl, $request->getReferer()),
+        $loginUrl,
         $config['userUrl']
     ]);
 }
