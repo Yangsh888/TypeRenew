@@ -228,7 +228,6 @@ class Request
             return $requestUri;
         }
 
-        /** 构造query */
         if (isset($parts['query'])) {
             parse_str($parts['query'], $currentArgs);
             $args = array_merge($currentArgs, $args);

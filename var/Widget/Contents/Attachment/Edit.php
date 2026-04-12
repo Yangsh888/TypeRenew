@@ -36,7 +36,6 @@ class Edit extends Contents implements ActionInterface
      */
     public function execute()
     {
-        /** 必须为贡献者以上权限 */
         $this->user->pass('contributor');
     }
 
@@ -93,7 +92,6 @@ class Edit extends Contents implements ActionInterface
             $this->response->goBack();
         }
 
-        /** 取出数据 */
         $input = $this->request->from('name', 'slug', 'description');
         $input['slug'] = Common::slugName(Common::strBy($input['slug'] ?? null, $input['name']));
 
@@ -106,7 +104,6 @@ class Edit extends Contents implements ActionInterface
         $attachment['text'] = json_encode($content);
         $cid = $this->request->filter('int')->get('cid');
 
-        /** 更新数据 */
         $updateRows = $this->update($attachment, $this->db->sql()->where('cid = ?', $cid));
 
         if ($updateRows > 0) {
@@ -115,16 +112,13 @@ class Edit extends Contents implements ActionInterface
                 ->where('table.contents.cid = ?', $cid)
                 ->limit(1), [$this, 'push']);
 
-            /** 设置高亮 */
             Notice::alloc()->highlight($this->theId);
 
-            /** 提示信息 */
             Notice::alloc()->set('publish' == $this->status ?
                 _t('文件 <a href="%s">%s</a> 已经被更新', $this->permalink, $this->title) :
                 _t('未归档文件 %s 已经被更新', $this->title), 'success');
         }
 
-        /** 转向原页 */
         $this->response->redirect(Common::url('manage-medias.php?' .
             $this->getPageOffsetQuery($cid, $this->status), $this->options->adminUrl));
     }
@@ -136,14 +130,11 @@ class Edit extends Contents implements ActionInterface
      */
     public function form(): Form
     {
-        /** 构建表格 */
         $form = new Form($this->security->getIndex('/action/contents-attachment-edit'), Form::POST_METHOD);
 
-        /** 文件名称 */
         $name = new Form\Element\Text('name', null, $this->title, _t('标题') . ' *');
         $form->addInput($name);
 
-        /** 文件缩略名 */
         $slug = new Form\Element\Text(
             'slug',
             null,
@@ -153,7 +144,6 @@ class Edit extends Contents implements ActionInterface
         );
         $form->addInput($slug);
 
-        /** 文件描述 */
         $description = new Form\Element\Textarea(
             'description',
             null,
@@ -163,15 +153,12 @@ class Edit extends Contents implements ActionInterface
         );
         $form->addInput($description);
 
-        /** 分类动作 */
         $do = new Form\Element\Hidden('do', null, 'update');
         $form->addInput($do);
 
-        /** 分类主键 */
         $cid = new Form\Element\Hidden('cid', null, $this->cid);
         $form->addInput($cid);
 
-        /** 提交按钮 */
         $submit = new Form\Element\Submit(null, null, _t('提交修改'));
         $submit->input->setAttribute('class', 'btn primary');
         $delete = new Layout('a', [
@@ -224,14 +211,12 @@ class Edit extends Contents implements ActionInterface
             $this->response->throwJson($deleteCount > 0 ? ['code' => 200, 'message' => _t('文件已经被删除')]
                 : ['code' => 500, 'message' => _t('没有文件被删除')]);
         } else {
-            /** 设置提示信息 */
             Notice::alloc()
                 ->set(
                     $deleteCount > 0 ? _t('文件已经被删除') : _t('没有文件被删除'),
                     $deleteCount > 0 ? 'success' : 'notice'
                 );
 
-            /** 返回原网页 */
             $this->response->redirect(Common::url('manage-medias.php', $this->options->adminUrl));
         }
     }
@@ -256,13 +241,11 @@ class Edit extends Contents implements ActionInterface
             $this->deleteByIds($posts, $deleteCount);
         } while (count($posts) == 100);
 
-        /** 设置提示信息 */
         Notice::alloc()->set(
             $deleteCount > 0 ? _t('未归档文件已经被清理') : _t('没有未归档文件被清理'),
             $deleteCount > 0 ? 'success' : 'notice'
         );
 
-        /** 返回原网页 */
         $this->response->redirect(Common::url('manage-medias.php', $this->options->adminUrl));
     }
 

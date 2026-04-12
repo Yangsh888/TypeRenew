@@ -39,21 +39,15 @@ class Edit extends Options implements ActionInterface
      */
     public function activate($pluginName)
     {
-        /** 获取插件入口 */
         [$pluginFileName, $className] = Plugin::portal($pluginName, $this->options->pluginDir);
         $info = Plugin::parseInfo($pluginFileName);
 
-        /** 检测依赖信息 */
         if (Plugin::checkDependence($info['since'])) {
-
-            /** 获取已启用插件 */
             $plugins = Plugin::export();
             $activatedPlugins = $plugins['activated'];
 
-            /** 载入插件 */
             require_once $pluginFileName;
 
-            /** 判断实例化是否成功 */
             if (
                 isset($activatedPlugins[$pluginName]) || !class_exists($className)
                 || !method_exists($className, 'activate')
@@ -69,7 +63,6 @@ class Edit extends Options implements ActionInterface
                     $this->db->sql()->where('name = ?', 'plugins')
                 );
             } catch (Plugin\Exception $e) {
-                /** 截获异常 */
                 Notice::alloc()->set($e->getMessage(), 'error');
                 $this->response->goBack();
             }
@@ -94,7 +87,6 @@ class Edit extends Options implements ActionInterface
             $result = _t('<a href="%s">%s</a> 无法在此版本的typecho下正常工作', $info['homepage'], $info['title']);
         }
 
-        /** 设置高亮 */
         Notice::alloc()->highlight('plugin-' . $pluginName);
 
         if (isset($result) && is_string($result)) {
@@ -115,7 +107,6 @@ class Edit extends Options implements ActionInterface
      */
     public function configHandle(string $pluginName, array $settings, bool $isInit): bool
     {
-        /** 获取插件入口 */
         [$pluginFileName, $className] = Plugin::portal($pluginName, $this->options->pluginDir);
 
         if (!$isInit && method_exists($className, 'configCheck')) {
@@ -207,13 +198,11 @@ class Edit extends Options implements ActionInterface
      */
     public function deactivate(string $pluginName)
     {
-        /** 获取已启用插件 */
         $plugins = Plugin::export();
         $activatedPlugins = $plugins['activated'];
         $pluginFileExist = true;
 
         try {
-            /** 获取插件入口 */
             [$pluginFileName, $className] = Plugin::portal($pluginName, $this->options->pluginDir);
         } catch (Plugin\Exception $e) {
             $pluginFileExist = false;

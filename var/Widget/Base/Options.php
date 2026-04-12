@@ -4,7 +4,9 @@ namespace Widget\Base;
 
 use Typecho\Db\Exception;
 use Typecho\Db\Query;
+use Typecho\Widget\Helper\Form;
 use Widget\Base;
+use Widget\Notice;
 
 if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
@@ -79,5 +81,56 @@ class Options extends Base implements QueryInterface
     public function size(Query $condition): int
     {
         return $this->db->fetchObject($condition->select(['COUNT(name)' => 'num'])->from('table.options'))->num;
+    }
+
+    protected function validateFormOrGoBack(Form $form): void
+    {
+        if ($form->validate()) {
+            $this->response->goBack();
+        }
+    }
+
+    protected function saveOption(string $name, $value, int $user = 0): void
+    {
+        $exists = $this->db->fetchRow(
+            $this->db->select('name')
+                ->from('table.options')
+                ->where('name = ?', $name)
+                ->where('user = ?', $user)
+        );
+        $value = is_array($value) ? json_encode($value) : (string) $value;
+
+        if ($exists) {
+            $this->update(
+                ['value' => $value],
+                $this->db->sql()->where('name = ?', $name)->where('user = ?', $user)
+            );
+            return;
+        }
+
+        $this->insert([
+            'name' => $name,
+            'user' => $user,
+            'value' => $value
+        ]);
+    }
+
+    protected function persistOptions(array $settings, int $user = 0): void
+    {
+        foreach ($settings as $name => $value) {
+            $this->saveOption($name, $value, $user);
+        }
+    }
+
+    protected function saveSuccessAndGoBack(string $message = null): void
+    {
+        Notice::alloc()->set($message ?? _t('设置已经保存'), 'success');
+        $this->response->goBack();
+    }
+
+    protected function noticeAndGoBack(string $message, string $type = 'notice'): void
+    {
+        Notice::alloc()->set($message, $type);
+        $this->response->goBack();
     }
 }

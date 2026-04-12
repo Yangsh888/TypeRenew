@@ -101,6 +101,6 @@ class Upgrade extends BaseOptions implements ActionInterface
                 $this->upgrade();
             }
         }
-        $this->response->redirect($this->options->adminUrl('upgrade.php'));
+        $this->response->redirect(Common::url('upgrade.php', $this->options->adminUrl));
     }
 }

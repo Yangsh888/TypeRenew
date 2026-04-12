@@ -6,7 +6,6 @@ use Typecho\Db\Exception;
 use Typecho\Widget\Helper\Form;
 use Widget\ActionInterface;
 use Widget\Base\Options;
-use Widget\Notice;
 
 if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
@@ -32,10 +31,7 @@ class Discussion extends Options implements ActionInterface
      */
     public function updateDiscussionSettings()
     {
-        /** 验证格式 */
-        if ($this->form()->validate()) {
-            $this->response->goBack();
-        }
+        $this->validateFormOrGoBack($this->form());
 
         $settings = $this->request->from(
             'commentDateFormat',
@@ -105,12 +101,9 @@ class Discussion extends Options implements ActionInterface
         unset($settings['commentsShow']);
         unset($settings['commentsPost']);
 
-        foreach ($settings as $name => $value) {
-            $this->update(['value' => $value], $this->db->sql()->where('name = ?', $name));
-        }
+        $this->persistOptions($settings);
 
-        Notice::alloc()->set(_t("设置已经保存"), 'success');
-        $this->response->goBack();
+        $this->saveSuccessAndGoBack();
     }
 
     /**
@@ -120,10 +113,8 @@ class Discussion extends Options implements ActionInterface
      */
     public function form(): Form
     {
-        /** 构建表格 */
         $form = new Form($this->security->getIndex('/action/options-discussion'), Form::POST_METHOD);
 
-        /** 评论日期格式 */
         $commentDateFormat = new Form\Element\Text(
             'commentDateFormat',
             null,
@@ -173,34 +164,15 @@ class Discussion extends Options implements ActionInterface
             <option value="ASC"' . ('ASC' == $this->options->commentsOrder ? ' selected="true"' : '') . '>' . _t('较旧的') . '</option></select><label for="commentsShow-commentsOrder">')
         ];
 
-        $commentsShowOptionsValue = [];
-        if ($this->options->commentsShowCommentOnly) {
-            $commentsShowOptionsValue[] = 'commentsShowCommentOnly';
-        }
-
-        if ($this->options->commentsMarkdown) {
-            $commentsShowOptionsValue[] = 'commentsMarkdown';
-        }
-
-        if ($this->options->commentsShowUrl) {
-            $commentsShowOptionsValue[] = 'commentsShowUrl';
-        }
-
-        if ($this->options->commentsUrlNofollow) {
-            $commentsShowOptionsValue[] = 'commentsUrlNofollow';
-        }
-
-        if ($this->options->commentsAvatar) {
-            $commentsShowOptionsValue[] = 'commentsAvatar';
-        }
-
-        if ($this->options->commentsPageBreak) {
-            $commentsShowOptionsValue[] = 'commentsPageBreak';
-        }
-
-        if ($this->options->commentsThreaded) {
-            $commentsShowOptionsValue[] = 'commentsThreaded';
-        }
+        $commentsShowOptionsValue = $this->collectEnabledKeys($this->options, [
+            'commentsShowCommentOnly',
+            'commentsMarkdown',
+            'commentsShowUrl',
+            'commentsUrlNofollow',
+            'commentsAvatar',
+            'commentsPageBreak',
+            'commentsThreaded'
+        ]);
 
         $commentsShow = new Form\Element\Checkbox(
             'commentsShow',
@@ -210,7 +182,6 @@ class Discussion extends Options implements ActionInterface
         );
         $form->addInput($commentsShow->multiMode());
 
-        /** 评论提交 */
         $commentsPostOptions = [
             'commentsRequireModeration'  => _t('所有评论必须经过审核'),
             'commentsWhitelist'          => _t('评论者之前须有评论通过了审核'),
@@ -226,38 +197,16 @@ class Discussion extends Options implements ActionInterface
             <label for="commentsPost-commentsPostInterval">')
         ];
 
-        $commentsPostOptionsValue = [];
-        if ($this->options->commentsRequireModeration) {
-            $commentsPostOptionsValue[] = 'commentsRequireModeration';
-        }
-
-        if ($this->options->commentsWhitelist) {
-            $commentsPostOptionsValue[] = 'commentsWhitelist';
-        }
-
-        if ($this->options->commentsRequireMail) {
-            $commentsPostOptionsValue[] = 'commentsRequireMail';
-        }
-
-        if ($this->options->commentsRequireUrl) {
-            $commentsPostOptionsValue[] = 'commentsRequireUrl';
-        }
-
-        if ($this->options->commentsCheckReferer) {
-            $commentsPostOptionsValue[] = 'commentsCheckReferer';
-        }
-
-        if ($this->options->commentsAntiSpam) {
-            $commentsPostOptionsValue[] = 'commentsAntiSpam';
-        }
-
-        if ($this->options->commentsAutoClose) {
-            $commentsPostOptionsValue[] = 'commentsAutoClose';
-        }
-
-        if ($this->options->commentsPostIntervalEnable) {
-            $commentsPostOptionsValue[] = 'commentsPostIntervalEnable';
-        }
+        $commentsPostOptionsValue = $this->collectEnabledKeys($this->options, [
+            'commentsRequireModeration',
+            'commentsWhitelist',
+            'commentsRequireMail',
+            'commentsRequireUrl',
+            'commentsCheckReferer',
+            'commentsAntiSpam',
+            'commentsAutoClose',
+            'commentsPostIntervalEnable'
+        ]);
 
         $commentsPost = new Form\Element\Checkbox(
             'commentsPost',
@@ -267,7 +216,6 @@ class Discussion extends Options implements ActionInterface
         );
         $form->addInput($commentsPost->multiMode());
 
-        /** 允许使用的HTML标签和属性 */
         $commentsHTMLTagAllowed = new Form\Element\Textarea(
             'commentsHTMLTagAllowed',
             null,
@@ -279,7 +227,6 @@ class Discussion extends Options implements ActionInterface
         $commentsHTMLTagAllowed->input->setAttribute('class', 'mono');
         $form->addInput($commentsHTMLTagAllowed);
 
-        /** 提交按钮 */
         $submit = new Form\Element\Submit('submit', null, _t('保存设置'));
         $submit->input->setAttribute('class', 'btn primary');
         $form->addItem($submit);
@@ -287,10 +234,6 @@ class Discussion extends Options implements ActionInterface
         return $form;
     }
 
-    /**
-     * 绑定动作
-     * @return void
-     */
     public function action()
     {
         $this->user->pass('administrator');

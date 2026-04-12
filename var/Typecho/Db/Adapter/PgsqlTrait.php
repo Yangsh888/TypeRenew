@@ -7,27 +7,11 @@ use Typecho\Db;
 trait PgsqlTrait
 {
     use QueryTrait;
-
-    /**
-     * @var array
-     */
     private array $pk = [];
-
-    /**
-     * @var bool
-     */
     private bool $compatibleInsert = false;
-
-    /**
-     * @var string|null
-     */
     private ?string $lastInsertTable = null;
 
     /**
-     * 清空数据表
-     *
-     * @param string $table
-     * @param resource $handle 连接对象
      * @throws SQLException
      */
     public function truncate(string $table, $handle)
@@ -35,31 +19,17 @@ trait PgsqlTrait
         $this->query('TRUNCATE TABLE ' . $this->quoteColumn($table) . ' RESTART IDENTITY', $handle);
     }
 
-    /**
-     * 合成查询语句
-     * @param array $sql 查询对象词法数组
-     * @return string
-     */
     public function parseSelect(array $sql): string
     {
         return $this->buildQuery($sql);
     }
 
-    /**
-     * 对象引号过滤
-     * @param string $string
-     * @return string
-     */
     public function quoteColumn(string $string): string
     {
         return '"' . $string . '"';
     }
 
     /**
-     * @param string $query
-     * @param $handle
-     * @param string|null $action
-     * @param string|null $table
      * @throws SQLException
      */
     protected function prepareQuery(string &$query, $handle, ?string $action = null, ?string $table = null)
@@ -88,7 +58,6 @@ WHERE
                 }
             }
 
-            // 使用兼容模式监听插入结果
             if (isset($this->pk[$table])) {
                 $this->compatibleInsert = true;
                 $this->lastInsertTable = $table;
@@ -100,11 +69,6 @@ WHERE
     }
 
     /**
-     * 取出最后一次插入返回的主键值
-     *
-     * @param resource $resource 查询的资源数据
-     * @param resource $handle 连接对象
-     * @return integer
      * @throws SQLException
      */
     public function lastInsertId($resource, $handle): int
@@ -149,9 +113,6 @@ WHERE
         return 0;
     }
 
-    /**
-     * @return string
-     */
     public function getDriver(): string
     {
         return 'pgsql';

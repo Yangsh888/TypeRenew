@@ -38,14 +38,12 @@ class Edit extends Comments implements ActionInterface
             }
         }
 
-        /** 设置提示信息 */
         Notice::alloc()
             ->set(
                 $updateRows > 0 ? _t('评论已经被标记为待审核') : _t('没有评论被标记为待审核'),
                 $updateRows > 0 ? 'success' : 'notice'
             );
 
-        /** 返回原网页 */
         $this->response->goBack();
     }
 
@@ -87,19 +85,15 @@ class Edit extends Comments implements ActionInterface
             ->where('coid = ?', $coid)->limit(1), [$this, 'push']);
 
         if ($comment && $this->commentIsWriteable()) {
-            /** 增加评论编辑插件接口 */
             self::pluginHandle()->call('mark', $comment, $this, $status);
 
-            /** 不必更新的情况 */
             if ($status == $comment['status']) {
                 return false;
             }
 
-            /** 更新评论 */
             $this->db->query($this->db->update('table.comments')
                 ->rows(['status' => $status])->where('coid = ?', $coid));
 
-            /** 更新相关内容的评论数 */
             if ('approved' == $comment['status'] && 'approved' != $status) {
                 $this->db->query($this->db->update('table.contents')
                     ->expression('commentsNum', 'commentsNum - 1')
@@ -137,14 +131,12 @@ class Edit extends Comments implements ActionInterface
             }
         }
 
-        /** 设置提示信息 */
         Notice::alloc()
             ->set(
                 $updateRows > 0 ? _t('评论已经被标记为垃圾') : _t('没有评论被标记为垃圾'),
                 $updateRows > 0 ? 'success' : 'notice'
             );
 
-        /** 返回原网页 */
         $this->response->goBack();
     }
 
@@ -164,14 +156,12 @@ class Edit extends Comments implements ActionInterface
             }
         }
 
-        /** 设置提示信息 */
         Notice::alloc()
             ->set(
                 $updateRows > 0 ? _t('评论已经被通过') : _t('没有评论被通过'),
                 $updateRows > 0 ? 'success' : 'notice'
             );
 
-        /** 返回原网页 */
         $this->response->goBack();
     }
 
@@ -192,10 +182,8 @@ class Edit extends Comments implements ActionInterface
             if ($comment && $this->commentIsWriteable()) {
                 self::pluginHandle()->call('delete', $comment, $this);
 
-                /** 删除评论 */
                 $this->db->query($this->db->delete('table.comments')->where('coid = ?', $coid));
 
-                /** 更新相关内容的评论数 */
                 if ('approved' == $comment['status']) {
                     $this->db->query($this->db->update('table.contents')
                         ->expression('commentsNum', 'commentsNum - 1')->where('cid = ?', $comment['cid']));
@@ -220,14 +208,12 @@ class Edit extends Comments implements ActionInterface
                 ]);
             }
         } else {
-            /** 设置提示信息 */
             Notice::alloc()
                 ->set(
                     $deleteRows > 0 ? _t('评论已经被删除') : _t('没有评论被删除'),
                     $deleteRows > 0 ? 'success' : 'notice'
                 );
 
-            /** 返回原网页 */
             $this->response->goBack();
         }
     }
@@ -250,13 +236,11 @@ class Edit extends Comments implements ActionInterface
 
         $deleteRows = $this->db->query($deleteQuery);
 
-        /** 设置提示信息 */
         Notice::alloc()->set(
             $deleteRows > 0 ? _t('所有垃圾评论已经被删除') : _t('没有垃圾评论被删除'),
             $deleteRows > 0 ? 'success' : 'notice'
         );
 
-        /** 返回原网页 */
         $this->response->goBack();
     }
 
@@ -306,17 +290,14 @@ class Edit extends Comments implements ActionInterface
                 $comment['created'] = $this->request->filter('int')->get('created');
             }
 
-            /** 评论插件接口 */
             $comment = self::pluginHandle()->filter('edit', $comment, $this);
 
-            /** 更新评论 */
             $this->update($comment, $this->db->sql()->where('coid = ?', $coid));
 
             $updatedComment = $this->db->fetchRow($this->select()
                 ->where('coid = ?', $coid)->limit(1), [$this, 'push']);
             $updatedComment['content'] = $this->content;
 
-            /** 评论插件接口 */
             self::pluginHandle()->call('finishEdit', $this);
 
             $this->response->throwJson([
@@ -361,17 +342,14 @@ class Edit extends Comments implements ActionInterface
                 'status'   => 'approved'
             ];
 
-            /** 评论插件接口 */
             self::pluginHandle()->call('comment', $comment, $this);
 
-            /** 回复评论 */
             $commentId = $this->insert($comment);
 
             $insertComment = $this->db->fetchRow($this->select()
                 ->where('coid = ?', $commentId)->limit(1), [$this, 'push']);
             $insertComment['content'] = $this->content;
 
-            /** 评论完成接口 */
             self::pluginHandle()->call('finishComment', $this);
             $this->status = 'approved';
             \Typecho\Mail\Queue::enqueueComment($this, 'created', $this->options);
@@ -413,6 +391,7 @@ class Edit extends Comments implements ActionInterface
         try {
             self::pluginHandle()->call('commentCachePurge', $this);
         } catch (\Throwable $e) {
+            error_log('Widget.Comments.Edit.purgeCommentCache.plugin: ' . $e->getMessage());
         }
         try {
             $cache = Cache::getInstance();
@@ -420,6 +399,7 @@ class Edit extends Comments implements ActionInterface
             $cache->invalidate('contents');
             $cache->invalidate('metas');
         } catch (\Throwable $e) {
+            error_log('Widget.Comments.Edit.purgeCommentCache.invalidate: ' . $e->getMessage());
         }
     }
 }

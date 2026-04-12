@@ -11,7 +11,6 @@ use Typecho\Mail\Notify;
 use Utils\Cipher;
 use Widget\ActionInterface;
 use Widget\Base\Options;
-use Widget\Notice;
 use Typecho\Mail\Template;
 
 if (!defined('__TYPECHO_ROOT_DIR__')) {
@@ -35,9 +34,7 @@ class Mail extends Options implements ActionInterface
 
     public function updateMailSettings()
     {
-        if ($this->form()->validate()) {
-            $this->response->goBack();
-        }
+        $this->validateFormOrGoBack($this->form());
 
         $settings = $this->request->from(
             'mailEnable',
@@ -113,24 +110,18 @@ class Mail extends Options implements ActionInterface
             $settings['mailFrom'] = $settings['mailSmtpUser'];
         }
 
-        foreach ($settings as $name => $value) {
-            $this->saveOption($name, $value);
-        }
+        $this->persistOptions($settings);
 
-        Notice::alloc()->set(_t('设置已经保存'), 'success');
-        $this->response->goBack();
+        $this->saveSuccessAndGoBack();
     }
 
     public function testSend()
     {
-        if ($this->form()->validate()) {
-            $this->response->goBack();
-        }
+        $this->validateFormOrGoBack($this->form());
 
         $to = trim((string) $this->request->get('testTo'));
         if ($to === '' || !filter_var($to, FILTER_VALIDATE_EMAIL)) {
-            Notice::alloc()->set(_t('请填写正确的测试收件邮箱'), 'error');
-            $this->response->goBack();
+            $this->noticeAndGoBack(_t('请填写正确的测试收件邮箱'), 'error');
         }
 
         $tpl = Template::normalizeName((string) $this->request->get('tpl'));
@@ -154,13 +145,10 @@ class Mail extends Options implements ActionInterface
                 'timeout' => 10
             ]))->send($msg);
 
-        if ($res === true) {
-            Notice::alloc()->set(_t('测试邮件已发送'), 'success');
-        } else {
-            Notice::alloc()->set(_t('测试邮件发送失败：%s', (string) $res), 'error');
-        }
-
-        $this->response->goBack();
+        $this->noticeAndGoBack(
+            $res === true ? _t('测试邮件已发送') : _t('测试邮件发送失败：%s', (string) $res),
+            $res === true ? 'success' : 'error'
+        );
     }
 
     public function previewTemplate()
@@ -177,18 +165,16 @@ class Mail extends Options implements ActionInterface
     public function deliverNow()
     {
         $result = Queue::deliverBatch(Db::get(), $this->options, (int) ($this->options->mailBatchSize ?? 50));
-        Notice::alloc()->set(
+        $this->noticeAndGoBack(
             _t('投递完成：成功 %d，失败 %d', (int) $result['sent'], (int) $result['failed']),
             ((int) $result['failed'] > 0) ? 'notice' : 'success'
         );
-        $this->response->goBack();
     }
 
     public function cleanupQueue()
     {
         $count = Queue::cleanup(Db::get(), (int) ($this->options->mailKeepDays ?? 30));
-        Notice::alloc()->set(_t('已清理 %d 条已发送记录', $count), 'success');
-        $this->response->goBack();
+        $this->noticeAndGoBack(_t('已清理 %d 条已发送记录', $count), 'success');
     }
 
     public function retryFailed()
@@ -198,23 +184,23 @@ class Mail extends Options implements ActionInterface
         $failed = Queue::retry($db, 'failed', $limit);
         $dead = Queue::retry($db, 'dead', $limit);
         $count = $failed + $dead;
-        Notice::alloc()->set(_t('已重试 %d 条任务（失败 %d，已放弃 %d）', $count, $failed, $dead), $count > 0 ? 'success' : 'notice');
-        $this->response->goBack();
+        $this->noticeAndGoBack(
+            _t('已重试 %d 条任务（失败 %d，已放弃 %d）', $count, $failed, $dead),
+            $count > 0 ? 'success' : 'notice'
+        );
     }
 
     public function retryDead()
     {
         $count = Queue::retry(Db::get(), 'dead', (int) ($this->options->mailBatchSize ?? 50));
-        Notice::alloc()->set(_t('已重试 %d 条已放弃任务', $count), $count > 0 ? 'success' : 'notice');
-        $this->response->goBack();
+        $this->noticeAndGoBack(_t('已重试 %d 条已放弃任务', $count), $count > 0 ? 'success' : 'notice');
     }
 
     public function regenerateCronKey()
     {
         $key = Common::randString(32);
         $this->saveOption('mailCronKey', $key);
-        Notice::alloc()->set(_t('投递密钥已更新'), 'success');
-        $this->response->goBack();
+        $this->noticeAndGoBack(_t('投递密钥已更新'), 'success');
     }
 
     public function saveTemplate()
@@ -224,12 +210,10 @@ class Mail extends Options implements ActionInterface
         $result = Template::writeOverride($name, $content, $this->options);
 
         if ($result === true) {
-            Notice::alloc()->set(_t('模板已保存'), 'success');
+            $this->noticeAndGoBack(_t('模板已保存'), 'success');
         } else {
-            Notice::alloc()->set(_t('模板保存失败：%s', (string) $result), 'error');
+            $this->noticeAndGoBack(_t('模板保存失败：%s', (string) $result), 'error');
         }
-
-        $this->response->goBack();
     }
 
     public function resetTemplate()
@@ -238,12 +222,10 @@ class Mail extends Options implements ActionInterface
         $result = Template::deleteOverride($name, $this->options);
 
         if ($result === true) {
-            Notice::alloc()->set(_t('模板已重置'), 'success');
+            $this->noticeAndGoBack(_t('模板已重置'), 'success');
         } else {
-            Notice::alloc()->set(_t('模板重置失败：%s', (string) $result), 'error');
+            $this->noticeAndGoBack(_t('模板重置失败：%s', (string) $result), 'error');
         }
-
-        $this->response->goBack();
     }
 
     public function panel(): array
@@ -400,69 +382,20 @@ class Mail extends Options implements ActionInterface
         );
         $mailKeepDays->input->setAttribute('class', 'w-20');
         $form->addInput($mailKeepDays->addRule('isInteger', _t('请填入一个数字')));
-
-        $mailNotifyOwner = new Form\Element\Radio(
-            'mailNotifyOwner',
-            ['1' => _t('开启'), '0' => _t('关闭')],
-            (string) ($this->options->mailNotifyOwner ?? 1),
-            _t('通知作者')
-        );
-        $form->addInput($mailNotifyOwner);
-
-        $mailNotifyGuest = new Form\Element\Radio(
-            'mailNotifyGuest',
-            ['1' => _t('开启'), '0' => _t('关闭')],
-            (string) ($this->options->mailNotifyGuest ?? 1),
-            _t('通知访客')
-        );
-        $form->addInput($mailNotifyGuest);
-
-        $mailNotifyPending = new Form\Element\Radio(
-            'mailNotifyPending',
-            ['1' => _t('开启'), '0' => _t('关闭')],
-            (string) ($this->options->mailNotifyPending ?? 1),
-            _t('待审提醒')
-        );
-        $form->addInput($mailNotifyPending);
-
-        $mailNotifyMe = new Form\Element\Radio(
+        $this->addMailToggle($form, 'mailNotifyOwner', _t('通知作者'), (string) ($this->options->mailNotifyOwner ?? 1));
+        $this->addMailToggle($form, 'mailNotifyGuest', _t('通知访客'), (string) ($this->options->mailNotifyGuest ?? 1));
+        $this->addMailToggle($form, 'mailNotifyPending', _t('待审提醒'), (string) ($this->options->mailNotifyPending ?? 1));
+        $this->addMailToggle(
+            $form,
             'mailNotifyMe',
-            ['1' => _t('开启'), '0' => _t('关闭')],
-            (string) ($this->options->mailNotifyMe ?? 0),
             _t('允许自回复通知'),
+            (string) ($this->options->mailNotifyMe ?? 0),
             _t('开启后允许“自己回复自己的评论”也发邮件')
         );
-        $form->addInput($mailNotifyMe);
 
-        $mailSubjectOwner = new Form\Element\Text(
-            'mailSubjectOwner',
-            null,
-            (string) ($this->options->mailSubjectOwner ?? ''),
-            _t('作者邮件标题'),
-            _t('支持 {title}')
-        );
-        $mailSubjectOwner->input->setAttribute('class', 'w-100 mono');
-        $form->addInput($mailSubjectOwner);
-
-        $mailSubjectGuest = new Form\Element\Text(
-            'mailSubjectGuest',
-            null,
-            (string) ($this->options->mailSubjectGuest ?? ''),
-            _t('访客邮件标题'),
-            _t('支持 {title}')
-        );
-        $mailSubjectGuest->input->setAttribute('class', 'w-100 mono');
-        $form->addInput($mailSubjectGuest);
-
-        $mailSubjectPending = new Form\Element\Text(
-            'mailSubjectPending',
-            null,
-            (string) ($this->options->mailSubjectPending ?? ''),
-            _t('待审邮件标题'),
-            _t('支持 {title}')
-        );
-        $mailSubjectPending->input->setAttribute('class', 'w-100 mono');
-        $form->addInput($mailSubjectPending);
+        $this->addMailSubjectInput($form, 'mailSubjectOwner', _t('作者邮件标题'));
+        $this->addMailSubjectInput($form, 'mailSubjectGuest', _t('访客邮件标题'));
+        $this->addMailSubjectInput($form, 'mailSubjectPending', _t('待审邮件标题'));
 
         $submit = new Form\Element\Submit('submit', null, _t('保存设置'));
         $submit->input->setAttribute('class', 'btn primary');
@@ -524,41 +457,30 @@ class Mail extends Options implements ActionInterface
 
     private function mockTemplateVars(string $tpl): array
     {
-        $now = time();
-        $title = _t('模板联调示例文章');
-        $author = _t('示例评论者');
-        $mail = 'user@example.com';
-        $ip = '203.0.113.10';
-        $siteUrl = (string) ($this->options->siteUrl ?? '');
-        $index = (string) ($this->options->index ?? $siteUrl);
-        $permalink = Common::url('/archives/mail-template-preview/', $index);
-        $manageUrl = Common::url('manage-comments.php', (string) ($this->options->adminUrl ?? ''));
-        $siteTitle = (string) ($this->options->title ?? 'TypeRenew');
-        $resetUrl = Common::url('reset.php?token=demo', (string) ($this->options->adminUrl ?? ''));
-        $expiresAt = date('Y-m-d H:i:s', $now + 1800);
+        $context = $this->buildMockTemplateContext();
 
         if ($tpl === 'reset') {
             return [
                 'subject' => _t('密码重置请求'),
-                'siteTitle' => $siteTitle,
-                'siteUrl' => $siteUrl,
-                'author' => $author,
-                'mail' => $mail,
-                'ip' => $ip,
-                'resetUrl' => $resetUrl,
-                'expiresAt' => $expiresAt
+                'siteTitle' => $context['siteTitle'],
+                'siteUrl' => $context['siteUrl'],
+                'author' => $context['author'],
+                'mail' => $context['mail'],
+                'ip' => $context['ip'],
+                'resetUrl' => $context['resetUrl'],
+                'expiresAt' => $context['expiresAt']
             ];
         }
 
         $comment = (object) [
-            'title' => $title,
-            'author' => $author,
-            'mail' => $mail,
-            'ip' => $ip,
+            'title' => $context['title'],
+            'author' => $context['author'],
+            'mail' => $context['mail'],
+            'ip' => $context['ip'],
             'status' => $tpl === 'notice' ? 'waiting' : 'approved',
-            'created' => $now,
+            'created' => $context['now'],
             'content' => _t("这是一条用于模板联调的示例评论。\n可用于检查段落、特殊字符与链接显示。"),
-            'permalink' => $permalink,
+            'permalink' => $context['permalink'],
             'parent' => 0,
             'cid' => 1,
             'authorId' => 2,
@@ -571,39 +493,70 @@ class Mail extends Options implements ActionInterface
             'subjectPending' => (string) ($this->options->mailSubjectPending ?? '')
         ];
         $vars = Notify::vars($tpl, $comment, $this->options, $settings);
-        $vars['siteTitle'] = $siteTitle;
-        $vars['siteUrl'] = $siteUrl;
-        $vars['permalink'] = $permalink;
-        $vars['manageurl'] = $manageUrl;
-        $vars['author'] = $author;
-        $vars['mail'] = $mail;
-        $vars['ip'] = $ip;
+        $vars['siteTitle'] = $context['siteTitle'];
+        $vars['siteUrl'] = $context['siteUrl'];
+        $vars['permalink'] = $context['permalink'];
+        $vars['manageurl'] = $context['manageUrl'];
+        $vars['author'] = $context['author'];
+        $vars['mail'] = $context['mail'];
+        $vars['ip'] = $context['ip'];
         $vars['commentText'] = (string) $comment->content;
         $vars['Ptext'] = _t("这里是父评论示例内容。\n用于模拟访客回复通知。");
-        $vars['title'] = $title;
-        $vars['resetUrl'] = $resetUrl;
-        $vars['expiresAt'] = $expiresAt;
+        $vars['title'] = $context['title'];
+        $vars['resetUrl'] = $context['resetUrl'];
+        $vars['expiresAt'] = $context['expiresAt'];
         if (empty($vars['unsubUrl'])) {
-            $vars['unsubUrl'] = Common::url('/action/mail?do=unsub&token=demo', $index);
+            $vars['unsubUrl'] = Common::url('/action/mail?do=unsub&token=demo', $context['index']);
         }
 
         return $vars;
     }
 
-    private function saveOption(string $name, $value): void
+    private function addMailToggle(Form $form, string $name, string $label, string $value, string $description = ''): void
     {
-        $exists = $this->db->fetchRow($this->db->select('name')->from('table.options')->where('name = ?', $name));
-        $value = is_array($value) ? json_encode($value) : (string) $value;
-
-        if ($exists) {
-            $this->update(['value' => $value], $this->db->sql()->where('name = ?', $name));
-            return;
-        }
-
-        $this->insert([
-            'name' => $name,
-            'user' => 0,
-            'value' => $value
-        ]);
+        $element = new Form\Element\Radio(
+            $name,
+            ['1' => _t('开启'), '0' => _t('关闭')],
+            $value,
+            $label,
+            $description
+        );
+        $form->addInput($element);
     }
+
+    private function addMailSubjectInput(Form $form, string $name, string $label): void
+    {
+        $element = new Form\Element\Text(
+            $name,
+            null,
+            (string) ($this->options->{$name} ?? ''),
+            $label,
+            _t('支持 {title}')
+        );
+        $element->input->setAttribute('class', 'w-100 mono');
+        $form->addInput($element);
+    }
+
+    private function buildMockTemplateContext(): array
+    {
+        $now = time();
+        $siteUrl = (string) ($this->options->siteUrl ?? '');
+        $index = (string) ($this->options->index ?? $siteUrl);
+
+        return [
+            'now' => $now,
+            'title' => _t('模板联调示例文章'),
+            'author' => _t('示例评论者'),
+            'mail' => 'user@example.com',
+            'ip' => '203.0.113.10',
+            'siteTitle' => (string) ($this->options->title ?? 'TypeRenew'),
+            'siteUrl' => $siteUrl,
+            'index' => $index,
+            'permalink' => Common::url('/archives/mail-template-preview/', $index),
+            'manageUrl' => Common::url('manage-comments.php', (string) ($this->options->adminUrl ?? '')),
+            'resetUrl' => Common::url('reset.php?token=demo', (string) ($this->options->adminUrl ?? '')),
+            'expiresAt' => date('Y-m-d H:i:s', $now + 1800),
+        ];
+    }
+
 }

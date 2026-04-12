@@ -57,8 +57,6 @@ class Admin extends Contents
     }
 
     /**
-     * 向上的返回链接
-     *
      * @throws Db\Exception
      */
     public function backLink()
@@ -85,8 +83,6 @@ class Admin extends Contents
     }
 
     /**
-     * 获取菜单标题
-     *
      * @return string|null
      * @throws Db\Exception|Exception
      */
@@ -106,8 +102,6 @@ class Admin extends Contents
     }
 
     /**
-     * 获取菜单标题
-     *
      * @return string
      */
     public function getAddLink(): string

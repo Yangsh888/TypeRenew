@@ -83,12 +83,6 @@ class Plugin
         return self::$plugin;
     }
 
-    /**
-     * 获取插件文件的头信息
-     *
-     * @param string $pluginFile 插件文件路径
-     * @return array
-     */
     public static function parseInfo(string $pluginFile): array
     {
         $tokens = token_get_all(file_get_contents($pluginFile));
@@ -225,13 +219,6 @@ class Plugin
     }
 
     /**
-     * 获取插件路径和类名
-     * 返回值为一个数组
-     * 第一项为插件路径,第二项为类名
-     *
-     * @param string $pluginName 插件名
-     * @param string $path 插件目录
-     * @return array
      * @throws PluginException
      */
     public static function portal(string $pluginName, string $path): array
@@ -250,12 +237,6 @@ class Plugin
         return [$pluginFileName, $className];
     }
 
-    /**
-     * 版本依赖性检测
-     *
-     * @param string|null $version 插件版本
-     * @return boolean
-     */
     public static function checkDependence(?string $version): bool
     {
         if (empty($version)) {

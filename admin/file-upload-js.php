@@ -89,6 +89,12 @@ $(document).ready(function() {
     }
 
     function fileUploadError (type, file) {
+        let serverMessage = '';
+        if (type && typeof type === 'object') {
+            serverMessage = String(type.message || '').trim();
+            type = type.type || 'network';
+        }
+
         let word = '<?php _e('上传出现错误'); ?>';
         
         switch (type) {
@@ -100,6 +106,11 @@ $(document).ready(function() {
                 break;
             case 'duplicate':
                 word = '<?php _e('文件已经上传过'); ?>';
+                break;
+            case 'server':
+                if (serverMessage) {
+                    word = serverMessage;
+                }
                 break;
             case 'network':
             default:
@@ -179,23 +190,34 @@ $(document).ready(function() {
                 method: 'POST',
                 body: data
             }).then(function (response) {
-                if (response.ok) {
-                    return response.json();
-                } else {
-                    throw new Error(response.statusText);
-                }
+                return response.json().catch(function () {
+                    return null;
+                }).then(function (payload) {
+                    if (!response.ok) {
+                        const error = new Error(payload && payload.message ? payload.message : response.statusText);
+                        error.type = 'server';
+                        throw error;
+                    }
+
+                    return payload;
+                });
             }).then(function (data) {
-                if (data) {
+                if (Array.isArray(data)) {
                     const [_, attachment] = data;
                     fileUploadComplete(file, attachment);
                     pending = Math.max(0, pending - 1);
                     inFlight = false;
                     upload();
                 } else {
-                    throw new Error('no data');
+                    const error = new Error(data && data.message ? data.message : 'no data');
+                    error.type = data && data.message ? 'server' : 'network';
+                    throw error;
                 }
             }).catch(function (error) {
-                fileUploadError('network', file);
+                fileUploadError({
+                    type: error && error.type ? error.type : 'network',
+                    message: error && error.message ? error.message : ''
+                }, file);
                 pending = Math.max(0, pending - 1);
                 inFlight = false;
                 upload();

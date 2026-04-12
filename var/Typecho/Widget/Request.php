@@ -101,41 +101,21 @@ class Request
         return (bool) $exists;
     }
 
-    /**
-     * @param string $key
-     * @param null $default
-     * @param bool|null $exists detect exists
-     * @return mixed
-     */
     public function get(string $key, $default = null, ?bool &$exists = true)
     {
         return $this->applyFilter($this->request->proxy($this->params)->get($key, $default, $exists));
     }
 
-    /**
-     * @param string $key
-     * @return array
-     */
     public function getArray(string $key): array
     {
         return $this->applyFilter($this->request->proxy($this->params)->getArray($key));
     }
 
-    /**
-     * @param ...$params
-     * @return array
-     */
     public function from(...$params): array
     {
         return $this->applyFilter(call_user_func_array([$this->request->proxy($this->params), 'from'], $params));
     }
 
-    /**
-     * 判断输入是否满足要求
-     *
-     * @param string|array $query 条件
-     * @return boolean
-     */
     public function is(string|array $query): bool
     {
         $result = $this->request->proxy($this->params)->is($query);
@@ -143,184 +123,91 @@ class Request
         return $result;
     }
 
-    /**
-     * @return string
-     */
     public function getRequestRoot(): string
     {
         return $this->request->getRequestRoot();
     }
 
-    /**
-     * 获取当前完整的请求url
-     *
-     * @return string
-     */
     public function getRequestUrl(): string
     {
         return $this->request->getRequestUrl();
     }
 
-    /**
-     * 获取请求资源地址
-     *
-     * @return string|null
-     */
     public function getRequestUri(): ?string
     {
         return $this->request->getRequestUri();
     }
 
-    /**
-     * 获取当前pathinfo
-     *
-     * @return string|null
-     */
     public function getPathInfo(): ?string
     {
         return $this->request->getPathInfo();
     }
 
-    /**
-     * 获取url前缀
-     *
-     * @return string|null
-     */
     public function getUrlPrefix(): ?string
     {
         return $this->request->getUrlPrefix();
     }
 
-    /**
-     * 根据当前uri构造指定参数的uri
-     *
-     * @param mixed $parameter 指定的参数
-     * @return string
-     */
     public function makeUriByRequest($parameter = null): string
     {
         return $this->request->makeUriByRequest($parameter);
     }
 
-    /**
-     * 获取请求的内容类型
-     *
-     * @return string|null
-     */
     public function getContentType(): ?string
     {
         return $this->request->getContentType();
     }
 
-    /**
-     * 获取环境变量
-     *
-     * @param string $name 获取环境变量名
-     * @param string|null $default
-     * @return string|null
-     */
     public function getServer(string $name, ?string $default = null): ?string
     {
         return $this->request->getServer($name, $default);
     }
 
-    /**
-     * 获取ip地址
-     *
-     * @return string
-     */
     public function getIp(): string
     {
         return $this->request->getIp();
     }
 
-    /**
-     * get header value
-     *
-     * @param string $key
-     * @param string|null $default
-     * @return string|null
-     */
     public function getHeader(string $key, ?string $default = null): ?string
     {
         return $this->request->getHeader($key, $default);
     }
 
-    /**
-     * 获取客户端
-     *
-     * @return string
-     */
     public function getAgent(): ?string
     {
         return $this->request->getAgent();
     }
 
-    /**
-     * 获取客户端
-     *
-     * @return string|null
-     */
     public function getReferer(): ?string
     {
         return $this->request->getReferer();
     }
 
-    /**
-     * 判断是否为https
-     *
-     * @return bool
-     */
     public function isSecure(): bool
     {
         return $this->request->isSecure();
     }
 
-    /**
-     * 判断是否为get方法
-     *
-     * @return boolean
-     */
     public function isGet(): bool
     {
         return $this->request->isGet();
     }
 
-    /**
-     * 判断是否为post方法
-     *
-     * @return boolean
-     */
     public function isPost(): bool
     {
         return $this->request->isPost();
     }
 
-    /**
-     * 判断是否为put方法
-     *
-     * @return boolean
-     */
     public function isPut(): bool
     {
         return $this->request->isPut();
     }
 
-    /**
-     * 判断是否为ajax
-     *
-     * @return boolean
-     */
     public function isAjax(): bool
     {
         return $this->request->isAjax();
     }
 
-    /**
-     * 判断是否为json
-     *
-     * @return boolean
-     */
     public function isJson(): bool
     {
         return $this->request->isJson();

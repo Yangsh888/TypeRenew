@@ -5,7 +5,6 @@ namespace Widget\Options;
 use Typecho\Db\Exception;
 use Typecho\Plugin;
 use Typecho\Widget\Helper\Form;
-use Widget\Notice;
 
 if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
@@ -29,10 +28,7 @@ class Reading extends Permalink
      */
     public function updateReadingSettings()
     {
-        /** 验证格式  */
-        if ($this->form()->validate()) {
-            $this->response->goBack();
-        }
+        $this->validateFormOrGoBack($this->form());
 
         $settings = $this->request->from(
             'postDateFormat',
@@ -82,12 +78,9 @@ class Reading extends Permalink
             $settings['frontArchive'] = 0;
         }
 
-        foreach ($settings as $name => $value) {
-            $this->update(['value' => $value], $this->db->sql()->where('name = ?', $name));
-        }
+        $this->persistOptions($settings);
 
-        Notice::alloc()->set(_t("设置已经保存"), 'success');
-        $this->response->goBack();
+        $this->saveSuccessAndGoBack();
     }
 
     /**
@@ -97,10 +90,8 @@ class Reading extends Permalink
      */
     public function form(): Form
     {
-        /** 构建表格 */
         $form = new Form($this->security->getIndex('/action/options-reading'), Form::POST_METHOD);
 
-        /** 文章日期格式 */
         $postDateFormat = new Form\Element\Text(
             'postDateFormat',
             null,
@@ -113,7 +104,6 @@ class Reading extends Permalink
         $postDateFormat->input->setAttribute('class', 'w-40 mono');
         $form->addInput($postDateFormat->addRule('xssCheck', _t('请不要在日期格式中使用特殊字符')));
 
-        //首页显示
         $frontPageParts = explode(':', $this->options->frontPage);
         $frontPageType = $frontPageParts[0];
         $frontPageValue = count($frontPageParts) > 1 ? $frontPageParts[1] : '';
@@ -132,7 +122,6 @@ class Reading extends Permalink
             )
             . '</label>';
 
-        // 页面列表
         $pages = $this->db->fetchAll($this->db->select('cid', 'title')
             ->from('table.contents')->where('type = ?', 'page')
             ->where('status = ?', 'publish')->where('created < ?', $this->options->time));
@@ -156,7 +145,6 @@ class Reading extends Permalink
             $selectedFrontPageType = 'page';
         }
 
-        // 自定义文件列表
         $files = glob($this->options->themeFile($this->options->theme, '*.php'));
         $filesSelect = '';
 
@@ -197,7 +185,6 @@ class Reading extends Permalink
         $frontPage = new Form\Element\Radio('frontPage', $frontPageOptions, $frontPageType, _t('站点首页'));
         $form->addInput($frontPage->multiMode());
 
-        /** 文章列表数目 */
         $postsListSize = new Form\Element\Number(
             'postsListSize',
             null,
@@ -208,7 +195,6 @@ class Reading extends Permalink
         $postsListSize->input->setAttribute('class', 'w-20');
         $form->addInput($postsListSize->addRule('isInteger', _t('请填入一个数字')));
 
-        /** 每页文章数目 */
         $pageSize = new Form\Element\Number(
             'pageSize',
             null,
@@ -219,7 +205,6 @@ class Reading extends Permalink
         $pageSize->input->setAttribute('class', 'w-20');
         $form->addInput($pageSize->addRule('isInteger', _t('请填入一个数字')));
 
-        /** FEED全文输出 */
         $feedFullText = new Form\Element\Radio(
             'feedFullText',
             ['0' => _t('仅输出摘要'), '1' => _t('全文输出')],
@@ -230,7 +215,6 @@ class Reading extends Permalink
         );
         $form->addInput($feedFullText);
 
-        /** 提交按钮 */
         $submit = new Form\Element\Submit('submit', null, _t('保存设置'));
         $submit->input->setAttribute('class', 'btn primary');
         $form->addItem($submit);
@@ -238,10 +222,6 @@ class Reading extends Permalink
         return $form;
     }
 
-    /**
-     * 绑定动作
-     * @return void
-     */
     public function action()
     {
         $this->user->pass('administrator');

@@ -139,10 +139,8 @@ class XmlRpc extends Contents implements ActionInterface, Hook
      */
     public function wpGetPage(int $blogId, int $pageId, string $userName, string $password): array
     {
-        /** 获取页面 */
         $page = PageEdit::alloc(null, ['cid' => $pageId], false);
 
-        /** 对文章内容做截取处理，以获得description和text_more*/
         [$excerpt, $more] = $this->getPostExtended($page);
 
         return [
@@ -206,7 +204,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
         if ($valid == 0) {
             if ($this->user->login($auth['userName'], $auth['password'], true)) {
-                /** 验证权限 */
                 if ($this->user->pass($accesses[$methodName] ?? 'contributor', true)) {
                     $this->user->execute();
                 } else {
@@ -237,15 +234,11 @@ class XmlRpc extends Contents implements ActionInterface, Hook
      */
     public function wpGetPages(int $blogId, string $userName, string $password): array
     {
-        /** 过滤type为page的contents */
-        /** 同样需要flush一下, 需要取出所有status的页面 */
         $pages = PageAdmin::alloc(null, 'status=all');
 
-        /** 初始化要返回的数据结构 */
         $pageStructs = [];
 
         while ($pages->next()) {
-            /** 对文章内容做截取处理，以获得description和text_more*/
             [$excerpt, $more] = $this->getPostExtended($pages);
             $pageStructs[] = [
                 'dateCreated'            => new Date($this->options->timezone + $pages->created),
@@ -310,7 +303,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
      */
     public function mwNewPost(int $blogId, string $userName, string $password, array $content, bool $publish): int
     {
-        /** 取得content内容 */
         $input = [];
         $type = isset($content['post_type']) && 'page' == $content['post_type'] ? 'page' : 'post';
 
@@ -341,7 +333,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         }
 
         if (isset($content['dateCreated'])) {
-            /** 解决客户端与服务器端时间偏移 */
             $input['created'] = $content['dateCreated']->getTimestamp()
                 - $this->options->timezone + $this->options->serverTimezone;
         }

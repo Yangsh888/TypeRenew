@@ -19,6 +19,40 @@ class Runner
         $this->rootDir = rtrim(str_replace('\\', '/', __TYPECHO_ROOT_DIR__), '/');
     }
 
+    public static function inspect(?string $root = null): array
+    {
+        $report = Store::inspect($root);
+        $items = $report['items'];
+        $blocking = $report['blocking'];
+        $warning = $report['warning'];
+        $zipReady = class_exists(ZipArchive::class);
+
+        $items[] = [
+            'label' => 'ZipArchive 扩展',
+            'path' => 'ZipArchive',
+            'ready' => $zipReady,
+            'status' => $zipReady ? '已启用' : '缺失',
+            'detail' => $zipReady ? '可解压 zip 升级包' : '请在 PHP 环境中启用 ZipArchive 扩展'
+        ];
+
+        if (!$zipReady) {
+            $blocking[] = '当前环境缺少 ZipArchive 扩展，无法执行在线升级';
+        }
+
+        return [
+            'root' => $report['root'],
+            'stateFile' => $report['stateFile'],
+            'lockFile' => $report['lockFile'],
+            'state' => $report['state'],
+            'lockBusy' => $report['lockBusy'],
+            'artifactCount' => $report['artifactCount'],
+            'blocking' => array_values(array_unique($blocking)),
+            'warning' => array_values(array_unique($warning)),
+            'items' => $items,
+            'available' => empty($blocking)
+        ];
+    }
+
     public function saveUpload(array $file, ?bool $allowInstallOverride = null): array
     {
         if (!class_exists(ZipArchive::class)) {
@@ -160,6 +194,7 @@ class Runner
         $files = $this->collectFiles($payloadRoot, $manifest['files'], $allowInstall);
         $this->validateTargets($files, $allowInstall);
         $this->requireVersionFile($payloadRoot, $files, (string) ($manifest['to'] ?? ''));
+        $this->verifyManifestHash($payloadRoot, $files, (string) ($manifest['hash'] ?? ''));
 
         $state = [
             'id' => $id,
@@ -318,25 +353,48 @@ class Runner
         }
     }
 
-    public function clear(): void
+    public function clear(): int
     {
-        $state = $this->store->readState();
-        if (!is_array($state)) {
-            return;
+        $lock = $this->store->acquireLock();
+
+        try {
+            $removed = 0;
+            $state = $this->store->readState();
+
+            if (is_array($state)) {
+                $stageDir = (string) ($state['stageDir'] ?? '');
+                $packagePath = (string) ($state['packagePath'] ?? '');
+                $backupPath = $this->store->path('Backup/' . ((string) ($state['id'] ?? '')));
+
+                if ($stageDir !== '' && file_exists($stageDir)) {
+                    $this->store->removeTree($stageDir);
+                    $removed++;
+                }
+
+                if ($packagePath !== '' && is_file($packagePath)) {
+                    @unlink($packagePath);
+                    $removed++;
+                }
+
+                if (is_dir($backupPath)) {
+                    $this->store->removeTree($backupPath);
+                    $removed++;
+                }
+            }
+
+            $removed += $this->clearDirectoryContents($this->store->path('Packages'));
+            $removed += $this->clearDirectoryContents($this->store->path('Staging'));
+            $removed += $this->clearDirectoryContents($this->store->path('Backup'));
+
+            if ($this->store->readState() !== null) {
+                $this->store->clearState();
+                $removed++;
+            }
+
+            return $removed;
+        } finally {
+            $this->store->releaseLock($lock);
         }
-
-        $stageDir = (string) ($state['stageDir'] ?? '');
-        $packagePath = (string) ($state['packagePath'] ?? '');
-
-        if ($stageDir !== '') {
-            $this->store->removeTree($stageDir);
-        }
-
-        if ($packagePath !== '' && is_file($packagePath)) {
-            @unlink($packagePath);
-        }
-
-        $this->store->clearState();
     }
 
     private function collectFiles(string $payloadDir, array $manifestFiles, bool $allowInstall): array
@@ -608,6 +666,45 @@ class Runner
         }
     }
 
+    private function verifyManifestHash(string $payloadDir, array $files, string $hash): void
+    {
+        $hash = trim($hash);
+        if ($hash === '') {
+            return;
+        }
+
+        $algorithm = 'sha256';
+        if (str_contains($hash, ':')) {
+            [$algorithm, $hash] = array_pad(explode(':', $hash, 2), 2, '');
+            $algorithm = strtolower(trim($algorithm));
+            $hash = trim($hash);
+        }
+
+        if ($algorithm !== 'sha256' || !preg_match('/^[a-f0-9]{64}$/i', $hash)) {
+            throw new RuntimeException('升级包完整性校验配置无效');
+        }
+
+        $ctx = hash_init('sha256');
+        foreach ($files as $relative) {
+            $path = $payloadDir . '/' . $relative;
+            if (!is_file($path)) {
+                throw new RuntimeException('升级文件缺失: ' . $relative);
+            }
+
+            $fileHash = hash_file('sha256', $path);
+            if (!is_string($fileHash) || $fileHash === '') {
+                throw new RuntimeException('升级包完整性校验失败: ' . $relative);
+            }
+
+            hash_update($ctx, $relative . "\0" . $fileHash . "\n");
+        }
+
+        $actual = hash_final($ctx);
+        if (!hash_equals(strtolower($hash), strtolower($actual))) {
+            throw new RuntimeException('升级包完整性校验失败，请重新下载后再试');
+        }
+    }
+
     private function ensureDir(string $dir): void
     {
         if (!is_dir($dir) && !@mkdir($dir, 0755, true) && !is_dir($dir)) {
@@ -638,5 +735,29 @@ class Runner
                 @unlink($target);
             }
         }
+    }
+
+    private function clearDirectoryContents(string $dir): int
+    {
+        if (!is_dir($dir)) {
+            return 0;
+        }
+
+        $items = @scandir($dir);
+        if (!is_array($items)) {
+            return 0;
+        }
+
+        $removed = 0;
+        foreach ($items as $item) {
+            if ($item === '.' || $item === '..') {
+                continue;
+            }
+
+            $this->store->removeTree($dir . '/' . $item);
+            $removed++;
+        }
+
+        return $removed;
     }
 }

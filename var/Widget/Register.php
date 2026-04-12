@@ -18,22 +18,16 @@ class Register extends Users implements ActionInterface
     use EditTrait;
 
     /**
-     * 初始化函数
-     *
      * @throws Exception
      */
     public function action()
     {
-        // protect
         $this->security->protect();
 
-        /** 如果已经登录 */
         if ($this->user->hasLogin() || !$this->options->allowRegister) {
-            /** 直接返回 */
             $this->response->redirect($this->options->index);
         }
 
-        /** 初始化验证类 */
         $validator = new Validate();
         $validator->addRule('name', 'required', _t('必须填写用户名称'));
         $validator->addRule('name', 'minLength', _t('用户名至少包含2个字符'), 2);
@@ -53,12 +47,10 @@ class Register extends Users implements ActionInterface
         );
         $validator->addRule('confirm', 'confirm', _t('两次输入的密码不一致'), 'password');
 
-        /** 截获验证异常 */
         if ($error = $validator->run($this->request->from('name', 'password', 'mail', 'confirm'))) {
             Cookie::set('__typecho_remember_name', $this->request->get('name'));
             Cookie::set('__typecho_remember_mail', $this->request->get('mail'));
 
-            /** 设置提示信息 */
             Notice::alloc()->set($error);
             $this->response->goBack();
         }

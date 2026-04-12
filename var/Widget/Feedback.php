@@ -29,13 +29,11 @@ class Feedback extends Comments implements ActionInterface
     public function requireUserLogin(string $userName): bool
     {
         if ($this->user->hasLogin() && $this->user->screenName != $userName) {
-            /** 当前用户名与提交者不匹配 */
             return false;
         } elseif (
             !$this->user->hasLogin() && $this->db->fetchRow($this->db->select('uid')
                 ->from('table.users')->where('screenName = ? OR name = ?', $userName, $userName)->limit(1))
         ) {
-            /** 此用户名已经被注册 */
             return false;
         }
 
@@ -49,25 +47,20 @@ class Feedback extends Comments implements ActionInterface
      */
     public function action()
     {
-        /** 回调方法 */
         $callback = $this->request->get('type');
         $this->content = Router::match($this->request->get('permalink'));
 
-        /** 判断内容是否存在 */
         if (
             $this->content instanceof Archive &&
             $this->content->have() && $this->content->is('single') &&
             in_array($callback, ['comment', 'trackback'])
         ) {
 
-            /** 如果文章不允许反馈 */
             if ('comment' == $callback) {
-                /** 评论关闭 */
                 if (!$this->content->allow('comment')) {
                     throw new Exception(_t('对不起,此内容的反馈被禁止.'), 403);
                 }
 
-                /** 检查来源 */
                 if ($this->options->commentsCheckReferer && 'false' != $this->parameter->checkReferer) {
                     $referer = $this->request->getReferer();
 
@@ -98,7 +91,6 @@ class Feedback extends Comments implements ActionInterface
                     }
                 }
 
-                /** 检查ip评论间隔 */
                 if (
                     !$this->user->pass('editor', true) && $this->content->authorId != $this->user->uid &&
                     $this->options->commentsPostIntervalEnable
@@ -117,12 +109,10 @@ class Feedback extends Comments implements ActionInterface
                 }
             }
 
-            /** 如果文章不允许引用 */
             if ('trackback' == $callback && !$this->content->allow('ping')) {
                 throw new Exception(_t('对不起,此内容的引用被禁止.'), 403);
             }
 
-            /** 调用函数 */
             $this->$callback();
         } else {
             throw new Exception(_t('找不到内容'), 404);
@@ -151,7 +141,6 @@ class Feedback extends Comments implements ActionInterface
                 && $this->options->commentsRequireModeration ? 'waiting' : 'approved'
         ];
 
-        /** 判断父节点 */
         if ($parentId = $this->request->filter('int')->get('parent')) {
             if (
                 $this->options->commentsThreaded
@@ -164,7 +153,6 @@ class Feedback extends Comments implements ActionInterface
             }
         }
 
-        //检验格式
         $validator = new Validate();
         $validator->addRule('author', 'required', _t('必须填写用户名'));
         $validator->addRule('author', 'xssCheck', _t('请不要在用户名中使用特殊字符'));
@@ -188,14 +176,11 @@ class Feedback extends Comments implements ActionInterface
 
         $comment['text'] = $this->request->get('text');
 
-        /** 对一般匿名访问者,将用户数据保存一个月 */
         if (!$this->user->hasLogin()) {
-            /** Anti-XSS */
             $comment['author'] = $this->request->filter('trim')->get('author');
             $comment['mail'] = $this->request->filter('trim')->get('mail');
             $comment['url'] = $this->request->filter('trim', 'url')->get('url');
 
-            /** 修正用户提交的url */
             if (!empty($comment['url'])) {
                 $urlParams = parse_url($comment['url']);
                 if (!isset($urlParams['scheme'])) {
@@ -212,11 +197,9 @@ class Feedback extends Comments implements ActionInterface
             $comment['mail'] = $this->user->mail;
             $comment['url'] = $this->user->url;
 
-            /** 记录登录用户的id */
             $comment['authorId'] = $this->user->uid;
         }
 
-        /** 评论者之前须有评论通过了审核 */
         if (!$this->options->commentsRequireModeration && $this->options->commentsWhitelist) {
             if (
                 $this->size(
@@ -235,13 +218,11 @@ class Feedback extends Comments implements ActionInterface
         }
 
         if ($error = $validator->run($comment)) {
-            /** 记录文字（安全转义后存储） */
             $safeText = htmlspecialchars($comment['text'], ENT_QUOTES, 'UTF-8');
             Cookie::set('__typecho_remember_text', $safeText);
             throw new Exception(implode("\n", $error));
         }
 
-        /** 生成过滤器 */
         try {
             $comment = self::pluginHandle()->filter('comment', $comment, $this->content);
         } catch (\Typecho\Exception $e) {
@@ -249,13 +230,11 @@ class Feedback extends Comments implements ActionInterface
             throw $e;
         }
 
-        /** 添加评论 */
         $commentId = $this->insert($comment);
         Cookie::delete('__typecho_remember_text');
         $this->db->fetchRow($this->select()->where('coid = ?', $commentId)
             ->limit(1), [$this, 'push']);
 
-        /** 评论完成接口 */
         self::pluginHandle()->call('finishComment', $this);
 
         \Typecho\Mail\Queue::enqueueComment($this, 'created', $this->options);
@@ -278,17 +257,14 @@ class Feedback extends Comments implements ActionInterface
      */
     private function trackback()
     {
-        /** 如果不是POST方法 */
         if (!$this->request->isPost() || $this->request->getReferer()) {
             $this->response->redirect($this->content->permalink);
         }
 
-        /** 如果库中已经存在当前ip为spam的trackback则直接拒绝 */
         if (
             $this->size($this->select()
                 ->where('status = ? AND ip = ?', 'spam', $this->request->getIp())) > 0
         ) {
-            /** 使用404告诉机器人 */
             throw new Exception(_t('找不到内容'), 404);
         }
 
@@ -306,7 +282,6 @@ class Feedback extends Comments implements ActionInterface
         $trackback['url'] = $this->request->filter('trim', 'url')->get('url');
         $trackback['text'] = $this->request->get('excerpt');
 
-        //检验格式
         $validator = new Validate();
         $validator->addRule('url', 'required', 'We require all Trackbacks to provide an url.')
             ->addRule('url', 'url', 'Your url is not valid.')
@@ -322,28 +297,21 @@ class Feedback extends Comments implements ActionInterface
             $this->response->throwXml($message);
         }
 
-        /** 截取长度 */
         $trackback['text'] = Common::subStr($trackback['text'], 0, 100, '[...]');
 
-        /** 如果库中已经存在重复url则直接拒绝 */
         if (
             $this->size($this->select()
                 ->where('cid = ? AND url = ? AND type <> ?', $this->content->cid, $trackback['url'], 'comment')) > 0
         ) {
-            /** 使用403告诉机器人 */
             throw new Exception(_t('禁止重复提交'), 403);
         }
 
-        /** 生成过滤器 */
         $trackback = self::pluginHandle()->filter('trackback', $trackback, $this->content);
 
-        /** 添加引用 */
         $this->insert($trackback);
 
-        /** 评论完成接口 */
         self::pluginHandle()->call('finishTrackback', $this);
 
-        /** 返回正确 */
         $this->response->throwXml(['success' => 0, 'message' => 'Trackback has registered.']);
     }
 
@@ -358,10 +326,12 @@ class Feedback extends Comments implements ActionInterface
         try {
             self::pluginHandle()->call('commentCachePurge', $this);
         } catch (\Throwable $e) {
+            error_log('Widget.Feedback.purgeCommentCache.plugin: ' . $e->getMessage());
         }
         try {
             Cache::getInstance()->flush();
         } catch (\Throwable $e) {
+            error_log('Widget.Feedback.purgeCommentCache.flush: ' . $e->getMessage());
         }
     }
 }

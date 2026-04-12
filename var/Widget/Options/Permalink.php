@@ -10,7 +10,6 @@ use Typecho\Router\Parser;
 use Typecho\Widget\Helper\Form;
 use Widget\ActionInterface;
 use Widget\Base\Options;
-use Widget\Notice;
 
 if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
@@ -55,8 +54,6 @@ class Permalink extends Options implements ActionInterface
         if ($value) {
             $this->user->pass('administrator');
 
-            /** 首先直接请求远程地址验证 */
-            $client = Client::get();
             $hasWrote = false;
 
             if (!file_exists(__TYPECHO_ROOT_DIR__ . '/.htaccess') && strpos(php_sapi_name(), 'apache') !== false) {
@@ -76,22 +73,14 @@ RewriteRule ^(.*)$ {$basePath}index.php/$1 [L]
             }
 
             try {
-                if ($client) {
-                    /** 发送一个rewrite地址请求 */
-                    $client->setData(['do' => 'remoteCallback'])
-                        ->setHeader('User-Agent', $this->options->generator)
-                        ->setHeader('X-Requested-With', 'XMLHttpRequest')
-                        ->send(Common::url('/action/ajax', $this->options->siteUrl));
-
-                    if (200 == $client->getResponseStatus() && 'OK' == $client->getResponseBody()) {
-                        return true;
-                    }
+                if ($this->probeRewrite()) {
+                    return true;
                 }
 
                 if (false !== $hasWrote) {
                     @unlink(__TYPECHO_ROOT_DIR__ . '/.htaccess');
 
-                    //增强兼容性,使用wordpress的redirect式rewrite规则,虽然效率有点地下,但是对fastcgi模式兼容性较好
+                    // Enhance compatibility for FastCGI-like setups using a WordPress-style rewrite rule.
                     $hasWrote = file_put_contents(__TYPECHO_ROOT_DIR__ . '/.htaccess', "<IfModule mod_rewrite.c>
 RewriteEngine On
 RewriteBase {$basePath}
@@ -100,19 +89,8 @@ RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule . {$basePath}index.php [L]
 </IfModule>");
 
-                    //再次进行验证
-                    $client = Client::get();
-
-                    if ($client) {
-                        /** 发送一个rewrite地址请求 */
-                        $client->setData(['do' => 'remoteCallback'])
-                            ->setHeader('User-Agent', $this->options->generator)
-                            ->setHeader('X-Requested-With', 'XMLHttpRequest')
-                            ->send(Common::url('/action/ajax', $this->options->siteUrl));
-
-                        if (200 == $client->getResponseStatus() && 'OK' == $client->getResponseBody()) {
-                            return true;
-                        }
+                    if ($this->probeRewrite()) {
+                        return true;
                     }
 
                     unlink(__TYPECHO_ROOT_DIR__ . '/.htaccess');
@@ -142,7 +120,6 @@ RewriteRule . {$basePath}index.php [L]
         $customPattern = $this->request->get('customPattern');
         $postPattern = $this->request->get('postPattern');
 
-        /** 验证格式 */
         if ($this->form()->validate()) {
             Cookie::set('__typecho_form_item_postPattern', $customPattern);
             $this->response->goBack();
@@ -150,7 +127,6 @@ RewriteRule . {$basePath}index.php [L]
 
         $patternValid = $this->checkRule($postPattern);
 
-        /** 解析url pattern */
         if ('custom' == $postPattern) {
             $postPattern = '/' . ltrim($this->encodeRule($customPattern), '/');
         }
@@ -170,16 +146,13 @@ RewriteRule . {$basePath}index.php [L]
             $settings['routingTable'] = json_encode($routingTable);
         }
 
-        foreach ($settings as $name => $value) {
-            $this->update(['value' => $value], $this->db->sql()->where('name = ?', $name));
-        }
+        $this->persistOptions($settings);
 
         if ($patternValid) {
-            Notice::alloc()->set(_t("设置已经保存"), 'success');
+            $this->saveSuccessAndGoBack();
         } else {
-            Notice::alloc()->set(_t("自定义链接与现有规则存在冲突! 它可能影响解析效率, 建议你重新分配一个规则."));
+            $this->noticeAndGoBack(_t("自定义链接与现有规则存在冲突! 它可能影响解析效率, 建议你重新分配一个规则."));
         }
-        $this->response->goBack();
     }
 
     /**
@@ -189,11 +162,9 @@ RewriteRule . {$basePath}index.php [L]
      */
     public function form(): Form
     {
-        /** 构建表格 */
         $form = new Form($this->security->getRootUrl('index.php/action/options-permalink'), Form::POST_METHOD);
 
         if (!defined('__TYPECHO_REWRITE__')) {
-            /** 是否使用地址重写功能 */
             $rewrite = new Form\Element\Radio(
                 'rewrite',
                 ['0' => _t('不启用'), '1' => _t('启用')],
@@ -206,7 +177,6 @@ RewriteRule . {$basePath}index.php [L]
             if (!$this->options->rewrite && !$this->request->is('enableRewriteAnyway=1')) {
                 $errorStr = _t('重写功能检测失败，请检查你的服务器设置');
 
-                /** 如果是apache服务器, 可能存在无法写入.htaccess文件的现象 */
                 if (
                     strpos(php_sapi_name(), 'apache') !== false
                     && !file_exists(__TYPECHO_ROOT_DIR__ . '/.htaccess')
@@ -236,10 +206,8 @@ RewriteRule . {$basePath}index.php [L]
                 . ' <code>/{category}/{slug}.html</code>'
         ];
 
-        /** 自定义文章路径 */
         $postPatternValue = $this->options->routingTable['post']['url'];
 
-        /** 增加个性化路径 */
         $customPatternValue = null;
         if ($this->request->is('__typecho_form_item_postPattern')) {
             $customPatternValue = $this->request->get('__typecho_form_item_postPattern');
@@ -264,7 +232,6 @@ RewriteRule . {$basePath}index.php [L]
         }
         $form->addInput($postPattern->multiMode());
 
-        /** 独立页面后缀名 */
         $pagePattern = new Form\Element\Text(
             'pagePattern',
             null,
@@ -276,7 +243,6 @@ RewriteRule . {$basePath}index.php [L]
         $pagePattern->input->setAttribute('class', 'mono w-60');
         $form->addInput($pagePattern->addRule([$this, 'checkPagePattern'], _t('独立页面路径中没有包含 {cid} 或者 {slug} ')));
 
-        /** 分类页面 */
         $categoryPattern = new Form\Element\Text(
             'categoryPattern',
             null,
@@ -288,7 +254,6 @@ RewriteRule . {$basePath}index.php [L]
         $categoryPattern->input->setAttribute('class', 'mono w-60');
         $form->addInput($categoryPattern->addRule([$this, 'checkCategoryPattern'], _t('分类路径中没有包含 {mid} 或者 {slug} ')));
 
-        /** 提交按钮 */
         $submit = new Form\Element\Submit('submit', null, _t('保存设置'));
         $submit->input->setAttribute('class', 'btn primary');
         $form->addItem($submit);
@@ -305,6 +270,21 @@ RewriteRule . {$basePath}index.php [L]
     protected function decodeRule(string $rule): string
     {
         return preg_replace("/\[([_a-z0-9-]+)[^\]]*\]/i", "{\\1}", $rule);
+    }
+
+    private function probeRewrite(): bool
+    {
+        $client = Client::get();
+        if (!$client) {
+            return false;
+        }
+
+        $client->setData(['do' => 'remoteCallback'])
+            ->setHeader('User-Agent', $this->options->generator)
+            ->setHeader('X-Requested-With', 'XMLHttpRequest')
+            ->send(Common::url('/action/ajax', $this->options->siteUrl));
+
+        return 200 == $client->getResponseStatus() && 'OK' == $client->getResponseBody();
     }
 
     /**
@@ -361,10 +341,6 @@ RewriteRule . {$basePath}index.php [L]
         );
     }
 
-    /**
-     * 绑定动作
-     * @return void
-     */
     public function action()
     {
         $this->user->pass('administrator');

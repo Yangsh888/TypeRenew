@@ -26,8 +26,6 @@ class Admin extends Contents
     use AdminTrait;
 
     /**
-     * 获取菜单标题
-     *
      * @return string
      * @throws Exception|DbException
      */
@@ -50,10 +48,8 @@ class Admin extends Contents
     {
         $this->initPage();
 
-        /** 构建基础查询 */
         $select = $this->select();
 
-        /** 如果具有编辑以上权限,可以查看所有文章,反之只能查看自己的文章 */
         if (!$this->user->pass('editor', true)) {
             $select->where('table.contents.authorId = ?', $this->user->uid);
         } else {
@@ -73,7 +69,6 @@ class Admin extends Contents
             }
         }
 
-        /** 按状态查询 */
         if ($this->request->is('status=draft')) {
             $select->where('table.contents.type = ?', 'post_draft');
         } elseif ($this->request->is('status=waiting')) {
@@ -91,7 +86,6 @@ class Admin extends Contents
             );
         }
 
-        /** 过滤分类 */
         if (null != ($category = $this->request->get('category'))) {
             $select->join('table.relationships', 'table.contents.cid = table.relationships.cid')
                 ->where('table.relationships.mid = ?', $category);
@@ -100,7 +94,6 @@ class Admin extends Contents
         $this->searchQuery($select);
         $this->countTotal($select);
 
-        /** 提交查询 */
         $select->order('table.contents.cid', Db::SORT_DESC)
             ->page($this->currentPage, $this->parameter->pageSize);
 

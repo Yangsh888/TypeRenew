@@ -12,12 +12,94 @@ class Store
 
     public function __construct(?string $root = null)
     {
-        $this->root = $root ?? (defined('__TYPECHO_UPGRADE_DIR__')
-            ? __TYPECHO_UPGRADE_DIR__
-            : __TYPECHO_ROOT_DIR__ . '/var/Upgrade');
+        $this->root = self::resolveRoot($root);
         $this->stateFile = $this->root . '/State/latest.json';
         $this->lockFile = $this->root . '/State/upgrade.lock';
         $this->ensureDirs();
+    }
+
+    public static function resolveRoot(?string $root = null): string
+    {
+        $resolved = $root ?? (defined('__TYPECHO_UPGRADE_DIR__')
+            ? __TYPECHO_UPGRADE_DIR__
+            : __TYPECHO_ROOT_DIR__ . '/var/Upgrade');
+
+        return rtrim(str_replace('\\', '/', $resolved), '/');
+    }
+
+    public static function inspect(?string $root = null): array
+    {
+        $root = self::resolveRoot($root);
+        $items = [];
+        $blocking = [];
+        $warning = [];
+
+        foreach ([
+            '升级目录' => $root,
+            '升级包目录' => $root . '/Packages',
+            '临时目录' => $root . '/Staging',
+            '回滚目录' => $root . '/Backup',
+            '状态目录' => $root . '/State'
+        ] as $label => $path) {
+            $info = self::inspectDir($path);
+            $items[] = [
+                'label' => $label,
+                'path' => $path,
+                'ready' => $info['ready'],
+                'status' => $info['status'],
+                'detail' => $info['detail']
+            ];
+
+            if (!$info['ready']) {
+                $blocking[] = $label . '不可用：' . $path . '（' . $info['detail'] . '）';
+            }
+        }
+
+        $stateFile = $root . '/State/latest.json';
+        $lockFile = $root . '/State/upgrade.lock';
+        $state = null;
+
+        if (is_file($stateFile)) {
+            if (!is_readable($stateFile)) {
+                $blocking[] = '升级状态文件不可读：' . $stateFile;
+            } else {
+                $content = @file_get_contents($stateFile);
+                if ($content === false) {
+                    $blocking[] = '升级状态文件不可读：' . $stateFile;
+                } elseif ($content !== '') {
+                    $decoded = json_decode($content, true);
+                    if (is_array($decoded)) {
+                        $state = $decoded;
+                    } else {
+                        $warning[] = '升级状态文件格式异常，建议先清理升级包';
+                    }
+                }
+            }
+        }
+
+        $lockBusy = self::isLockBusy($lockFile);
+        if ($lockBusy) {
+            $blocking[] = '已有升级任务正在执行，请稍后重试';
+        } elseif (is_file($lockFile)) {
+            $warning[] = '检测到历史升级锁文件，系统会在下次升级时复用该文件';
+        }
+
+        $artifacts = self::countArtifacts($root);
+        if ($artifacts > 0 && !is_array($state)) {
+            $warning[] = '检测到未清理的升级临时文件，建议先清理升级包后再继续';
+        }
+
+        return [
+            'root' => $root,
+            'stateFile' => $stateFile,
+            'lockFile' => $lockFile,
+            'state' => $state,
+            'lockBusy' => $lockBusy,
+            'artifactCount' => $artifacts,
+            'blocking' => array_values(array_unique($blocking)),
+            'warning' => array_values(array_unique($warning)),
+            'items' => $items
+        ];
     }
 
     public function ensureDirs(): void
@@ -117,5 +199,120 @@ class Store
         }
 
         @rmdir($path);
+    }
+
+    private static function inspectDir(string $path): array
+    {
+        if (is_dir($path)) {
+            if (is_writable($path)) {
+                return [
+                    'ready' => true,
+                    'status' => '可写',
+                    'detail' => '目录可直接使用'
+                ];
+            }
+
+            return [
+                'ready' => false,
+                'status' => '不可写',
+                'detail' => '请开放目录写权限'
+            ];
+        }
+
+        if (file_exists($path)) {
+            return [
+                'ready' => false,
+                'status' => '路径冲突',
+                'detail' => '存在同名文件，无法创建目录'
+            ];
+        }
+
+        $parent = self::findExistingParent(dirname($path));
+        if ($parent === null || !is_dir($parent)) {
+            return [
+                'ready' => false,
+                'status' => '不可创建',
+                'detail' => '上级目录不存在'
+            ];
+        }
+
+        if (!is_writable($parent)) {
+            return [
+                'ready' => false,
+                'status' => '不可创建',
+                'detail' => '上级目录不可写'
+            ];
+        }
+
+        return [
+            'ready' => true,
+            'status' => '可创建',
+            'detail' => '首次使用时会自动创建'
+        ];
+    }
+
+    private static function findExistingParent(string $path): ?string
+    {
+        $path = rtrim(str_replace('\\', '/', $path), '/');
+
+        while ($path !== '') {
+            if (file_exists($path)) {
+                return $path;
+            }
+
+            $parent = dirname($path);
+            if ($parent === $path) {
+                break;
+            }
+            $path = $parent;
+        }
+
+        return null;
+    }
+
+    private static function isLockBusy(string $lockFile): bool
+    {
+        if (!is_file($lockFile)) {
+            return false;
+        }
+
+        $fp = @fopen($lockFile, 'c+');
+        if ($fp === false) {
+            return true;
+        }
+
+        $locked = !@flock($fp, LOCK_EX | LOCK_NB);
+        if (!$locked) {
+            @flock($fp, LOCK_UN);
+        }
+        @fclose($fp);
+
+        return $locked;
+    }
+
+    private static function countArtifacts(string $root): int
+    {
+        $count = 0;
+
+        foreach (['Packages', 'Staging', 'Backup'] as $dir) {
+            $path = $root . '/' . $dir;
+            if (!is_dir($path)) {
+                continue;
+            }
+
+            $items = @scandir($path);
+            if (!is_array($items)) {
+                continue;
+            }
+
+            foreach ($items as $item) {
+                if ($item === '.' || $item === '..') {
+                    continue;
+                }
+                $count++;
+            }
+        }
+
+        return $count;
     }
 }

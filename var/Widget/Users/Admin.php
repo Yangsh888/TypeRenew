@@ -56,7 +56,6 @@ class Admin extends Users
         $select = $this->select();
         $this->currentPage = $this->request->filter('int')->get('page', 1);
 
-        /** 过滤标题 */
         if (null != ($keywords = $this->request->get('keywords'))) {
             $select->where(
                 'name LIKE ? OR screenName LIKE ?',
@@ -82,7 +81,6 @@ class Admin extends Users
     {
         $query = $this->request->makeUriByRequest('page={page}');
 
-        /** 使用盒状分页 */
         $nav = new Box(
             !isset($this->total) ? $this->total = $this->size($this->countSql) : $this->total,
             $this->currentPage,

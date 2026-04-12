@@ -7,7 +7,6 @@ use Typecho\I18n\GetText;
 use Typecho\Widget\Helper\Form;
 use Widget\ActionInterface;
 use Widget\Base\Options;
-use Widget\Notice;
 
 if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
@@ -81,10 +80,7 @@ class General extends Options implements ActionInterface
      */
     public function updateGeneralSettings()
     {
-        /** 验证格式 */
-        if ($this->form()->validate()) {
-            $this->response->goBack();
-        }
+        $this->validateFormOrGoBack($this->form());
 
         $settings = $this->request->from(
             'title',
@@ -127,12 +123,9 @@ class General extends Options implements ActionInterface
         }
 
         $settings['attachmentTypes'] = implode(',', $attachmentTypes);
-        foreach ($settings as $name => $value) {
-            $this->update(['value' => $value], $this->db->sql()->where('name = ?', $name));
-        }
+        $this->persistOptions($settings);
 
-        Notice::alloc()->set(_t("设置已经保存"), 'success');
-        $this->response->goBack();
+        $this->saveSuccessAndGoBack();
     }
 
     /**
@@ -142,16 +135,13 @@ class General extends Options implements ActionInterface
      */
     public function form(): Form
     {
-        /** 构建表格 */
         $form = new Form($this->security->getIndex('/action/options-general'), Form::POST_METHOD);
 
-        /** 站点名称 */
         $title = new Form\Element\Text('title', null, $this->options->title, _t('站点名称'), _t('您设置的站点名称，会展示在网页的标题位置'));
         $title->input->setAttribute('class', 'w-100');
         $form->addInput($title->addRule('required', _t('请填写站点名称'))
             ->addRule('xssCheck', _t('请不要在站点名称中使用特殊字符')));
 
-        /** 站点地址 */
         if (!defined('__TYPECHO_SITE_URL__')) {
             $siteUrl = new Form\Element\Url(
                 'siteUrl',
@@ -167,7 +157,6 @@ class General extends Options implements ActionInterface
                 ->addRule('url', _t('请填写一个合法的URL地址')));
         }
 
-        /** 站点描述 */
         $description = new Form\Element\Text(
             'description',
             null,
@@ -177,7 +166,6 @@ class General extends Options implements ActionInterface
         );
         $form->addInput($description->addRule('xssCheck', _t('请不要在站点描述中使用特殊字符')));
 
-        /** 关键词 */
         $keywords = new Form\Element\Text(
             'keywords',
             null,
@@ -187,7 +175,6 @@ class General extends Options implements ActionInterface
         );
         $form->addInput($keywords->addRule('xssCheck', _t('请不要在关键词中使用特殊字符')));
 
-        /** 注册 */
         $allowRegister = new Form\Element\Radio(
             'allowRegister',
             ['0' => _t('不允许'), '1' => _t('允许')],
@@ -197,7 +184,6 @@ class General extends Options implements ActionInterface
         );
         $form->addInput($allowRegister);
 
-        /** XMLRPC */
         $allowXmlRpc = new Form\Element\Radio(
             'allowXmlRpc',
             ['0' => _t('关闭'), '1' => _t('仅关闭 Pingback 接口'), '2' => _t('打开')],
@@ -206,7 +192,6 @@ class General extends Options implements ActionInterface
         );
         $form->addInput($allowXmlRpc);
 
-        /** 语言项 */
         _t('lang');
 
         $langs = self::getLangs();
@@ -216,7 +201,6 @@ class General extends Options implements ActionInterface
             $form->addInput($lang->addRule([$this, 'checkLang'], _t('所选择的语言包不存在')));
         }
 
-        /** 时区 */
         $timezoneList = [
             "0"      => _t('格林威治(子午线)标准时间 (GMT)'),
             "3600"   => _t('中欧标准时间 阿姆斯特丹,荷兰,法国 (GMT +1)'),
@@ -248,7 +232,6 @@ class General extends Options implements ActionInterface
         $timezone = new Form\Element\Select('timezone', $timezoneList, $this->options->timezone, _t('时区'));
         $form->addInput($timezone);
 
-        /** 扩展名 */
         $attachmentTypesOptionsResult = (null != trim((string) $this->options->attachmentTypes)) ?
             array_map('trim', explode(',', $this->options->attachmentTypes)) : [];
         $attachmentTypesOptionsValue = [];

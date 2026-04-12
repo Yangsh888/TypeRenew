@@ -74,8 +74,6 @@ trait PrepareEditTrait
     abstract public function prepare(): self;
 
     /**
-     * 获取网页标题
-     *
      * @return string
      */
     public function getMenuTitle(): string
@@ -84,8 +82,6 @@ trait PrepareEditTrait
     }
 
     /**
-     * 获取权限
-     *
      * @param mixed ...$permissions
      * @return bool
      * @throws Exception|DbException

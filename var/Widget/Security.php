@@ -21,9 +21,6 @@ class Security extends Base
         $components = self::INIT_OPTIONS | self::INIT_USER;
     }
 
-    /**
-     * 初始化函数
-     */
     public function execute()
     {
         $this->token = $this->options->secret;
@@ -40,9 +37,6 @@ class Security extends Base
         $this->enabled = $enabled;
     }
 
-    /**
-     * 保护提交数据
-     */
     public function protect()
     {
         if (!$this->enabled) {
@@ -64,23 +58,11 @@ class Security extends Base
         }
     }
 
-    /**
-     * 获取token
-     *
-     * @param string|null $suffix 后缀
-     * @return string
-     */
     public function getToken(?string $suffix): string
     {
         return hash_hmac('sha256', (string) $suffix, $this->token);
     }
 
-    /**
-     * 获取绝对路由路径
-     *
-     * @param string|null $path
-     * @return string
-     */
     public function getRootUrl(?string $path): string
     {
         return Common::url($this->getTokenUrl($path), $this->options->rootUrl);
@@ -108,43 +90,21 @@ class Security extends Base
         return Common::buildUrl($parts);
     }
 
-    /**
-     * 输出后台安全路径
-     *
-     * @param $path
-     */
     public function adminUrl($path)
     {
         echo $this->getAdminUrl($path);
     }
 
-    /**
-     * 获取安全的后台路径
-     *
-     * @param string $path
-     * @return string
-     */
     public function getAdminUrl(string $path): string
     {
         return Common::url($this->getTokenUrl($path), $this->options->adminUrl);
     }
 
-    /**
-     * 输出安全的路由路径
-     *
-     * @param $path
-     */
     public function index($path)
     {
         echo $this->getIndex($path);
     }
 
-    /**
-     * 获取安全的路由路径
-     *
-     * @param $path
-     * @return string
-     */
     public function getIndex($path): string
     {
         return Common::url($this->getTokenUrl($path), $this->options->index);

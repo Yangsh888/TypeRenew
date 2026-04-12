@@ -301,7 +301,12 @@ class Backup extends BaseOptions implements ActionInterface
     private function resolveImportPath(): ?string
     {
         if (!empty($_FILES)) {
-            $file = array_pop($_FILES);
+            $file = $_FILES['file'] ?? reset($_FILES);
+            if (!is_array($file)) {
+                Notice::alloc()->set(_t('没有选择任何备份文件'), 'error');
+                $this->finish();
+                return null;
+            }
 
             if (UPLOAD_ERR_NO_FILE == $file['error']) {
                 Notice::alloc()->set(_t('没有选择任何备份文件'), 'error');

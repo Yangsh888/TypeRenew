@@ -7,7 +7,6 @@ use Typecho\Db\Exception;
 use Typecho\Widget\Helper\Form;
 use Widget\ActionInterface;
 use Widget\Base\Options;
-use Widget\Notice;
 
 if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
@@ -17,9 +16,7 @@ class Cache extends Options implements ActionInterface
 {
     public function updateCacheSettings()
     {
-        if ($this->form()->validate()) {
-            $this->response->goBack();
-        }
+        $this->validateFormOrGoBack($this->form());
 
         $settings = $this->request->from(
             'cacheStatus',
@@ -54,9 +51,7 @@ class Cache extends Options implements ActionInterface
         }
         $settings['cacheRedisDatabase'] = max(0, min(15, (int) $settings['cacheRedisDatabase']));
 
-        foreach ($settings as $name => $value) {
-            $this->saveOption($name, $value);
-        }
+        $this->persistOptions($settings);
 
         CacheFacade::init([
             'status' => $settings['cacheStatus'],
@@ -69,15 +64,13 @@ class Cache extends Options implements ActionInterface
             'redisDatabase' => $settings['cacheRedisDatabase']
         ]);
 
-        Notice::alloc()->set(_t('设置已经保存'), 'success');
-        $this->response->goBack();
+        $this->saveSuccessAndGoBack();
     }
 
     public function clearCache()
     {
         $count = CacheFacade::getInstance()->flush();
-        Notice::alloc()->set(_t('缓存已清空，共清理 %d 项', $count), 'success');
-        $this->response->goBack();
+        $this->noticeAndGoBack(_t('缓存已清空，共清理 %d 项', $count), 'success');
     }
 
     public function panel(): array
@@ -191,20 +184,4 @@ class Cache extends Options implements ActionInterface
         $this->response->redirect($this->options->adminUrl);
     }
 
-    private function saveOption(string $name, $value): void
-    {
-        $exists = $this->db->fetchRow($this->db->select('name')->from('table.options')->where('name = ?', $name));
-        $value = is_array($value) ? json_encode($value) : (string) $value;
-
-        if ($exists) {
-            $this->update(['value' => $value], $this->db->sql()->where('name = ?', $name));
-            return;
-        }
-
-        $this->insert([
-            'name' => $name,
-            'user' => 0,
-            'value' => $value
-        ]);
-    }
 }

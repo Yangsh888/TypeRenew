@@ -10,39 +10,20 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-/**
- * 数据库Pdo_Mysql适配器
- *
- * @package Db
- */
 class Mysql extends Pdo
 {
     use MysqlTrait;
 
-    /**
-     * 判断适配器是否可用
-     * @return boolean
-     */
     public static function isAvailable(): bool
     {
         return parent::isAvailable() && in_array('mysql', \PDO::getAvailableDrivers());
     }
 
-    /**
-     * 对象引号过滤
-     * @param string $string
-     * @return string
-     */
     public function quoteColumn(string $string): string
     {
         return '`' . $string . '`';
     }
 
-    /**
-     * 初始化数据库
-     * @param Config $config 数据库配置
-     * @return \PDO
-     */
     public function init(Config $config): \PDO
     {
         $options = [];
@@ -80,12 +61,6 @@ class Mysql extends Pdo
         return $pdo;
     }
 
-    /**
-     * 引号转义函数
-     *
-     * @param mixed $string 需要转义的字符串
-     * @return string
-     */
     public function quoteValue($string): string
     {
         return '\'' . str_replace(['\'', '\\'], ['\'\'', '\\\\'], $string) . '\'';

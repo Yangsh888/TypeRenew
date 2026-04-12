@@ -49,54 +49,16 @@ class Response
         505 => 'HTTP Version Not Supported'
     ];
 
-    //默认的字符编码
     private static Response $instance;
-
-    /**
-     * 字符编码
-     *
-     * @var string
-     */
     private string $charset = 'UTF-8';
-
-    /**
-     * @var string
-     */
     private string $contentType = 'text/html';
-
-    /**
-     * @var callable[]
-     */
     private array $responders = [];
-
-    /**
-     * @var array
-     */
     private array $cookies = [];
-
-    /**
-     * @var array
-     */
     private array $headers = [];
-
-    /**
-     * @var int
-     */
     private int $status = 200;
-
-    /**
-     * @var bool
-     */
     private bool $enableAutoSendHeaders = true;
-
-    /**
-     * @var bool
-     */
     private bool $sandbox = false;
 
-    /**
-     * init responder
-     */
     public function __construct()
     {
         $this->clean();
@@ -142,9 +104,6 @@ class Response
         $this->enableAutoSendHeaders = $enable;
     }
 
-    /**
-     * clean all
-     */
     public function clean()
     {
         $this->headers = [];
@@ -154,9 +113,6 @@ class Response
         $this->setContentType('text/html');
     }
 
-    /**
-     * send all headers
-     */
     public function sendHeaders()
     {
         if ($this->sandbox) {
@@ -199,7 +155,6 @@ class Response
     }
 
     /**
-     * respond data
      * @throws Terminal
      */
     public function respond()
@@ -322,8 +277,6 @@ class Response
     }
 
     /**
-     * add responder
-     *
      * @param callable $responder
      * @return $this
      */

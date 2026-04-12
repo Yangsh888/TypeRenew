@@ -78,7 +78,6 @@ trait AdminTrait
     {
         $query = $this->request->makeUriByRequest('page={page}');
 
-        /** 使用盒状分页 */
         $nav = new Box(
             $this->total,
             $this->currentPage,

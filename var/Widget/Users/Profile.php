@@ -34,7 +34,6 @@ class Profile extends Users implements ActionInterface
      */
     public function execute()
     {
-        /** 注册用户以上权限 */
         $this->user->pass('subscriber');
         $this->request->setParam('uid', $this->user->uid);
     }
@@ -45,11 +44,9 @@ class Profile extends Users implements ActionInterface
      */
     public function optionsForm(): Form
     {
-        /** 构建表格 */
         $form = new Form($this->security->getIndex('/action/users-profile'), Form::POST_METHOD);
         $form->setAttribute('id', 'tr-profile-form-options');
 
-        /** 撰写设置 */
         $markdown = new Form\Element\Radio(
             'markdown',
             ['0' => _t('关闭'), '1' => _t('打开')],
@@ -69,7 +66,6 @@ class Profile extends Users implements ActionInterface
         );
         $form->addInput($xmlrpcMarkdown);
 
-        /** 自动保存 */
         $autoSave = new Form\Element\Radio(
             'autoSave',
             ['0' => _t('关闭'), '1' => _t('打开')],
@@ -79,7 +75,6 @@ class Profile extends Users implements ActionInterface
         );
         $form->addInput($autoSave);
 
-        /** 默认允许 */
         $allow = [];
         if ($this->options->defaultAllowComment) {
             $allow[] = 'comment';
@@ -102,11 +97,9 @@ class Profile extends Users implements ActionInterface
         );
         $form->addInput($defaultAllow);
 
-        /** 用户动作 */
         $do = new Form\Element\Hidden('do', null, 'options');
         $form->addInput($do);
 
-        /** 提交按钮 */
         $submit = new Form\Element\Submit('submit', null, _t('保存设置'));
         $submit->input->setAttribute('class', 'btn primary');
         $form->addItem($submit);
@@ -150,7 +143,6 @@ class Profile extends Users implements ActionInterface
      */
     public function personalForm(string $pluginName, string $className, string $pluginFileName, ?string &$group): Form
     {
-        /** 构建表格 */
         $form = new Form($this->security->getIndex('/action/users-profile'), Form::POST_METHOD);
         $form->setAttribute('name', $pluginName);
         $form->setAttribute('id', $pluginName);
@@ -186,20 +178,15 @@ class Profile extends Users implements ActionInterface
             $this->response->goBack();
         }
 
-        /** 取出数据 */
         $user = $this->request->from('mail', 'screenName', 'url');
         $user['screenName'] = empty($user['screenName']) ? $user['name'] : $user['screenName'];
 
-        /** 更新数据 */
         $this->update($user, $this->db->sql()->where('uid = ?', $this->user->uid));
 
-        /** 设置高亮 */
         Notice::alloc()->highlight('user-' . $this->user->uid);
 
-        /** 提示信息 */
         Notice::alloc()->set(_t('您的档案已经更新'), 'success');
 
-        /** 转向原页 */
         $this->response->goBack();
     }
 
@@ -210,28 +197,22 @@ class Profile extends Users implements ActionInterface
      */
     public function profileForm(): Form
     {
-        /** 构建表格 */
         $form = new Form($this->security->getIndex('/action/users-profile'), Form::POST_METHOD);
         $form->setAttribute('id', 'tr-profile-form-profile');
 
-        /** 用户昵称 */
         $screenName = new Form\Element\Text('screenName', null, null, _t('昵称'), _t('你可以设置独立的用户昵称（与用户名不同），仅用于前台显示')
             . '<br />' . _t('此项留空时，系统会自动使用用户名'));
         $form->addInput($screenName);
 
-        /** 个人主页地址 */
         $url = new Form\Element\Url('url', null, null, _t('个人主页地址'), _t('请填写个人主页地址，需以 <code>https://</code> 开头'));
         $form->addInput($url);
 
-        /** 电子邮箱地址 */
         $mail = new Form\Element\Text('mail', null, null, _t('邮件地址') . ' *', _t('此邮箱为用户主要联系方式，请勿使用系统已存在的邮箱地址'));
         $form->addInput($mail);
 
-        /** 用户动作 */
         $do = new Form\Element\Hidden('do', null, 'profile');
         $form->addInput($do);
 
-        /** 提交按钮 */
         $submit = new Form\Element\Submit('submit', null, _t('更新我的档案'));
         $submit->input->setAttribute('class', 'btn primary');
         $form->addItem($submit);

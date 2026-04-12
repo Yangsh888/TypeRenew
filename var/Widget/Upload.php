@@ -22,7 +22,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
  */
 class Upload extends Contents implements ActionInterface
 {
-    //上传文件目录
     public const UPLOAD_DIR = '/usr/uploads';
 
     /**
@@ -82,9 +81,6 @@ class Upload extends Contents implements ActionInterface
         );
     }
 
-    /**
-     * 初始化函数
-     */
     public function action()
     {
         if ($this->user->pass('contributor', true) && $this->request->isPost()) {
@@ -100,69 +96,65 @@ class Upload extends Contents implements ActionInterface
     }
 
     /**
-     * 执行升级程序
-     *
      * @throws Exception
      */
     public function modify()
     {
-        if (!empty($_FILES)) {
-            $file = array_pop($_FILES);
-            if (0 == $file['error'] && is_uploaded_file($file['tmp_name'])) {
-                $this->db->fetchRow(
-                    $this->select()->where(
-                        'table.contents.cid = ?',
-                        $this->request->filter('int')->get('cid')
-                    )
-                    ->where('table.contents.type = ?', 'attachment'),
-                    [$this, 'push']
-                );
+        try {
+            $file = $this->requireUploadFile();
 
-                if (!$this->have()) {
-                    $this->response->setStatus(404);
-                    exit;
-                }
+            $this->db->fetchRow(
+                $this->select()->where(
+                    'table.contents.cid = ?',
+                    $this->request->filter('int')->get('cid')
+                )
+                ->where('table.contents.type = ?', 'attachment'),
+                [$this, 'push']
+            );
 
-                if (!$this->allow('edit')) {
-                    $this->response->setStatus(403);
-                    exit;
-                }
-
-                // xhr的send无法支持utf8
-                if ($this->request->isAjax()) {
-                    $file['name'] = urldecode($file['name']);
-                }
-
-                $result = self::modifyHandle($this->toColumn(['cid', 'attachment', 'parent']), $file);
-
-                if (false !== $result) {
-                    self::pluginHandle()->call('beforeModify', $result);
-
-                    $this->update([
-                        'text' => json_encode($result)
-                    ], $this->db->sql()->where('cid = ?', $this->cid));
-
-                    $this->db->fetchRow($this->select()->where('table.contents.cid = ?', $this->cid)
-                        ->where('table.contents.type = ?', 'attachment'), [$this, 'push']);
-
-                    /** 增加插件接口 */
-                    self::pluginHandle()->call('modify', $this);
-
-                    $this->response->throwJson([$this->attachment->url, [
-                        'cid' => $this->cid,
-                        'title' => $this->attachment->name,
-                        'type' => $this->attachment->type,
-                        'size' => $this->attachment->size,
-                        'bytes' => number_format(ceil($this->attachment->size / 1024)) . ' Kb',
-                        'isImage' => $this->attachment->isImage,
-                        'url' => $this->attachment->url,
-                        'permalink' => $this->permalink
-                    ]]);
-                }
+            if (!$this->have()) {
+                $this->response->setStatus(404);
+                exit;
             }
-        }
 
-        $this->response->throwJson(false);
+            if (!$this->allow('edit')) {
+                $this->response->setStatus(403);
+                exit;
+            }
+
+            if ($this->request->isAjax()) {
+                $file['name'] = urldecode($file['name']);
+            }
+
+            $result = self::modifyHandle($this->toColumn(['cid', 'attachment', 'parent']), $file);
+            if (false === $result) {
+                throw new \RuntimeException(_t('附件替换失败，请检查文件类型与目录权限'));
+            }
+
+            self::pluginHandle()->call('beforeModify', $result);
+
+            $this->update([
+                'text' => json_encode($result)
+            ], $this->db->sql()->where('cid = ?', $this->cid));
+
+            $this->db->fetchRow($this->select()->where('table.contents.cid = ?', $this->cid)
+                ->where('table.contents.type = ?', 'attachment'), [$this, 'push']);
+
+            self::pluginHandle()->call('modify', $this);
+
+            $this->response->throwJson([$this->attachment->url, [
+                'cid' => $this->cid,
+                'title' => $this->attachment->name,
+                'type' => $this->attachment->type,
+                'size' => $this->attachment->size,
+                'bytes' => number_format(ceil($this->attachment->size / 1024)) . ' Kb',
+                'isImage' => $this->attachment->isImage,
+                'url' => $this->attachment->url,
+                'permalink' => $this->permalink
+            ]]);
+        } catch (\Throwable $e) {
+            $this->throwUploadError($e->getMessage());
+        }
     }
 
     /**
@@ -175,7 +167,7 @@ class Upload extends Contents implements ActionInterface
     public static function modifyHandle(array $content, array $file)
     {
         if (empty($file['name'])) {
-            return false;
+            throw new \RuntimeException(_t('没有选择任何附件文件'));
         }
 
         $result = self::pluginHandle()->trigger($hasModified)->call('modifyHandle', $content, $file);
@@ -186,7 +178,7 @@ class Upload extends Contents implements ActionInterface
         $ext = self::getSafeName($file['name']);
 
         if ($content['attachment']->type != $ext) {
-            return false;
+            throw new \RuntimeException(_t('上传文件类型与原附件不一致'));
         }
 
         $path = Common::url(
@@ -195,43 +187,38 @@ class Upload extends Contents implements ActionInterface
         );
         $dir = dirname($path);
 
-        //创建上传目录
         if (!is_dir($dir)) {
             if (!self::makeUploadDir($dir)) {
-                return false;
+                throw new \RuntimeException(_t('附件目录不可写：%s', $dir));
             }
         }
 
         if (isset($file['tmp_name'])) {
             @unlink($path);
 
-            //移动上传文件
             if (!@move_uploaded_file($file['tmp_name'], $path)) {
-                return false;
+                throw new \RuntimeException(_t('附件写入失败，请检查上传目录权限'));
             }
         } elseif (isset($file['bytes'])) {
             @unlink($path);
 
-            //直接写入文件
             if (!file_put_contents($path, $file['bytes'])) {
-                return false;
+                throw new \RuntimeException(_t('附件写入失败，请检查上传目录权限'));
             }
         } elseif (isset($file['bits'])) {
             @unlink($path);
 
-            //直接写入文件
             if (!file_put_contents($path, $file['bits'])) {
-                return false;
+                throw new \RuntimeException(_t('附件写入失败，请检查上传目录权限'));
             }
         } else {
-            return false;
+            throw new \RuntimeException(_t('附件上传数据无效'));
         }
 
         if (!isset($file['size'])) {
             $file['size'] = filesize($path);
         }
 
-        //返回相对存储路径
         return [
             'name' => $content['attachment']->name,
             'path' => $content['attachment']->path,
@@ -275,66 +262,63 @@ class Upload extends Contents implements ActionInterface
     }
 
     /**
-     * 执行升级程序
-     *
      * @throws Exception
      */
     public function upload()
     {
-        if (!empty($_FILES)) {
-            $file = array_pop($_FILES);
-            if (0 == $file['error'] && is_uploaded_file($file['tmp_name'])) {
-                // xhr的send无法支持utf8
-                if ($this->request->isAjax()) {
-                    $file['name'] = urldecode($file['name']);
-                }
-                $result = self::uploadHandle($file);
+        try {
+            $file = $this->requireUploadFile();
 
-                if (false !== $result) {
-                    self::pluginHandle()->call('beforeUpload', $result);
+            if ($this->request->isAjax()) {
+                $file['name'] = urldecode($file['name']);
+            }
+            $result = self::uploadHandle($file);
 
-                    $struct = [
-                        'title' => $result['name'],
-                        'slug' => $result['name'],
-                        'type' => 'attachment',
-                        'status' => 'publish',
-                        'text' => json_encode($result),
-                        'allowComment' => 1,
-                        'allowPing' => 0,
-                        'allowFeed' => 1
-                    ];
+            if (false === $result) {
+                throw new \RuntimeException(_t('附件上传失败，请检查文件类型与目录权限'));
+            }
 
-                    if (isset($this->request->cid)) {
-                        $cid = $this->request->filter('int')->get('cid');
+            self::pluginHandle()->call('beforeUpload', $result);
 
-                        if ($this->isWriteable($this->db->sql()->where('cid = ?', $cid))) {
-                            $struct['parent'] = $cid;
-                        }
-                    }
+            $struct = [
+                'title' => $result['name'],
+                'slug' => $result['name'],
+                'type' => 'attachment',
+                'status' => 'publish',
+                'text' => json_encode($result),
+                'allowComment' => 1,
+                'allowPing' => 0,
+                'allowFeed' => 1
+            ];
 
-                    $insertId = $this->insert($struct);
+            if (isset($this->request->cid)) {
+                $cid = $this->request->filter('int')->get('cid');
 
-                    $this->db->fetchRow($this->select()->where('table.contents.cid = ?', $insertId)
-                        ->where('table.contents.type = ?', 'attachment'), [$this, 'push']);
-
-                    /** 增加插件接口 */
-                    self::pluginHandle()->call('upload', $this);
-
-                    $this->response->throwJson([$this->attachment->url, [
-                        'cid' => $insertId,
-                        'title' => $this->attachment->name,
-                        'type' => $this->attachment->type,
-                        'size' => $this->attachment->size,
-                        'bytes' => number_format(ceil($this->attachment->size / 1024)) . ' Kb',
-                        'isImage' => $this->attachment->isImage,
-                        'url' => $this->attachment->url,
-                        'permalink' => $this->permalink
-                    ]]);
+                if ($this->isWriteable($this->db->sql()->where('cid = ?', $cid))) {
+                    $struct['parent'] = $cid;
                 }
             }
-        }
 
-        $this->response->throwJson(false);
+            $insertId = $this->insert($struct);
+
+            $this->db->fetchRow($this->select()->where('table.contents.cid = ?', $insertId)
+                ->where('table.contents.type = ?', 'attachment'), [$this, 'push']);
+
+            self::pluginHandle()->call('upload', $this);
+
+            $this->response->throwJson([$this->attachment->url, [
+                'cid' => $insertId,
+                'title' => $this->attachment->name,
+                'type' => $this->attachment->type,
+                'size' => $this->attachment->size,
+                'bytes' => number_format(ceil($this->attachment->size / 1024)) . ' Kb',
+                'isImage' => $this->attachment->isImage,
+                'url' => $this->attachment->url,
+                'permalink' => $this->permalink
+            ]]);
+        } catch (\Throwable $e) {
+            $this->throwUploadError($e->getMessage());
+        }
     }
 
     /**
@@ -346,7 +330,7 @@ class Upload extends Contents implements ActionInterface
     public static function uploadHandle(array $file)
     {
         if (empty($file['name'])) {
-            return false;
+            throw new \RuntimeException(_t('没有选择任何附件文件'));
         }
 
         $result = self::pluginHandle()->trigger($hasUploaded)->call('uploadHandle', $file);
@@ -357,7 +341,7 @@ class Upload extends Contents implements ActionInterface
         $ext = self::getSafeName($file['name']);
 
         if (!self::checkFileType($ext)) {
-            return false;
+            throw new \RuntimeException(_t('文件扩展名不被支持'));
         }
 
         $date = new Date();
@@ -366,41 +350,35 @@ class Upload extends Contents implements ActionInterface
             defined('__TYPECHO_UPLOAD_ROOT_DIR__') ? __TYPECHO_UPLOAD_ROOT_DIR__ : __TYPECHO_ROOT_DIR__
         ) . '/' . $date->year . '/' . $date->month;
 
-        //创建上传目录
         if (!is_dir($path)) {
             if (!self::makeUploadDir($path)) {
-                return false;
+                throw new \RuntimeException(_t('上传目录不可写：%s', $path));
             }
         }
 
-        //获取文件名
         $fileName = sprintf('%u', crc32(uniqid())) . '.' . $ext;
         $path = $path . '/' . $fileName;
 
         if (isset($file['tmp_name'])) {
-            //移动上传文件
             if (!@move_uploaded_file($file['tmp_name'], $path)) {
-                return false;
+                throw new \RuntimeException(_t('附件写入失败，请检查上传目录权限'));
             }
         } elseif (isset($file['bytes'])) {
-            //直接写入文件
             if (!file_put_contents($path, $file['bytes'])) {
-                return false;
+                throw new \RuntimeException(_t('附件写入失败，请检查上传目录权限'));
             }
         } elseif (isset($file['bits'])) {
-            //直接写入文件
             if (!file_put_contents($path, $file['bits'])) {
-                return false;
+                throw new \RuntimeException(_t('附件写入失败，请检查上传目录权限'));
             }
         } else {
-            return false;
+            throw new \RuntimeException(_t('附件上传数据无效'));
         }
 
         if (!isset($file['size'])) {
             $file['size'] = filesize($path);
         }
 
-        //返回相对存储路径
         return [
             'name' => $file['name'],
             'path' => (defined('__TYPECHO_UPLOAD_DIR__') ? __TYPECHO_UPLOAD_DIR__ : self::UPLOAD_DIR)
@@ -421,5 +399,52 @@ class Upload extends Contents implements ActionInterface
         }
         $options = Options::alloc();
         return in_array($ext, $options->allowedAttachmentTypes);
+    }
+
+    private function requireUploadFile(): array
+    {
+        $file = $_FILES['file'] ?? reset($_FILES);
+        if (!is_array($file)) {
+            throw new \RuntimeException(_t('没有选择任何附件文件'));
+        }
+
+        $error = (int) ($file['error'] ?? UPLOAD_ERR_NO_FILE);
+        if ($error === UPLOAD_ERR_NO_FILE) {
+            throw new \RuntimeException(_t('没有选择任何附件文件'));
+        }
+
+        if ($error !== UPLOAD_ERR_OK || !is_uploaded_file((string) ($file['tmp_name'] ?? ''))) {
+            throw new \RuntimeException($this->uploadErrorMessage($error));
+        }
+
+        return $file;
+    }
+
+    private function uploadErrorMessage(int $error): string
+    {
+        switch ($error) {
+            case UPLOAD_ERR_INI_SIZE:
+            case UPLOAD_ERR_FORM_SIZE:
+                return _t('附件上传失败：文件体积超过服务器限制');
+            case UPLOAD_ERR_PARTIAL:
+                return _t('附件上传失败：文件仅部分上传');
+            case UPLOAD_ERR_NO_TMP_DIR:
+                return _t('附件上传失败：服务器缺少临时目录');
+            case UPLOAD_ERR_CANT_WRITE:
+                return _t('附件上传失败：无法写入服务器磁盘');
+            case UPLOAD_ERR_EXTENSION:
+                return _t('附件上传失败：上传被扩展中止');
+            default:
+                return _t('附件上传失败');
+        }
+    }
+
+    private function throwUploadError(string $message): void
+    {
+        $this->response->setStatus(400);
+        $this->response->throwJson([
+            'success' => false,
+            'message' => $message === '' ? _t('附件上传失败') : $message
+        ]);
     }
 }

@@ -11,73 +11,39 @@ use Typecho\Response as HttpResponse;
  */
 class Response
 {
-    /**
-     * @var HttpRequest
-     */
     private HttpRequest $request;
-
-    /**
-     * @var HttpResponse
-     */
     private HttpResponse $response;
 
-    /**
-     * @param HttpRequest $request
-     * @param HttpResponse $response
-     */
     public function __construct(HttpRequest $request, HttpResponse $response)
     {
         $this->request = $request;
         $this->response = $response;
     }
 
-    /**
-     * @param int $code
-     * @return $this
-     */
     public function setStatus(int $code): Response
     {
         $this->response->setStatus($code);
         return $this;
     }
 
-    /**
-     * @param string $name
-     * @param $value
-     * @return $this
-     */
     public function setHeader(string $name, $value): Response
     {
         $this->response->setHeader($name, (string)$value);
         return $this;
     }
 
-    /**
-     * 设置默认回执编码
-     *
-     * @param string $charset 字符集
-     * @return $this
-     */
     public function setCharset(string $charset): Response
     {
         $this->response->setCharset($charset);
         return $this;
     }
 
-    /**
-     * @param string $contentType
-     * @return $this
-     */
     public function setContentType(string $contentType = 'text/html'): Response
     {
         $this->response->setContentType($contentType);
         return $this;
     }
 
-    /**
-     * @param callable $callback
-     * @param string $contentType
-     */
     public function throwCallback(callable $callback, string $contentType = 'text/html')
     {
         $this->response->setContentType($contentType)
@@ -85,9 +51,6 @@ class Response
             ->respond();
     }
 
-    /**
-     * @return void
-     */
     public function throwFinish()
     {
         $isFastCGI = function_exists('fastcgi_finish_request');
@@ -110,10 +73,6 @@ class Response
         }
     }
 
-    /**
-     * @param string $content
-     * @param string $contentType
-     */
     public function throwContent(string $content, string $contentType = 'text/html')
     {
         $this->throwCallback(function () use ($content) {
@@ -121,9 +80,6 @@ class Response
         }, $contentType);
     }
 
-    /**
-     * @param mixed $message
-     */
     public function throwXml($message)
     {
         $this->throwCallback(function () use ($message) {
@@ -134,11 +90,6 @@ class Response
         }, 'text/xml');
     }
 
-    /**
-     * 抛出json回执信息
-     *
-     * @param mixed $message 消息体
-     */
     public function throwJson($message)
     {
         $this->throwCallback(function () use ($message) {
@@ -146,10 +97,6 @@ class Response
         }, 'application/json');
     }
 
-    /**
-     * @param $file
-     * @param string|null $contentType
-     */
     public function throwFile($file, ?string $contentType = null)
     {
         if (!empty($contentType)) {
@@ -163,12 +110,6 @@ class Response
             ->respond();
     }
 
-    /**
-     * 重定向函数
-     *
-     * @param string $location 重定向路径
-     * @param boolean $isPermanently 是否为永久重定向
-     */
     public function redirect(string $location, bool $isPermanently = false)
     {
         $location = Common::safeUrl($location);
@@ -178,18 +119,10 @@ class Response
             ->respond();
     }
 
-    /**
-     * 返回来路
-     *
-     * @param string|null $suffix 附加地址
-     * @param string|null $default 默认来路
-     */
     public function goBack(?string $suffix = null, ?string $default = null)
     {
-        //获取来源
         $referer = $this->request->getReferer();
 
-        //判断来源
         if (!empty($referer)) {
             // ~ fix Issue 38
             if (!empty($suffix)) {
@@ -220,15 +153,8 @@ class Response
         }
     }
 
-    /**
-     * 解析ajax回执的内部函数
-     *
-     * @param mixed $message 格式化数据
-     * @return string
-     */
     private function parseXml($message): string
     {
-        /** 对于数组型则继续递归 */
         if (is_array($message)) {
             $result = '';
 

@@ -13,14 +13,15 @@ $packageActionUrl = $security->getTokenUrl(
 $needDbUpgrade = version_compare(\Typecho\Common::VERSION, $options->version, '>');
 $schemaStatus = \Utils\Upgrade::inspectCriticalSchema(\Typecho\Db::get(), $options);
 $needSchemaRepair = !$schemaStatus['healthy'];
-$state = null;
-
-try {
-    $store = new \Typecho\Upgrade\Store();
-    $state = $store->readState();
-} catch (\Throwable $e) {
-    $state = null;
-}
+$upgradeReport = \Typecho\Upgrade\Runner::inspect();
+$state = $upgradeReport['state'];
+$upgradeBlocking = $upgradeReport['blocking'];
+$upgradeWarning = $upgradeReport['warning'];
+$upgradeItems = $upgradeReport['items'];
+$upgradeAvailable = (bool) $upgradeReport['available'];
+$upgradeRoot = (string) $upgradeReport['root'];
+$upgradeLockBusy = (bool) $upgradeReport['lockBusy'];
+$artifactCount = (int) ($upgradeReport['artifactCount'] ?? 0);
 
 $manifest = is_array($state) ? ($state['manifest'] ?? []) : [];
 $packageId = is_array($state) ? (string) ($state['id'] ?? '') : '';
@@ -33,6 +34,15 @@ $mode = is_array($state) ? (string) ($state['mode'] ?? '') : '';
 $allowInstall = is_array($state) ? (bool) ($state['allowInstall'] ?? false) : false;
 $error = is_array($state) ? (string) ($state['error'] ?? '') : '';
 $progress = is_array($state) ? ($state['progress'] ?? null) : null;
+$hasArtifacts = $packageId !== '' || $artifactCount > 0;
+$statusMap = [
+    'ready' => _t('已就绪'),
+    'applying' => _t('执行中'),
+    'applied' => _t('已完成'),
+    'failed' => _t('失败')
+];
+$statusLabel = $statusMap[$status] ?? ($status !== '' ? $status : _t('无'));
+$packageActionLocked = !$upgradeAvailable || $upgradeLockBusy;
 ?>
 
 <main class="main">
@@ -44,6 +54,54 @@ $progress = is_array($state) ? ($state['progress'] ?? null) : null;
                 </div>
 
                 <div class="tr-stack tr-mt-16">
+                    <div class="tr-card tr-tone-muted">
+                        <div class="tr-card-b">
+                            <div class="tr-subtitle"><?php _e('环境预检'); ?></div>
+                            <div class="tr-help tr-mt-8"><?php _e('升级工作目录：%s', htmlspecialchars($upgradeRoot, ENT_QUOTES, 'UTF-8')); ?></div>
+                            <ul class="tr-help tr-mt-8">
+                                <?php foreach ($upgradeItems as $item): ?>
+                                    <li>
+                                        <?php echo htmlspecialchars((string) $item['label'], ENT_QUOTES, 'UTF-8'); ?>
+                                        ：<?php echo htmlspecialchars((string) $item['status'], ENT_QUOTES, 'UTF-8'); ?>
+                                        <span class="tr-help">
+                                            （<?php echo htmlspecialchars((string) $item['path'], ENT_QUOTES, 'UTF-8'); ?>，
+                                            <?php echo htmlspecialchars((string) $item['detail'], ENT_QUOTES, 'UTF-8'); ?>）
+                                        </span>
+                                    </li>
+                                <?php endforeach; ?>
+                            </ul>
+
+                            <?php if (!empty($upgradeBlocking)): ?>
+                                <div class="tr-help tr-tone-warning tr-mt-12">
+                                    <strong><?php _e('当前环境暂时无法执行在线升级'); ?></strong>
+                                </div>
+                                <ul class="tr-help">
+                                    <?php foreach ($upgradeBlocking as $line): ?>
+                                        <li><?php echo htmlspecialchars($line, ENT_QUOTES, 'UTF-8'); ?></li>
+                                    <?php endforeach; ?>
+                                </ul>
+                                <div class="tr-help tr-mt-12">
+                                    <?php if (defined('__TYPECHO_UPGRADE_DIR__')): ?>
+                                        <?php _e('请为上述目录开放写权限后重试。'); ?>
+                                    <?php else: ?>
+                                        <?php _e('请为上述目录开放写权限；若不便调整当前路径，也可在 config.inc.php 中定义 __TYPECHO_UPGRADE_DIR__ 指向一个可写目录。'); ?>
+                                    <?php endif; ?>
+                                </div>
+                            <?php endif; ?>
+
+                            <?php if (!empty($upgradeWarning)): ?>
+                                <div class="tr-help tr-tone-warning tr-mt-12">
+                                    <strong><?php _e('环境提醒'); ?></strong>
+                                </div>
+                                <ul class="tr-help">
+                                    <?php foreach ($upgradeWarning as $line): ?>
+                                        <li><?php echo htmlspecialchars($line, ENT_QUOTES, 'UTF-8'); ?></li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+
                     <div class="tr-grid cols-2">
                             <div class="tr-card tr-tone-muted">
                                 <div class="tr-card-b">
@@ -60,7 +118,7 @@ $progress = is_array($state) ? ($state['progress'] ?? null) : null;
                                     <form action="<?php echo $packageActionUrl; ?>" method="post" enctype="multipart/form-data" class="tr-mt-12">
                                         <input type="hidden" name="do" value="upload">
                                         <div class="tr-dropzone">
-                                            <input id="upgrade-upload-file" name="package" type="file" class="file tr-dropzone-input" accept=".zip,application/zip" required>
+                                            <input id="upgrade-upload-file" name="package" type="file" class="file tr-dropzone-input" accept=".zip,application/zip" required<?php echo $packageActionLocked ? ' disabled aria-disabled="true"' : ''; ?>>
                                             <div class="tr-dropzone-inner">
                                                 <strong class="tr-dropzone-title"><?php _e('点击选择升级包'); ?></strong>
                                                 <p class="tr-dropzone-desc"><?php _e('支持拖拽到此区域'); ?></p>
@@ -68,29 +126,42 @@ $progress = is_array($state) ? ($state['progress'] ?? null) : null;
                                         </div>
                                         <div class="tr-help tr-mt-12">
                                             <label>
-                                                <input type="checkbox" name="allowInstall" value="1">
+                                                <input type="checkbox" name="allowInstall" value="1"<?php echo $packageActionLocked ? ' disabled aria-disabled="true"' : ''; ?>>
                                                 <?php _e('允许覆盖 install（谨慎操作）'); ?>
                                             </label>
                                         </div>
                                         <div class="tr-mt-12">
-                                            <button class="tr-btn primary tr-block" type="submit"><?php _e('上传升级包'); ?></button>
+                                            <button class="tr-btn primary tr-block" type="submit"<?php echo $packageActionLocked ? ' disabled aria-disabled="true"' : ''; ?>><?php _e('上传升级包'); ?></button>
                                         </div>
                                     </form>
 
                                     <div class="tr-help tr-mt-12"><?php _e('当前版本 %s', \Typecho\Common::VERSION); ?></div>
+                                    <?php if ($packageActionLocked): ?>
+                                        <div class="tr-help tr-tone-warning tr-mt-12">
+                                            <?php _e('环境未通过预检前，在线升级入口已禁用。'); ?>
+                                        </div>
+                                    <?php endif; ?>
 
-                                    <?php if ($packageId !== ''): ?>
+                                    <?php if ($packageId !== '' || $hasArtifacts): ?>
                                         <div class="tr-card tr-tone-muted tr-mt-16">
                                             <div class="tr-card-b">
-                                                <div class="tr-subtitle"><?php _e('升级包信息'); ?></div>
+                                                <div class="tr-subtitle"><?php _e('升级状态'); ?></div>
                                                 <ul class="tr-help">
-                                                    <li><?php _e('标识：%s', htmlspecialchars($packageId, ENT_QUOTES, 'UTF-8')); ?></li>
+                                                    <?php if ($packageId !== ''): ?>
+                                                        <li><?php _e('标识：%s', htmlspecialchars($packageId, ENT_QUOTES, 'UTF-8')); ?></li>
+                                                    <?php endif; ?>
+                                                    <li><?php _e('状态：%s', htmlspecialchars($statusLabel, ENT_QUOTES, 'UTF-8')); ?></li>
                                                     <?php if ($mode !== ''): ?>
                                                         <li><?php _e('模式：%s', $mode === 'full' ? _t('整包') : _t('补丁')); ?></li>
                                                     <?php endif; ?>
-                                                    <li><?php _e('覆盖 install：%s', $allowInstall ? _t('允许') : _t('不允许')); ?></li>
-                                                    <li><?php _e('版本：%s → %s', htmlspecialchars($fromVersion, ENT_QUOTES, 'UTF-8'), htmlspecialchars($toVersion, ENT_QUOTES, 'UTF-8')); ?></li>
-                                                    <li><?php _e('文件数量：%s', $filesCount); ?></li>
+                                                    <?php if ($packageId !== ''): ?>
+                                                        <li><?php _e('覆盖 install：%s', $allowInstall ? _t('允许') : _t('不允许')); ?></li>
+                                                        <li><?php _e('版本：%s → %s', htmlspecialchars($fromVersion, ENT_QUOTES, 'UTF-8'), htmlspecialchars($toVersion, ENT_QUOTES, 'UTF-8')); ?></li>
+                                                        <li><?php _e('文件数量：%s', $filesCount); ?></li>
+                                                    <?php endif; ?>
+                                                    <?php if ($artifactCount > 0): ?>
+                                                        <li><?php _e('残留工件：%d', $artifactCount); ?></li>
+                                                    <?php endif; ?>
                                                     <?php if ($build !== ''): ?>
                                                         <li><?php _e('构建：%s', htmlspecialchars($build, ENT_QUOTES, 'UTF-8')); ?></li>
                                                     <?php endif; ?>
@@ -104,13 +175,18 @@ $progress = is_array($state) ? ($state['progress'] ?? null) : null;
                                             </div>
                                         </div>
 
-                                        <?php if ($status === 'ready'): ?>
+                                        <?php if ($status === 'ready' && $packageId !== ''): ?>
                                             <form action="<?php echo $packageActionUrl; ?>" method="post" class="tr-mt-12">
                                                 <input type="hidden" name="do" value="apply">
                                                 <input type="hidden" name="package" value="<?php echo htmlspecialchars($packageId, ENT_QUOTES, 'UTF-8'); ?>">
-                                                <button class="tr-btn primary tr-block" type="submit"><?php _e('执行在线升级'); ?></button>
+                                                <button class="tr-btn primary tr-block" type="submit"<?php echo $packageActionLocked ? ' disabled aria-disabled="true"' : ''; ?>><?php _e('执行在线升级'); ?></button>
                                             </form>
                                         <?php endif; ?>
+
+                                        <form action="<?php echo $packageActionUrl; ?>" method="post" class="tr-mt-12">
+                                            <input type="hidden" name="do" value="clear">
+                                            <button class="tr-btn tr-block" type="submit"<?php echo $upgradeLockBusy ? ' disabled aria-disabled="true"' : ''; ?>><?php _e('清理升级包'); ?></button>
+                                        </form>
                                     <?php endif; ?>
                                 </div>
                             </div>
@@ -198,7 +274,7 @@ $progress = is_array($state) ? ($state['progress'] ?? null) : null;
                                 <li class="tr-flow-item">
                                     <div class="tr-flow-dot"><span>4</span></div>
                                     <div class="tr-flow-title"><?php _e('执行'); ?></div>
-                                    <div class="tr-flow-desc"><?php _e('触发升级后，系统会逐个覆盖文件，执行中会展示进度与失败原因'); ?></div>
+                                    <div class="tr-flow-desc"><?php _e('触发升级后，系统会按顺序覆盖文件；执行完成后会在页面展示结果与最近一次失败原因'); ?></div>
                                 </li>
                                 <li class="tr-flow-item">
                                     <div class="tr-flow-dot"><span>5</span></div>

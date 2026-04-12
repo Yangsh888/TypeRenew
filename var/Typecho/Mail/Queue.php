@@ -20,7 +20,6 @@ class Queue
         }
 
         if (empty($jobs)) {
-            error_log('TypeRenew.MailQueue [rules] ' . Notify::explainFromComment($comment, $event, $options));
             self::clearRulesRuntimeError();
             return;
         }
@@ -331,7 +330,6 @@ class Queue
                 $nextAttempts = $attempts + 1;
                 $isDead = $nextAttempts >= $maxAttempts;
                 $truncatedErr = mb_substr($err, 0, 500, 'UTF-8');
-                error_log('TypeRenew.MailQueue delivery failed [id=' . $id . ']: ' . $err);
                 $db->query($db->update('table.mail_queue')->rows([
                     'status' => $isDead ? 'dead' : 'failed',
                     'lockedUntil' => 0,

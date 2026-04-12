@@ -76,13 +76,11 @@ trait EditTrait
     }
 
     /**
-     * 获取页面偏移
-     *
      * @param string $column 字段名
-     * @param integer $offset 偏移值
+     * @param int $offset 偏移值
      * @param string|null $group 用户组
-     * @param integer $pageSize 分页值
-     * @return integer
+     * @param int $pageSize 分页值
+     * @return int
      * @throws Exception
      */
     protected function getPageOffset(string $column, int $offset, ?string $group = null, int $pageSize = 20): int

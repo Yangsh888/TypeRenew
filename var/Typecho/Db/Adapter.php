@@ -5,12 +5,6 @@ namespace Typecho\Db;
 use Typecho\Config;
 use Typecho\Db;
 
-/**
- * Typecho数据库适配器
- * 定义通用的数据库适配接口
- *
- * @package Db
- */
 interface Adapter
 {
     public static function isAvailable(): bool;

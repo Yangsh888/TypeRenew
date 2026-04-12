@@ -28,14 +28,8 @@ class Date extends Base
         $parameter->setDefault('format=Y-m&type=month&limit=0');
     }
 
-    /**
-     * 初始化函数
-     *
-     * @return void
-     */
     public function execute()
     {
-        /** 设置参数默认值 */
         $this->parameter->setDefault('format=Y-m&type=month&limit=0');
 
         $resource = $this->db->query($this->db->select('created')->from('table.contents')

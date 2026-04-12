@@ -2,15 +2,8 @@
 
 namespace Typecho\Db\Adapter;
 
-/**
- * Build Sql
- */
 trait QueryTrait
 {
-    /**
-     * @param array $sql
-     * @return string
-     */
     private function buildQuery(array $sql): string
     {
         if (!empty($sql['join'])) {

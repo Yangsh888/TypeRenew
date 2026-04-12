@@ -7,10 +7,6 @@ trait MysqlTrait
     use QueryTrait;
 
     /**
-     * 清空数据表
-     *
-     * @param string $table
-     * @param mixed $handle 连接对象
      * @throws SQLException
      */
     public function truncate(string $table, $handle)
@@ -23,9 +19,6 @@ trait MysqlTrait
         return $this->buildQuery($sql);
     }
 
-    /**
-     * @return string
-     */
     public function getDriver(): string
     {
         return 'mysql';
