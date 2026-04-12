@@ -55,6 +55,7 @@ class Helper
     public static function removePlugin(string $pluginName)
     {
         try {
+            $pluginName = Plugin::normalizeName($pluginName);
             [$pluginFileName, $className] = Plugin::portal(
                 $pluginName,
                 __TYPECHO_ROOT_DIR__ . '/' . __TYPECHO_PLUGIN_DIR__
@@ -66,7 +67,7 @@ class Helper
             require_once $pluginFileName;
 
             if (
-                !isset($activatedPlugins[$pluginName]) || !class_exists($className)
+                !array_key_exists($pluginName, $activatedPlugins) || !class_exists($className)
                 || !method_exists($className, 'deactivate')
             ) {
                 throw new Widget\Exception(_t('无法禁用插件'), 500);

@@ -59,9 +59,9 @@ class Rows extends Widget
                     $info['activated'] = true;
 
                     if ($info['activate'] || $info['deactivate'] || $info['config'] || $info['personalConfig']) {
-                        $info['activated'] = isset($this->activatedPlugins[$pluginName]);
+                        $info['activated'] = array_key_exists($pluginName, $this->activatedPlugins);
 
-                        if (isset($this->activatedPlugins[$pluginName])) {
+                        if (array_key_exists($pluginName, $this->activatedPlugins)) {
                             unset($this->activatedPlugins[$pluginName]);
                         }
                     }

@@ -4,6 +4,7 @@ namespace Widget\Plugins;
 
 use Typecho\Common;
 use Typecho\Db;
+use Typecho\Db\Adapter\SQLException;
 use Typecho\Plugin;
 use Typecho\Widget\Exception;
 use Typecho\Widget\Helper\Form;
@@ -39,6 +40,7 @@ class Edit extends Options implements ActionInterface
      */
     public function activate($pluginName)
     {
+        $pluginName = Plugin::normalizeName((string) $pluginName);
         [$pluginFileName, $className] = Plugin::portal($pluginName, $this->options->pluginDir);
         $info = Plugin::parseInfo($pluginFileName);
 
@@ -49,7 +51,7 @@ class Edit extends Options implements ActionInterface
             require_once $pluginFileName;
 
             if (
-                isset($activatedPlugins[$pluginName]) || !class_exists($className)
+                array_key_exists($pluginName, $activatedPlugins) || !class_exists($className)
                 || !method_exists($className, 'activate')
             ) {
                 throw new Exception(_t('无法启用插件'), 500);
@@ -119,7 +121,7 @@ class Edit extends Options implements ActionInterface
         }
 
         if (method_exists($className, 'configHandle')) {
-            call_user_func([$className, 'configHandle'], $settings, $isInit);
+            $className::configHandle($settings, $isInit);
             return true;
         }
 
@@ -150,12 +152,23 @@ class Edit extends Options implements ActionInterface
             }
         } else {
             if (empty($options)) {
-                $db->query($db->insert('table.options')
-                    ->rows([
-                        'name'  => $pluginName,
-                        'value' => json_encode($settings),
-                        'user'  => 0
-                    ]));
+                try {
+                    $db->query($db->insert('table.options')
+                        ->rows([
+                            'name'  => $pluginName,
+                            'value' => json_encode($settings),
+                            'user'  => 0
+                        ]));
+                } catch (SQLException $e) {
+                    if ((int) $e->getCode() !== 1062) {
+                        throw $e;
+                    }
+
+                    $db->query($db->update('table.options')
+                        ->rows(['value' => json_encode($settings)])
+                        ->where('name = ?', $pluginName)
+                        ->where('user = ?', 0));
+                }
             } else {
                 foreach ($options as $option) {
                     $value = json_decode($option['value'], true);
@@ -198,6 +211,7 @@ class Edit extends Options implements ActionInterface
      */
     public function deactivate(string $pluginName)
     {
+        $pluginName = Plugin::normalizeName($pluginName);
         $plugins = Plugin::export();
         $activatedPlugins = $plugins['activated'];
         $pluginFileExist = true;
@@ -207,13 +221,13 @@ class Edit extends Options implements ActionInterface
         } catch (Plugin\Exception $e) {
             $pluginFileExist = false;
 
-            if (!isset($activatedPlugins[$pluginName])) {
+            if (!array_key_exists($pluginName, $activatedPlugins)) {
                 throw $e;
             }
         }
 
         /** 判断实例化是否成功 */
-        if (!isset($activatedPlugins[$pluginName])) {
+        if (!array_key_exists($pluginName, $activatedPlugins)) {
             throw new Exception(_t('无法禁用插件'), 500);
         }
 
@@ -224,7 +238,7 @@ class Edit extends Options implements ActionInterface
 
             /** 判断实例化是否成功 */
             if (
-                !isset($activatedPlugins[$pluginName]) || !class_exists($className)
+                !array_key_exists($pluginName, $activatedPlugins) || !class_exists($className)
                 || !method_exists($className, 'deactivate')
             ) {
                 throw new Exception(_t('无法禁用插件'), 500);
@@ -298,9 +312,22 @@ class Edit extends Options implements ActionInterface
     {
         $this->user->pass('administrator');
         $this->security->protect();
-        $this->on($this->request->is('activate'))->activate($this->request->filter('slug')->get('activate'));
-        $this->on($this->request->is('deactivate'))->deactivate($this->request->filter('slug')->get('deactivate'));
-        $this->on($this->request->is('config'))->config($this->request->filter('slug')->get('config'));
+
+        if ($this->request->is('activate')) {
+            $this->activate(Plugin::normalizeName((string) $this->request->get('activate')));
+            return;
+        }
+
+        if ($this->request->is('deactivate')) {
+            $this->deactivate(Plugin::normalizeName((string) $this->request->get('deactivate')));
+            return;
+        }
+
+        if ($this->request->is('config')) {
+            $this->config(Plugin::normalizeName((string) $this->request->get('config')));
+            return;
+        }
+
         $this->response->redirect($this->options->adminUrl);
     }
 }

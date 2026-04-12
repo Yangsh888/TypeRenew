@@ -53,7 +53,7 @@ class Config extends Options
     public function execute()
     {
         $this->user->pass('administrator');
-        $config = $this->request->filter('slug')->get('config');
+        $config = Plugin::normalizeName((string) $this->request->get('config'));
         if (empty($config)) {
             throw new Exception(_t('插件不存在'), 404);
         }
@@ -82,14 +82,14 @@ class Config extends Options
     public function config(): Form
     {
         /** 获取插件名称 */
-        $pluginName = $this->request->filter('slug')->get('config');
+        $pluginName = Plugin::normalizeName((string) $this->request->get('config'));
 
         /** 获取已启用插件 */
         $plugins = Plugin::export();
         $activatedPlugins = $plugins['activated'];
 
         /** 判断实例化是否成功 */
-        if (!$this->info['config'] || !isset($activatedPlugins[$pluginName])) {
+        if (!$this->info['config'] || !array_key_exists($pluginName, $activatedPlugins)) {
             throw new Exception(_t('无法配置插件'), 500);
         }
 

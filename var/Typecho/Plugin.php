@@ -83,6 +83,26 @@ class Plugin
         return self::$plugin;
     }
 
+    /**
+     * @throws PluginException
+     */
+    public static function normalizeName(?string $pluginName): string
+    {
+        $pluginName = trim((string) $pluginName);
+
+        if (
+            $pluginName === ''
+            || str_contains($pluginName, "\0")
+            || str_contains($pluginName, '/')
+            || str_contains($pluginName, '\\')
+            || !preg_match('/^[A-Za-z0-9._-]+$/', $pluginName)
+        ) {
+            throw new PluginException('Invalid Plugin ' . $pluginName, 400);
+        }
+
+        return $pluginName;
+    }
+
     public static function parseInfo(string $pluginFile): array
     {
         $tokens = token_get_all(file_get_contents($pluginFile));
@@ -223,6 +243,8 @@ class Plugin
      */
     public static function portal(string $pluginName, string $path): array
     {
+        $pluginName = self::normalizeName($pluginName);
+
         switch (true) {
             case file_exists($pluginFileName = $path . '/' . $pluginName . '/Plugin.php'):
                 $className = "\\" . PLUGIN_NAMESPACE . "\\{$pluginName}\\Plugin";

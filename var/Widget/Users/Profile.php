@@ -345,7 +345,7 @@ class Profile extends Users implements ActionInterface
     public function updatePersonal()
     {
         /** 获取插件名称 */
-        $pluginName = $this->request->get('plugin');
+        $pluginName = Plugin::normalizeName((string) $this->request->get('plugin'));
 
         /** 获取已启用插件 */
         $plugins = Plugin::export();
@@ -358,7 +358,7 @@ class Profile extends Users implements ActionInterface
         );
         $info = Plugin::parseInfo($pluginFileName);
 
-        if (!$info['personalConfig'] || !isset($activatedPlugins[$pluginName])) {
+        if (!$info['personalConfig'] || !array_key_exists($pluginName, $activatedPlugins)) {
             throw new \Typecho\Widget\Exception(_t('无法配置插件'), 500);
         }
 
