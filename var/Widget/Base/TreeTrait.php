@@ -160,6 +160,15 @@ trait TreeTrait
     {
         $parameter->setDefault('ignore=0&current=');
 
+        // Widgets are pooled and may be reused with different params in one request.
+        // Reset tree state before rebuilding to avoid stale node references.
+        $this->treeRows = [];
+        $this->top = [];
+        $this->map = [];
+        $this->orders = [];
+        $this->childNodes = [];
+        $this->parents = [];
+
         $rows = $this->initTreeRows();
         $pk = $this->getPrimaryKey();
 
@@ -226,6 +235,10 @@ trait TreeTrait
         }
 
         foreach ($rows as $id) {
+            if (!isset($this->map[$id])) {
+                continue;
+            }
+
             $this->orders[] = $id;
             $parent = $this->map[$id]['parent'];
 

@@ -104,8 +104,11 @@ class Archive extends Contents
     public function addArchiveTitle(string $archiveTitle)
     {
         $current = $this->getArchiveTitle();
-        $current[] = $archiveTitle;
-        $this->setArchiveTitle($current);
+        $this->setArchiveTitle(
+            $current === null || $current === ''
+                ? $archiveTitle
+                : $current . ' ' . $archiveTitle
+        );
     }
 
     public function getArchiveTitle(): ?string

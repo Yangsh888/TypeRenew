@@ -25,6 +25,41 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
 class Edit extends Options implements ActionInterface
 {
     /**
+     * 解析主题内文件真实路径，阻止目录穿越到主题目录外
+     *
+     * @throws Exception
+     */
+    private function resolveThemePath(string $theme, ?string $file = null): string
+    {
+        $theme = trim($theme, './');
+        $themeRoot = realpath($this->options->themeFile($theme));
+
+        if ($themeRoot === false || !is_dir($themeRoot)) {
+            throw new Exception(_t('您选择的风格不存在'));
+        }
+
+        if ($file === null || $file === '') {
+            return $themeRoot;
+        }
+
+        $relativePath = ltrim(str_replace('\\', '/', $file), '/');
+
+        if ($relativePath === '' || str_contains($relativePath, "\0")) {
+            throw new Exception(_t('您编辑的文件不存在'));
+        }
+
+        $path = realpath($themeRoot . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $relativePath));
+        $normalizedRoot = rtrim(str_replace('\\', '/', $themeRoot), '/') . '/';
+        $normalizedPath = $path === false ? false : str_replace('\\', '/', $path);
+
+        if ($normalizedPath === false || !str_starts_with($normalizedPath, $normalizedRoot) || !is_file($path)) {
+            throw new Exception(_t('您编辑的文件不存在'));
+        }
+
+        return $path;
+    }
+
+    /**
      * 更换外观
      *
      * @param string $theme 外观名称
@@ -34,7 +69,7 @@ class Edit extends Options implements ActionInterface
     public function changeTheme(string $theme)
     {
         $theme = trim($theme, './');
-        if (is_dir($this->options->themeFile($theme))) {
+        if (is_dir($this->resolveThemePath($theme))) {
             /** 删除原外观设置信息 */
             $oldTheme = $this->options->missingTheme ?: $this->options->theme;
             $this->delete($this->db->sql()->where('name = ?', 'theme:' . $oldTheme));
@@ -102,7 +137,7 @@ class Edit extends Options implements ActionInterface
      */
     public function editThemeFile(string $theme, string $file)
     {
-        $path = $this->options->themeFile($theme, $file);
+        $path = $this->resolveThemePath($theme, $file);
 
         if (
             file_exists($path) && is_writable($path)
