@@ -14,6 +14,9 @@ $tokenError = '';
 $email = '';
 
 if ($tokenRaw !== '') {
+    if (!preg_match('/^[a-f0-9]{64}$/', $tokenRaw)) {
+        $tokenError = _t('重置链接无效或已过期');
+    } else {
     $records = $db->fetchAll(
         $db->select()->from('table.password_resets')
             ->where('used = ?', 0)
@@ -31,6 +34,7 @@ if ($tokenRaw !== '') {
         $email = (string) ($record['email'] ?? '');
     } else {
         $tokenError = _t('重置链接无效或已过期');
+    }
     }
 } else {
     $tokenError = _t('缺少重置令牌');

@@ -2,6 +2,7 @@
 
 namespace Widget;
 
+use Typecho\Common;
 use Typecho\Cookie;
 use Typecho\Validate;
 use Widget\Base\Users;
@@ -81,11 +82,7 @@ class Login extends Users implements ActionInterface
 
         /** 跳转验证后地址 */
         if (!empty($this->request->referer)) {
-            /** fix #952 & validate redirect url */
-            if (
-                0 === strpos($this->request->referer, $this->options->adminUrl)
-                || 0 === strpos($this->request->referer, $this->options->siteUrl)
-            ) {
+            if ($this->isSafeRedirect((string) $this->request->referer)) {
                 $this->response->redirect($this->request->referer);
             }
         } elseif (!$this->user->pass('contributor', true)) {
@@ -94,5 +91,52 @@ class Login extends Users implements ActionInterface
         }
 
         $this->response->redirect($this->options->adminUrl);
+    }
+
+    private function isSafeRedirect(string $target): bool
+    {
+        $target = trim($target);
+        if ($target === '') {
+            return false;
+        }
+
+        foreach ([(string) $this->options->adminUrl, (string) $this->options->siteUrl] as $baseUrl) {
+            $base = parse_url($baseUrl);
+            $candidate = parse_url($target);
+
+            if (!is_array($base) || !is_array($candidate)) {
+                continue;
+            }
+
+            $baseHost = strtolower((string) ($base['host'] ?? ''));
+            $candidateHost = strtolower((string) ($candidate['host'] ?? ''));
+            if ($baseHost === '' || $candidateHost === '' || $baseHost !== $candidateHost) {
+                continue;
+            }
+
+            $baseScheme = strtolower((string) ($base['scheme'] ?? ''));
+            $candidateScheme = strtolower((string) ($candidate['scheme'] ?? ''));
+            if ($baseScheme !== $candidateScheme) {
+                continue;
+            }
+
+            $basePort = (int) ($base['port'] ?? 0);
+            $candidatePort = (int) ($candidate['port'] ?? 0);
+            if ($basePort !== $candidatePort) {
+                continue;
+            }
+
+            $basePath = rtrim((string) ($base['path'] ?? '/'), '/');
+            $candidatePath = (string) ($candidate['path'] ?? '/');
+            if ($basePath !== '' && $basePath !== '/' && !str_starts_with($candidatePath, $basePath . '/')
+                && $candidatePath !== $basePath) {
+                continue;
+            }
+
+            return Common::url($candidatePath . (!empty($candidate['query']) ? '?' . $candidate['query'] : '')
+                . (!empty($candidate['fragment']) ? '#' . $candidate['fragment'] : ''), $baseUrl) === $target;
+        }
+
+        return false;
     }
 }

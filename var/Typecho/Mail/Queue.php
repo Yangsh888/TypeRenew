@@ -152,11 +152,9 @@ class Queue
                 return;
             }
 
-            $clientIp = self::getClientIp();
             $ts = time();
             $secret = (string) ($options->secret ?? '');
-            $tokenPayload = $ts . '|' . $clientIp;
-            $token = hash_hmac('sha256', $tokenPayload, $secret) . '|' . $ts . '|' . base64_encode($clientIp);
+            $token = hash_hmac('sha256', 'async|' . $ts, $secret) . '|' . $ts;
 
             try {
                 $client->setHeader('User-Agent', (string) ($options->generator ?? 'TypeRenew'))
@@ -166,6 +164,11 @@ class Queue
                         'ts' => $ts
                     ])
                     ->send(Common::url('/action/mail?do=async', (string) $options->index));
+
+                $status = $client->getResponseStatus();
+                if ($status < 200 || $status >= 300) {
+                    throw new \RuntimeException('async http status ' . $status);
+                }
             } catch (\Throwable $e) {
                 self::recordRuntimeError('async', $e->getMessage());
                 self::deliverBatch(Db::get(), $options, min(20, (int) ($options->mailBatchSize ?? 20)));
@@ -177,32 +180,18 @@ class Queue
     public static function verifyAsyncToken(string $token, string $secret, int $maxAge = 5): bool
     {
         $parts = explode('|', $token);
-        if (count($parts) !== 3) {
+        if (count($parts) !== 2) {
             return false;
         }
 
-        [$sig, $ts, $ipB64] = $parts;
+        [$sig, $ts] = $parts;
         $ts = (int) $ts;
         if ($ts <= 0 || abs(time() - $ts) > $maxAge) {
             return false;
         }
 
-        $clientIp = base64_decode($ipB64, true);
-        if ($clientIp === false || $clientIp === '') {
-            return false;
-        }
-
-        $expectedSig = hash_hmac('sha256', $ts . '|' . $clientIp, $secret);
-        if (!hash_equals($expectedSig, $sig)) {
-            return false;
-        }
-
-        $currentIp = self::getClientIp();
-        if ($clientIp !== $currentIp) {
-            return false;
-        }
-
-        return true;
+        $expectedSig = hash_hmac('sha256', 'async|' . $ts, $secret);
+        return hash_equals($expectedSig, $sig);
     }
 
     private static function getClientIp(): string

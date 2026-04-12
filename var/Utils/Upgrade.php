@@ -163,7 +163,8 @@ class Upgrade
 
         $tables = [
             'mail_queue' => $prefix . 'mail_queue',
-            'mail_unsub' => $prefix . 'mail_unsub'
+            'mail_unsub' => $prefix . 'mail_unsub',
+            'password_resets' => $prefix . 'password_resets'
         ];
 
         if ($type === 'Mysql' || $type === 'Mysqli') {
@@ -199,6 +200,22 @@ class Upgrade
                 . ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4',
                 Db::WRITE
             );
+
+            $db->query(
+                'CREATE TABLE IF NOT EXISTS `' . $tables['password_resets'] . '` ('
+                . '`id` bigint unsigned NOT NULL auto_increment,'
+                . '`email` varchar(150) NOT NULL,'
+                . '`token` varchar(64) NOT NULL,'
+                . '`created` int unsigned NOT NULL default 0,'
+                . '`expires` int unsigned NOT NULL default 0,'
+                . '`used` tinyint unsigned NOT NULL default 0,'
+                . 'PRIMARY KEY (`id`),'
+                . 'KEY `idx_email` (`email`),'
+                . 'KEY `idx_token` (`token`),'
+                . 'KEY `idx_expires` (`expires`)'
+                . ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4',
+                Db::WRITE
+            );
         } elseif ($type === 'SQLite') {
             $db->query(
                 'CREATE TABLE IF NOT EXISTS "' . $tables['mail_queue'] . '" ('
@@ -230,6 +247,21 @@ class Upgrade
                 Db::WRITE
             );
             $db->query('CREATE UNIQUE INDEX IF NOT EXISTS "' . $tables['mail_unsub'] . '_email_scope" ON "' . $tables['mail_unsub'] . '" ("email","scope")', Db::WRITE);
+
+            $db->query(
+                'CREATE TABLE IF NOT EXISTS "' . $tables['password_resets'] . '" ('
+                . '"id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,'
+                . '"email" varchar(150) NOT NULL,'
+                . '"token" varchar(64) NOT NULL,'
+                . '"created" int(10) NOT NULL default 0,'
+                . '"expires" int(10) NOT NULL default 0,'
+                . '"used" int(10) NOT NULL default 0'
+                . ')',
+                Db::WRITE
+            );
+            $db->query('CREATE INDEX IF NOT EXISTS "' . $tables['password_resets'] . '_email" ON "' . $tables['password_resets'] . '" ("email")', Db::WRITE);
+            $db->query('CREATE INDEX IF NOT EXISTS "' . $tables['password_resets'] . '_token" ON "' . $tables['password_resets'] . '" ("token")', Db::WRITE);
+            $db->query('CREATE INDEX IF NOT EXISTS "' . $tables['password_resets'] . '_expires" ON "' . $tables['password_resets'] . '" ("expires")', Db::WRITE);
         } else {
             $db->query(
                 'CREATE TABLE IF NOT EXISTS "' . $tables['mail_queue'] . '" ('
@@ -261,6 +293,21 @@ class Upgrade
                 . ')',
                 Db::WRITE
             );
+
+            $db->query(
+                'CREATE TABLE IF NOT EXISTS "' . $tables['password_resets'] . '" ('
+                . '"id" BIGSERIAL PRIMARY KEY,'
+                . '"email" VARCHAR(150) NOT NULL,'
+                . '"token" VARCHAR(64) NOT NULL,'
+                . '"created" INT NOT NULL DEFAULT 0,'
+                . '"expires" INT NOT NULL DEFAULT 0,'
+                . '"used" INT NOT NULL DEFAULT 0'
+                . ')',
+                Db::WRITE
+            );
+            $db->query('CREATE INDEX IF NOT EXISTS "' . $tables['password_resets'] . '_email" ON "' . $tables['password_resets'] . '" ("email")', Db::WRITE);
+            $db->query('CREATE INDEX IF NOT EXISTS "' . $tables['password_resets'] . '_token" ON "' . $tables['password_resets'] . '" ("token")', Db::WRITE);
+            $db->query('CREATE INDEX IF NOT EXISTS "' . $tables['password_resets'] . '_expires" ON "' . $tables['password_resets'] . '" ("expires")', Db::WRITE);
         }
 
         $defaults = [

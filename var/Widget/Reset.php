@@ -2,6 +2,7 @@
 
 namespace Widget;
 
+use Typecho\Common;
 use Typecho\Db;
 use Utils\Password;
 use Widget\Base\Users;
@@ -23,6 +24,11 @@ class Reset extends Users implements ActionInterface
         $token = trim((string) $this->request->get('token'));
         $password = (string) $this->request->get('password');
         $confirm = (string) $this->request->get('confirm');
+
+        if (!preg_match('/^[a-f0-9]{64}$/', $token)) {
+            Notice::alloc()->set(_t('重置链接无效或已过期，请重新获取'), 'error');
+            $this->response->redirect($this->options->adminUrl('forgot.php'));
+        }
 
         if (!Password::validateLength($password)) {
             Notice::alloc()->set(
@@ -73,10 +79,16 @@ class Reset extends Users implements ActionInterface
         }
 
         $hashedPassword = Password::hash($password);
+        $authCode = function_exists('openssl_random_pseudo_bytes')
+            ? bin2hex(openssl_random_pseudo_bytes(16))
+            : sha1(Common::randString(20));
 
         $this->db->query(
             $this->db->update('table.users')
-                ->rows(['password' => $hashedPassword])
+                ->rows([
+                    'password' => $hashedPassword,
+                    'authCode' => $authCode
+                ])
                 ->where('mail = ?', $recordEmail)
         );
 
