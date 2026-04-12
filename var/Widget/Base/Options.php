@@ -122,7 +122,7 @@ class Options extends Base implements QueryInterface
         }
     }
 
-    protected function saveSuccessAndGoBack(string $message = null): void
+    protected function saveSuccessAndGoBack(?string $message = null): void
     {
         Notice::alloc()->set($message ?? _t('设置已经保存'), 'success');
         $this->response->goBack();
