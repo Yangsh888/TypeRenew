@@ -102,9 +102,6 @@ class Backup extends BaseOptions implements ActionInterface
         return array_map('basename', $files);
     }
 
-    /**
-     * 绑定动作
-     */
     public function action()
     {
         $this->user->pass('administrator');

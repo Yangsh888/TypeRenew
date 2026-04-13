@@ -22,9 +22,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
  */
 class Rows extends Widget
 {
-    /**
-     * 执行函数
-     */
     public function execute()
     {
         $themes = $this->getThemes();

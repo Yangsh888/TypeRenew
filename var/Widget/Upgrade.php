@@ -85,7 +85,7 @@ class Upgrade extends BaseOptions implements ActionInterface
     }
 
     /**
-     * 初始化函数
+     * 处理升级请求
      *
      * @throws \Typecho\Db\Exception
      * @throws \Typecho\Widget\Exception

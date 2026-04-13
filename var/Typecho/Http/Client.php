@@ -170,7 +170,7 @@ class Client
     }
 
     /**
-     * 设置方法名
+     * 设置请求方法
      *
      * @param string $method
      * @return $this
@@ -201,7 +201,7 @@ class Client
     }
 
     /**
-     * 设置超时时间
+     * 设置请求超时
      *
      * @param integer $timeout 超时时间
      * @return $this

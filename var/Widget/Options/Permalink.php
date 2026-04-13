@@ -164,8 +164,6 @@ RewriteRule . {$basePath}index.php [L]
     }
 
     /**
-     * 输出表单结构
-     *
      * @return Form
      */
     public function form(): Form

@@ -33,7 +33,6 @@ class Admin extends Contents
     private int $parentId = 0;
 
     /**
-     * 执行函数
      * @return void
      * @throws Db\Exception
      */

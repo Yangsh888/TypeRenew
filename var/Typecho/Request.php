@@ -437,7 +437,7 @@ class Request
     }
 
     /**
-     * 获取客户端
+     * 获取来源页
      *
      * @return string|null
      */

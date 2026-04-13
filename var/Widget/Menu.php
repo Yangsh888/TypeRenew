@@ -74,9 +74,6 @@ class Menu extends Base
      */
     private string $currentMenuUrl = '';
 
-    /**
-     * 执行函数,初始化菜单
-     */
     public function execute()
     {
         $parentNodes = [null, _t('控制台'), _t('撰写'), _t('管理'), _t('设置'), _t('插件')];
@@ -136,7 +133,6 @@ class Menu extends Base
             ]
         ];
 
-        /** 获取扩展菜单 */
         $panelTable = $this->options->panelTable;
         $extendingParentMenu = empty($panelTable['parent']) ? [] : $panelTable['parent'];
         $extendingChildMenu = empty($panelTable['child']) ? [] : $panelTable['child'];

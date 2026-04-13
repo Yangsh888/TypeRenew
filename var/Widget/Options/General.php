@@ -129,8 +129,6 @@ class General extends Options implements ActionInterface
     }
 
     /**
-     * 输出表单结构
-     *
      * @return Form
      */
     public function form(): Form
@@ -283,9 +281,6 @@ class General extends Options implements ActionInterface
         return $form;
     }
 
-    /**
-     * 绑定动作
-     */
     public function action()
     {
         $this->user->pass('administrator');

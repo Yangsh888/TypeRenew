@@ -45,8 +45,6 @@ class Config extends Options
     private string $className;
 
     /**
-     * 绑定动作
-     *
      * @throws Plugin\Exception
      * @throws Exception|\Typecho\Db\Exception
      */
@@ -58,7 +56,6 @@ class Config extends Options
             throw new Exception(_t('插件不存在'), 404);
         }
 
-        /** 获取插件入口 */
         [$this->pluginFileName, $this->className] = Plugin::portal($config, $this->options->pluginDir);
         $this->info = Plugin::parseInfo($this->pluginFileName);
     }
@@ -81,19 +78,15 @@ class Config extends Options
      */
     public function config(): Form
     {
-        /** 获取插件名称 */
         $pluginName = Plugin::normalizeName((string) $this->request->get('config'));
 
-        /** 获取已启用插件 */
         $plugins = Plugin::export();
         $activatedPlugins = $plugins['activated'];
 
-        /** 判断实例化是否成功 */
         if (!$this->info['config'] || !array_key_exists($pluginName, $activatedPlugins)) {
             throw new Exception(_t('无法配置插件'), 500);
         }
 
-        /** 载入插件 */
         require_once $this->pluginFileName;
         $form = new Form($this->security->getIndex('/action/plugins-edit?config=' . $pluginName), Form::POST_METHOD);
         call_user_func([$this->className, 'config'], $form);

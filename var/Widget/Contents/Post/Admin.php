@@ -40,8 +40,6 @@ class Admin extends Contents
     }
 
     /**
-     * 执行函数
-     *
      * @throws DbException
      */
     public function execute()

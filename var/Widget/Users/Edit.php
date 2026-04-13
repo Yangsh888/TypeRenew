@@ -27,8 +27,6 @@ class Edit extends Users implements ActionInterface
     use EditTrait;
 
     /**
-     * 执行函数
-     *
      * @return void
      * @throws Exception|\Typecho\Db\Exception
      */

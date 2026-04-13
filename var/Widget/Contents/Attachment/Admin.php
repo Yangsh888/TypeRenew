@@ -25,8 +25,6 @@ class Admin extends Contents
     use AdminTrait;
 
     /**
-     * 执行函数
-     *
      * @return void
      * @throws Exception|\Typecho\Widget\Exception
      */
@@ -34,19 +32,15 @@ class Admin extends Contents
     {
         $this->initPage();
 
-        /** 构建基础查询 */
         $select = $this->select()->where('table.contents.type = ?', 'attachment');
 
-        /** 如果具有编辑以上权限,可以查看所有文件,反之只能查看自己的文件 */
         if (!$this->user->pass('editor', true)) {
             $select->where('table.contents.authorId = ?', $this->user->uid);
         }
 
-        /** 过滤标题 */
         $this->searchQuery($select);
         $this->countTotal($select);
 
-        /** 提交查询 */
         $select->order('table.contents.created', Db::SORT_DESC)
             ->page($this->currentPage, $this->parameter->pageSize);
 

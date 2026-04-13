@@ -25,8 +25,6 @@ class Rows extends Contents
     use TreeViewTrait;
 
     /**
-     * 执行函数
-     *
      * @return void
      * @throws Exception
      */

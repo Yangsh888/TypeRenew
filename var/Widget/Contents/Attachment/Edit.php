@@ -30,8 +30,6 @@ class Edit extends Contents implements ActionInterface
     use PrepareEditTrait;
 
     /**
-     * 执行函数
-     *
      * @throws Exception|\Typecho\Db\Exception
      */
     public function execute()
@@ -260,7 +258,6 @@ class Edit extends Contents implements ActionInterface
     }
 
     /**
-     * 绑定动作
      * @return void
      */
     public function action()

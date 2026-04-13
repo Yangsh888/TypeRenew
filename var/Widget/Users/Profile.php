@@ -29,9 +29,6 @@ class Profile extends Users implements ActionInterface
 {
     use EditTrait;
 
-    /**
-     * 执行函数
-     */
     public function execute()
     {
         $this->user->pass('subscriber');
@@ -39,7 +36,6 @@ class Profile extends Users implements ActionInterface
     }
 
     /**
-     * 输出表单结构
      * @return Form
      */
     public function optionsForm(): Form
@@ -344,14 +340,11 @@ class Profile extends Users implements ActionInterface
      */
     public function updatePersonal()
     {
-        /** 获取插件名称 */
         $pluginName = Plugin::normalizeName((string) $this->request->get('plugin'));
 
-        /** 获取已启用插件 */
         $plugins = Plugin::export();
         $activatedPlugins = $plugins['activated'];
 
-        /** 获取插件入口 */
         [$pluginFileName, $className] = Plugin::portal(
             $pluginName,
             __TYPECHO_ROOT_DIR__ . '/' . __TYPECHO_PLUGIN_DIR__
@@ -365,7 +358,6 @@ class Profile extends Users implements ActionInterface
         $form = $this->personalForm($pluginName, $className, $pluginFileName, $group);
         $this->user->pass($group);
 
-        /** 验证表单 */
         if ($form->validate()) {
             $this->response->goBack();
         }
@@ -393,10 +385,8 @@ class Profile extends Users implements ActionInterface
             }
         }
 
-        /** 提示信息 */
         Notice::alloc()->set(_t("%s 设置已经保存", $info['title']), 'success');
 
-        /** 转向原页 */
         $this->response->redirect(Common::url('profile.php', $this->options->adminUrl));
     }
 

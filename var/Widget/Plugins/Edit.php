@@ -226,17 +226,14 @@ class Edit extends Options implements ActionInterface
             }
         }
 
-        /** 判断实例化是否成功 */
         if (!array_key_exists($pluginName, $activatedPlugins)) {
             throw new Exception(_t('无法禁用插件'), 500);
         }
 
         if ($pluginFileExist) {
 
-            /** 载入插件 */
             require_once $pluginFileName;
 
-            /** 判断实例化是否成功 */
             if (
                 !array_key_exists($pluginName, $activatedPlugins) || !class_exists($className)
                 || !method_exists($className, 'deactivate')
@@ -247,12 +244,10 @@ class Edit extends Options implements ActionInterface
             try {
                 $result = call_user_func([$className, 'deactivate']);
             } catch (Plugin\Exception $e) {
-                /** 截获异常 */
                 Notice::alloc()->set($e->getMessage(), 'error');
                 $this->response->goBack();
             }
 
-            /** 设置高亮 */
             Notice::alloc()->highlight('plugin-' . $pluginName);
         }
 
@@ -282,7 +277,6 @@ class Edit extends Options implements ActionInterface
     {
         $form = Config::alloc()->config();
 
-        /** 验证表单 */
         if ($form->validate()) {
             $this->response->goBack();
         }
@@ -293,21 +287,15 @@ class Edit extends Options implements ActionInterface
             self::configPlugin($pluginName, $settings);
         }
 
-        /** 设置高亮 */
         Notice::alloc()->highlight('plugin-' . $pluginName);
 
         if (!$this->configNoticed) {
-            /** 提示信息 */
             Notice::alloc()->set(_t("插件设置已经保存"), 'success');
         }
 
-        /** 转向原页 */
         $this->response->redirect(Common::url('plugins.php', $this->options->adminUrl));
     }
 
-    /**
-     * 绑定动作
-     */
     public function action()
     {
         $this->user->pass('administrator');

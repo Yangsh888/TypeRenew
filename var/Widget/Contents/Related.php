@@ -22,8 +22,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
 class Related extends Contents
 {
     /**
-     * 执行函数,初始化数据
-     *
      * @throws Exception
      */
     public function execute()

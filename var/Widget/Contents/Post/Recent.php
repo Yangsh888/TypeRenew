@@ -20,8 +20,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
 class Recent extends Contents
 {
     /**
-     * 执行函数
-     *
      * @throws Db\Exception
      */
     public function execute()

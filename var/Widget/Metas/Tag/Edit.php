@@ -129,16 +129,13 @@ class Edit extends Metas implements ActionInterface
         $tag['mid'] = $this->insert($tag);
         $this->push($tag);
 
-        /** 设置高亮 */
         Notice::alloc()->highlight($this->theId);
 
-        /** 提示信息 */
         Notice::alloc()->set(
             _t('标签 <a href="%s">%s</a> 已经被增加', $this->permalink, $this->name),
             'success'
         );
 
-        /** 转向原页 */
         $this->response->redirect(Common::url('manage-tags.php', $this->options->adminUrl));
     }
 
@@ -247,20 +244,16 @@ class Edit extends Metas implements ActionInterface
         $tag['type'] = 'tag';
         $tag['slug'] = Common::slugName(Common::strBy($tag['slug'] ?? null, $tag['name']));
 
-        /** 更新数据 */
         $this->update($tag, $this->db->sql()->where('mid = ?', $this->request->filter('int')->get('mid')));
         $this->push($tag);
 
-        /** 设置高亮 */
         Notice::alloc()->highlight($this->theId);
 
-        /** 提示信息 */
         Notice::alloc()->set(
             _t('标签 <a href="%s">%s</a> 已经被更新', $this->permalink, $this->name),
             'success'
         );
 
-        /** 转向原页 */
         $this->response->redirect(Common::url('manage-tags.php', $this->options->adminUrl));
     }
 
@@ -283,13 +276,11 @@ class Edit extends Metas implements ActionInterface
             }
         }
 
-        /** 提示信息 */
         Notice::alloc()->set(
             $deleteCount > 0 ? _t('标签已经删除') : _t('没有标签被删除'),
             $deleteCount > 0 ? 'success' : 'notice'
         );
 
-        /** 转向原页 */
         $this->response->redirect(Common::url('manage-tags.php', $this->options->adminUrl));
     }
 
@@ -316,13 +307,11 @@ class Edit extends Metas implements ActionInterface
         if ($tags) {
             $this->merge($merge, 'tag', $tags);
 
-            /** 提示信息 */
             Notice::alloc()->set(_t('标签已经合并'), 'success');
         } else {
             Notice::alloc()->set(_t('没有选择任何标签'));
         }
 
-        /** 转向原页 */
         $this->response->redirect(Common::url('manage-tags.php', $this->options->adminUrl));
     }
 
@@ -347,7 +336,6 @@ class Edit extends Metas implements ActionInterface
             Notice::alloc()->set(_t('没有选择任何标签'));
         }
 
-        /** 转向原页 */
         $this->response->goBack();
     }
 

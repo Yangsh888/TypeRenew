@@ -626,7 +626,7 @@ class XmlRpc extends Contents implements ActionInterface, Hook
     }
 
     /**
-     * 获取用户
+     * 获取用户博客列表
      *
      * @param string $userName 用户名
      * @param string $password 密码
@@ -646,7 +646,7 @@ class XmlRpc extends Contents implements ActionInterface, Hook
     }
 
     /**
-     * 获取用户
+     * 获取用户资料
      *
      * @param int $blogId
      * @param string $userName 用户名
@@ -882,7 +882,7 @@ class XmlRpc extends Contents implements ActionInterface, Hook
     }
 
     /**
-     * 获取评论
+     * 删除评论
      *
      * @param integer $blogId
      * @param string $userName

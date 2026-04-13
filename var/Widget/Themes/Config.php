@@ -24,8 +24,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
 class Config extends BaseOptions
 {
     /**
-     * 绑定动作
-     *
      * @throws Exception|\Typecho\Db\Exception
      */
     public function execute()

@@ -265,9 +265,6 @@ class Archive extends Comments
         }
     }
 
-    /**
-     * 评论回调函数
-     */
     private function threadedCommentsCallback(): void
     {
         $singleCommentOptions = $this->singleCommentOptions;

@@ -603,7 +603,7 @@ class Options extends Base
     }
 
     /**
-     * 获取登录提交地址
+     * 获取注册提交地址
      *
      * @return string
      * @throws Widget\Exception

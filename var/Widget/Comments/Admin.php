@@ -62,8 +62,6 @@ class Admin extends Comments
     }
 
     /**
-     * 执行函数
-     *
      * @throws Db\Exception|Exception
      */
     public function execute()
@@ -72,7 +70,6 @@ class Admin extends Comments
         $this->parameter->setDefault('pageSize=20');
         $this->currentPage = $this->request->filter('int')->get('page', 1);
 
-        /** 过滤标题 */
         if (null != ($keywords = $this->request->filter('search')->get('keywords'))) {
             $select->where('table.comments.text LIKE ?', '%' . $keywords . '%');
         }

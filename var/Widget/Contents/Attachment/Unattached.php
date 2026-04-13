@@ -29,20 +29,16 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
 class Unattached extends Contents
 {
     /**
-     * 执行函数
      * @return void
      * @throws Db\Exception
      */
     public function execute()
     {
-        /** 构建基础查询 */
         $select = $this->select()->where('table.contents.type = ? AND
         (table.contents.parent = 0 OR table.contents.parent IS NULL)', 'attachment');
 
-        /** 加上对用户的判断 */
         $select->where('table.contents.authorId = ?', $this->user->uid);
 
-        /** 提交查询 */
         $select->order('table.contents.created', Db::SORT_DESC);
 
         $this->db->fetchAll($select, [$this, 'push']);

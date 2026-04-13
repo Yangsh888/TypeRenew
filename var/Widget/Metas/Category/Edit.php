@@ -141,20 +141,16 @@ class Edit extends Metas implements ActionInterface
         $category['type'] = 'category';
         $category['order'] = $this->getMaxOrder('category', $category['parent']) + 1;
 
-        /** 插入数据 */
         $category['mid'] = $this->insert($category);
         $this->push($category);
 
-        /** 设置高亮 */
         Notice::alloc()->highlight($this->theId);
 
-        /** 提示信息 */
         Notice::alloc()->set(
             _t('分类 <a href="%s">%s</a> 已经被增加', $this->permalink, $this->name),
             'success'
         );
 
-        /** 转向原页 */
         $this->response->redirect(Common::url('manage-categories.php'
             . ($category['parent'] ? '?parent=' . $category['parent'] : ''), $this->options->adminUrl));
     }
@@ -306,18 +302,14 @@ class Edit extends Metas implements ActionInterface
             }
         }
 
-        /** 更新数据 */
         $this->update($category, $this->db->sql()->where('mid = ?', $this->request->filter('int')->get('mid')));
         $this->push($category);
 
-        /** 设置高亮 */
         Notice::alloc()->highlight($this->theId);
 
-        /** 提示信息 */
         Notice::alloc()
             ->set(_t('分类 <a href="%s">%s</a> 已经被更新', $this->permalink, $this->name), 'success');
 
-        /** 转向原页 */
         $this->response->redirect(Common::url('manage-categories.php'
             . ($category['parent'] ? '?parent=' . $category['parent'] : ''), $this->options->adminUrl));
     }
@@ -342,11 +334,9 @@ class Edit extends Metas implements ActionInterface
             }
         }
 
-        /** 提示信息 */
         Notice::alloc()
             ->set($deleteCount > 0 ? _t('分类已经删除') : _t('没有分类被删除'), $deleteCount > 0 ? 'success' : 'notice');
 
-        /** 转向原页 */
         $this->response->goBack();
     }
 
@@ -356,7 +346,6 @@ class Edit extends Metas implements ActionInterface
      */
     public function mergeCategory()
     {
-        /** 验证数据 */
         $validator = new Validate();
         $validator->addRule('merge', 'required', _t('分类主键不存在'));
         $validator->addRule('merge', [$this, 'categoryExists'], _t('请选择需要合并的分类'));
@@ -372,13 +361,11 @@ class Edit extends Metas implements ActionInterface
         if ($categories) {
             $this->merge($merge, 'category', $categories);
 
-            /** 提示信息 */
             Notice::alloc()->set(_t('分类已经合并'), 'success');
         } else {
             Notice::alloc()->set(_t('没有选择任何分类'));
         }
 
-        /** 转向原页 */
         $this->response->goBack();
     }
 
@@ -394,7 +381,6 @@ class Edit extends Metas implements ActionInterface
         }
 
         if (!$this->request->isAjax()) {
-            /** 转向原页 */
             $this->response->redirect(Common::url('manage-categories.php', $this->options->adminUrl));
         } else {
             $this->response->throwJson(['success' => 1, 'message' => _t('分类排序已经完成')]);
@@ -419,7 +405,6 @@ class Edit extends Metas implements ActionInterface
             Notice::alloc()->set(_t('没有选择任何分类'));
         }
 
-        /** 转向原页 */
         $this->response->goBack();
     }
 
@@ -430,7 +415,6 @@ class Edit extends Metas implements ActionInterface
      */
     public function defaultCategory()
     {
-        /** 验证数据 */
         $validator = new Validate();
         $validator->addRule('mid', 'required', _t('分类主键不存在'));
         $validator->addRule('mid', [$this, 'categoryExists'], _t('分类不存在'));
@@ -445,17 +429,14 @@ class Edit extends Metas implements ActionInterface
             $this->db->fetchRow($this->select()->where('mid = ?', $this->request->get('mid'))
                 ->where('type = ?', 'category')->limit(1), [$this, 'push']);
 
-            /** 设置高亮 */
             Notice::alloc()->highlight($this->theId);
 
-            /** 提示信息 */
             Notice::alloc()->set(
                 _t('<a href="%s">%s</a> 已经被设为默认分类', $this->permalink, $this->name),
                 'success'
             );
         }
 
-        /** 转向原页 */
         $this->response->redirect(Common::url('manage-categories.php', $this->options->adminUrl));
     }
 

@@ -32,8 +32,6 @@ class Recent extends Comments
     }
 
     /**
-     * 执行函数
-     *
      * @throws Exception
      */
     public function execute()
@@ -50,7 +48,6 @@ class Recent extends Comments
             $select->where('type = ?', 'comment');
         }
 
-        /** 忽略作者评论 */
         if ($this->parameter->ignoreAuthor) {
             $select->where('ownerId <> authorId');
         }

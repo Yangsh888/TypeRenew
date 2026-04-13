@@ -1,4 +1,5 @@
 <?php if (!defined('__TYPECHO_ROOT_DIR__')) exit; ?>
+<?php $requireUrl = isset($this->options->commentsRequireUrl) ? $this->options->commentsRequireUrl : $this->options->commentsRequireURL; ?>
 
 <div id="comments" class="comments-area">
     <?php $this->comments()->to($comments); ?>
@@ -42,7 +43,7 @@
                                 <input type="email" name="mail" id="mail" class="form-input" placeholder="<?php _e('Email' . ($this->options->commentsRequireMail ? ' *' : '')); ?>" aria-label="<?php _e('Email'); ?>" value="<?php $this->remember('mail'); ?>"<?php if ($this->options->commentsRequireMail): ?> required<?php endif; ?> />
                             </div>
                             <div class="form-group" style="margin-bottom: 0;">
-                                <input type="url" name="url" id="url" class="form-input" placeholder="<?php _e('网站' . ($this->options->commentsRequireURL ? ' *' : '')); ?>" aria-label="<?php _e('网站'); ?>" value="<?php $this->remember('url'); ?>"<?php if ($this->options->commentsRequireURL): ?> required<?php endif; ?> />
+                                <input type="url" name="url" id="url" class="form-input" placeholder="<?php _e('网站' . ($requireUrl ? ' *' : '')); ?>" aria-label="<?php _e('网站'); ?>" value="<?php $this->remember('url'); ?>"<?php if ($requireUrl): ?> required<?php endif; ?> />
                             </div>
                         </div>
                     <?php endif; ?>

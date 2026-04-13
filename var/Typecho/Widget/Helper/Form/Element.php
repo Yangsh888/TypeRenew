@@ -110,30 +110,25 @@ abstract class Element extends Layout
         $this->name = $name;
         self::$uniqueId++;
 
-        /** 运行自定义初始函数 */
         $this->init();
 
-        /** 初始化表单标题 */
         if (null !== $label) {
             $this->label($label);
         }
 
-        /** 初始化表单项 */
         $this->input = $this->input($name, $options);
 
-        /** 初始化表单值 */
         if (null !== $value) {
             $this->value($value);
         }
 
-        /** 初始化表单描述 */
         if (null !== $description) {
             $this->description($description);
         }
     }
 
     /**
-     * 自定义初始函数
+     * 供子类覆写的初始化钩子
      *
      * @return void
      */
@@ -149,7 +144,6 @@ abstract class Element extends Layout
      */
     public function label(string $value): Element
     {
-        /** 创建标题元素 */
         if (empty($this->label)) {
             $this->label = new Layout('label', ['class' => 'typecho-label']);
             $this->container($this->label);

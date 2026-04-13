@@ -26,8 +26,6 @@ class Rows extends Metas
     use TreeViewTrait;
 
     /**
-     * 执行函数
-     *
      * @return void
      */
     public function execute()

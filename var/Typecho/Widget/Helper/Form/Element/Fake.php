@@ -30,13 +30,10 @@ class Fake extends Element
         $this->name = $name;
         self::$uniqueId++;
 
-        /** 运行自定义初始函数 */
         $this->init();
 
-        /** 初始化表单项 */
         $this->input = $this->input($name);
 
-        /** 初始化表单值 */
         if (null !== $value) {
             $this->value($value);
         }

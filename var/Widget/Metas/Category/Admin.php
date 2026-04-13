@@ -25,9 +25,6 @@ class Admin extends Metas
      */
     private int $parentId = 0;
 
-    /**
-     * 执行函数
-     */
     public function execute()
     {
         $this->parentId = $this->request->filter('int')->get('parent', 0);

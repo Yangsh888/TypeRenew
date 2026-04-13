@@ -34,13 +34,10 @@ class Files extends Base
     private string $currentFile;
 
     /**
-     * 执行函数
-     *
      * @throws Widget\Exception
      */
     public function execute()
     {
-        /** 管理员权限 */
         $this->user->pass('administrator');
         $this->currentTheme = $this->request->filter('slug')->get('theme', Options::alloc()->theme);
 

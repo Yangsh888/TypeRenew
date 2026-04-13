@@ -41,7 +41,7 @@ class Feedback extends Comments implements ActionInterface
     }
 
     /**
-     * 初始化函数
+     * 处理反馈请求
      *
      * @throws \Exception
      */

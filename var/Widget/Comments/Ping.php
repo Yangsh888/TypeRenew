@@ -101,11 +101,6 @@ class Ping extends Comments
         }
     }
 
-    /**
-     * 回响回调函数
-     *
-     * @param string $singlePingOptions 单个回响自定义选项
-     */
     private function singlePingCallback(string $singlePingOptions): void
     {
         if ($this->customSinglePingCallback) {

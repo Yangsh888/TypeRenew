@@ -21,13 +21,12 @@ class Hidden extends Element
     use TextInputTrait;
 
     /**
-     * 自定义初始函数
+     * 初始化时隐藏容器
      *
      * @return void
      */
     public function init()
     {
-        /** 隐藏此行 */
         $this->setAttribute('style', 'display:none');
     }
 

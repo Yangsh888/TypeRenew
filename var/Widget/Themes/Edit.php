@@ -167,7 +167,6 @@ class Edit extends Options implements ActionInterface
         // 已经载入了外观函数
         $form = Config::alloc()->config();
 
-        /** 验证表单 */
         if (!Config::isExists($theme) || $form->validate()) {
             $this->response->goBack();
         }
@@ -194,24 +193,18 @@ class Edit extends Options implements ActionInterface
             }
         }
 
-        /** 设置高亮 */
         Notice::alloc()->highlight('theme-' . $theme);
 
-        /** 提示信息 */
         Notice::alloc()->set(_t("外观设置已经保存"), 'success');
 
-        /** 转向原页 */
         $this->response->redirect(Common::url('options-theme.php', $this->options->adminUrl));
     }
 
     /**
-     * 绑定动作
-     *
      * @throws Exception|\Typecho\Db\Exception
      */
     public function action()
     {
-        /** 需要管理员权限 */
         $this->user->pass('administrator');
         $this->security->protect();
         $this->on($this->request->is('change'))->changeTheme($this->request->filter('slug')->get('change'));

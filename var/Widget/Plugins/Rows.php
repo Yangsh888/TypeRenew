@@ -27,16 +27,13 @@ class Rows extends Widget
     public array $activatedPlugins = [];
 
     /**
-     * 执行函数
      * @return void
      */
     public function execute()
     {
-        /** 列出插件目录 */
         $pluginDirs = $this->getPlugins();
         $this->parameter->setDefault(['activated' => null]);
 
-        /** 获取已启用插件 */
         $plugins = Plugin::export();
         $this->activatedPlugins = $plugins['activated'];
 
@@ -89,10 +86,8 @@ class Rows extends Widget
     protected function getPlugin(string $plugin): ?array
     {
         if (is_dir($plugin)) {
-            /** 获取插件名称 */
             $pluginName = basename($plugin);
 
-            /** 获取插件主文件 */
             $pluginFileName = $plugin . '/Plugin.php';
         } elseif (file_exists($plugin) && 'index.php' != basename($plugin)) {
             $pluginFileName = $plugin;
