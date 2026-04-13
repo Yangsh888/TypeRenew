@@ -94,7 +94,7 @@ class General extends Options implements ActionInterface
         $settings['attachmentTypes'] = $this->request->getArray('attachmentTypes');
 
         if (!defined('__TYPECHO_SITE_URL__')) {
-            $settings['siteUrl'] = rtrim($this->request->get('siteUrl'), '/');
+            $settings['siteUrl'] = rtrim((string) $this->request->get('siteUrl', ''), '/');
         }
 
         $attachmentTypes = [];

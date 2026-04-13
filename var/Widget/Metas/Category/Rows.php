@@ -42,7 +42,6 @@ class Rows extends Metas
      */
     public function listCategories($categoryOptions = null)
     {
-        //初始化一些变量
         $categoryOptions = Config::factory($categoryOptions);
         $categoryOptions->setDefault([
             'wrapTag'       => 'ul',
@@ -55,7 +54,7 @@ class Rows extends Metas
             'feedTemplate'  => '<a href="%s">RSS</a>'
         ]);
 
-        // 插件插件接口
+        // 插件接口
         self::pluginHandle()->trigger($plugged)->call('listCategories', $categoryOptions, $this);
 
         if (!$plugged) {

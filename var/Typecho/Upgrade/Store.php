@@ -63,7 +63,7 @@ class Store
             if (!is_readable($stateFile)) {
                 $blocking[] = '升级状态文件不可读：' . $stateFile;
             } else {
-                $content = @file_get_contents($stateFile);
+                $content = file_get_contents($stateFile);
                 if ($content === false) {
                     $blocking[] = '升级状态文件不可读：' . $stateFile;
                 } elseif ($content !== '') {
@@ -106,7 +106,16 @@ class Store
     {
         foreach (['', '/Packages', '/Staging', '/Backup', '/State'] as $suffix) {
             $dir = $this->root . $suffix;
-            if (!is_dir($dir) && !@mkdir($dir, 0755, true) && !is_dir($dir)) {
+            if (is_dir($dir)) {
+                continue;
+            }
+
+            $parent = self::findExistingParent(dirname($dir));
+            if ($parent === null || !is_dir($parent) || !is_writable($parent)) {
+                throw new RuntimeException('升级目录不可写: ' . $dir);
+            }
+
+            if (!mkdir($dir, 0755, true) && !is_dir($dir)) {
                 throw new RuntimeException('升级目录不可写: ' . $dir);
             }
         }
@@ -119,11 +128,11 @@ class Store
 
     public function readState(): ?array
     {
-        if (!is_file($this->stateFile)) {
+        if (!is_file($this->stateFile) || !is_readable($this->stateFile)) {
             return null;
         }
 
-        $content = @file_get_contents($this->stateFile);
+        $content = file_get_contents($this->stateFile);
         if ($content === false || $content === '') {
             return null;
         }
@@ -139,27 +148,37 @@ class Store
             throw new RuntimeException('升级状态写入失败');
         }
 
-        if (@file_put_contents($this->stateFile, $json, LOCK_EX) === false) {
+        $dir = dirname($this->stateFile);
+        if (!is_dir($dir) || !is_writable($dir)) {
+            throw new RuntimeException('升级状态写入失败');
+        }
+
+        if (file_put_contents($this->stateFile, $json, LOCK_EX) === false) {
             throw new RuntimeException('升级状态写入失败');
         }
     }
 
     public function clearState(): void
     {
-        if (is_file($this->stateFile)) {
-            @unlink($this->stateFile);
+        if (is_file($this->stateFile) && is_writable($this->stateFile)) {
+            unlink($this->stateFile);
         }
     }
 
     public function acquireLock()
     {
-        $fp = @fopen($this->lockFile, 'c+');
+        $lockDir = dirname($this->lockFile);
+        if (!is_dir($lockDir) || !is_writable($lockDir)) {
+            throw new RuntimeException('升级锁文件创建失败');
+        }
+
+        $fp = fopen($this->lockFile, 'c+');
         if ($fp === false) {
             throw new RuntimeException('升级锁文件创建失败');
         }
 
-        if (!@flock($fp, LOCK_EX | LOCK_NB)) {
-            @fclose($fp);
+        if (!flock($fp, LOCK_EX | LOCK_NB)) {
+            fclose($fp);
             throw new RuntimeException('已有升级任务正在执行');
         }
 
@@ -169,8 +188,8 @@ class Store
     public function releaseLock($fp): void
     {
         if (is_resource($fp)) {
-            @flock($fp, LOCK_UN);
-            @fclose($fp);
+            flock($fp, LOCK_UN);
+            fclose($fp);
         }
     }
 
@@ -181,11 +200,18 @@ class Store
         }
 
         if (is_file($path) || is_link($path)) {
-            @unlink($path);
+            $parent = dirname($path);
+            if (is_dir($parent) && is_writable($parent)) {
+                unlink($path);
+            }
             return;
         }
 
-        $items = @scandir($path);
+        if (!is_readable($path)) {
+            return;
+        }
+
+        $items = scandir($path);
         if (!is_array($items)) {
             return;
         }
@@ -198,7 +224,9 @@ class Store
             $this->removeTree($path . '/' . $item);
         }
 
-        @rmdir($path);
+        if (is_writable($path) && is_writable(dirname($path))) {
+            rmdir($path);
+        }
     }
 
     private static function inspectDir(string $path): array
@@ -276,16 +304,21 @@ class Store
             return false;
         }
 
-        $fp = @fopen($lockFile, 'c+');
+        $lockDir = dirname($lockFile);
+        if (!is_dir($lockDir) || !is_writable($lockDir)) {
+            return true;
+        }
+
+        $fp = fopen($lockFile, 'c+');
         if ($fp === false) {
             return true;
         }
 
-        $locked = !@flock($fp, LOCK_EX | LOCK_NB);
+        $locked = !flock($fp, LOCK_EX | LOCK_NB);
         if (!$locked) {
-            @flock($fp, LOCK_UN);
+            flock($fp, LOCK_UN);
         }
-        @fclose($fp);
+        fclose($fp);
 
         return $locked;
     }
@@ -300,7 +333,11 @@ class Store
                 continue;
             }
 
-            $items = @scandir($path);
+            if (!is_readable($path)) {
+                continue;
+            }
+
+            $items = scandir($path);
             if (!is_array($items)) {
                 continue;
             }

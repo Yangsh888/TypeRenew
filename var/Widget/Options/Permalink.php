@@ -77,11 +77,14 @@ RewriteRule ^(.*)$ {$basePath}index.php/$1 [L]
                     return true;
                 }
 
+                $htaccess = __TYPECHO_ROOT_DIR__ . '/.htaccess';
                 if (false !== $hasWrote) {
-                    @unlink(__TYPECHO_ROOT_DIR__ . '/.htaccess');
+                    if (is_file($htaccess) && is_writable($htaccess)) {
+                        unlink($htaccess);
+                    }
 
                     // Enhance compatibility for FastCGI-like setups using a WordPress-style rewrite rule.
-                    $hasWrote = file_put_contents(__TYPECHO_ROOT_DIR__ . '/.htaccess', "<IfModule mod_rewrite.c>
+                    $hasWrote = file_put_contents($htaccess, "<IfModule mod_rewrite.c>
 RewriteEngine On
 RewriteBase {$basePath}
 RewriteCond %{REQUEST_FILENAME} !-f
@@ -93,18 +96,23 @@ RewriteRule . {$basePath}index.php [L]
                         return true;
                     }
 
-                    unlink(__TYPECHO_ROOT_DIR__ . '/.htaccess');
+                    if (is_file($htaccess) && is_writable($htaccess)) {
+                        unlink($htaccess);
+                    }
                 }
             } catch (Client\Exception $e) {
-                if ($hasWrote) {
-                    @unlink(__TYPECHO_ROOT_DIR__ . '/.htaccess');
+                if ($hasWrote && isset($htaccess) && is_file($htaccess) && is_writable($htaccess)) {
+                    unlink($htaccess);
                 }
                 return false;
             }
 
             return false;
-        } elseif (file_exists(__TYPECHO_ROOT_DIR__ . '/.htaccess')) {
-            @unlink(__TYPECHO_ROOT_DIR__ . '/.htaccess');
+        } else {
+            $htaccess = __TYPECHO_ROOT_DIR__ . '/.htaccess';
+            if (is_file($htaccess) && is_writable($htaccess)) {
+                unlink($htaccess);
+            }
         }
 
         return true;

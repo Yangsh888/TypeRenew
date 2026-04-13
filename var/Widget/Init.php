@@ -101,8 +101,13 @@ class Init extends Widget
         $this->response->setContentType($options->contentType);
         Date::setTimezoneOffset($options->timezone);
 
-        if ($options->installed && User::alloc()->hasLogin()) {
-            @session_start();
+        if (
+            $options->installed
+            && User::alloc()->hasLogin()
+            && session_status() !== PHP_SESSION_ACTIVE
+            && !headers_sent()
+        ) {
+            session_start();
         }
     }
 }

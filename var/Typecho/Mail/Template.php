@@ -17,10 +17,11 @@ class Template
     public static function load(string $name, Options $options): string
     {
         $file = self::resolve($name, $options);
-        if (!self::validatePath($file)) {
+        if (!self::validatePath($file) || !is_readable($file)) {
             return '';
         }
-        $content = @file_get_contents($file);
+
+        $content = file_get_contents($file);
         return is_string($content) ? $content : '';
     }
 
@@ -81,8 +82,14 @@ class Template
             return 'Invalid theme path';
         }
 
-        if (!is_dir($dir) && !@mkdir($dir, 0755, true)) {
-            return 'Cannot create directory';
+        if (!is_dir($dir)) {
+            if (!is_dir($themeRoot) || !is_writable($themeRoot)) {
+                return 'Cannot create directory';
+            }
+
+            if (!mkdir($dir, 0755, true) && !is_dir($dir)) {
+                return 'Cannot create directory';
+            }
         }
 
         $file = $dir . '/' . $name . '.html';
@@ -90,7 +97,11 @@ class Template
             return 'File not writable';
         }
 
-        $ok = @file_put_contents($file, $content) !== false;
+        if (!is_writable($dir)) {
+            return 'File not writable';
+        }
+
+        $ok = file_put_contents($file, $content) !== false;
         return $ok ? true : 'Write failed';
     }
 
@@ -111,7 +122,7 @@ class Template
             return 'File not writable';
         }
 
-        return @unlink($file) ? true : 'Delete failed';
+        return unlink($file) ? true : 'Delete failed';
     }
 
     public static function normalizeName(string $name): string

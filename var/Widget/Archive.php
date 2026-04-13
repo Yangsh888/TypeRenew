@@ -1117,7 +1117,7 @@ EOF;
         }
 
         if ($this->request->is('directory') && 'page' == $this->parameter->type) {
-            $directory = explode('/', $this->request->get('directory'));
+            $directory = explode('/', (string) $this->request->get('directory', ''));
             $select->where('slug = ?', $directory[count($directory) - 1]);
         }
 
@@ -1272,7 +1272,7 @@ EOF;
         }
 
         if ($this->request->is('directory')) {
-            $directory = explode('/', $this->request->get('directory'));
+            $directory = explode('/', (string) $this->request->get('directory', ''));
             $slug = $directory[count($directory) - 1];
             $categorySelect->where('slug = ?', $slug);
             $alias .= ':' . $slug;

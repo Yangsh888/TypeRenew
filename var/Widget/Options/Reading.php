@@ -53,7 +53,7 @@ class Reading extends Permalink
         } elseif (
             'file' == $settings['frontPage'] && $this->request->is('frontPageFile') &&
             file_exists(__TYPECHO_ROOT_DIR__ . '/' . __TYPECHO_THEME_DIR__ . '/' . $this->options->theme . '/' .
-                ($file = trim($this->request->get('frontPageFile'), " ./\\")))
+                ($file = trim((string) $this->request->get('frontPageFile', ''), " ./\\")))
         ) {
             $settings['frontPage'] = 'file:' . $file;
         } else {

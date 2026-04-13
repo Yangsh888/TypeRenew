@@ -78,7 +78,6 @@ class Rows extends Contents
      */
     public function listPages($pageOptions = null)
     {
-        //初始化一些变量
         $pageOptions = Config::factory($pageOptions);
         $pageOptions->setDefault([
             'wrapTag'       => 'ul',
@@ -91,7 +90,7 @@ class Rows extends Contents
             'feedTemplate'  => '<a href="%s">RSS</a>'
         ]);
 
-        // 插件插件接口
+        // 插件接口
         self::pluginHandle()->trigger($plugged)->call('listPages', $pageOptions, $this);
 
         if (!$plugged) {

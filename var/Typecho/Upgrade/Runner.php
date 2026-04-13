@@ -79,7 +79,7 @@ class Runner
         $id = date('YmdHis') . '-' . bin2hex(random_bytes(4));
         $packagePath = $this->store->path('Packages/' . $id . '.zip');
 
-        if (!@move_uploaded_file($tmp, $packagePath)) {
+        if (!move_uploaded_file($tmp, $packagePath)) {
             throw new RuntimeException('升级包保存失败');
         }
 
@@ -143,7 +143,13 @@ class Runner
                 throw new RuntimeException('升级包读取失败: ' . $entry);
             }
 
-            $fp = @fopen($target, 'wb');
+            if (!is_dir($targetDir) || !is_writable($targetDir)) {
+                fclose($stream);
+                $zip->close();
+                throw new RuntimeException('升级包解压失败: ' . $entry);
+            }
+
+            $fp = fopen($target, 'wb');
             if ($fp === false) {
                 fclose($stream);
                 $zip->close();
@@ -276,7 +282,7 @@ class Runner
                 if (is_file($target)) {
                     $backup = $backupRoot . '/' . $relative;
                     $this->ensureDir(dirname($backup));
-                    if (!@copy($target, $backup)) {
+                    if (!is_readable($target) || !copy($target, $backup)) {
                         throw new RuntimeException('升级前备份失败: ' . $relative);
                     }
                     $rollback[] = ['type' => 'replace', 'target' => $target, 'backup' => $backup];
@@ -322,8 +328,10 @@ class Runner
         $tmp = $dir . '/.' . $base . '.new-' . $token;
         $old = $dir . '/.' . $base . '.old-' . $token;
 
-        if (!@copy($source, $tmp)) {
-            @unlink($tmp);
+        if (!is_readable($source) || !is_dir($dir) || !is_writable($dir) || !copy($source, $tmp)) {
+            if (is_file($tmp) && is_writable($dir)) {
+                unlink($tmp);
+            }
             throw new RuntimeException('文件写入失败: ' . $base);
         }
 
@@ -332,23 +340,33 @@ class Runner
         }
 
         if (is_file($target)) {
-            if (!@rename($target, $old)) {
-                @unlink($tmp);
+            if (!rename($target, $old)) {
+                if (is_file($tmp) && is_writable($dir)) {
+                    unlink($tmp);
+                }
                 throw new RuntimeException('文件替换失败: ' . $base);
             }
 
-            if (!@rename($tmp, $target)) {
-                @rename($old, $target);
-                @unlink($tmp);
+            if (!rename($tmp, $target)) {
+                if (is_file($old) && is_writable($dir)) {
+                    rename($old, $target);
+                }
+                if (is_file($tmp) && is_writable($dir)) {
+                    unlink($tmp);
+                }
                 throw new RuntimeException('文件替换失败: ' . $base);
             }
 
-            @unlink($old);
+            if (is_file($old) && is_writable($dir)) {
+                unlink($old);
+            }
             return;
         }
 
-        if (!@rename($tmp, $target)) {
-            @unlink($tmp);
+        if (!rename($tmp, $target)) {
+            if (is_file($tmp) && is_writable($dir)) {
+                unlink($tmp);
+            }
             throw new RuntimeException('文件写入失败: ' . $base);
         }
     }
@@ -372,7 +390,9 @@ class Runner
                 }
 
                 if ($packagePath !== '' && is_file($packagePath)) {
-                    @unlink($packagePath);
+                    if (is_writable(dirname($packagePath))) {
+                        unlink($packagePath);
+                    }
                     $removed++;
                 }
 
@@ -651,7 +671,12 @@ class Runner
         }
 
         if ($toVersion !== '') {
-            $content = (string) @file_get_contents($payloadDir . '/' . $target);
+            $versionFile = $payloadDir . '/' . $target;
+            if (!is_readable($versionFile)) {
+                throw new RuntimeException('升级包版本文件无法读取');
+            }
+
+            $content = (string) file_get_contents($versionFile);
             if ($content === '') {
                 throw new RuntimeException('升级包版本文件无法读取');
             }
@@ -707,7 +732,20 @@ class Runner
 
     private function ensureDir(string $dir): void
     {
-        if (!is_dir($dir) && !@mkdir($dir, 0755, true) && !is_dir($dir)) {
+        if (is_dir($dir)) {
+            return;
+        }
+
+        $parent = dirname($dir);
+        while (!is_dir($parent) && $parent !== dirname($parent)) {
+            $parent = dirname($parent);
+        }
+
+        if (!is_dir($parent) || !is_writable($parent)) {
+            throw new RuntimeException('目录不可写: ' . $dir);
+        }
+
+        if (!mkdir($dir, 0755, true) && !is_dir($dir)) {
             throw new RuntimeException('目录不可写: ' . $dir);
         }
     }
@@ -725,14 +763,15 @@ class Runner
 
             if ($type === 'replace') {
                 $backup = (string) ($operation['backup'] ?? '');
-                if ($backup !== '' && is_file($backup)) {
-                    @copy($backup, $target);
+                $targetDir = $target !== '' ? dirname($target) : '';
+                if ($backup !== '' && is_file($backup) && is_readable($backup) && $targetDir !== '' && is_dir($targetDir) && is_writable($targetDir)) {
+                    copy($backup, $target);
                 }
                 continue;
             }
 
-            if ($type === 'create' && $target !== '' && is_file($target)) {
-                @unlink($target);
+            if ($type === 'create' && $target !== '' && is_file($target) && is_writable(dirname($target))) {
+                unlink($target);
             }
         }
     }
@@ -743,7 +782,11 @@ class Runner
             return 0;
         }
 
-        $items = @scandir($dir);
+        if (!is_readable($dir)) {
+            return 0;
+        }
+
+        $items = scandir($dir);
         if (!is_array($items)) {
             return 0;
         }

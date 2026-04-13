@@ -174,13 +174,13 @@ $isAllPosts = ('on' == $request->get('__typecho_all_posts') || 'on' == \Typecho\
                                     <td class="kit-hidden-mb"><a
                                             href="<?php $options->adminUrl('manage-posts.php?__typecho_all_posts=off&uid=' . $posts->author->uid); ?>"><?php $posts->author(); ?></a>
                                     </td>
-                                    <td class="kit-hidden-mb"><?php foreach($posts->categories as $index => $category): ?><!--
-                                            --><?php echo ($index > 0 ? ', ' : '') . '<a href="';
+                                    <td class="kit-hidden-mb"><?php foreach($posts->categories as $index => $category): ?>
+                                        <?php echo ($index > 0 ? ', ' : '') . '<a href="';
                                             $options->adminUrl('manage-posts.php?category=' . $category['mid']
                                                 . (isset($request->uid) ? '&uid=' . $request->filter('encode')->uid : '')
                                                 . (isset($request->status) ? '&status=' . $request->filter('encode')->status : ''));
-                                            echo '">' . $category['name'] . '</a>'; ?><!--
-                                        --><?php endforeach; ?>
+                                            echo '">' . $category['name'] . '</a>'; ?>
+                                    <?php endforeach; ?>
                                     </td>
                                     <td>
                                         <?php if ('post_draft' == $posts->type || $posts->revision): ?>

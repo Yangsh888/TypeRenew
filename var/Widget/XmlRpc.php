@@ -51,7 +51,7 @@ class XmlRpc extends Contents implements ActionInterface, Hook
             parent::execute();
         }
 
-        // 临时保护模块
+        // XML-RPC 请求不会走常规表单令牌校验。
         $this->security->enable(false);
 
         $this->wpOptions = [
@@ -397,7 +397,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
             }
         }
 
-        /** 调用已有组件 */
         if ('page' == $type) {
             $widget = PageEdit::alloc(null, $input, function (PageEdit $page) {
                 $page->writePage();
@@ -422,13 +421,11 @@ class XmlRpc extends Contents implements ActionInterface, Hook
      */
     public function wpNewCategory(int $blogId, string $userName, string $password, array $category): int
     {
-        /** 开始接受数据 */
         $input['name'] = $category['name'];
         $input['slug'] = Common::slugName(Common::strBy($category['slug'] ?? null, $category['name']));
         $input['parent'] = $category['parent_id'] ?? ($category['parent'] ?? 0);
         $input['description'] = Common::strBy($category['description'] ?? null, $category['name']);
 
-        /** 调用已有组件 */
         $categoryWidget = CategoryEdit::alloc(null, $input, function (CategoryEdit $category) {
             $category->insertCategory();
         });
@@ -1196,9 +1193,7 @@ class XmlRpc extends Contents implements ActionInterface, Hook
     {
         $post = PostEdit::alloc(null, ['cid' => $postId], false);
 
-        /** 对文章内容做截取处理，以获得description和text_more*/
         [$excerpt, $more] = $this->getPostExtended($post);
-        /** 只需要分类的name*/
         $categories = array_column($post->categories, 'name');
         $tags = array_column($post->tags, 'name');
 
@@ -1242,13 +1237,8 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         $posts = PostAdmin::alloc('pageSize=' . $postsNum, 'status=all');
 
         $postStructs = [];
-        /** 如果这个post存在则输出，否则输出错误 */
         while ($posts->next()) {
-            /** 对文章内容做截取处理，以获得description和text_more*/
             [$excerpt, $more] = $this->getPostExtended($posts);
-
-            /** 只需要分类的name*/
-            /** 可以用flatten函数处理 */
             $categories = array_column($posts->categories, 'name');
             $tags = array_column($posts->tags, 'name');
 
@@ -1884,7 +1874,6 @@ EOF;
                 unset($api['pingback.ping']);
             }
 
-            /** 直接把初始化放到这里 */
             $server = new Server($api);
             $server->setHook($this);
             $server->serve();

@@ -708,7 +708,7 @@ EOF;
             [$type, $headerLen, $bodyLen]
                 = array_values(unpack($version == 'FILE' ? 'v3' : 'v1type/v1headerLen/V1bodyLen', $meta));
 
-            $header = @fread($fp, $headerLen);
+            $header = fread($fp, $headerLen);
             $offset += $headerLen;
 
             if (false === $header || strlen($header) != $headerLen) {
@@ -721,14 +721,14 @@ EOF;
                 }, 0);
             }
 
-            $body = @fread($fp, $bodyLen);
+            $body = fread($fp, $bodyLen);
             $offset += $bodyLen;
 
             if (false === $body || strlen($body) != $bodyLen) {
                 return false;
             }
 
-            $md5 = @fread($fp, 32);
+            $md5 = fread($fp, 32);
             $offset += 32;
 
             if (false === $md5 || $md5 != md5($meta . $header . $body)) {

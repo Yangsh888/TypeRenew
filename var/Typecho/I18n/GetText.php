@@ -70,9 +70,14 @@ class GetText
             return;
         }
 
+        if (!is_readable($file)) {
+            $this->short_circuit = true;
+            return;
+        }
+
         // Caching can be turned off
         $this->enable_cache = $enable_cache;
-        $this->STREAM = @fopen($file, 'rb');
+        $this->STREAM = fopen($file, 'rb');
 
         $unpacked = unpack('c', $this->read(4));
         $magic = array_shift($unpacked);

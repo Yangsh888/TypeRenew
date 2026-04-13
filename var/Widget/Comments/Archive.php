@@ -235,7 +235,6 @@ class Archive extends Comments
      */
     public function listComments($singleCommentOptions = null)
     {
-        //初始化一些变量
         $this->singleCommentOptions = Config::factory($singleCommentOptions);
         $this->singleCommentOptions->setDefault([
             'before'        => '<ol class="comment-list">',

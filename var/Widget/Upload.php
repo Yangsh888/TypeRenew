@@ -37,7 +37,8 @@ class Upload extends Contents implements ActionInterface
             return $result;
         }
 
-        return @unlink(__TYPECHO_ROOT_DIR__ . '/' . $content['attachment']->path);
+        $path = __TYPECHO_ROOT_DIR__ . '/' . $content['attachment']->path;
+        return is_file($path) && is_writable(dirname($path)) ? unlink($path) : false;
     }
 
     /**
@@ -194,21 +195,39 @@ class Upload extends Contents implements ActionInterface
         }
 
         if (isset($file['tmp_name'])) {
-            @unlink($path);
+            if (is_file($path) && !is_writable(dirname($path))) {
+                throw new \RuntimeException(_t('附件写入失败，请检查上传目录权限'));
+            }
 
-            if (!@move_uploaded_file($file['tmp_name'], $path)) {
+            if (is_file($path)) {
+                unlink($path);
+            }
+
+            if (!move_uploaded_file($file['tmp_name'], $path)) {
                 throw new \RuntimeException(_t('附件写入失败，请检查上传目录权限'));
             }
         } elseif (isset($file['bytes'])) {
-            @unlink($path);
+            if (is_file($path) && !is_writable(dirname($path))) {
+                throw new \RuntimeException(_t('附件写入失败，请检查上传目录权限'));
+            }
 
-            if (!file_put_contents($path, $file['bytes'])) {
+            if (is_file($path)) {
+                unlink($path);
+            }
+
+            if (file_put_contents($path, $file['bytes']) === false) {
                 throw new \RuntimeException(_t('附件写入失败，请检查上传目录权限'));
             }
         } elseif (isset($file['bits'])) {
-            @unlink($path);
+            if (is_file($path) && !is_writable(dirname($path))) {
+                throw new \RuntimeException(_t('附件写入失败，请检查上传目录权限'));
+            }
 
-            if (!file_put_contents($path, $file['bits'])) {
+            if (is_file($path)) {
+                unlink($path);
+            }
+
+            if (file_put_contents($path, $file['bits']) === false) {
                 throw new \RuntimeException(_t('附件写入失败，请检查上传目录权限'));
             }
         } else {
@@ -254,7 +273,11 @@ class Upload extends Contents implements ActionInterface
             return true;
         }
 
-        if (!@mkdir($last, 0755)) {
+        if (!is_dir($current) || !is_writable($current)) {
+            return false;
+        }
+
+        if (!mkdir($last, 0755) && !is_dir($last)) {
             return false;
         }
 
@@ -360,15 +383,15 @@ class Upload extends Contents implements ActionInterface
         $path = $path . '/' . $fileName;
 
         if (isset($file['tmp_name'])) {
-            if (!@move_uploaded_file($file['tmp_name'], $path)) {
+            if (!move_uploaded_file($file['tmp_name'], $path)) {
                 throw new \RuntimeException(_t('附件写入失败，请检查上传目录权限'));
             }
         } elseif (isset($file['bytes'])) {
-            if (!file_put_contents($path, $file['bytes'])) {
+            if (file_put_contents($path, $file['bytes']) === false) {
                 throw new \RuntimeException(_t('附件写入失败，请检查上传目录权限'));
             }
         } elseif (isset($file['bits'])) {
-            if (!file_put_contents($path, $file['bits'])) {
+            if (file_put_contents($path, $file['bits']) === false) {
                 throw new \RuntimeException(_t('附件写入失败，请检查上传目录权限'));
             }
         } else {

@@ -456,7 +456,9 @@ require_once __TYPECHO_ROOT_DIR__ . '/var/Typecho/Common.php';
     $configWritten = false;
 
     if (!$return) {
-        $configWritten = @file_put_contents(__TYPECHO_ROOT_DIR__ . '/config.inc.php', $code) !== false;
+        $configPath = __TYPECHO_ROOT_DIR__ . '/config.inc.php';
+        $configWritten = is_writable(__TYPECHO_ROOT_DIR__)
+            && file_put_contents($configPath, $code) !== false;
     }
 
     return $code;
@@ -807,7 +809,8 @@ function install_step_1_perform()
             }
         }
     } else {
-        if (!@mkdir($realUploadDir, 0755)) {
+        $parent = dirname($realUploadDir);
+        if (!is_dir($parent) || !is_writable($parent) || (!mkdir($realUploadDir, 0755) && !is_dir($realUploadDir))) {
             $writeable = false;
         }
     }

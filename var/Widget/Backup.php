@@ -99,7 +99,14 @@ class Backup extends BaseOptions implements ActionInterface
     public function listFiles(): array
     {
         if (!is_dir(__TYPECHO_BACKUP_DIR__)) {
-            @mkdir(__TYPECHO_BACKUP_DIR__, 0755, true);
+            $parent = dirname(__TYPECHO_BACKUP_DIR__);
+            if (!is_dir($parent) || !is_writable($parent)) {
+                return [];
+            }
+
+            if (!mkdir(__TYPECHO_BACKUP_DIR__, 0755, true) && !is_dir(__TYPECHO_BACKUP_DIR__)) {
+                return [];
+            }
         }
 
         $files = glob(__TYPECHO_BACKUP_DIR__ . '/*.dat');
@@ -351,7 +358,11 @@ class Backup extends BaseOptions implements ActionInterface
 
     private function readBackup(string $file, bool $collectRows): array
     {
-        $fp = @fopen($file, 'rb');
+        if (!is_file($file) || !is_readable($file)) {
+            throw new Exception(_t('无法读取备份文件'));
+        }
+
+        $fp = fopen($file, 'rb');
         if (!$fp) {
             throw new Exception(_t('无法读取备份文件'));
         }
@@ -359,28 +370,28 @@ class Backup extends BaseOptions implements ActionInterface
         $fileSize = filesize($file);
         $headerSize = strlen(self::HEADER);
         if ($fileSize < $headerSize) {
-            @fclose($fp);
+            fclose($fp);
             throw new Exception(_t('备份文件格式错误'));
         }
 
         $headerVersion = '';
         $footerVersion = '';
 
-        $fileHeader = @fread($fp, $headerSize);
+        $fileHeader = fread($fp, $headerSize);
         if (!$this->parseHeader($fileHeader, $headerVersion)) {
-            @fclose($fp);
+            fclose($fp);
             throw new Exception(_t('备份文件格式错误'));
         }
 
         fseek($fp, $fileSize - $headerSize);
-        $fileFooter = @fread($fp, $headerSize);
+        $fileFooter = fread($fp, $headerSize);
         if (!$this->parseHeader($fileFooter, $footerVersion)) {
-            @fclose($fp);
+            fclose($fp);
             throw new Exception(_t('备份文件格式错误'));
         }
 
         if ($headerVersion !== $footerVersion) {
-            @fclose($fp);
+            fclose($fp);
             throw new Exception(_t('备份文件头尾版本不一致'));
         }
 
@@ -406,7 +417,7 @@ class Backup extends BaseOptions implements ActionInterface
         while (!feof($fp) && $offset + $headerSize < $fileSize) {
             $data = Common::extractBackupBuffer($fp, $offset, $headerVersion);
             if (!$data) {
-                @fclose($fp);
+                fclose($fp);
                 throw new Exception(_t('恢复数据出现错误'));
             }
 
@@ -416,7 +427,7 @@ class Backup extends BaseOptions implements ActionInterface
             if ($table) {
                 $schema = json_decode($header, true);
                 if (!is_array($schema)) {
-                    @fclose($fp);
+                    fclose($fp);
                     throw new Exception(_t('备份文件格式错误'));
                 }
 
@@ -465,7 +476,7 @@ class Backup extends BaseOptions implements ActionInterface
             }
         }
 
-        @fclose($fp);
+        fclose($fp);
 
         $orphanCids = [];
         foreach (array_keys($commentCids) as $cid) {
@@ -589,7 +600,11 @@ class Backup extends BaseOptions implements ActionInterface
     {
         $fileName = date('Ymd_His') . '_before_import_' . uniqid() . '.dat';
         $path = __TYPECHO_BACKUP_DIR__ . '/' . $fileName;
-        $fp = @fopen($path, 'wb');
+        if (!is_dir(__TYPECHO_BACKUP_DIR__) || !is_writable(__TYPECHO_BACKUP_DIR__)) {
+            return null;
+        }
+
+        $fp = fopen($path, 'wb');
         if (!$fp) {
             return null;
         }
