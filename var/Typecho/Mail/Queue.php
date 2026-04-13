@@ -295,12 +295,11 @@ class Queue
                     throw new \RuntimeException('Invalid payload');
                 }
 
-                $msg = new Message(
+                $msg = self::buildMessage(
+                    $options,
                     (string) ($payload['to'] ?? ''),
                     (string) ($payload['subject'] ?? ''),
                     (string) ($payload['html'] ?? ''),
-                    (string) ($options->mailFrom ?? ''),
-                    (string) ($options->mailFromName ?? ''),
                     (string) ($payload['toName'] ?? ''),
                     (string) ($payload['text'] ?? '')
                 );
@@ -502,26 +501,29 @@ class Queue
         return true;
     }
 
+    public static function buildMessage(
+        Options $options,
+        string $to,
+        string $subject,
+        string $html,
+        string $toName = '',
+        string $text = ''
+    ): Message {
+        $sender = self::senderDefaults($options);
+
+        return new Message($to, $subject, $html, $sender['from'], $sender['fromName'], $toName, $text);
+    }
+
+    public static function buildTransport(Options $options): Transport
+    {
+        return self::transportName($options) === 'mail'
+            ? new Native()
+            : new Smtp(self::smtpConfig($options));
+    }
+
     private static function sendMessage(Message $message, Options $options): bool|string
     {
-        $encryptedPass = (string) ($options->mailSmtpPass ?? '');
-        $decryptedPass = \Utils\Cipher::decrypt($encryptedPass, (string) ($options->secret ?? ''));
-
-        $cfg = [
-            'host' => (string) ($options->mailSmtpHost ?? ''),
-            'port' => (int) ($options->mailSmtpPort ?? 25),
-            'user' => (string) ($options->mailSmtpUser ?? ''),
-            'pass' => $decryptedPass,
-            'secure' => (string) ($options->mailSmtpSecure ?? ''),
-            'timeout' => 10
-        ];
-
-        if (trim($message->from) === '') {
-            $message->from = trim((string) $cfg['user']);
-        }
-        if (trim($message->fromName) === '') {
-            $message->fromName = (string) ($options->mailFromName ?? $options->title ?? 'TypeRenew');
-        }
+        self::normalizeMessageSender($message, $options);
 
         if (trim($message->to) === '' || !filter_var($message->to, FILTER_VALIDATE_EMAIL)) {
             return 'Invalid recipient email';
@@ -530,12 +532,7 @@ class Queue
             return 'Invalid sender email';
         }
 
-        $transport = (string) ($options->mailTransport ?? 'smtp');
-        if ($transport === 'mail') {
-            return (new Native())->send($message);
-        }
-
-        return (new Smtp($cfg))->send($message);
+        return self::buildTransport($options)->send($message);
     }
 
     private static function retryDelay(int $attempt): int
@@ -562,6 +559,46 @@ class Queue
         ];
 
         return sha1(json_encode($base, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: '');
+    }
+
+    private static function senderDefaults(Options $options): array
+    {
+        return [
+            'from' => trim((string) ($options->mailFrom ?? $options->mailSmtpUser ?? '')),
+            'fromName' => (string) ($options->mailFromName ?? $options->title ?? 'TypeRenew')
+        ];
+    }
+
+    private static function smtpConfig(Options $options): array
+    {
+        $encryptedPass = (string) ($options->mailSmtpPass ?? '');
+        $decryptedPass = \Utils\Cipher::decrypt($encryptedPass, (string) ($options->secret ?? ''));
+
+        return [
+            'host' => (string) ($options->mailSmtpHost ?? ''),
+            'port' => (int) ($options->mailSmtpPort ?? 25),
+            'user' => (string) ($options->mailSmtpUser ?? ''),
+            'pass' => $decryptedPass,
+            'secure' => (string) ($options->mailSmtpSecure ?? ''),
+            'timeout' => 10
+        ];
+    }
+
+    private static function transportName(Options $options): string
+    {
+        return (string) ($options->mailTransport ?? 'smtp');
+    }
+
+    private static function normalizeMessageSender(Message $message, Options $options): void
+    {
+        $sender = self::senderDefaults($options);
+
+        if (trim($message->from) === '') {
+            $message->from = $sender['from'];
+        }
+        if (trim($message->fromName) === '') {
+            $message->fromName = $sender['fromName'];
+        }
     }
 
     private static function recentFails(Db $db, int $limit): array

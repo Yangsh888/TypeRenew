@@ -736,18 +736,25 @@ class Runner
             return;
         }
 
-        $parent = dirname($dir);
-        while (!is_dir($parent) && $parent !== dirname($parent)) {
-            $parent = dirname($parent);
-        }
+        $parent = $this->findExistingParent(dirname($dir));
 
-        if (!is_dir($parent) || !is_writable($parent)) {
+        if ($parent === null || !is_dir($parent) || !is_writable($parent)) {
             throw new RuntimeException('目录不可写: ' . $dir);
         }
 
         if (!mkdir($dir, 0755, true) && !is_dir($dir)) {
             throw new RuntimeException('目录不可写: ' . $dir);
         }
+    }
+
+    private function findExistingParent(string $dir): ?string
+    {
+        $current = $dir;
+        while (!is_dir($current) && $current !== dirname($current)) {
+            $current = dirname($current);
+        }
+
+        return is_dir($current) ? $current : null;
     }
 
     private function rollback(array $operations): void

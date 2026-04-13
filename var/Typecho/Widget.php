@@ -7,6 +7,9 @@ use Typecho\Widget\Request as WidgetRequest;
 use Typecho\Widget\Response as WidgetResponse;
 use Typecho\Widget\Terminal;
 
+/**
+ * 未知属性通过 __get/__set 映射到 $row，兼容旧式 Widget 行数据访问。
+ */
 #[\AllowDynamicProperties]
 abstract class Widget
 {

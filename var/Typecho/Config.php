@@ -2,6 +2,9 @@
 
 namespace Typecho;
 
+/**
+ * 轻量键值容器，未知键写入 currentConfig，用于参数和配置传递。
+ */
 class Config extends \stdClass implements \Iterator, \ArrayAccess
 {
     private array $currentConfig = [];

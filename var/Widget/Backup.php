@@ -310,37 +310,27 @@ class Backup extends BaseOptions implements ActionInterface
         if (!empty($_FILES)) {
             $file = $_FILES['file'] ?? reset($_FILES);
             if (!is_array($file)) {
-                Notice::alloc()->set(_t('没有选择任何备份文件'), 'error');
-                $this->finish();
-                return null;
+                return $this->failAndFinish(_t('没有选择任何备份文件'));
             }
 
             if (UPLOAD_ERR_NO_FILE == $file['error']) {
-                Notice::alloc()->set(_t('没有选择任何备份文件'), 'error');
-                $this->finish();
-                return null;
+                return $this->failAndFinish(_t('没有选择任何备份文件'));
             }
 
             if (UPLOAD_ERR_OK == $file['error'] && is_uploaded_file($file['tmp_name'])) {
                 return $file['tmp_name'];
             }
 
-            Notice::alloc()->set($this->uploadErrorMessage((int) $file['error']), 'error');
-            $this->finish();
-            return null;
+            return $this->failAndFinish($this->uploadErrorMessage((int) $file['error']));
         }
 
         if (!$this->request->is('file')) {
-            Notice::alloc()->set(_t('没有选择任何备份文件'), 'error');
-            $this->finish();
-            return null;
+            return $this->failAndFinish(_t('没有选择任何备份文件'));
         }
 
         $file = basename((string) $this->request->filter('trim')->get('file'));
         if (!preg_match('/^[A-Za-z0-9._-]+\.dat$/', $file)) {
-            Notice::alloc()->set(_t('备份文件名不合法'), 'error');
-            $this->finish();
-            return null;
+            return $this->failAndFinish(_t('备份文件名不合法'));
         }
 
         $base = realpath(__TYPECHO_BACKUP_DIR__);
@@ -348,9 +338,7 @@ class Backup extends BaseOptions implements ActionInterface
         $real = realpath($path);
 
         if (!$base || !$real || strpos($real, $base) !== 0 || !is_file($real)) {
-            Notice::alloc()->set(_t('备份文件不存在'), 'error');
-            $this->finish();
-            return null;
+            return $this->failAndFinish(_t('备份文件不存在'));
         }
 
         return $real;
@@ -879,24 +867,23 @@ class Backup extends BaseOptions implements ActionInterface
         }
 
         if ($withBlocking) {
-            foreach ($preflight['blocking'] as $line) {
-                $messages[] = _t('阻断：%s', $line);
-            }
+            $this->appendTaggedMessages($messages, $preflight['blocking'], '阻断');
         }
 
-        foreach ($preflight['warnings'] as $line) {
-            $messages[] = _t('预警：%s', $line);
-        }
+        $this->appendTaggedMessages($messages, $preflight['warnings'], '预警');
 
-        foreach ($this->runtimeWarnings as $line) {
-            $messages[] = _t('预警：%s', $line);
-        }
+        $this->appendTaggedMessages($messages, $this->runtimeWarnings, '预警');
 
-        foreach ($this->pluginWarnings as $line) {
-            $messages[] = _t('预警：%s', $line);
-        }
+        $this->appendTaggedMessages($messages, $this->pluginWarnings, '预警');
 
         return $messages;
+    }
+
+    private function appendTaggedMessages(array &$messages, array $lines, string $tag): void
+    {
+        foreach ($lines as $line) {
+            $messages[] = _t('%s：%s', $tag, $line);
+        }
     }
 
     private function uploadErrorMessage(int $code): string
@@ -927,6 +914,13 @@ class Backup extends BaseOptions implements ActionInterface
     private function finish(): void
     {
         $this->response->redirect($this->options->adminUrl('backup.php', true));
+    }
+
+    private function failAndFinish(string $message): ?string
+    {
+        Notice::alloc()->set($message, 'error');
+        $this->finish();
+        return null;
     }
 
     /**

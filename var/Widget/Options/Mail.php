@@ -6,7 +6,6 @@ use Typecho\Common;
 use Typecho\Db;
 use Typecho\Widget\Helper\Form;
 use Typecho\Mail\Queue;
-use Typecho\Mail\Message;
 use Typecho\Mail\Notify;
 use Utils\Cipher;
 use Widget\ActionInterface;
@@ -22,15 +21,6 @@ class Mail extends Options implements ActionInterface
     use EditTrait;
 
     private const PASS_PLACEHOLDER = '********';
-
-    public static function decryptPassword(?string $encrypted, string $secret): string
-    {
-        $value = trim((string) $encrypted);
-        if ($value === '') {
-            return '';
-        }
-        return Cipher::decrypt($value, $secret);
-    }
 
     public function updateMailSettings()
     {
@@ -128,22 +118,8 @@ class Mail extends Options implements ActionInterface
         $vars = $this->mockTemplateVars($tpl);
         $subject = (string) ($vars['subject'] ?? _t('TypeRenew 邮件测试'));
         $html = Template::render($tpl, $vars, $this->options);
-
-        $from = (string) ($this->options->mailFrom ?? $this->options->mailSmtpUser ?? '');
-        $fromName = (string) ($this->options->mailFromName ?? $this->options->title ?? 'TypeRenew');
-        $msg = new Message($to, $subject, $html, $from, $fromName, '');
-
-        $transport = (string) ($this->options->mailTransport ?? 'smtp');
-        $res = $transport === 'mail'
-            ? (new \Typecho\Mail\Native())->send($msg)
-            : (new \Typecho\Mail\Smtp([
-                'host' => (string) ($this->options->mailSmtpHost ?? ''),
-                'port' => (int) ($this->options->mailSmtpPort ?? 25),
-                'user' => (string) ($this->options->mailSmtpUser ?? ''),
-                'pass' => self::decryptPassword($this->options->mailSmtpPass ?? '', (string) $this->options->secret),
-                'secure' => (string) ($this->options->mailSmtpSecure ?? ''),
-                'timeout' => 10
-            ]))->send($msg);
+        $msg = Queue::buildMessage($this->options, $to, $subject, $html);
+        $res = Queue::buildTransport($this->options)->send($msg);
 
         $this->noticeAndGoBack(
             $res === true ? _t('测试邮件已发送') : _t('测试邮件发送失败：%s', (string) $res),

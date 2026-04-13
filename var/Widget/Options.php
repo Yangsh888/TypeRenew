@@ -101,10 +101,35 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
  * @property string $cacheDriver
  * @property int $cacheTtl
  * @property string $cachePrefix
+ * @property int $cacheCommentFlush
  * @property string $cacheRedisHost
  * @property int $cacheRedisPort
  * @property string $cacheRedisPassword
  * @property int $cacheRedisDatabase
+ * @property int $mailEnable
+ * @property string $mailTransport
+ * @property string $mailAdmin
+ * @property string $mailFrom
+ * @property string $mailFromName
+ * @property string $mailSmtpHost
+ * @property int $mailSmtpPort
+ * @property string $mailSmtpUser
+ * @property string $mailSmtpPass
+ * @property string $mailSmtpSecure
+ * @property string $mailQueueMode
+ * @property int $mailBatchSize
+ * @property int $mailMaxAttempts
+ * @property int $mailKeepDays
+ * @property int $mailNotifyOwner
+ * @property int $mailNotifyGuest
+ * @property int $mailNotifyPending
+ * @property int $mailNotifyMe
+ * @property string $mailSubjectOwner
+ * @property string $mailSubjectGuest
+ * @property string $mailSubjectPending
+ * @property string $mailCronKey
+ * @property string $mailRuntimeError
+ * @property int $mailRuntimeErrorAt
  * @property bool $frontArchive
  * @property array $plugins
  * @property string $secret

@@ -4,7 +4,6 @@ namespace Widget;
 
 use Typecho\Common;
 use Typecho\Db;
-use Typecho\Mail\Message;
 use Typecho\Mail\Queue;
 use Typecho\Mail\Template;
 use Utils\PasswordReset;
@@ -112,17 +111,7 @@ class Forgot extends Users implements ActionInterface
         $html = Template::render('reset', $vars, $this->options);
         $subject = $vars['subject'];
 
-        $from = (string) ($this->options->mailFrom ?? $this->options->mailSmtpUser ?? '');
-        $fromName = (string) ($this->options->mailFromName ?? $siteTitle);
-
-        $msg = new Message(
-            (string) ($user['mail'] ?? ''),
-            $subject,
-            $html,
-            $from,
-            $fromName,
-            ''
-        );
+        $msg = Queue::buildMessage($this->options, (string) ($user['mail'] ?? ''), $subject, $html);
 
         Queue::enqueue('reset', $msg, Db::get(), $this->options);
     }
