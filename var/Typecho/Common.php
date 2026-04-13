@@ -767,15 +767,15 @@ EOF;
 
         public static function mimeContentType(string $fileName): string
         {
-            if (function_exists('mime_content_type')) {
+            if (is_file($fileName) && is_readable($fileName) && function_exists('mime_content_type')) {
                 return mime_content_type($fileName);
             }
 
-            if (function_exists('finfo_open')) {
-                $fInfo = @finfo_open(FILEINFO_MIME_TYPE);
+            if (is_file($fileName) && is_readable($fileName) && function_exists('finfo_open')) {
+                $fInfo = finfo_open(FILEINFO_MIME_TYPE);
 
                 if (false !== $fInfo) {
-                    $mimeType = finfo_file($fInfo, $fileName);
+                    $mimeType = (string) finfo_file($fInfo, $fileName);
                     finfo_close($fInfo);
                     return $mimeType;
                 }

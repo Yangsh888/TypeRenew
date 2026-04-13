@@ -804,7 +804,16 @@ function install_step_1_perform()
     $writeable = true;
     if (is_dir($realUploadDir)) {
         if (!is_writable($realUploadDir) || !is_readable($realUploadDir)) {
-            if (!@chmod($realUploadDir, 0755)) {
+            set_error_handler(static function (): bool {
+                return true;
+            });
+            try {
+                $chmodOk = chmod($realUploadDir, 0755);
+            } finally {
+                restore_error_handler();
+            }
+
+            if (!$chmodOk && (!is_writable($realUploadDir) || !is_readable($realUploadDir))) {
                 $writeable = false;
             }
         }

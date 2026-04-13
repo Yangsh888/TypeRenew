@@ -45,8 +45,7 @@ class Config extends \stdClass implements \Iterator, \ArrayAccess
         reset($this->currentConfig);
     }
 
-    #[\ReturnTypeWillChange]
-    public function current()
+    public function current(): mixed
     {
         return current($this->currentConfig);
     }
@@ -56,8 +55,7 @@ class Config extends \stdClass implements \Iterator, \ArrayAccess
         next($this->currentConfig);
     }
 
-    #[\ReturnTypeWillChange]
-    public function key()
+    public function key(): mixed
     {
         return key($this->currentConfig);
     }
@@ -92,23 +90,22 @@ class Config extends \stdClass implements \Iterator, \ArrayAccess
         return $this->currentConfig;
     }
 
-    public function offsetExists($offset): bool
+    public function offsetExists(mixed $offset): bool
     {
         return isset($this->currentConfig[$offset]);
     }
 
-    #[\ReturnTypeWillChange]
-    public function offsetGet($offset)
+    public function offsetGet(mixed $offset): mixed
     {
         return $this->currentConfig[$offset] ?? null;
     }
 
-    public function offsetSet($offset, $value): void
+    public function offsetSet(mixed $offset, mixed $value): void
     {
         $this->currentConfig[$offset] = $value;
     }
 
-    public function offsetUnset($offset): void
+    public function offsetUnset(mixed $offset): void
     {
         unset($this->currentConfig[$offset]);
     }

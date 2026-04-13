@@ -587,7 +587,7 @@ class Request
             $requestUri = $_SERVER['UNENCODED_URL'];
         } elseif (isset($_SERVER['REQUEST_URI'])) {
             $requestUri = $_SERVER['REQUEST_URI'];
-            $parts = @parse_url($requestUri);
+            $parts = parse_url($requestUri);
 
             if (isset($_SERVER['HTTP_HOST']) && strstr($requestUri, $_SERVER['HTTP_HOST'])) {
                 if (false !== $parts) {
