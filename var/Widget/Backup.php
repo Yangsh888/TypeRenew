@@ -23,9 +23,6 @@ class Backup extends BaseOptions implements ActionInterface
     public const HEADER = '%TYPECHO_BACKUP_XXXX%';
     public const HEADER_VERSION = '0001';
 
-    /**
-     * @var array
-     */
     private array $types = [
         'contents'      => 1,
         'comments'      => 2,
@@ -35,9 +32,6 @@ class Backup extends BaseOptions implements ActionInterface
         'fields'        => 6
     ];
 
-    /**
-     * @var array
-     */
     private array $fields = [
         'contents'      => [
             'cid', 'title', 'slug', 'created', 'modified', 'text', 'order', 'authorId',
@@ -60,19 +54,10 @@ class Backup extends BaseOptions implements ActionInterface
         ]
     ];
 
-    /**
-     * @var array
-     */
     private array $lastIds = [];
 
-    /**
-     * @var array
-     */
     private array $cleared = [];
 
-    /**
-     * @var bool
-     */
     private bool $login = false;
 
     private array $statusWhitelist = ['approved', 'waiting', 'spam'];

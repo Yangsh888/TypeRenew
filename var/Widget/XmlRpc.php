@@ -34,10 +34,7 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
 
 class XmlRpc extends Contents implements ActionInterface, Hook
 {
-    /**
-     * wordpress风格的系统选项
-     * @var array
-     */
+    /** WordPress 风格的系统选项。 */
     private array $wpOptions;
 
     /**
@@ -521,7 +518,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
             $attachment['text'] = json_encode($text);
 
-            /** 更新数据 */
             $updateRows = $this->update($attachment, $this->db->sql()->where('cid = ?', $postId));
             return $updateRows > 0;
         }
@@ -565,7 +561,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
      */
     public function wpGetAuthors(int $blogId, string $userName, string $password): array
     {
-        /** 构建查询*/
         $select = $this->db->select('table.users.uid', 'table.users.name', 'table.users.screenName')
             ->from('table.users');
         $authors = $this->db->fetchAll($select);
@@ -1291,7 +1286,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
     {
         $categories = CategoryRows::alloc();
 
-        /** 初始化category数组*/
         $categoryStructs = [];
         while ($categories->next()) {
             $categoryStructs[] = [
