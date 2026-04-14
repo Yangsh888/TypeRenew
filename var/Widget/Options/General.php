@@ -59,7 +59,6 @@ class General extends Options implements ActionInterface
      * 过滤掉可执行的后缀名
      *
      * @param string $ext
-     * @return boolean
      */
     public function removeShell(string $ext): bool
     {

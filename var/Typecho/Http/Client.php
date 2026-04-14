@@ -8,7 +8,6 @@ use Typecho\Http\Client\Exception;
 /**
  * Http客户端
  *
- * @category typecho
  * @package Http
  */
 class Client
@@ -156,7 +155,6 @@ class Client
     /**
      * 设置需要请求的Json数据
      *
-     * @param $data
      * @param string $method
      * @return $this
      */
@@ -367,9 +365,7 @@ class Client
     }
 
     /**
-     * 获取回执代码
-     *
-     * @return integer
+     * 获取返回的响应状态
      */
     public function getResponseStatus(): int
     {

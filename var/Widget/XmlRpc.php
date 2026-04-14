@@ -986,7 +986,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
      * @param string $userName
      * @param string $password
      * @param integer $commentId
-     * @return boolean
      * @throws \Typecho\Db\Exception
      */
     public function wpDeleteComment(int $blogId, string $userName, string $password, int $commentId): bool
@@ -1005,7 +1004,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
      * @param string $password
      * @param integer $commentId
      * @param array $struct
-     * @return boolean
      */
     public function wpEditComment(int $blogId, string $userName, string $password, int $commentId, array $struct): bool
     {

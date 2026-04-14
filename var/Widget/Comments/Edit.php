@@ -76,7 +76,6 @@ class Edit extends Comments implements ActionInterface
      *
      * @param integer $coid 评论主键
      * @param string $status 状态
-     * @return boolean
      * @throws Exception
      */
     private function mark(int $coid, string $status): bool

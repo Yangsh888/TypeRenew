@@ -102,7 +102,6 @@ class Admin extends Users
     /**
      * 发布文章数
      *
-     * @return integer
      * @throws Db\Exception
      */
     protected function ___postsNum(): int

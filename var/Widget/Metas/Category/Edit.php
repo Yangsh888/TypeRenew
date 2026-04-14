@@ -18,7 +18,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
 /**
  * 编辑分类组件
  *
- * @category typecho
  * @package Widget
  * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
  * @license GNU General Public License 2.0
@@ -41,7 +40,6 @@ class Edit extends Metas implements ActionInterface
      * 判断分类是否存在
      *
      * @param integer $mid 分类主键
-     * @return boolean
      * @throws Exception
      */
     public function categoryExists(int $mid): bool
@@ -84,7 +82,6 @@ class Edit extends Metas implements ActionInterface
      * 判断分类名转换到缩略名后是否合法
      *
      * @param string $name 分类名
-     * @return boolean
      * @throws Exception
      */
     public function nameToSlug(string $name): bool
@@ -103,7 +100,6 @@ class Edit extends Metas implements ActionInterface
      * 判断分类缩略名是否存在
      *
      * @param string $slug 缩略名
-     * @return boolean
      * @throws Exception
      */
     public function slugExists(string $slug): bool

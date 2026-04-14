@@ -297,7 +297,6 @@ RewriteRule . {$basePath}index.php [L]
      * 检验规则是否冲突
      *
      * @param string $value 路由规则
-     * @return boolean
      */
     public function checkRule(string $value): bool
     {

@@ -20,7 +20,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
  * 编辑文章组件
  *
  * @author qining
- * @category typecho
  * @package Widget
  * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
  * @license GNU General Public License 2.0
@@ -41,7 +40,6 @@ class Edit extends Contents implements ActionInterface
      * 判断文件名转换到缩略名后是否合法
      *
      * @param string $name 文件名
-     * @return boolean
      */
     public function nameToSlug(string $name): bool
     {

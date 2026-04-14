@@ -122,7 +122,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
      * 插入内容
      *
      * @param array $rows 内容数组
-     * @return integer
      * @throws Exception
      */
     public function insert(array $rows): int
@@ -209,7 +208,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
      *
      * @param array $rows 内容数组
      * @param Query $condition 更新条件
-     * @return integer
      * @throws Exception
      */
     public function update(array $rows, Query $condition): int
@@ -273,7 +271,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
      * 删除内容
      *
      * @param Query $condition 查询对象
-     * @return integer
      * @throws Exception
      */
     public function delete(Query $condition): int
@@ -285,7 +282,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
      * 按照条件计算内容数量
      *
      * @param Query $condition 查询对象
-     * @return integer
      * @throws Exception
      */
     public function size(Query $condition): int

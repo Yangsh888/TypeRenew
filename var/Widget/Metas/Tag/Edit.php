@@ -31,7 +31,6 @@ class Edit extends Metas implements ActionInterface
      * 判断标签是否存在
      *
      * @param integer $mid 标签主键
-     * @return boolean
      * @throws Exception
      */
     public function tagExists(int $mid): bool
@@ -70,7 +69,6 @@ class Edit extends Metas implements ActionInterface
      * 判断标签名转换到缩略名后是否合法
      *
      * @param string $name 标签名
-     * @return boolean
      * @throws Exception
      */
     public function nameToSlug(string $name): bool
@@ -89,7 +87,6 @@ class Edit extends Metas implements ActionInterface
      * 判断标签缩略名是否存在
      *
      * @param string $slug 缩略名
-     * @return boolean
      * @throws Exception
      */
     public function slugExists(string $slug): bool
