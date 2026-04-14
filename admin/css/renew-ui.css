@@ -5365,6 +5365,33 @@ body.tr-admin .typecho-list-table td {
     background: transparent;
 }
 
+body.tr-admin.tr-page-plugins .tr-plugin-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+}
+
+body.tr-admin.tr-page-plugins .tr-plugin-actions .inline-operate-form {
+    display: inline-flex;
+    margin: 0;
+}
+
+body.tr-admin.tr-page-plugins .tr-plugin-actions .btn.btn-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 32px;
+    padding: 0 12px;
+    white-space: nowrap;
+    text-decoration: none;
+}
+
+body.tr-admin.tr-page-plugins .tr-plugin-actions .btn.btn-link:hover {
+    text-decoration: none;
+}
+
 body.tr-admin.tr-page-manage-comments .tr-comment-actions {
     margin-top: 10px;
     line-height: 1.3;

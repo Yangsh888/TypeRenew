@@ -57,15 +57,16 @@ $pluginHomepage = static function ($value): string {
                                     <?php echo $homepage === '' ? $activatedPlugins->author : '<a href="' . $homepage . '" target="_blank" rel="noopener noreferrer">' . $activatedPlugins->author . '</a>'; ?></td>
                                 <td>
                                     <?php if ($activatedPlugins->activate || $activatedPlugins->deactivate || $activatedPlugins->config || $activatedPlugins->personalConfig): ?>
-                                        <?php if ($activatedPlugins->config): ?>
-                                            <a href="<?php $options->adminUrl('options-plugin.php?config=' . $activatedPlugins->name); ?>"><?php _e('设置'); ?></a>
-                                            &bull;
-                                        <?php endif; ?>
-                                        <form action="<?php echo $pluginAction; ?>" method="post" class="inline-operate-form">
-                                            <input type="hidden" name="_" value="<?php echo $pluginToken; ?>">
-                                            <input type="hidden" name="deactivate" value="<?php echo htmlspecialchars($activatedPlugins->name, ENT_QUOTES, 'UTF-8'); ?>">
-                                            <button type="submit" class="btn btn-link" lang="<?php _e('你确认要禁用插件 %s 吗?', $activatedPlugins->name); ?>"><?php _e('禁用'); ?></button>
-                                        </form>
+                                        <div class="tr-plugin-actions">
+                                            <?php if ($activatedPlugins->config): ?>
+                                                <a class="btn btn-link" href="<?php $options->adminUrl('options-plugin.php?config=' . $activatedPlugins->name); ?>"><?php _e('设置'); ?></a>
+                                            <?php endif; ?>
+                                            <form action="<?php echo $pluginAction; ?>" method="post" class="inline-operate-form">
+                                                <input type="hidden" name="_" value="<?php echo $pluginToken; ?>">
+                                                <input type="hidden" name="deactivate" value="<?php echo htmlspecialchars($activatedPlugins->name, ENT_QUOTES, 'UTF-8'); ?>">
+                                                <button type="submit" class="btn btn-link" lang="<?php _e('你确认要禁用插件 %s 吗?', $activatedPlugins->name); ?>"><?php _e('禁用'); ?></button>
+                                            </form>
+                                        </div>
                                     <?php else: ?>
                                         <span class="important"><?php _e('即插即用'); ?></span>
                                     <?php endif; ?>
@@ -123,11 +124,13 @@ $pluginHomepage = static function ($value): string {
                                     <td class="kit-hidden-mb"><?php $homepage = $pluginHomepage($deactivatedPlugins->homepage); ?>
                                         <?php echo $homepage === '' ? $deactivatedPlugins->author : '<a href="' . $homepage . '" target="_blank" rel="noopener noreferrer">' . $deactivatedPlugins->author . '</a>'; ?></td>
                                     <td>
-                                        <form action="<?php echo $pluginAction; ?>" method="post" class="inline-operate-form">
-                                            <input type="hidden" name="_" value="<?php echo $pluginToken; ?>">
-                                            <input type="hidden" name="activate" value="<?php echo htmlspecialchars($deactivatedPlugins->name, ENT_QUOTES, 'UTF-8'); ?>">
-                                            <button type="submit" class="btn btn-link"><?php _e('启用'); ?></button>
-                                        </form>
+                                        <div class="tr-plugin-actions">
+                                            <form action="<?php echo $pluginAction; ?>" method="post" class="inline-operate-form">
+                                                <input type="hidden" name="_" value="<?php echo $pluginToken; ?>">
+                                                <input type="hidden" name="activate" value="<?php echo htmlspecialchars($deactivatedPlugins->name, ENT_QUOTES, 'UTF-8'); ?>">
+                                                <button type="submit" class="btn btn-link"><?php _e('启用'); ?></button>
+                                            </form>
+                                        </div>
                                     </td>
                                 </tr>
                             <?php endwhile; ?>
