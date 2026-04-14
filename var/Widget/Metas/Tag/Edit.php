@@ -144,10 +144,8 @@ class Edit extends Metas implements ActionInterface
      */
     public function form(?string $action = null): Form
     {
-        /** 构建表格 */
         $form = new Form($this->security->getIndex('/action/metas-tag-edit'), Form::POST_METHOD);
 
-        /** 标签名称 */
         $name = new Form\Element\Text(
             'name',
             null,
@@ -157,7 +155,6 @@ class Edit extends Metas implements ActionInterface
         );
         $form->addInput($name);
 
-        /** 标签缩略名 */
         $slug = new Form\Element\Text(
             'slug',
             null,
@@ -167,21 +164,17 @@ class Edit extends Metas implements ActionInterface
         );
         $form->addInput($slug);
 
-        /** 标签动作 */
         $do = new Form\Element\Hidden('do');
         $form->addInput($do);
 
-        /** 标签主键 */
         $mid = new Form\Element\Hidden('mid');
         $form->addInput($mid);
 
-        /** 提交按钮 */
         $submit = new Form\Element\Submit();
         $submit->input->setAttribute('class', 'btn primary');
         $form->addItem($submit);
 
         if ($this->request->is('mid') && 'insert' != $action) {
-            /** 更新模式 */
             $meta = $this->db->fetchRow($this->select()
                 ->where('mid = ?', $this->request->get('mid'))
                 ->where('type = ?', 'tag')->limit(1));

@@ -179,12 +179,12 @@ $commentToken = htmlspecialchars($security->getToken($options->index . '/action/
                         </tr>
                         <?php endif; ?>
                         </tbody>
-                    </table><!-- end .typecho-list-table -->
+                    </table>
 
                 <?php if(isset($request->cid)): ?>
                 <input type="hidden" value="<?php echo $request->filter('html')->cid; ?>" name="cid" />
                 <?php endif; ?>
-                </form><!-- end .operate-form -->
+                </form>
 
                 <?php if($comments->have()): ?>
                     <form method="get" class="typecho-list-operate">
@@ -193,8 +193,8 @@ $commentToken = htmlspecialchars($security->getToken($options->index . '/action/
                         </ul>
                     </form>
                 <?php endif; ?>
-            </div><!-- end .typecho-list -->
-        </div><!-- end .typecho-page-main -->
+            </div>
+        </div>
     </div>
 </main>
 <?php

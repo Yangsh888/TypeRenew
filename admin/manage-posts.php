@@ -203,7 +203,7 @@ $postToken = htmlspecialchars($security->getToken($options->index . '/action/con
                         <?php endif; ?>
                         </tbody>
                     </table>
-                </form><!-- end .operate-form -->
+                </form>
 
                 <?php if ($posts->have()): ?>
                     <form method="get" class="typecho-list-operate">
@@ -212,8 +212,8 @@ $postToken = htmlspecialchars($security->getToken($options->index . '/action/con
                         </ul>
                     </form>
                 <?php endif; ?>
-            </div><!-- end .typecho-list -->
-        </div><!-- end .typecho-page-main -->
+            </div>
+        </div>
     </div>
 </main>
 

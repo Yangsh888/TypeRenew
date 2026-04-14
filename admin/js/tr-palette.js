@@ -262,7 +262,6 @@
             if (!name || !href || seen.has(href)) return;
             seen.add(href);
 
-            // 检查是否已经存在相同 URL 的命令，避免重复
             let exists = false;
             commands.forEach(cmd => {
                 if (cmd.url === href) {

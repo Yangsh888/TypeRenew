@@ -126,9 +126,9 @@ $pageToken = htmlspecialchars($security->getToken($options->index . '/action/con
                         <?php endif; ?>
                         </tbody>
                     </table>
-                </form><!-- end .operate-form -->
-            </div><!-- end .typecho-list -->
-        </div><!-- end .typecho-page-main -->
+                </form>
+            </div>
+        </div>
     </div>
 </main>
 

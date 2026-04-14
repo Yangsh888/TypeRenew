@@ -83,8 +83,9 @@ $mediaToken = htmlspecialchars($security->getToken($options->index . '/action/co
                                     </td>
                                     <td class="kit-hidden-mb"><?php $attachments->author(); ?></td>
                                     <td class="kit-hidden-mb">
-                                        <?php if ($attachments->parentPost->cid): ?>
-                                            <a href="<?php $options->adminUrl('write-' . (0 === strpos($attachments->parentPost->type, 'post') ? 'post' : 'page') . '.php?cid=' . $attachments->parentPost->cid); ?>"><?php $attachments->parentPost->title(); ?></a>
+                                        <?php $parentPost = $attachments->parentPost; ?>
+                                        <?php if ($parentPost->cid): ?>
+                                            <a href="<?php $options->adminUrl('write-' . (0 === strpos((string) $parentPost->type, 'post') ? 'post' : 'page') . '.php?cid=' . $parentPost->cid); ?>"><?php echo htmlspecialchars((string) $parentPost->title, ENT_QUOTES, 'UTF-8'); ?></a>
                                         <?php else: ?>
                                             <span class="description"><?php _e('未归档'); ?></span>
                                         <?php endif; ?>
@@ -98,8 +99,8 @@ $mediaToken = htmlspecialchars($security->getToken($options->index . '/action/co
                             </tr>
                         <?php endif; ?>
                         </tbody>
-                    </table><!-- end .typecho-list-table -->
-                </form><!-- end .operate-form -->
+                    </table>
+                </form>
 
                 <?php if ($attachments->have()): ?>
                     <ul class="typecho-pager">
@@ -108,7 +109,7 @@ $mediaToken = htmlspecialchars($security->getToken($options->index . '/action/co
                 <?php endif; ?>
 
             </div>
-        </div><!-- end .typecho-page-main -->
+        </div>
     </div>
 </main>
 

@@ -298,26 +298,21 @@ class Profile extends Users implements ActionInterface
      */
     public function passwordForm(): Form
     {
-        /** 构建表格 */
         $form = new Form($this->security->getIndex('/action/users-profile'), Form::POST_METHOD);
         $form->setAttribute('id', 'tr-profile-form-password');
 
-        /** 用户密码 */
         $password = new Form\Element\Password('password', null, null, _t('用户密码'), _t('为此用户分配一个密码')
             . '<br />' . _t('建议使用特殊字符与字母、数字的混编样式，以增加系统安全性'));
         $password->input->setAttribute('class', 'w-60');
         $form->addInput($password);
 
-        /** 用户密码确认 */
         $confirm = new Form\Element\Password('confirm', null, null, _t('用户密码确认'), _t('请确认你的密码，与上面输入的密码保持一致'));
         $confirm->input->setAttribute('class', 'w-60');
         $form->addInput($confirm);
 
-        /** 用户动作 */
         $do = new Form\Element\Hidden('do', null, 'password');
         $form->addInput($do);
 
-        /** 提交按钮 */
         $submit = new Form\Element\Submit('submit', null, _t('更新密码'));
         $submit->input->setAttribute('class', 'btn primary');
         $form->addItem($submit);

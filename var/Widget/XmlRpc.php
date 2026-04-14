@@ -610,10 +610,8 @@ class XmlRpc extends Contents implements ActionInterface, Hook
             $select->limit($maxResults);
         }
 
-        /** 不要category push到contents的容器中 */
         $categories = MetasFrom::alloc(['query' => $select]);
 
-        /** 初始化categorise数组*/
         $categoryStructs = [];
         while ($categories->next()) {
             $categoryStructs[] = [
@@ -1381,7 +1379,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
     {
         $categories = CategoryRows::alloc();
 
-        /** 初始化categorise数组*/
         $categoryStructs = [];
         while ($categories->next()) {
             $categoryStructs[] = [

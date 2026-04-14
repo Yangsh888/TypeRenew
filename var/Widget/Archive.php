@@ -36,7 +36,7 @@ class Archive extends Contents
 
     private string $themeDir;
 
-    private Query $countSql;
+    private ?Query $countSql = null;
 
     private ?int $total = null;
 
@@ -206,7 +206,7 @@ class Archive extends Contents
         return $this->countSql;
     }
 
-    public function setCountSql($countSql)
+    public function setCountSql(Query $countSql): void
     {
         $this->countSql = $countSql;
     }
@@ -230,7 +230,7 @@ class Archive extends Contents
     public function getTotal(): int
     {
         if (!isset($this->total)) {
-            $this->total = $this->size($this->countSql);
+            $this->total = $this->countSql instanceof Query ? $this->size($this->countSql) : $this->length;
         }
 
         return $this->total;

@@ -95,16 +95,16 @@ $users = \Widget\Users\Admin::alloc();
                             </tr>
                         <?php endwhile; ?>
                         </tbody>
-                    </table><!-- end .typecho-list-table -->
-                </form><!-- end .operate-form -->
+                    </table>
+                </form>
 
                 <?php if ($users->have()): ?>
                     <ul class="typecho-pager">
                         <?php $users->pageNav(); ?>
                     </ul>
                 <?php endif; ?>
-            </div><!-- end .typecho-list -->
-        </div><!-- end .typecho-page-main -->
+            </div>
+        </div>
     </div>
 </main>
 

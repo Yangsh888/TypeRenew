@@ -265,7 +265,6 @@ class General extends Options implements ActionInterface
         );
         $form->addInput($attachmentTypes->multiMode());
 
-        /** 提交按钮 */
         $submit = new Form\Element\Submit('submit', null, _t('保存设置'));
         $submit->input->setAttribute('class', 'btn primary');
         $form->addItem($submit);

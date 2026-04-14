@@ -12,17 +12,6 @@ namespace Typecho\Widget\Helper;
  */
 class EmptyClass
 {
-    private static ?EmptyClass $instance = null;
-
-    public static function getInstance(): EmptyClass
-    {
-        if (null === self::$instance) {
-            self::$instance = new self();
-        }
-
-        return self::$instance;
-    }
-
     public function __call(string $name, array $args)
     {
         return $this;

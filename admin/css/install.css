@@ -11,13 +11,11 @@
     --input-focus-bg: #ffffff;
     --divider: rgba(0, 0, 0, 0.08);
     
-    /* Shadows & Radius */
     --shadow-card: 0 24px 60px rgba(0, 0, 0, 0.08), 0 8px 20px rgba(0, 0, 0, 0.04);
     --radius-card: 22px;
     --radius-input: 12px;
     --radius-btn: 12px;
-    
-    /* Animation */
+
     --ease-out: cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
@@ -103,7 +101,6 @@ h1 a:hover img {
     vertical-align: middle;
 }
 
-/* Main Card */
 .typecho-page-main {
     background: var(--card-bg);
     backdrop-filter: saturate(180%) blur(24px);
@@ -113,10 +110,9 @@ h1 a:hover img {
     box-shadow: var(--shadow-card);
     padding: 40px !important;
     position: relative;
-    overflow: hidden; /* For smooth corners */
+    overflow: hidden;
 }
 
-/* Typography */
 .typecho-page-title {
     width: 100%;
     text-align: center;
@@ -125,7 +121,7 @@ h1 a:hover img {
 }
 
 .typecho-page-title h2 {
-    font-size: 24px; /* Reduced from 32px */
+    font-size: 24px;
     font-weight: 700;
     letter-spacing: -0.015em;
     margin: 0 0 30px;
@@ -159,7 +155,6 @@ a:hover {
     text-decoration: underline;
 }
 
-/* Form Layout */
 #typecho-welcome {
     margin-top: 0;
     background: #ebebeb;
@@ -181,14 +176,13 @@ ul.typecho-option li {
     margin-bottom: 28px;
 }
 
-/* Form Elements */
 label.typecho-label {
     display: block;
     font-size: 14px;
     font-weight: 600;
     color: var(--text-main);
     margin-bottom: 10px;
-    margin-left: 4px; /* Align visually */
+    margin-left: 4px;
 }
 
 input[type="text"],
@@ -199,9 +193,9 @@ select {
     width: 100%;
     box-sizing: border-box;
     padding: 0 16px;
-    height: 54px; /* Fixed height for consistency */
-    font-size: 17px; /* 17px prevents iOS zoom */
-    line-height: 54px; /* Vertically center text */
+    height: 54px;
+    font-size: 17px;
+    line-height: 54px;
     font-family: inherit;
     background-color: var(--input-bg);
     border: 1px solid transparent;
@@ -224,7 +218,6 @@ input:focus, textarea:focus, select:focus {
     outline: none;
 }
 
-/* Select Styling */
 select {
     appearance: none;
     -webkit-appearance: none;
@@ -234,12 +227,11 @@ select {
     background-position: right 16px center;
     padding-right: 40px;
     cursor: pointer;
-    background-color: var(--input-bg); /* Ensure background is set */
-    color: var(--text-main) !important; /* Force visible text color */
+    background-color: var(--input-bg);
+    color: var(--text-main) !important;
     opacity: 1;
 }
 
-/* Description Text */
 .description {
     color: var(--text-secondary);
     font-size: 13px;
@@ -248,17 +240,16 @@ select {
     line-height: 1.4;
 }
 
-/* Buttons */
 button.btn.primary {
     display: block;
     width: 100%;
     padding: 16px 24px;
-    min-height: 52px; /* Ensure minimum height */
-    height: auto; /* Allow growth for wrapping text */
+    min-height: 52px;
+    height: auto;
     font-size: 17px;
     font-weight: 600;
     line-height: 1.4;
-    white-space: normal; /* Allow text wrapping */
+    white-space: normal;
     color: #fff;
     background: var(--primary-color);
     border: none;
@@ -288,7 +279,6 @@ button[disabled] {
     transform: none;
 }
 
-/* Warning Box */
 .warning {
     background: #fff8eb;
     border: 1px solid rgba(255, 149, 0, 0.15);
@@ -307,7 +297,6 @@ button[disabled] {
     margin-bottom: 4px;
 }
 
-/* Step 1 List Styling */
 #typecho-welcome ul {
     padding-left: 0;
     margin-bottom: 30px;
@@ -332,7 +321,6 @@ button[disabled] {
     border-radius: 50%;
 }
 
-/* Advanced Options Spacing */
 details {
     margin-top: 20px;
     margin-bottom: 30px;
@@ -350,10 +338,9 @@ details summary {
 }
 
 details[open] summary {
-    margin-bottom: 24px; /* Space when open */
+    margin-bottom: 24px;
 }
 
-/* Remove double spacing */
 details ul.typecho-option:last-child li:last-child {
     margin-bottom: 0;
 }
@@ -427,10 +414,9 @@ p.submit select {
     }
 }
 
-/* Error Messages - Redesigned */
 form > .message {
     display: none;
-    background: rgba(255, 59, 48, 0.08); /* Red glass effect */
+    background: rgba(255, 59, 48, 0.08);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 59, 48, 0.2);
@@ -447,11 +433,10 @@ form > .message {
     animation: fadeIn 0.3s var(--ease-out);
 }
 
-/* Error message content styling */
 form > .message > p:first-child:not(:last-child) {
     display: block;
     margin-bottom: 24px;
-    color: #d70015; /* Ensure text is red */
+    color: #d70015;
     text-align: center;
     font-size: 16px;
     width: 100%;
@@ -459,23 +444,23 @@ form > .message > p:first-child:not(:last-child) {
 }
 
 .message p {
-    margin: 20px 0 0 0; /* Add top margin for spacing */
+    margin: 20px 0 0 0;
     display: flex;
-    flex-direction: row; /* Horizontal layout */
-    gap: 16px; /* Space between buttons */
-    justify-content: center; /* Center align */
+    flex-direction: row;
+    gap: 16px;
+    justify-content: center;
     width: 100%;
 }
 
 .message p button {
-    flex: 1; /* Equal width */
+    flex: 1;
     margin-left: 0;
-    padding: 10px 16px; /* Reduced padding */
-    background: #d70015; /* Red background */
+    padding: 10px 16px;
+    background: #d70015;
     border: none;
     border-radius: var(--radius-btn);
     font-weight: 600;
-    font-size: 14px; /* Reduced font size */
+    font-size: 14px;
     color: #fff;
     cursor: pointer;
     transition: all 0.2s var(--ease-out);
@@ -493,7 +478,6 @@ form > .message > p:first-child:not(:last-child) {
     transform: scale(0.98);
 }
 
-/* Success Page */
 #success {
     text-align: center;
 }
@@ -564,17 +548,15 @@ form > .message > p:first-child:not(:last-child) {
     font-size: 14px;
 }
 
-/* Keyframes */
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(-10px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* Mobile Optimizations */
 @media (max-width: 600px) {
     body {
         padding: 0;
-        background: #fff; /* White background on mobile */
+        background: #fff;
     }
 
     h1 {

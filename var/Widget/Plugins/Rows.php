@@ -51,8 +51,6 @@ class Rows extends Widget
                     $info['name'] = $pluginName;
 
                     $info['dependence'] = Plugin::checkDependence($info['since']);
-
-                    /** 默认即插即用 */
                     $info['activated'] = true;
 
                     if ($info['activate'] || $info['deactivate'] || $info['config'] || $info['personalConfig']) {

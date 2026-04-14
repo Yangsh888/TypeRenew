@@ -159,14 +159,11 @@ class Edit extends Metas implements ActionInterface
      */
     public function form(?string $action = null): Form
     {
-        /** 构建表格 */
         $form = new Form($this->security->getIndex('/action/metas-category-edit'), Form::POST_METHOD);
 
-        /** 分类名称 */
         $name = new Form\Element\Text('name', null, null, _t('分类名称') . ' *');
         $form->addInput($name);
 
-        /** 分类缩略名 */
         $slug = new Form\Element\Text(
             'slug',
             null,
@@ -176,7 +173,6 @@ class Edit extends Metas implements ActionInterface
         );
         $form->addInput($slug);
 
-        /** 父级分类 */
         $options = [0 => _t('不选择')];
         $parents = Rows::allocWithAlias(
             'options',
@@ -196,7 +192,6 @@ class Edit extends Metas implements ActionInterface
         );
         $form->addInput($parent);
 
-        /** 分类描述 */
         $description = new Form\Element\Textarea(
             'description',
             null,
@@ -206,21 +201,17 @@ class Edit extends Metas implements ActionInterface
         );
         $form->addInput($description);
 
-        /** 分类动作 */
         $do = new Form\Element\Hidden('do');
         $form->addInput($do);
 
-        /** 分类主键 */
         $mid = new Form\Element\Hidden('mid');
         $form->addInput($mid);
 
-        /** 提交按钮 */
         $submit = new Form\Element\Submit();
         $submit->input->setAttribute('class', 'btn primary');
         $form->addItem($submit);
 
         if (isset($this->request->mid) && 'insert' != $action) {
-            /** 更新模式 */
             $meta = $this->db->fetchRow($this->select()
                 ->where('mid = ?', $this->request->mid)
                 ->where('type = ?', 'category')->limit(1));
