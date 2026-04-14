@@ -54,7 +54,7 @@ class Runner
     {
         $db->query(
             $db->update('table.options')
-                ->rows(['value' => 'Typecho ' . $version])
+                ->rows(['value' => Common::generator($version)])
                 ->where('name = ?', 'generator')
         );
     }

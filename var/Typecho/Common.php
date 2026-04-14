@@ -109,7 +109,13 @@ namespace Typecho {
 
     class Common
     {
-        public const VERSION = '1.4.0';
+        public const SOFTWARE = 'TypeRenew';
+        public const VERSION = '1.4.1';
+
+        public static function generator(?string $version = null): string
+        {
+            return self::SOFTWARE . ' ' . ($version ?? self::VERSION);
+        }
 
         public static function url(?string $path, ?string $prefix): string
         {

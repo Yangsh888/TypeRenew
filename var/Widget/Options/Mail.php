@@ -39,6 +39,7 @@ class Mail extends Options implements ActionInterface
             'mailSmtpPassChanged',
             'mailSmtpSecure',
             'mailQueueMode',
+            'mailAsyncIps',
             'mailBatchSize',
             'mailMaxAttempts',
             'mailKeepDays',
@@ -78,6 +79,7 @@ class Mail extends Options implements ActionInterface
 
         $mode = (string) ($settings['mailQueueMode'] ?? 'async');
         $settings['mailQueueMode'] = in_array($mode, ['sync', 'async', 'cron'], true) ? $mode : 'async';
+        $settings['mailAsyncIps'] = $this->normalizeIpList((string) ($settings['mailAsyncIps'] ?? ''));
         $settings['mailBatchSize'] = max(1, min(200, (int) ($settings['mailBatchSize'] ?? 50)));
         $settings['mailMaxAttempts'] = max(1, min(10, (int) ($settings['mailMaxAttempts'] ?? 3)));
         $settings['mailKeepDays'] = max(1, min(365, (int) ($settings['mailKeepDays'] ?? 30)));
@@ -322,6 +324,16 @@ class Mail extends Options implements ActionInterface
         );
         $form->addInput($mailQueueMode);
 
+        $mailAsyncIps = new Form\Element\Text(
+            'mailAsyncIps',
+            null,
+            (string) ($this->options->mailAsyncIps ?? ''),
+            _t('异步回调白名单'),
+            _t('可选，填写允许触发异步回调的服务器 IP，多个用逗号或空格分隔；留空则不限制')
+        );
+        $mailAsyncIps->input->setAttribute('class', 'w-100 mono');
+        $form->addInput($mailAsyncIps);
+
         $mailCronKey = new Form\Element\Text(
             'mailCronKey',
             null,
@@ -511,6 +523,20 @@ class Mail extends Options implements ActionInterface
         );
         $element->input->setAttribute('class', 'w-100 mono');
         $form->addInput($element);
+    }
+
+    private function normalizeIpList(string $value): string
+    {
+        $ips = [];
+        foreach (preg_split('/[\s,]+/', trim($value)) as $item) {
+            $item = trim((string) $item);
+            if ($item === '' || !filter_var($item, FILTER_VALIDATE_IP)) {
+                continue;
+            }
+            $ips[$item] = $item;
+        }
+
+        return implode(', ', array_values($ips));
     }
 
     private function buildMockTemplateContext(): array

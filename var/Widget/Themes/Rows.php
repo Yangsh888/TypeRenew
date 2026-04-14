@@ -55,10 +55,15 @@ class Rows extends Widget
                 }
             }
 
-            $clone = $result[$activated];
-            unset($result[$activated]);
-            array_unshift($result, $clone);
-            array_filter($result, [$this, 'push']);
+            if (!empty($result) && isset($result[$activated])) {
+                $clone = $result[$activated];
+                unset($result[$activated]);
+                array_unshift($result, $clone);
+            }
+
+            foreach ($result as $theme) {
+                $this->push($theme);
+            }
         }
     }
 

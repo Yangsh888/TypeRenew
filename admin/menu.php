@@ -29,6 +29,7 @@ $trIconMap = [
 
 $trPanelIconMap = [
     'RenewGo/Panel.php' => 'i-external',
+    'RenewSEO/Panel.php' => 'i-spark',
 ];
 
 $trIconOf = function (string $href) use ($trIconMap, $trPanelIconMap): ?string {

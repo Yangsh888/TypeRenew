@@ -165,13 +165,7 @@
     const btnNav = document.querySelector('[data-tr-nav]');
     const mq = window.matchMedia('(max-width: 768px)');
 
-    const storage = (() => {
-        try {
-            return window.localStorage;
-        } catch (e) {
-            return null;
-        }
-    })();
+    const store = window.TypechoStore || null;
 
     const setCollapsed = (collapsed, persist = true) => {
         if (mq.matches) {
@@ -189,8 +183,8 @@
         if (btnNav) {
             btnNav.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
         }
-        if (persist && storage) {
-            storage.setItem('trSidebarCollapsed', collapsed ? '1' : '0');
+        if (persist && store) {
+            store.set('trSidebarCollapsed', collapsed ? '1' : '0');
         }
     };
 
@@ -199,7 +193,7 @@
             setCollapsed(true, false);
             return;
         }
-        const saved = storage ? storage.getItem('trSidebarCollapsed') : null;
+        const saved = store ? store.get('trSidebarCollapsed', null) : null;
         setCollapsed(saved === '1', false);
     };
 

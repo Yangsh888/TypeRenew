@@ -3,6 +3,7 @@
 namespace Utils\Migration;
 
 use Typecho\Db;
+use Utils\Schema;
 use Utils\Migration\Steps\InstallMailAndResetInfrastructureStep;
 use Widget\Options;
 
@@ -13,9 +14,18 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
 class SchemaManager
 {
     private const CRITICAL_TABLES = [
-        'mail_queue' => '邮件队列表',
-        'mail_unsub' => '邮件退订表',
-        'password_resets' => '密码重置表'
+        'mail_queue' => [
+            'label' => '邮件队列表',
+            'columns' => ['id', 'type', 'status', 'attempts', 'lockedUntil', 'sendAt', 'created', 'updated', 'lastError', 'dedupeKey', 'payload']
+        ],
+        'mail_unsub' => [
+            'label' => '邮件退订表',
+            'columns' => ['id', 'email', 'scope', 'created']
+        ],
+        'password_resets' => [
+            'label' => '密码重置表',
+            'columns' => ['id', 'email', 'token', 'created', 'expires', 'used']
+        ]
     ];
 
     public static function inspectCriticalSchema(Db $db, Options $options): array
@@ -23,17 +33,19 @@ class SchemaManager
         $items = [];
         $missing = [];
 
-        foreach (self::CRITICAL_TABLES as $key => $label) {
+        foreach (self::CRITICAL_TABLES as $key => $meta) {
             $exists = self::tableExists($db, 'table.' . $key);
+            $columnsOk = $exists && self::columnsExist($db, (string) $options->dbPrefix . $key, (array) ($meta['columns'] ?? []));
             $item = [
                 'key' => $key,
-                'label' => $label,
+                'label' => (string) ($meta['label'] ?? $key),
                 'table' => (string) $options->dbPrefix . $key,
-                'exists' => $exists
+                'exists' => $exists,
+                'columnsOk' => $columnsOk
             ];
             $items[] = $item;
 
-            if (!$exists) {
+            if (!$exists || !$columnsOk) {
                 $missing[] = $item;
             }
         }
@@ -78,5 +90,16 @@ class SchemaManager
         } catch (\Typecho\Db\Adapter\SQLException $e) {
             return false;
         }
+    }
+
+    private static function columnsExist(Db $db, string $table, array $columns): bool
+    {
+        foreach ($columns as $column) {
+            if (!Schema::columnExists($db, $table, (string) $column)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

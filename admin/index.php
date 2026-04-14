@@ -368,7 +368,7 @@ include 'common-js.php';
             return;
         }
 
-        var cache = window.sessionStorage;
+        var store = window.TypechoStore || null;
         var cacheKey = 'trDashboardFeedDataV3';
         var tsKey = 'trDashboardFeedTsV3';
         var ttlMs = 6 * 60 * 60 * 1000;
@@ -428,28 +428,19 @@ include 'common-js.php';
         }
 
         function readCache() {
-            if (!cache) {
+            if (!store) {
                 return [];
             }
-
-            try {
-                var raw = cache.getItem(cacheKey) || '[]';
-                var parsed = JSON.parse(raw);
-                return Array.isArray(parsed) ? parsed : [];
-            } catch (e) {
-                return [];
-            }
+            var parsed = store.sessionGetJson(cacheKey, []);
+            return Array.isArray(parsed) ? parsed : [];
         }
 
         function saveCache(items) {
-            if (!cache) {
+            if (!store) {
                 return;
             }
-
-            try {
-                cache.setItem(cacheKey, JSON.stringify(items || []));
-                cache.setItem(tsKey, String(now));
-            } catch (e) {}
+            store.sessionSetJson(cacheKey, items || []);
+            store.sessionSet(tsKey, String(now));
         }
 
         function applyCacheWithHint(text) {
@@ -463,13 +454,11 @@ include 'common-js.php';
             return false;
         }
 
-        try {
-            var ts = cache ? parseInt(cache.getItem(tsKey) || '0', 10) : 0;
-            var cached = readCache();
-            if (cached.length > 0 && ts && (now - ts) < ttlMs && applyItems(cached)) {
-                return;
-            }
-        } catch (e) {}
+        var ts = store ? parseInt(store.sessionGet(tsKey, '0') || '0', 10) : 0;
+        var cached = readCache();
+        if (cached.length > 0 && ts && (now - ts) < ttlMs && applyItems(cached)) {
+            return;
+        }
 
         $.get('<?php $options->index('/action/ajax?do=feed'); ?>', function (o) {
             var items = [];

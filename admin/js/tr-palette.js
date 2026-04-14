@@ -14,6 +14,7 @@
 
     const STORAGE_KEY_RECENT = 'trCmdRecent';
     const STORAGE_KEY_HISTORY = 'trCmdHistory';
+    const store = window.TypechoStore || null;
     const MAX_RECENT = 10;
     const MAX_HISTORY = 20;
     const MAX_RESULTS = 16;
@@ -39,20 +40,13 @@
     }
 
     function storageGet(key, defaultValue) {
-        try {
-            const raw = localStorage.getItem(key);
-            if (!raw) return defaultValue;
-            const parsed = JSON.parse(raw);
-            return parsed !== null ? parsed : defaultValue;
-        } catch (e) {
-            return defaultValue;
-        }
+        return store ? store.getJson(key, defaultValue) : defaultValue;
     }
 
     function storageSet(key, value) {
-        try {
-            localStorage.setItem(key, JSON.stringify(value));
-        } catch (e) {}
+        if (store) {
+            store.setJson(key, value);
+        }
     }
 
     function readRecent() {
@@ -170,12 +164,9 @@
         storageSet('trTheme', pref);
         const evt = new CustomEvent('tr-theme-change', { detail: { pref: pref } });
         window.dispatchEvent(evt);
-        try {
-            const script = document.createElement('script');
-            script.text = '(function(){var p;try{p=localStorage.getItem("trTheme")||"system";}catch(e){p="system";}var d=false;if(p==="dark"){d=true;}else if(p==="system"){try{d=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches;}catch(e){d=false;}}var r=document.documentElement;if(d){r.classList.add("tr-theme-dark");}else{r.classList.remove("tr-theme-dark");}})();';
-            document.head.appendChild(script);
-            script.remove();
-        } catch (e) {}
+        if (window.TypechoTheme && typeof window.TypechoTheme.apply === 'function') {
+            window.TypechoTheme.apply();
+        }
     }
 
     function toggleFullscreen() {
@@ -195,14 +186,15 @@
     }
 
     function clearCache() {
-        try {
-            ['trTheme', 'trSidebarCollapsed', 'trCmdRecent', 'trCmdHistory'].forEach(k => {
-                localStorage.removeItem(k);
-            });
-            showNotice('success', '前端缓存已清除');
-        } catch (e) {
+        if (!store) {
             showNotice('error', '清除缓存失败');
+            return;
         }
+
+        ['trTheme', 'trSidebarCollapsed', 'trCmdRecent', 'trCmdHistory'].forEach(k => {
+            store.remove(k);
+        });
+        showNotice('success', '前端缓存已清除');
     }
 
     function showNotice(type, message) {

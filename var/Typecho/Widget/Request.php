@@ -213,6 +213,16 @@ class Request
         return $this->request->isJson();
     }
 
+    public function getRawBody(): string
+    {
+        return $this->request->getRawBody();
+    }
+
+    public function getJsonBody(): array
+    {
+        return $this->request->getJsonBody();
+    }
+
     /**
      * 应用过滤器
      *

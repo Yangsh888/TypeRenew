@@ -98,7 +98,7 @@ class Ajax extends BaseOptions implements ActionInterface
             try {
                 $client->send('https://typecho.org/version.json');
 
-                /** 匹配内容体 */
+                /** 读取响应体并解析 release 信息 */
                 $response = $client->getResponseBody();
                 $json = json_decode($response, true);
 
@@ -119,6 +119,7 @@ class Ajax extends BaseOptions implements ActionInterface
                     }
                 }
             } catch (\Exception $e) {
+                error_log('[Ajax] checkVersion: ' . $e->getMessage());
             }
         }
 

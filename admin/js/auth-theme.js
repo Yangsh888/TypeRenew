@@ -22,6 +22,7 @@
     var key = 'trAuthTheme';
     var btn = document.getElementById('trAuthThemeBtn');
     var menu = document.getElementById('trAuthThemeMenu');
+    var store = window.TypechoStore || null;
     if (!btn || !menu) return;
 
     var allClasses = themes.map(function (t) { return 'tr-auth-' + t.id; });
@@ -29,13 +30,15 @@
     function setTheme(id) {
         allClasses.forEach(function (c) { body.classList.remove(c); });
         body.classList.add('tr-auth-' + id);
-        try { localStorage.setItem(key, id); } catch (e) {}
+        if (store) {
+            store.set(key, id);
+        }
         var found = themes.find(function (t) { return t.id === id; });
         btn.textContent = found ? found.name : id;
     }
 
     function getSaved() {
-        try { return localStorage.getItem(key); } catch (e) { return null; }
+        return store ? store.get(key, null) : null;
     }
 
     var saved = getSaved();

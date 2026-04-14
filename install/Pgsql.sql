@@ -115,7 +115,7 @@ CREATE SEQUENCE "typecho_users_seq";
 
 CREATE TABLE "typecho_users" (  "uid" INT NOT NULL DEFAULT nextval('typecho_users_seq') ,
   "name" VARCHAR(32) NULL DEFAULT NULL,
-  "password" VARCHAR(64) NULL DEFAULT NULL,
+  "password" VARCHAR(255) NULL DEFAULT NULL,
   "mail" VARCHAR(150) NULL DEFAULT NULL,
   "url" VARCHAR(150) NULL DEFAULT NULL,
   "screenName" VARCHAR(32) NULL DEFAULT NULL,
@@ -128,51 +128,3 @@ CREATE TABLE "typecho_users" (  "uid" INT NOT NULL DEFAULT nextval('typecho_user
   UNIQUE ("name"),
   UNIQUE ("mail")
 );
-
-CREATE SEQUENCE "typecho_mail_queue_seq";
-
-CREATE TABLE "typecho_mail_queue" (
-  "id" BIGINT NOT NULL DEFAULT nextval('typecho_mail_queue_seq'),
-  "type" VARCHAR(16) NOT NULL,
-  "status" VARCHAR(16) NOT NULL,
-  "attempts" INT NOT NULL DEFAULT '0',
-  "lockedUntil" INT NOT NULL DEFAULT '0',
-  "sendAt" INT NOT NULL DEFAULT '0',
-  "created" INT NOT NULL DEFAULT '0',
-  "updated" INT NOT NULL DEFAULT '0',
-  "lastError" VARCHAR(500) NOT NULL DEFAULT '',
-  "dedupeKey" VARCHAR(40) NOT NULL DEFAULT '',
-  "payload" TEXT NULL DEFAULT NULL,
-  PRIMARY KEY ("id")
-);
-
-CREATE INDEX "typecho_mail_queue_status_sendat" ON "typecho_mail_queue" ("status", "sendAt");
-CREATE INDEX "typecho_mail_queue_lockedUntil" ON "typecho_mail_queue" ("lockedUntil");
-CREATE UNIQUE INDEX "typecho_mail_queue_dedupeKey" ON "typecho_mail_queue" ("dedupeKey");
-
-CREATE SEQUENCE "typecho_mail_unsub_seq";
-
-CREATE TABLE "typecho_mail_unsub" (
-  "id" BIGINT NOT NULL DEFAULT nextval('typecho_mail_unsub_seq'),
-  "email" VARCHAR(255) NOT NULL,
-  "scope" VARCHAR(32) NOT NULL,
-  "created" INT NOT NULL DEFAULT '0',
-  PRIMARY KEY ("id"),
-  UNIQUE ("email", "scope")
-);
-
-CREATE SEQUENCE "typecho_password_resets_seq";
-
-CREATE TABLE "typecho_password_resets" (
-  "id" BIGINT NOT NULL DEFAULT nextval('typecho_password_resets_seq'),
-  "email" VARCHAR(150) NOT NULL,
-  "token" VARCHAR(64) NOT NULL,
-  "created" INT NOT NULL DEFAULT '0',
-  "expires" INT NOT NULL DEFAULT '0',
-  "used" INT NOT NULL DEFAULT '0',
-  PRIMARY KEY ("id")
-);
-
-CREATE INDEX "typecho_password_resets_email" ON "typecho_password_resets" ("email");
-CREATE INDEX "typecho_password_resets_token" ON "typecho_password_resets" ("token");
-CREATE INDEX "typecho_password_resets_expires" ON "typecho_password_resets" ("expires");

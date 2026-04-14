@@ -255,7 +255,7 @@ function install_get_default_options(): array
             'charset' => 'UTF-8',
             'contentType' => 'text/html',
             'gzip' => 0,
-            'generator' => 'TypeRenew ' . \Typecho\Common::VERSION,
+            'generator' => \Typecho\Common::generator(),
             'title' => 'Hello World',
             'description' => 'Your description here.',
             'keywords' => 'typerenew,php,blog',
@@ -326,6 +326,7 @@ function install_get_default_options(): array
             'mailSmtpPass' => '',
             'mailSmtpSecure' => '',
             'mailQueueMode' => 'async',
+            'mailAsyncIps' => '',
             'mailCronKey' => \Typecho\Common::randString(32),
             'mailBatchSize' => 50,
             'mailMaxAttempts' => 3,
@@ -1241,6 +1242,9 @@ function install_step_2_perform()
                 $installDb->query($script, \Typecho\Db::WRITE);
             }
         }
+
+        \Utils\Schema::ensureCoreIndexes($installDb);
+        \Utils\Schema::ensureMailInfra($installDb);
     } catch (\Typecho\Db\Exception $e) {
         $code = $e->getCode();
 

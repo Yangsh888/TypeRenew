@@ -66,6 +66,7 @@ class Init extends Widget
         ]);
 
         $options = Options::alloc();
+        self::normalizeGenerator($options);
         Cache::init([
             'status' => (int) ($options->cacheStatus ?? 0),
             'driver' => (string) ($options->cacheDriver ?? 'redis'),
@@ -109,5 +110,26 @@ class Init extends Widget
         ) {
             session_start();
         }
+    }
+
+    private static function normalizeGenerator(Options $options): void
+    {
+        $generator = trim((string) ($options->generator ?? ''));
+        if ($generator === '' || !preg_match('/^(Typecho|TypeRenew)\s+(.+)$/', $generator, $matches)) {
+            return;
+        }
+
+        $normalized = Common::generator(trim($matches[2]));
+        if ($generator === $normalized) {
+            return;
+        }
+
+        Db::get()->query(
+            Db::get()->update('table.options')
+                ->rows(['value' => $normalized])
+                ->where('name = ? AND user = 0', 'generator'),
+            Db::WRITE
+        );
+        $options->generator = $normalized;
     }
 }

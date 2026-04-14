@@ -20,6 +20,10 @@ class Request
 
     private ?string $ip = null;
 
+    private ?string $rawBody = null;
+
+    private ?array $jsonBody = null;
+
     /**
      * 域名前缀
      *
@@ -101,12 +105,8 @@ class Request
                 break;
             case $key === '@json':
                 if ($this->isJson()) {
-                    $body = file_get_contents('php://input');
-
-                    if (false !== $body) {
-                        $value = json_decode($body, true, 16);
-                        $default = $default ?? $value;
-                    }
+                    $value = $this->getJsonBody();
+                    $default = $default ?? $value;
                 }
                 break;
             case isset($_GET[$key]):
@@ -141,6 +141,35 @@ class Request
     {
         $this->get($key, null, $exists);
         return (bool) $exists;
+    }
+
+    public function getRawBody(): string
+    {
+        if ($this->rawBody !== null) {
+            return $this->rawBody;
+        }
+
+        $body = file_get_contents('php://input');
+        $this->rawBody = $body !== false ? $body : '';
+
+        return $this->rawBody;
+    }
+
+    public function getJsonBody(): array
+    {
+        if ($this->jsonBody !== null) {
+            return $this->jsonBody;
+        }
+
+        if (!$this->isJson()) {
+            $this->jsonBody = [];
+            return $this->jsonBody;
+        }
+
+        $decoded = json_decode($this->getRawBody(), true, 16);
+        $this->jsonBody = is_array($decoded) ? $decoded : [];
+
+        return $this->jsonBody;
     }
 
     /**
@@ -477,51 +506,26 @@ class Request
         return php_sapi_name() == 'cli';
     }
 
-    /**
-     * 判断是否为get方法
-     *
-     * @return boolean
-     */
     public function isGet(): bool
     {
         return 'GET' == $this->getServer('REQUEST_METHOD');
     }
 
-    /**
-     * 判断是否为post方法
-     *
-     * @return boolean
-     */
     public function isPost(): bool
     {
         return 'POST' == $this->getServer('REQUEST_METHOD');
     }
 
-    /**
-     * 判断是否为put方法
-     *
-     * @return boolean
-     */
     public function isPut(): bool
     {
         return 'PUT' == $this->getServer('REQUEST_METHOD');
     }
 
-    /**
-     * 判断是否为ajax
-     *
-     * @return boolean
-     */
     public function isAjax(): bool
     {
         return 'XMLHttpRequest' == $this->getHeader('X-Requested-With');
     }
 
-    /**
-     * 判断是否为Json请求
-     *
-     * @return bool
-     */
     public function isJson(): bool
     {
         return !!preg_match(
@@ -530,12 +534,6 @@ class Request
         );
     }
 
-    /**
-     * 判断输入是否满足要求
-     *
-     * @param string|array $query 条件
-     * @return boolean
-     */
     public function is(string|array $query): bool
     {
         $validated = false;

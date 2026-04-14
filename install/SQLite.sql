@@ -73,7 +73,7 @@ CREATE UNIQUE INDEX typecho_relationships_cid_mid ON typecho_relationships ("cid
 
 CREATE TABLE typecho_users ( "uid" INTEGER NOT NULL PRIMARY KEY, 
 "name" varchar(32) default NULL ,
-"password" varchar(64) default NULL , 
+"password" varchar(255) default NULL , 
 "mail" varchar(150) default NULL ,
 "url" varchar(150) default NULL ,
 "screenName" varchar(32) default NULL , 
@@ -85,43 +85,3 @@ CREATE TABLE typecho_users ( "uid" INTEGER NOT NULL PRIMARY KEY,
 
 CREATE UNIQUE INDEX typecho_users_name ON typecho_users ("name");
 CREATE UNIQUE INDEX typecho_users_mail ON typecho_users ("mail");
-
-CREATE TABLE typecho_mail_queue (
-  "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-  "type" varchar(16) NOT NULL,
-  "status" varchar(16) NOT NULL,
-  "attempts" int(10) NOT NULL default '0',
-  "lockedUntil" int(10) NOT NULL default '0',
-  "sendAt" int(10) NOT NULL default '0',
-  "created" int(10) NOT NULL default '0',
-  "updated" int(10) NOT NULL default '0',
-  "lastError" varchar(500) NOT NULL default '',
-  "dedupeKey" varchar(40) NOT NULL default '',
-  "payload" text
-);
-
-CREATE INDEX typecho_mail_queue_status_sendat ON typecho_mail_queue ("status", "sendAt");
-CREATE INDEX typecho_mail_queue_lockedUntil ON typecho_mail_queue ("lockedUntil");
-CREATE UNIQUE INDEX typecho_mail_queue_dedupeKey ON typecho_mail_queue ("dedupeKey");
-
-CREATE TABLE typecho_mail_unsub (
-  "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-  "email" varchar(255) NOT NULL,
-  "scope" varchar(32) NOT NULL,
-  "created" int(10) NOT NULL default '0'
-);
-
-CREATE UNIQUE INDEX typecho_mail_unsub_email_scope ON typecho_mail_unsub ("email", "scope");
-
-CREATE TABLE typecho_password_resets (
-  "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-  "email" varchar(150) NOT NULL,
-  "token" varchar(64) NOT NULL,
-  "created" int(10) NOT NULL default '0',
-  "expires" int(10) NOT NULL default '0',
-  "used" int(10) NOT NULL default '0'
-);
-
-CREATE INDEX typecho_password_resets_email ON typecho_password_resets ("email");
-CREATE INDEX typecho_password_resets_token ON typecho_password_resets ("token");
-CREATE INDEX typecho_password_resets_expires ON typecho_password_resets ("expires");

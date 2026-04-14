@@ -1,37 +1,35 @@
 (function () {
     'use strict';
 
+    const warn = (scope, error) => {
+        if (window.console && typeof window.console.warn === 'function') {
+            window.console.warn('[tr-theme] ' + scope, error);
+        }
+    };
+
     const body = document.body;
     if (!body || !body.classList.contains('tr-admin')) return;
 
     const root = document.documentElement;
     const STORAGE_KEY = 'trTheme';
+    const store = window.TypechoStore || null;
 
     let pref = 'system';
     let media = null;
 
-    const storage = (() => {
-        try {
-            return window.localStorage;
-        } catch (e) {
-            return null;
-        }
-    })();
-
     const getPref = () => {
-        if (storage) {
-            const saved = storage.getItem(STORAGE_KEY);
-            if (saved === 'light' || saved === 'dark' || saved === 'system') {
-                return saved;
-            }
+        const saved = store ? store.get(STORAGE_KEY, 'system') : 'system';
+        if (saved === 'light' || saved === 'dark' || saved === 'system') {
+            return saved;
         }
+
         return 'system';
     };
 
     const setPref = (next) => {
         pref = next;
-        if (storage) {
-            storage.setItem(STORAGE_KEY, next);
+        if (store) {
+            store.set(STORAGE_KEY, next);
         }
     };
 
@@ -39,6 +37,7 @@
         try {
             return !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
         } catch (e) {
+            warn('matchMedia', e);
             return false;
         }
     };
@@ -133,7 +132,9 @@
                     }
                 });
             }
-        } catch (e) {}
+        } catch (e) {
+            warn('watchSystemTheme', e);
+        }
     }
 
     window.addEventListener('tr-theme-change', (e) => {
