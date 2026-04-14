@@ -1,6 +1,6 @@
 <?php
 include 'common.php';
-$bodyClass = trim(($bodyClass ?? '') . ' tr-page-write tr-page-write-post');
+$bodyClass = 'tr-page-write';
 include 'header.php';
 include 'menu.php';
 

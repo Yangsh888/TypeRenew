@@ -3,15 +3,6 @@ if (!defined('__TYPECHO_ADMIN__')) {
     exit;
 }
 
-if (!function_exists('tr_write_markdown')) {
-    function tr_write_markdown($content, $options): bool
-    {
-        return $content->isMarkdown
-            || ($options->markdown && !$content->have())
-            || (class_exists('VditorRenew_Plugin') && !empty(\VditorRenew_Plugin::getSettings()['enabled']));
-    }
-}
-
 $content = $write['content'];
 $draftAction = $options->index . '/action/' . $write['draftAction'];
 $draftToken = $security->getToken($draftAction);
@@ -64,7 +55,11 @@ $draftToken = $security->getToken($draftAction);
             <button type="button" id="btn-preview" class="btn"><i class="i-exlink"></i> <?php echo htmlspecialchars((string) $write['previewLabel'], ENT_QUOTES, 'UTF-8'); ?></button>
             <button type="submit" name="do" value="save" id="btn-save" class="btn"><?php _e('保存草稿'); ?></button>
             <button type="submit" name="do" value="publish" class="btn primary" id="btn-submit"><?php echo htmlspecialchars((string) $write['publishLabel'], ENT_QUOTES, 'UTF-8'); ?></button>
-            <?php if (tr_write_markdown($content, $options)): ?>
+            <?php if (
+                $content->isMarkdown
+                || ($options->markdown && !$content->have())
+                || (class_exists('VditorRenew_Plugin') && !empty(\VditorRenew_Plugin::getSettings()['enabled']))
+            ): ?>
                 <input type="hidden" name="markdown" value="1"/>
             <?php endif; ?>
         </span>

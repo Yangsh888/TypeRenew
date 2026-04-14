@@ -28,7 +28,7 @@ class SchemaManager
         ]
     ];
 
-    public static function inspectCriticalSchema(Db $db, Options $options): array
+    public static function inspectCriticalSchema(Db $db): array
     {
         $items = [];
         $missing = [];
@@ -65,9 +65,9 @@ class SchemaManager
 
     public static function repairCriticalSchema(Db $db, Options $options): array
     {
-        $before = self::inspectCriticalSchema($db, $options);
+        $before = self::inspectCriticalSchema($db);
         (new InstallMailAndResetInfrastructureStep())->up($db, $options);
-        $after = self::inspectCriticalSchema($db, $options);
+        $after = self::inspectCriticalSchema($db);
 
         $repaired = [];
         foreach ($before['missing'] as $item) {

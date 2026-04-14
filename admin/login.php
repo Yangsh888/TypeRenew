@@ -16,11 +16,7 @@ include 'auth.php';
 ?>
 <?php tr_auth_open([
     'label' => _t('登录'),
-    'heading' => (string) $options->software,
-    'description' => _t('请登录以继续'),
-    'heroTitle' => (string) $options->title,
-    'heroSubtitle' => _t('轻量化管理后台，由 TypeRenew 焕新呈现'),
-    'heroFoot' => '&copy; ' . date('Y') . ' TypeRenew Team'
+    'description' => _t('请登录以继续')
 ]); ?>
 <form action="<?php $options->loginAction(); ?>" method="post" name="login" role="form" class="tr-auth-form">
     <div class="tr-auth-field">

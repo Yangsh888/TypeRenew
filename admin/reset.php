@@ -11,7 +11,6 @@ $token = htmlspecialchars($tokenRaw, ENT_QUOTES, 'UTF-8');
 
 $tokenValid = false;
 $tokenError = '';
-$email = '';
 
 if ($tokenRaw !== '') {
     if (!\Utils\PasswordReset::isValidRawToken($tokenRaw)) {
@@ -20,7 +19,6 @@ if ($tokenRaw !== '') {
         $record = \Utils\PasswordReset::findActiveRecordByToken($db, $tokenRaw);
         if ($record) {
             $tokenValid = true;
-            $email = (string) ($record['email'] ?? '');
         } else {
             $tokenError = _t('重置链接无效或已过期');
         }
@@ -38,11 +36,9 @@ include 'auth.php';
 ?>
 <?php tr_auth_open([
     'label' => _t('重置密码'),
-    'heading' => (string) $options->software,
     'description' => _t('设置新的登录密码'),
-    'heroTitle' => (string) $options->title,
     'heroSubtitle' => _t('轻量化后台管理'),
-    'heroFoot' => '&copy; ' . date('Y') . ' Typecho Team'
+    'heroFoot' => '&copy; ' . date('Y') . ' TypeRenew Team'
 ]); ?>
 <?php if (!$tokenValid): ?>
 <div class="tr-auth-notice" role="status">

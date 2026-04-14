@@ -1,6 +1,5 @@
 <?php
 include 'common.php';
-$bodyClass = trim(($bodyClass ?? '') . ' tr-page-upgrade');
 include 'header.php';
 include 'menu.php';
 

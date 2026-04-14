@@ -15,12 +15,7 @@ include 'header.php';
 include 'auth.php';
 ?>
 <?php tr_auth_open([
-    'label' => _t('注册'),
-    'heading' => (string) $options->software,
-    'description' => _t('创建一个新账号'),
-    'heroTitle' => (string) $options->title,
-    'heroSubtitle' => _t('轻量化管理后台，由 TypeRenew 焕新呈现'),
-    'heroFoot' => '&copy; ' . date('Y') . ' TypeRenew Team'
+    'label' => _t('注册')
 ]); ?>
 <form action="<?php $options->registerAction(); ?>" method="post" name="register" role="form" class="tr-auth-form">
     <div class="tr-auth-field">

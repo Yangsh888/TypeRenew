@@ -192,11 +192,6 @@ class Edit extends Contents implements ActionInterface
         );
     }
 
-    /**
-     * 删除文章
-     *
-     * @throws \Typecho\Db\Exception
-     */
     public function deleteAttachment()
     {
         $posts = $this->request->filter('int')->getArray('cid');
@@ -218,11 +213,6 @@ class Edit extends Contents implements ActionInterface
         }
     }
 
-    /**
-     * clearAttachment
-     * @return void
-     * @throws \Typecho\Db\Exception
-     */
     public function clearAttachment()
     {
         $page = 1;
