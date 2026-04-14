@@ -16,7 +16,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
  * 基本设置组件
  *
  * @author qining
- * @category typecho
  * @package Widget
  * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
  * @license GNU General Public License 2.0
@@ -25,12 +24,6 @@ class General extends Options implements ActionInterface
 {
     use EditTrait;
 
-    /**
-     * 检查是否在语言列表中
-     *
-     * @param string $lang
-     * @return bool
-     */
     public function checkLang(string $lang): bool
     {
         $langs = self::getLangs();

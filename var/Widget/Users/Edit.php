@@ -17,7 +17,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
 /**
  * 编辑用户组件
  *
- * @link typecho
  * @package Widget
  * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
  * @license GNU General Public License 2.0
@@ -58,7 +57,6 @@ class Edit extends Users implements ActionInterface
      * 判断用户是否存在
      *
      * @param integer $uid 用户主键
-     * @return boolean
      * @throws \Typecho\Db\Exception
      */
     public function userExists(int $uid): bool

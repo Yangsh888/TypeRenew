@@ -56,10 +56,9 @@ class Edit extends Contents implements ActionInterface
     }
 
     /**
-     * 判断文件缩略名是否存在
+     * 判断文件缩略名是否可用
      *
      * @param string $slug 缩略名
-     * @return boolean
      * @throws \Typecho\Db\Exception
      */
     public function slugExists(string $slug): bool

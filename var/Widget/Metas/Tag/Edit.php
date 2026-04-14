@@ -45,10 +45,9 @@ class Edit extends Metas implements ActionInterface
     }
 
     /**
-     * 判断标签名称是否存在
+     * 判断标签名称是否可用
      *
      * @param string $name 标签名称
-     * @return boolean
      * @throws Exception
      */
     public function nameExists(string $name): bool

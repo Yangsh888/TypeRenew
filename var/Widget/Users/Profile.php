@@ -20,7 +20,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
 /**
  * 编辑用户组件
  *
- * @link typecho
  * @package Widget
  * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
  * @license GNU General Public License 2.0
@@ -392,9 +391,9 @@ class Profile extends Users implements ActionInterface
 
     /**
      * 用自有函数处理自定义配置信息
+     *
      * @param string $className 类名
      * @param array $settings 配置值
-     * @return boolean
      */
     public function personalConfigHandle(string $className, array $settings): bool
     {

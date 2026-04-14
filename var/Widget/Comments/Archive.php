@@ -430,11 +430,6 @@ class Archive extends Comments
             ? $this->threadedComments[$this->coid] : [];
     }
 
-    /**
-     * 是否到达顶层
-     *
-     * @return boolean
-     */
     protected function ___isTopLevel(): bool
     {
         return $this->levels > $this->options->commentsMaxNestingLevels - 2;

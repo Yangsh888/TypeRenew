@@ -116,7 +116,6 @@ class Edit extends Options implements ActionInterface
      *
      * @param array $settings 配置值
      * @param boolean $isInit 是否为初始化
-     * @return boolean
      */
     public function configHandle(array $settings, bool $isInit): bool
     {

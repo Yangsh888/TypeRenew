@@ -637,21 +637,11 @@ class Options extends Base
         );
     }
 
-    /**
-     * 获取系统时区
-     *
-     * @return integer
-     */
     protected function ___serverTimezone(): int
     {
         return Date::$serverTimezoneOffset;
     }
 
-    /**
-     * 获取时间
-     *
-     * @return integer
-     */
     protected function ___time(): int
     {
         return Date::time();

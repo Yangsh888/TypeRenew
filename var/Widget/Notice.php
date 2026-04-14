@@ -40,11 +40,6 @@ class Notice extends Widget
         }
     }
 
-    /**
-     * 获取高亮的id
-     *
-     * @return integer
-     */
     public function getHighlightId(): int
     {
         return preg_match("/[0-9]+/", $this->highlight, $matches) ? $matches[0] : 0;

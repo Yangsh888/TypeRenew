@@ -55,11 +55,10 @@ class Edit extends Metas implements ActionInterface
     }
 
     /**
-     * 判断分类名称是否存在
+     * 判断分类名称是否可用
      * fix #1843 将重复性判断限制在同一父分类下
      *
      * @param string $name 分类名称
-     * @return boolean
      * @throws Exception
      */
     public function nameExists(string $name): bool

@@ -13,7 +13,6 @@ trait EditTrait
      * 判断用户名称是否可用
      *
      * @param string $name 用户名称
-     * @return boolean
      * @throws Exception
      */
     public function nameExists(string $name): bool
@@ -25,7 +24,6 @@ trait EditTrait
      * 判断电子邮件是否可用
      *
      * @param string $mail 电子邮件
-     * @return boolean
      * @throws Exception
      */
     public function mailExists(string $mail): bool
@@ -37,7 +35,6 @@ trait EditTrait
      * 判断用户昵称是否可用
      *
      * @param string $screenName 昵称
-     * @return boolean
      * @throws Exception
      */
     public function screenNameExists(string $screenName): bool
