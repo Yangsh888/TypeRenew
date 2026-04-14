@@ -66,7 +66,7 @@ class SchemaManager
     public static function repairCriticalSchema(Db $db, Options $options): array
     {
         $before = self::inspectCriticalSchema($db, $options);
-        $message = (new InstallMailAndResetInfrastructureStep())->up($db, $options);
+        (new InstallMailAndResetInfrastructureStep())->up($db, $options);
         $after = self::inspectCriticalSchema($db, $options);
 
         $repaired = [];
@@ -81,10 +81,8 @@ class SchemaManager
 
         return [
             'healthy' => $after['healthy'],
-            'before' => $before,
             'after' => $after,
-            'repaired' => $repaired,
-            'message' => $message
+            'repaired' => $repaired
         ];
     }
 

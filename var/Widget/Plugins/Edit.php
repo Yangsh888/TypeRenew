@@ -194,7 +194,7 @@ class Edit extends Options implements ActionInterface
                             'user'  => 0
                         ]));
                 } catch (SQLException $e) {
-                    if ((int) $e->getCode() !== 1062) {
+                    if (!self::isDuplicateOptionInsert($e)) {
                         throw $e;
                     }
 
@@ -216,6 +216,21 @@ class Edit extends Options implements ActionInterface
                 }
             }
         }
+    }
+
+    private static function isDuplicateOptionInsert(\Throwable $e): bool
+    {
+        $code = (string) $e->getCode();
+        $message = strtolower($e->getMessage());
+
+        return $code === '1062'
+            || $code === '23000'
+            || $code === '23505'
+            || str_contains($message, 'duplicate')
+            || str_contains($message, 'unique constraint')
+            || str_contains($message, '1062')
+            || str_contains($message, '23000')
+            || str_contains($message, '23505');
     }
 
     /**

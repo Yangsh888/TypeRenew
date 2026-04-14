@@ -15,7 +15,6 @@ class Runner
     public static function runPending(Db $db, string $currentVersion): array
     {
         $messages = [];
-        $applied = [];
 
         foreach (Registry::all() as $step) {
             $version = $step->version();
@@ -32,11 +31,6 @@ class Runner
 
                 self::updateGenerator($db, $version);
                 $currentVersion = $version;
-                $applied[] = [
-                    'version' => $version,
-                    'step' => get_class($step),
-                    'message' => $result
-                ];
             } finally {
                 Options::destroy($version);
             }
@@ -45,8 +39,7 @@ class Runner
         self::updateGenerator($db, Common::VERSION);
 
         return [
-            'messages' => $messages,
-            'applied' => $applied
+            'messages' => $messages
         ];
     }
 

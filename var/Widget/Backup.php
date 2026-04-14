@@ -66,8 +66,7 @@ class Backup extends BaseOptions implements ActionInterface
         'ownerFixed' => 0,
         'statusFixed' => 0,
         'orphanMoved' => 0,
-        'commentsRecounted' => 0,
-        'holderCid' => 0
+        'commentsRecounted' => 0
     ];
 
     private array $pluginWarnings = [];
@@ -593,8 +592,7 @@ class Backup extends BaseOptions implements ActionInterface
             'ownerFixed' => 0,
             'statusFixed' => 0,
             'orphanMoved' => 0,
-            'commentsRecounted' => 0,
-            'holderCid' => 0
+            'commentsRecounted' => 0
         ];
         $this->pluginWarnings = [];
         $this->runtimeWarnings = [];
@@ -752,8 +750,7 @@ class Backup extends BaseOptions implements ActionInterface
             'ownerFixed' => $ownerFixed,
             'statusFixed' => $statusFixed,
             'orphanMoved' => $orphanMoved,
-            'commentsRecounted' => $commentsRecounted,
-            'holderCid' => $holderCid
+            'commentsRecounted' => $commentsRecounted
         ];
     }
 
