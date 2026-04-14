@@ -371,7 +371,7 @@ class Runner
         }
     }
 
-    public function clear(): int
+    public function clear(bool $preserveRecovery = false): int
     {
         $lock = $this->store->acquireLock();
 
@@ -396,7 +396,7 @@ class Runner
                     $removed++;
                 }
 
-                if (is_dir($backupPath)) {
+                if (!$preserveRecovery && is_dir($backupPath)) {
                     $this->store->removeTree($backupPath);
                     $removed++;
                 }
@@ -404,9 +404,11 @@ class Runner
 
             $removed += $this->clearDirectoryContents($this->store->path('Packages'));
             $removed += $this->clearDirectoryContents($this->store->path('Staging'));
-            $removed += $this->clearDirectoryContents($this->store->path('Backup'));
+            if (!$preserveRecovery) {
+                $removed += $this->clearDirectoryContents($this->store->path('Backup'));
+            }
 
-            if ($this->store->readState() !== null) {
+            if (!$preserveRecovery && $this->store->readState() !== null) {
                 $this->store->clearState();
                 $removed++;
             }

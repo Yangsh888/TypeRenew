@@ -31,6 +31,13 @@ $trPanelIconMap = [
     'RenewGo/Panel.php' => 'i-external',
     'RenewSEO/Panel.php' => 'i-spark',
 ];
+$menuAddLink = '';
+if (!empty($menu->addLink)) {
+    $candidate = trim((string) $menu->addLink);
+    if ($candidate !== '' && ($candidate[0] === '/' || preg_match('#^https?://#i', $candidate))) {
+        $menuAddLink = $candidate;
+    }
+}
 
 $trIconOf = function (string $href) use ($trIconMap, $trPanelIconMap): ?string {
     $parts = \Typecho\Common::parseUrl($href);
@@ -150,9 +157,9 @@ $userAvatarUrl = \Typecho\Common::gravatarUrl($user->mail, 38);
         </div>
     </div>
     <div class="tr-topbar-right">
-        <?php if (!empty($menu->addLink)): ?>
+        <?php if ($menuAddLink !== ''): ?>
             <a class="tr-pill tr-pill-accent"
-               href="<?php echo htmlspecialchars((string) $menu->addLink, ENT_QUOTES, 'UTF-8'); ?>"
+               href="<?php echo htmlspecialchars($menuAddLink, ENT_QUOTES, 'UTF-8'); ?>"
                <?php if (!empty($menu->addTarget)): ?>target="<?php echo htmlspecialchars((string) $menu->addTarget, ENT_QUOTES, 'UTF-8'); ?>" rel="noopener noreferrer"<?php endif; ?>>
                 <?php echo htmlspecialchars((string) ($menu->addText ?? _t('新增')), ENT_QUOTES, 'UTF-8'); ?>
             </a>

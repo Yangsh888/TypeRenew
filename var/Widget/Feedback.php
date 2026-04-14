@@ -329,9 +329,20 @@ class Feedback extends Comments implements ActionInterface
             error_log('Widget.Feedback.purgeCommentCache.plugin: ' . $e->getMessage());
         }
         try {
-            Cache::getInstance()->flush();
+            $cache = Cache::getInstance();
+            if (method_exists($cache, 'invalidate')) {
+                $cache->invalidate('comments');
+                $cache->invalidate('contents');
+                $cache->invalidate('metas');
+            } else {
+                $cache->flush();
+            }
         } catch (\Throwable $e) {
-            error_log('Widget.Feedback.purgeCommentCache.flush: ' . $e->getMessage());
+            try {
+                Cache::getInstance()->flush();
+            } catch (\Throwable $flushError) {
+                error_log('Widget.Feedback.purgeCommentCache.flush: ' . $flushError->getMessage());
+            }
         }
     }
 }

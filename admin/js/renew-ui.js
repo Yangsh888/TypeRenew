@@ -273,6 +273,9 @@
             if (!formId) {
                 return;
             }
+            if (actions.dataset.trActionsReady === '1') {
+                return;
+            }
             const submit = form.querySelector('ul.typecho-option-submit button[type="submit"], ul.typecho-option-submit input[type="submit"], button[type="submit"], input[type="submit"]');
             if (!submit) {
                 return;
@@ -291,6 +294,7 @@
             if (wrap) {
                 wrap.classList.add('tr-submit-hidden');
             }
+            actions.dataset.trActionsReady = '1';
         });
     };
 

@@ -57,33 +57,53 @@ class Edit extends Options implements ActionInterface
                 throw new Exception(_t('无法启用插件'), 500);
             }
 
+            $persisted = false;
+
             try {
                 $result = call_user_func([$className, 'activate']);
+
+                $form = new Form();
+                call_user_func([$className, 'config'], $form);
+
+                $personalForm = new Form();
+                call_user_func([$className, 'personalConfig'], $personalForm);
+
+                $options = $form->getValues();
+                $personalOptions = $personalForm->getValues();
+
+                if ($options && !$this->configHandle($pluginName, $options, true)) {
+                    self::configPlugin($pluginName, $options);
+                }
+
+                if ($personalOptions && !$this->personalConfigHandle($className, $personalOptions)) {
+                    self::configPlugin($pluginName, $personalOptions, true);
+                }
+
                 Plugin::activate($pluginName);
+                $persisted = true;
                 $this->update(
                     ['value' => json_encode(Plugin::export())],
                     $this->db->sql()->where('name = ?', 'plugins')
                 );
-            } catch (Plugin\Exception $e) {
+            } catch (\Throwable $e) {
+                try {
+                    $this->db->query($this->db->delete('table.options')->where('name = ?', 'plugin:' . $pluginName));
+                } catch (\Throwable) {
+                }
+
+                if ($persisted) {
+                    try {
+                        Plugin::deactivate($pluginName);
+                        $this->update(
+                            ['value' => json_encode(Plugin::export())],
+                            $this->db->sql()->where('name = ?', 'plugins')
+                        );
+                    } catch (\Throwable) {
+                    }
+                }
+
                 Notice::alloc()->set($e->getMessage(), 'error');
                 $this->response->goBack();
-            }
-
-            $form = new Form();
-            call_user_func([$className, 'config'], $form);
-
-            $personalForm = new Form();
-            call_user_func([$className, 'personalConfig'], $personalForm);
-
-            $options = $form->getValues();
-            $personalOptions = $personalForm->getValues();
-
-            if ($options && !$this->configHandle($pluginName, $options, true)) {
-                self::configPlugin($pluginName, $options);
-            }
-
-            if ($personalOptions && !$this->personalConfigHandle($className, $personalOptions)) {
-                self::configPlugin($pluginName, $personalOptions, true);
             }
         } else {
             $result = _t('<a href="%s">%s</a> 无法在此版本的typecho下正常工作', $info['homepage'], $info['title']);
@@ -299,6 +319,10 @@ class Edit extends Options implements ActionInterface
     public function action()
     {
         $this->user->pass('administrator');
+        if (!$this->request->isPost()) {
+            $this->response->setStatus(405);
+            $this->response->goBack();
+        }
         $this->security->protect();
 
         if ($this->request->is('activate')) {

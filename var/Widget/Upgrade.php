@@ -4,6 +4,7 @@ namespace Widget;
 
 use Typecho\Common;
 use Exception;
+use Typecho\Upgrade\Runner as UpgradeRunner;
 use Widget\Base\Options as BaseOptions;
 use Utils\Upgrade as UpgradeAction;
 
@@ -48,6 +49,11 @@ class Upgrade extends BaseOptions implements ActionInterface
         } catch (Exception $e) {
             Notice::alloc()->set($e->getMessage(), 'error');
             $this->response->goBack();
+        }
+
+        try {
+            (new UpgradeRunner())->clear();
+        } catch (\Throwable) {
         }
 
         Notice::alloc()->set(

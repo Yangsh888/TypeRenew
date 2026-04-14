@@ -80,8 +80,8 @@ class Package extends BaseOptions implements ActionInterface
         $manifest = $state['manifest'] ?? [];
         $to = (string) ($manifest['to'] ?? '');
         $applied = (int) ($state['appliedFiles'] ?? 0);
-        $runner->clear();
-        Notice::alloc()->set(_t('在线升级已完成：目标版本 %s，已覆盖 %d 个文件，升级包已自动清理，请刷新页面后按提示完成数据库升级', $to, $applied), 'success');
+        $runner->clear(true);
+        Notice::alloc()->set(_t('在线升级已完成：目标版本 %s，已覆盖 %d 个文件，升级包与临时目录已清理，回滚备份会保留到数据库升级完成后再自动清理', $to, $applied), 'success');
     }
 
     private function assertEnvironmentReady(): void

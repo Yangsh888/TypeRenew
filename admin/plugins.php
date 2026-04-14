@@ -5,6 +5,8 @@ $menu->addText = '插件仓库';
 $menu->addTarget = '_blank';
 include 'header.php';
 include 'menu.php';
+$pluginAction = htmlspecialchars($options->index . '/action/plugins-edit', ENT_QUOTES, 'UTF-8');
+$pluginToken = htmlspecialchars($security->getToken($options->index . '/action/plugins-edit'), ENT_QUOTES, 'UTF-8');
 ?>
 <main class="main">
     <div class="body container">
@@ -50,8 +52,11 @@ include 'menu.php';
                                             <a href="<?php $options->adminUrl('options-plugin.php?config=' . $activatedPlugins->name); ?>"><?php _e('设置'); ?></a>
                                             &bull;
                                         <?php endif; ?>
-                                        <a lang="<?php _e('你确认要禁用插件 %s 吗?', $activatedPlugins->name); ?>"
-                                           href="<?php $security->index('/action/plugins-edit?deactivate=' . $activatedPlugins->name); ?>"><?php _e('禁用'); ?></a>
+                                        <form action="<?php echo $pluginAction; ?>" method="post" class="inline-operate-form">
+                                            <input type="hidden" name="_" value="<?php echo $pluginToken; ?>">
+                                            <input type="hidden" name="deactivate" value="<?php echo htmlspecialchars($activatedPlugins->name, ENT_QUOTES, 'UTF-8'); ?>">
+                                            <button type="submit" class="btn btn-link" lang="<?php _e('你确认要禁用插件 %s 吗?', $activatedPlugins->name); ?>"><?php _e('禁用'); ?></button>
+                                        </form>
                                     <?php else: ?>
                                         <span class="important"><?php _e('即插即用'); ?></span>
                                     <?php endif; ?>
@@ -65,8 +70,11 @@ include 'menu.php';
                                     <td><?php echo $key; ?></td>
                                     <td colspan="3"><span
                                             class="warning"><?php _e('此插件文件已经损坏或者被不安全移除, 强烈建议你禁用它'); ?></span></td>
-                                    <td><a lang="<?php _e('你确认要禁用插件 %s 吗?', $key); ?>"
-                                           href="<?php $security->index('/action/plugins-edit?deactivate=' . $key); ?>"><?php _e('禁用'); ?></a>
+                                    <td><form action="<?php echo $pluginAction; ?>" method="post" class="inline-operate-form">
+                                            <input type="hidden" name="_" value="<?php echo $pluginToken; ?>">
+                                            <input type="hidden" name="deactivate" value="<?php echo htmlspecialchars($key, ENT_QUOTES, 'UTF-8'); ?>">
+                                            <button type="submit" class="btn btn-link" lang="<?php _e('你确认要禁用插件 %s 吗?', $key); ?>"><?php _e('禁用'); ?></button>
+                                        </form>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -106,7 +114,11 @@ include 'menu.php';
                                     <td class="kit-hidden-mb"><?php echo empty($deactivatedPlugins->homepage) ? $deactivatedPlugins->author : '<a href="' . $deactivatedPlugins->homepage
                                             . '">' . $deactivatedPlugins->author . '</a>'; ?></td>
                                     <td>
-                                        <a href="<?php $security->index('/action/plugins-edit?activate=' . $deactivatedPlugins->name); ?>"><?php _e('启用'); ?></a>
+                                        <form action="<?php echo $pluginAction; ?>" method="post" class="inline-operate-form">
+                                            <input type="hidden" name="_" value="<?php echo $pluginToken; ?>">
+                                            <input type="hidden" name="activate" value="<?php echo htmlspecialchars($deactivatedPlugins->name, ENT_QUOTES, 'UTF-8'); ?>">
+                                            <button type="submit" class="btn btn-link"><?php _e('启用'); ?></button>
+                                        </form>
                                     </td>
                                 </tr>
                             <?php endwhile; ?>
