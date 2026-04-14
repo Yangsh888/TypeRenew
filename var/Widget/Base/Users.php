@@ -93,50 +93,21 @@ class Users extends Base implements QueryInterface, RowFilterInterface, PrimaryK
         return $this->db->select(...$fields)->from('table.users');
     }
 
-    /**
-     * 获得所有记录数
-     *
-     * @param Query $condition 查询对象
-     * @return integer
-     * @throws Exception
-     */
     public function size(Query $condition): int
     {
         return $this->db->fetchObject($condition->select(['COUNT(uid)' => 'num'])->from('table.users'))->num;
     }
 
-    /**
-     * 增加记录方法
-     *
-     * @param array $rows 字段对应值
-     * @return integer
-     * @throws Exception
-     */
     public function insert(array $rows): int
     {
         return $this->db->query($this->db->insert('table.users')->rows($rows));
     }
 
-    /**
-     * 更新记录方法
-     *
-     * @param array $rows 字段对应值
-     * @param Query $condition 查询对象
-     * @return integer
-     * @throws Exception
-     */
     public function update(array $rows, Query $condition): int
     {
         return $this->db->query($condition->update('table.users')->rows($rows));
     }
 
-    /**
-     * 删除记录方法
-     *
-     * @param Query $condition 查询对象
-     * @return integer
-     * @throws Exception
-     */
     public function delete(Query $condition): int
     {
         return $this->db->query($condition->delete('table.users'));
