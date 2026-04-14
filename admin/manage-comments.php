@@ -6,6 +6,8 @@ include 'menu.php';
 $stat = \Widget\Stat::alloc();
 $comments = \Widget\Comments\Admin::alloc();
 $isAllComments = ('on' == $request->get('__typecho_all_comments') || 'on' == \Typecho\Cookie::get('__typecho_all_comments'));
+$commentAction = htmlspecialchars($options->index . '/action/comments-edit', ENT_QUOTES, 'UTF-8');
+$commentToken = htmlspecialchars($security->getToken($options->index . '/action/comments-edit'), ENT_QUOTES, 'UTF-8');
 ?>
 <main class="main">
     <div class="body container">
@@ -52,13 +54,13 @@ $isAllComments = ('on' == $request->get('__typecho_all_comments') || 'on' == \Ty
                         <div class="btn-group btn-drop">
                         <button class="btn dropdown-toggle btn-s" type="button"><i class="sr-only"><?php _e('操作'); ?></i><?php _e('选中项'); ?> <i class="i-caret-down"></i></button>
                         <ul class="dropdown-menu">
-                            <li><a href="<?php $security->index('/action/comments-edit?do=approved'); ?>"><?php _e('通过'); ?></a></li>
-                            <li><a href="<?php $security->index('/action/comments-edit?do=waiting'); ?>"><?php _e('待审核'); ?></a></li>
-                            <li><a href="<?php $security->index('/action/comments-edit?do=spam'); ?>"><?php _e('标记垃圾'); ?></a></li>
-                            <li><a lang="<?php _e('你确认要删除这些评论吗?'); ?>" href="<?php $security->index('/action/comments-edit?do=delete'); ?>"><?php _e('删除'); ?></a></li>
+                            <li><a href="<?php echo $commentAction; ?>?do=approved"><?php _e('通过'); ?></a></li>
+                            <li><a href="<?php echo $commentAction; ?>?do=waiting"><?php _e('待审核'); ?></a></li>
+                            <li><a href="<?php echo $commentAction; ?>?do=spam"><?php _e('标记垃圾'); ?></a></li>
+                            <li><a lang="<?php _e('你确认要删除这些评论吗?'); ?>" href="<?php echo $commentAction; ?>?do=delete"><?php _e('删除'); ?></a></li>
                         </ul>
                         <?php if('spam' == $request->get('status')): ?>
-                            <button lang="<?php _e('你确认要删除所有垃圾评论吗?'); ?>" class="btn btn-s btn-warn btn-operate" href="<?php $security->index('/action/comments-edit?do=delete-spam'); ?>"><?php _e('删除所有垃圾评论'); ?></button>
+                            <button lang="<?php _e('你确认要删除所有垃圾评论吗?'); ?>" class="btn btn-s btn-warn btn-operate" href="<?php echo $commentAction; ?>?do=delete-spam"><?php _e('删除所有垃圾评论'); ?></button>
                         <?php endif; ?>
                         </div>
                     </div>
@@ -81,6 +83,7 @@ $isAllComments = ('on' == $request->get('__typecho_all_comments') || 'on' == \Ty
                 </form>
 
                 <form method="post" name="manage_comments" class="operate-form">
+                    <input type="hidden" name="_" value="<?php echo $commentToken; ?>" />
                     <table class="typecho-list-table">
                         <colgroup>
                             <col width="3%" class="kit-hidden-mb"/>
@@ -145,28 +148,28 @@ $isAllComments = ('on' == $request->get('__typecho_all_comments') || 'on' == \Ty
                                     <?php if('approved' == $comments->status): ?>
                                     <span class="weak tr-comment-op is-disabled tone-ok" aria-disabled="true"><?php _e('通过'); ?></span>
                                     <?php else: ?>
-                                    <a href="<?php $security->index('/action/comments-edit?do=approved&coid=' . $comments->coid); ?>" class="operate-approved tr-comment-op is-actionable tone-ok"><?php _e('通过'); ?></a>
+                                    <a href="#" data-do="approved" data-coid="<?php $comments->coid(); ?>" class="operate-approved tr-comment-op is-actionable tone-ok"><?php _e('通过'); ?></a>
                                     <?php endif; ?>
                                     
                                     <?php if('waiting' == $comments->status): ?>
                                     <span class="weak tr-comment-op is-disabled tone-wait" aria-disabled="true"><?php _e('待审核'); ?></span>
                                     <?php else: ?>
-                                    <a href="<?php $security->index('/action/comments-edit?do=waiting&coid=' . $comments->coid); ?>" class="operate-waiting tr-comment-op is-actionable tone-wait"><?php _e('待审核'); ?></a>
+                                    <a href="#" data-do="waiting" data-coid="<?php $comments->coid(); ?>" class="operate-waiting tr-comment-op is-actionable tone-wait"><?php _e('待审核'); ?></a>
                                     <?php endif; ?>
                                     
                                     <?php if('spam' == $comments->status): ?>
                                     <span class="weak tr-comment-op is-disabled tone-spam" aria-disabled="true"><?php _e('垃圾'); ?></span>
                                     <?php else: ?>
-                                    <a href="<?php $security->index('/action/comments-edit?do=spam&coid=' . $comments->coid); ?>" class="operate-spam tr-comment-op is-actionable tone-spam"><?php _e('垃圾'); ?></a>
+                                    <a href="#" data-do="spam" data-coid="<?php $comments->coid(); ?>" class="operate-spam tr-comment-op is-actionable tone-spam"><?php _e('垃圾'); ?></a>
                                     <?php endif; ?>
                                     
-                                    <a href="#<?php $comments->theId(); ?>" rel="<?php $security->index('/action/comments-edit?do=edit&coid=' . $comments->coid); ?>" class="operate-edit tr-comment-op is-actionable tone-edit"><?php _e('编辑'); ?></a>
+                                    <a href="#<?php $comments->theId(); ?>" data-coid="<?php $comments->coid(); ?>" class="operate-edit tr-comment-op is-actionable tone-edit"><?php _e('编辑'); ?></a>
 
                                     <?php if('approved' == $comments->status && 'comment' == $comments->type): ?>
-                                    <a href="#<?php $comments->theId(); ?>" rel="<?php $security->index('/action/comments-edit?do=reply&coid=' . $comments->coid); ?>" class="operate-reply tr-comment-op is-actionable tone-reply"><?php _e('回复'); ?></a>
+                                    <a href="#<?php $comments->theId(); ?>" data-coid="<?php $comments->coid(); ?>" class="operate-reply tr-comment-op is-actionable tone-reply"><?php _e('回复'); ?></a>
                                     <?php endif; ?>
                                     
-                                    <a lang="<?php _e('你确认要删除%s的评论吗?', htmlspecialchars($comments->author)); ?>" href="<?php $security->index('/action/comments-edit?do=delete&coid=' . $comments->coid); ?>" class="operate-delete tr-comment-op is-actionable tone-danger"><?php _e('删除'); ?></a>
+                                    <a lang="<?php _e('你确认要删除%s的评论吗?', htmlspecialchars($comments->author)); ?>" href="#" data-do="delete" data-coid="<?php $comments->coid(); ?>" class="operate-delete tr-comment-op is-actionable tone-danger"><?php _e('删除'); ?></a>
                                 </div>
                             </td>
                         </tr>
@@ -217,13 +220,32 @@ $(document).ready(function () {
         }
     })();
 
+    var commentAction = '<?php echo $commentAction; ?>';
+    var commentToken = '<?php echo $commentToken; ?>';
+
+    function submitCommentAction(data) {
+        var form = $('<form method="post" action="' + commentAction + '"></form>');
+
+        form.append($('<input type="hidden" name="_">').val(commentToken));
+
+        $.each(data, function (key, value) {
+            form.append($('<input type="hidden">').attr('name', key).val(value));
+        });
+
+        $('body').append(form);
+        rememberScroll();
+        form.trigger('submit');
+    }
+
     $('.operate-delete').click(function () {
-        var t = $(this), href = t.attr('href'), tr = t.parents('tr');
+        var t = $(this), tr = t.parents('tr');
 
         if (confirm(t.attr('lang'))) {
             tr.fadeOut(function () {
-                rememberScroll();
-                window.location.href = href;
+                submitCommentAction({
+                    'do': 'delete',
+                    'coid': t.data('coid')
+                });
             });
         }
 
@@ -231,8 +253,11 @@ $(document).ready(function () {
     });
 
     $('.operate-approved, .operate-waiting, .operate-spam').click(function () {
-        rememberScroll();
-        window.location.href = $(this).attr('href');
+        var t = $(this);
+        submitCommentAction({
+            'do': t.data('do'),
+            'coid': t.data('coid')
+        });
         return false;
     });
 
@@ -243,7 +268,10 @@ $(document).ready(function () {
             $('.comment-reply').remove();
         } else {
             var form = $('<form method="post" action="'
-                + t.attr('rel') + '" class="comment-reply">'
+                + commentAction + '" class="comment-reply">'
+                + '<input type="hidden" name="_" value="' + commentToken + '">'
+                + '<input type="hidden" name="do" value="reply">'
+                + '<input type="hidden" name="coid" value="' + t.data('coid') + '">'
                 + '<p><label for="text" class="sr-only"><?php _e('内容'); ?></label><textarea id="text" name="text" class="w-90 mono" rows="3"></textarea></p>'
                 + '<p><button type="submit" class="btn btn-s primary"><?php _e('回复'); ?></button> <button type="button" class="btn btn-s cancel"><?php _e('取消'); ?></button></p>'
                 + '</form>').insertBefore($('.comment-action', td));
@@ -280,7 +308,10 @@ $(document).ready(function () {
 
         var edit = $('<tr class="comment-edit"><td> </td>'
                         + '<td colspan="2" valign="top"><form method="post" action="'
-                        + t.attr('rel') + '" class="comment-edit-info">'
+                        + commentAction + '" class="comment-edit-info">'
+                        + '<input type="hidden" name="_" value="' + commentToken + '">'
+                        + '<input type="hidden" name="do" value="edit">'
+                        + '<input type="hidden" name="coid" value="' + t.data('coid') + '">'
                         + '<p><label for="' + id + '-author"><?php _e('用户名'); ?></label><input class="text-s w-100" id="'
                         + id + '-author" name="author" type="text"></p>'
                         + '<p><label for="' + id + '-mail"><?php _e('电子邮箱'); ?></label>'
@@ -288,7 +319,11 @@ $(document).ready(function () {
                         + '<p><label for="' + id + '-url"><?php _e('个人主页'); ?></label>'
                         + '<input class="text-s w-100" type="text" name="url" id="' + id + '-url"></p></form></td>'
                         + '<td valign="top"><form method="post" action="'
-                        + t.attr('rel') + '" class="comment-edit-content"><p><label for="' + id + '-text"><?php _e('内容'); ?></label>'
+                        + commentAction + '" class="comment-edit-content">'
+                        + '<input type="hidden" name="_" value="' + commentToken + '">'
+                        + '<input type="hidden" name="do" value="edit">'
+                        + '<input type="hidden" name="coid" value="' + t.data('coid') + '">'
+                        + '<p><label for="' + id + '-text"><?php _e('内容'); ?></label>'
                         + '<textarea name="text" id="' + id + '-text" rows="6" class="w-90 mono"></textarea></p>'
                         + '<p><button type="submit" class="btn btn-s primary"><?php _e('提交'); ?></button> '
                         + '<button type="button" class="btn btn-s cancel"><?php _e('取消'); ?></button></p></form></td></tr>')

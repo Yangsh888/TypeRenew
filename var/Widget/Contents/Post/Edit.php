@@ -285,6 +285,10 @@ class Edit extends Contents implements ActionInterface
 
     public function action()
     {
+        if (!$this->request->isPost()) {
+            $this->response->setStatus(405);
+            $this->response->goBack();
+        }
         $this->security->protect();
         $this->on($this->request->is('do=publish') || $this->request->is('do=save'))
             ->prepare()->writePost();

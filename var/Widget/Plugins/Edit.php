@@ -57,10 +57,12 @@ class Edit extends Options implements ActionInterface
                 throw new Exception(_t('无法启用插件'), 500);
             }
 
+            $activated = false;
             $persisted = false;
 
             try {
                 $result = call_user_func([$className, 'activate']);
+                $activated = true;
 
                 $form = new Form();
                 call_user_func([$className, 'config'], $form);
@@ -89,6 +91,18 @@ class Edit extends Options implements ActionInterface
                 try {
                     $this->db->query($this->db->delete('table.options')->where('name = ?', 'plugin:' . $pluginName));
                 } catch (\Throwable) {
+                }
+
+                try {
+                    $this->db->query($this->db->delete('table.options')->where('name = ?', '_plugin:' . $pluginName));
+                } catch (\Throwable) {
+                }
+
+                if ($activated) {
+                    try {
+                        call_user_func([$className, 'deactivate']);
+                    } catch (\Throwable) {
+                    }
                 }
 
                 if ($persisted) {

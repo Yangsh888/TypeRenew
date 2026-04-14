@@ -5,6 +5,8 @@ include 'menu.php';
 
 $stat = \Widget\Stat::alloc();
 $pages = \Widget\Contents\Page\Admin::alloc();
+$pageAction = htmlspecialchars($options->index . '/action/contents-page-edit', ENT_QUOTES, 'UTF-8');
+$pageToken = htmlspecialchars($security->getToken($options->index . '/action/contents-page-edit'), ENT_QUOTES, 'UTF-8');
 ?>
 <main class="main">
     <div class="body container">
@@ -21,13 +23,13 @@ $pages = \Widget\Contents\Page\Admin::alloc();
                                     class="i-caret-down"></i></button>
                             <ul class="dropdown-menu">
                                 <li><a lang="<?php _e('你确认要删除这些页面吗?'); ?>"
-                                       href="<?php $security->index('/action/contents-page-edit?do=delete'); ?>"><?php _e('删除'); ?></a>
+                                       href="<?php echo $pageAction; ?>?do=delete"><?php _e('删除'); ?></a>
                                 </li>
                                 <li>
-                                    <a href="<?php $security->index('/action/contents-page-edit?do=mark&status=publish'); ?>"><?php _e('标记为<strong>%s</strong>', _t('公开')); ?></a>
+                                    <a href="<?php echo $pageAction; ?>?do=mark&amp;status=publish"><?php _e('标记为<strong>%s</strong>', _t('公开')); ?></a>
                                 </li>
                                 <li>
-                                    <a href="<?php $security->index('/action/contents-page-edit?do=mark&status=hidden'); ?>"><?php _e('标记为<strong>%s</strong>', _t('隐藏')); ?></a>
+                                    <a href="<?php echo $pageAction; ?>?do=mark&amp;status=hidden"><?php _e('标记为<strong>%s</strong>', _t('隐藏')); ?></a>
                                 </li>
                             </ul>
                         </div>
@@ -45,6 +47,7 @@ $pages = \Widget\Contents\Page\Admin::alloc();
                 </form>
 
                 <form method="post" name="manage_pages" class="operate-form">
+                    <input type="hidden" name="_" value="<?php echo $pageToken; ?>">
                     <table class="typecho-list-table">
                         <colgroup>
                             <col width="3%" class="kit-hidden-mb"/>
@@ -148,8 +151,8 @@ include 'table-js.php';
                             ids.push($(this).val());
                         });
 
-                        $.post('<?php $security->index('/action/contents-page-edit?do=sort'); ?>',
-                            $.param({cid: ids}));
+                        $.post('<?php echo $pageAction; ?>?do=sort',
+                            $.param({cid: ids, _: '<?php echo $pageToken; ?>'}));
                     }
                 });
             });

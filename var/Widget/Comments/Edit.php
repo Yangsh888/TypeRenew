@@ -369,6 +369,11 @@ class Edit extends Comments implements ActionInterface
     public function action()
     {
         $this->user->pass('contributor');
+        $do = (string) $this->request->get('do');
+        if ($do !== 'get' && !$this->request->isPost()) {
+            $this->response->setStatus(405);
+            $this->response->goBack();
+        }
         $this->security->protect();
         $this->on($this->request->is('do=waiting'))->waitingComment();
         $this->on($this->request->is('do=spam'))->spamComment();

@@ -2,6 +2,17 @@
 include 'common.php';
 include 'header.php';
 include 'menu.php';
+$themeAction = htmlspecialchars($options->index . '/action/themes-edit', ENT_QUOTES, 'UTF-8');
+$themeToken = htmlspecialchars($security->getToken($options->index . '/action/themes-edit'), ENT_QUOTES, 'UTF-8');
+$themeHomepage = static function ($value): string {
+    $candidate = trim((string) $value);
+
+    if ($candidate !== '' && preg_match('#^https?://#i', $candidate)) {
+        return htmlspecialchars($candidate, ENT_QUOTES, 'UTF-8');
+    }
+
+    return '';
+};
 ?>
 
 <main class="main">
@@ -41,8 +52,9 @@ include 'menu.php';
                                                   alt="<?php $themes->name(); ?>"/></td>
                             <td valign="top">
                                 <h3><?php '' != $themes->title ? $themes->title() : $themes->name(); ?></h3>
+                                <?php $homepage = $themeHomepage($themes->homepage); ?>
                                 <cite>
-                                    <?php if ($themes->author): ?><?php _e('作者'); ?>: <?php if ($themes->homepage): ?><a href="<?php $themes->homepage() ?>"><?php endif; ?><?php $themes->author(); ?><?php if ($themes->homepage): ?></a><?php endif; ?> &nbsp;&nbsp;<?php endif; ?>
+                                    <?php if ($themes->author): ?><?php _e('作者'); ?>: <?php if ($homepage !== ''): ?><a href="<?php echo $homepage; ?>" target="_blank" rel="noopener noreferrer"><?php endif; ?><?php $themes->author(); ?><?php if ($homepage !== ''): ?></a><?php endif; ?> &nbsp;&nbsp;<?php endif; ?>
                                     <?php if ($themes->version): ?><?php _e('版本'); ?>: <?php $themes->version() ?><?php endif; ?>
                                 </cite>
                                 <p><?php echo nl2br($themes->description); ?></p>
@@ -52,8 +64,11 @@ include 'menu.php';
                                             <a class="edit"
                                                href="<?php $options->adminUrl('theme-editor.php?theme=' . $themes->name); ?>"><?php _e('编辑'); ?></a> &nbsp;
                                         <?php endif; ?>
-                                        <a class="activate"
-                                           href="<?php $security->index('/action/themes-edit?change=' . $themes->name); ?>"><?php _e('启用'); ?></a>
+                                        <form action="<?php echo $themeAction; ?>" method="post" class="inline-operate-form">
+                                            <input type="hidden" name="_" value="<?php echo $themeToken; ?>">
+                                            <input type="hidden" name="change" value="<?php echo htmlspecialchars($themes->name, ENT_QUOTES, 'UTF-8'); ?>">
+                                            <button type="submit" class="btn btn-link activate"><?php _e('启用'); ?></button>
+                                        </form>
                                     </p>
                                 <?php endif; ?>
                             </td>

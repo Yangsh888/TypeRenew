@@ -204,6 +204,10 @@ class Edit extends Options implements ActionInterface
     public function action()
     {
         $this->user->pass('administrator');
+        if (!$this->request->isPost()) {
+            $this->response->setStatus(405);
+            $this->response->goBack();
+        }
         $this->security->protect();
         $this->on($this->request->is('change'))->changeTheme($this->request->filter('slug')->get('change'));
         $this->on($this->request->is('edit&theme'))

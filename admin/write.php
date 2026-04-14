@@ -13,16 +13,22 @@ if (!function_exists('tr_write_markdown')) {
 }
 
 $content = $write['content'];
+$draftAction = $options->index . '/action/' . $write['draftAction'];
+$draftToken = $security->getToken($draftAction);
 ?>
 <div class="col-mb-12 col-tb-9" role="main">
     <?php if ($content->draft): ?>
         <?php if ($content->draft['cid'] != $content->cid): ?>
             <?php $contentModifyDate = new \Typecho\Date($content->draft['modified']); ?>
-            <cite class="edit-draft-notice"><?php _e(
-                '你正在编辑的是保存于 %s 的修订版, 你也可以 <a href="%s">删除它</a>',
-                $contentModifyDate->word(),
-                $security->getIndex('/action/' . $write['draftAction'] . '?do=deleteDraft&cid=' . $content->cid)
-            ); ?></cite>
+            <cite class="edit-draft-notice">
+                <?php _e('你正在编辑的是保存于 %s 的修订版, 你也可以删除它', $contentModifyDate->word()); ?>
+                <form action="<?php echo htmlspecialchars($draftAction, ENT_QUOTES, 'UTF-8'); ?>" method="post" class="inline-operate-form">
+                    <input type="hidden" name="_" value="<?php echo htmlspecialchars($draftToken, ENT_QUOTES, 'UTF-8'); ?>">
+                    <input type="hidden" name="do" value="deleteDraft">
+                    <input type="hidden" name="cid" value="<?php echo (int) $content->cid; ?>">
+                    <button type="submit" class="btn btn-link"><?php _e('删除它'); ?></button>
+                </form>
+            </cite>
         <?php else: ?>
             <cite class="edit-draft-notice"><?php _e('当前正在编辑的是未发布的草稿'); ?></cite>
         <?php endif; ?>

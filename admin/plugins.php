@@ -7,6 +7,15 @@ include 'header.php';
 include 'menu.php';
 $pluginAction = htmlspecialchars($options->index . '/action/plugins-edit', ENT_QUOTES, 'UTF-8');
 $pluginToken = htmlspecialchars($security->getToken($options->index . '/action/plugins-edit'), ENT_QUOTES, 'UTF-8');
+$pluginHomepage = static function ($value): string {
+    $candidate = trim((string) $value);
+
+    if ($candidate !== '' && preg_match('#^https?://#i', $candidate)) {
+        return htmlspecialchars($candidate, ENT_QUOTES, 'UTF-8');
+    }
+
+    return '';
+};
 ?>
 <main class="main">
     <div class="body container">
@@ -44,8 +53,8 @@ $pluginToken = htmlspecialchars($security->getToken($options->index . '/action/p
                                 </td>
                                 <td><?php $activatedPlugins->description(); ?></td>
                                 <td class="kit-hidden-mb"><?php $activatedPlugins->version(); ?></td>
-                                <td class="kit-hidden-mb"><?php echo empty($activatedPlugins->homepage) ? $activatedPlugins->author : '<a href="' . $activatedPlugins->homepage
-                                        . '">' . $activatedPlugins->author . '</a>'; ?></td>
+                                <td class="kit-hidden-mb"><?php $homepage = $pluginHomepage($activatedPlugins->homepage); ?>
+                                    <?php echo $homepage === '' ? $activatedPlugins->author : '<a href="' . $homepage . '" target="_blank" rel="noopener noreferrer">' . $activatedPlugins->author . '</a>'; ?></td>
                                 <td>
                                     <?php if ($activatedPlugins->activate || $activatedPlugins->deactivate || $activatedPlugins->config || $activatedPlugins->personalConfig): ?>
                                         <?php if ($activatedPlugins->config): ?>
@@ -111,8 +120,8 @@ $pluginToken = htmlspecialchars($security->getToken($options->index . '/action/p
                                     <td><?php $deactivatedPlugins->title(); ?></td>
                                     <td><?php $deactivatedPlugins->description(); ?></td>
                                     <td class="kit-hidden-mb"><?php $deactivatedPlugins->version(); ?></td>
-                                    <td class="kit-hidden-mb"><?php echo empty($deactivatedPlugins->homepage) ? $deactivatedPlugins->author : '<a href="' . $deactivatedPlugins->homepage
-                                            . '">' . $deactivatedPlugins->author . '</a>'; ?></td>
+                                    <td class="kit-hidden-mb"><?php $homepage = $pluginHomepage($deactivatedPlugins->homepage); ?>
+                                        <?php echo $homepage === '' ? $deactivatedPlugins->author : '<a href="' . $homepage . '" target="_blank" rel="noopener noreferrer">' . $deactivatedPlugins->author . '</a>'; ?></td>
                                     <td>
                                         <form action="<?php echo $pluginAction; ?>" method="post" class="inline-operate-form">
                                             <input type="hidden" name="_" value="<?php echo $pluginToken; ?>">

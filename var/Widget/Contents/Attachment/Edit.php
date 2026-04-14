@@ -156,10 +156,12 @@ class Edit extends Contents implements ActionInterface
 
         $submit = new Form\Element\Submit(null, null, _t('提交修改'));
         $submit->input->setAttribute('class', 'btn primary');
-        $delete = new Layout('a', [
-            'href'  => $this->security->getIndex('/action/contents-attachment-edit?do=delete&cid=' . $this->cid),
-            'class' => 'operate-delete',
-            'lang'  => _t('你确认删除文件 %s 吗?', $this->attachment->name)
+        $delete = new Layout('button', [
+            'type' => 'submit',
+            'name' => 'do',
+            'value' => 'delete',
+            'class' => 'btn btn-link operate-delete',
+            'onclick' => "return confirm('" . addslashes(_t('你确认删除文件 %s 吗?', $this->attachment->name)) . "');"
         ]);
         $submit->container($delete->html(_t('删除文件')));
         $form->addItem($submit);
@@ -259,6 +261,10 @@ class Edit extends Contents implements ActionInterface
      */
     public function action()
     {
+        if (!$this->request->isPost()) {
+            $this->response->setStatus(405);
+            $this->response->goBack();
+        }
         $this->security->protect();
         $this->on($this->request->is('do=delete'))->deleteAttachment();
         $this->on($this->request->is('do=update'))

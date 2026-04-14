@@ -6,6 +6,8 @@ include 'menu.php';
 $stat = \Widget\Stat::alloc();
 $posts = \Widget\Contents\Post\Admin::alloc();
 $isAllPosts = ('on' == $request->get('__typecho_all_posts') || 'on' == \Typecho\Cookie::get('__typecho_all_posts'));
+$postAction = htmlspecialchars($options->index . '/action/contents-post-edit', ENT_QUOTES, 'UTF-8');
+$postToken = htmlspecialchars($security->getToken($options->index . '/action/contents-post-edit'), ENT_QUOTES, 'UTF-8');
 ?>
 <main class="main">
     <div class="body container">
@@ -64,20 +66,20 @@ $isAllPosts = ('on' == $request->get('__typecho_all_posts') || 'on' == \Typecho\
                                     class="i-caret-down"></i></button>
                             <ul class="dropdown-menu">
                                 <li><a lang="<?php _e('你确认要删除这些文章吗?'); ?>"
-                                       href="<?php $security->index('/action/contents-post-edit?do=delete'); ?>"><?php _e('删除'); ?></a>
+                                       href="<?php echo $postAction; ?>?do=delete"><?php _e('删除'); ?></a>
                                 </li>
                                 <?php if ($user->pass('editor', true)): ?>
                                     <li>
-                                        <a href="<?php $security->index('/action/contents-post-edit?do=mark&status=publish'); ?>"><?php _e('标记为<strong>%s</strong>', _t('公开')); ?></a>
+                                        <a href="<?php echo $postAction; ?>?do=mark&amp;status=publish"><?php _e('标记为<strong>%s</strong>', _t('公开')); ?></a>
                                     </li>
                                     <li>
-                                        <a href="<?php $security->index('/action/contents-post-edit?do=mark&status=waiting'); ?>"><?php _e('标记为<strong>%s</strong>', _t('待审核')); ?></a>
+                                        <a href="<?php echo $postAction; ?>?do=mark&amp;status=waiting"><?php _e('标记为<strong>%s</strong>', _t('待审核')); ?></a>
                                     </li>
                                     <li>
-                                        <a href="<?php $security->index('/action/contents-post-edit?do=mark&status=hidden'); ?>"><?php _e('标记为<strong>%s</strong>', _t('隐藏')); ?></a>
+                                        <a href="<?php echo $postAction; ?>?do=mark&amp;status=hidden"><?php _e('标记为<strong>%s</strong>', _t('隐藏')); ?></a>
                                     </li>
                                     <li>
-                                        <a href="<?php $security->index('/action/contents-post-edit?do=mark&status=private'); ?>"><?php _e('标记为<strong>%s</strong>', _t('私密')); ?></a>
+                                        <a href="<?php echo $postAction; ?>?do=mark&amp;status=private"><?php _e('标记为<strong>%s</strong>', _t('私密')); ?></a>
                                     </li>
                                 <?php endif; ?>
                             </ul>
@@ -113,6 +115,7 @@ $isAllPosts = ('on' == $request->get('__typecho_all_posts') || 'on' == \Typecho\
                 </form>
 
                 <form method="post" name="manage_posts" class="operate-form">
+                    <input type="hidden" name="_" value="<?php echo $postToken; ?>">
                     <table class="typecho-list-table">
                         <colgroup>
                             <col width="3%" class="kit-hidden-mb"/>
