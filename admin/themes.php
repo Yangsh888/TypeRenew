@@ -58,17 +58,17 @@ $themeHomepage = static function ($value): string {
                                 </cite>
                                 <p><?php echo nl2br($themes->description); ?></p>
                                 <?php if ($options->theme != $themes->name || $options->missingTheme): ?>
-                                    <p>
+                                    <div class="tr-theme-actions">
                                         <?php if (\Widget\Themes\Files::isWriteable()): ?>
-                                            <a class="edit"
-                                               href="<?php $options->adminUrl('theme-editor.php?theme=' . $themes->name); ?>"><?php _e('编辑'); ?></a> &nbsp;
+                                            <a class="btn btn-link edit"
+                                               href="<?php $options->adminUrl('theme-editor.php?theme=' . $themes->name); ?>"><?php _e('编辑'); ?></a>
                                         <?php endif; ?>
                                         <form action="<?php echo $themeAction; ?>" method="post" class="inline-operate-form">
                                             <input type="hidden" name="_" value="<?php echo $themeToken; ?>">
                                             <input type="hidden" name="change" value="<?php echo htmlspecialchars($themes->name, ENT_QUOTES, 'UTF-8'); ?>">
                                             <button type="submit" class="btn btn-link activate"><?php _e('启用'); ?></button>
                                         </form>
-                                    </p>
+                                    </div>
                                 <?php endif; ?>
                             </td>
                         </tr>
