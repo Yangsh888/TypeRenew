@@ -43,11 +43,6 @@ class Stat extends Base
         $components = self::INIT_USER;
     }
 
-    /**
-     * 获取已发布的文章数目
-     *
-     * @return integer
-     */
     protected function ___publishedPostsNum(): int
     {
         return $this->db->fetchObject($this->db->select(['COUNT(cid)' => 'num'])
@@ -56,11 +51,6 @@ class Stat extends Base
             ->where('table.contents.status = ?', 'publish'))->num;
     }
 
-    /**
-     * 获取待审核的文章数目
-     *
-     * @return integer
-     */
     protected function ___waitingPostsNum(): int
     {
         return $this->db->fetchObject($this->db->select(['COUNT(cid)' => 'num'])
@@ -69,11 +59,6 @@ class Stat extends Base
             ->where('table.contents.status = ?', 'waiting'))->num;
     }
 
-    /**
-     * 获取草稿文章数目
-     *
-     * @return integer
-     */
     protected function ___draftPostsNum(): int
     {
         return $this->db->fetchObject($this->db->select(['COUNT(cid)' => 'num'])
@@ -81,11 +66,6 @@ class Stat extends Base
             ->where('table.contents.type = ?', 'post_draft'))->num;
     }
 
-    /**
-     * 获取当前用户已发布的文章数目
-     *
-     * @return integer
-     */
     protected function ___myPublishedPostsNum(): int
     {
         return $this->db->fetchObject($this->db->select(['COUNT(cid)' => 'num'])
@@ -95,11 +75,6 @@ class Stat extends Base
             ->where('table.contents.authorId = ?', $this->user->uid))->num;
     }
 
-    /**
-     * 获取当前用户待审核文章数目
-     *
-     * @return integer
-     */
     protected function ___myWaitingPostsNum(): int
     {
         return $this->db->fetchObject($this->db->select(['COUNT(cid)' => 'num'])
@@ -109,11 +84,6 @@ class Stat extends Base
             ->where('table.contents.authorId = ?', $this->user->uid))->num;
     }
 
-    /**
-     * 获取当前用户草稿文章数目
-     *
-     * @return integer
-     */
     protected function ___myDraftPostsNum(): int
     {
         return $this->db->fetchObject($this->db->select(['COUNT(cid)' => 'num'])
@@ -122,11 +92,6 @@ class Stat extends Base
             ->where('table.contents.authorId = ?', $this->user->uid))->num;
     }
 
-    /**
-     * 获取当前用户已发布的文章数目
-     *
-     * @return integer
-     */
     protected function ___currentPublishedPostsNum(): int
     {
         return $this->db->fetchObject($this->db->select(['COUNT(cid)' => 'num'])
@@ -136,11 +101,6 @@ class Stat extends Base
             ->where('table.contents.authorId = ?', $this->request->filter('int')->get('uid')))->num;
     }
 
-    /**
-     * 获取当前用户待审核文章数目
-     *
-     * @return integer
-     */
     protected function ___currentWaitingPostsNum(): int
     {
         return $this->db->fetchObject($this->db->select(['COUNT(cid)' => 'num'])
@@ -150,11 +110,6 @@ class Stat extends Base
             ->where('table.contents.authorId = ?', $this->request->filter('int')->get('uid')))->num;
     }
 
-    /**
-     * 获取当前用户草稿文章数目
-     *
-     * @return integer
-     */
     protected function ___currentDraftPostsNum(): int
     {
         return $this->db->fetchObject($this->db->select(['COUNT(cid)' => 'num'])
@@ -163,11 +118,6 @@ class Stat extends Base
             ->where('table.contents.authorId = ?', $this->request->filter('int')->get('uid')))->num;
     }
 
-    /**
-     * 获取已发布页面数目
-     *
-     * @return integer
-     */
     protected function ___publishedPagesNum(): int
     {
         return $this->db->fetchObject($this->db->select(['COUNT(cid)' => 'num'])
@@ -176,11 +126,6 @@ class Stat extends Base
             ->where('table.contents.status = ?', 'publish'))->num;
     }
 
-    /**
-     * 获取草稿页面数目
-     *
-     * @return integer
-     */
     protected function ___draftPagesNum(): int
     {
         return $this->db->fetchObject($this->db->select(['COUNT(cid)' => 'num'])
@@ -188,11 +133,6 @@ class Stat extends Base
             ->where('table.contents.type = ?', 'page_draft'))->num;
     }
 
-    /**
-     * 获取当前显示的评论数目
-     *
-     * @return integer
-     */
     protected function ___publishedCommentsNum(): int
     {
         return $this->db->fetchObject($this->db->select(['COUNT(coid)' => 'num'])
@@ -200,11 +140,6 @@ class Stat extends Base
             ->where('table.comments.status = ?', 'approved'))->num;
     }
 
-    /**
-     * 获取当前待审核的评论数目
-     *
-     * @return integer
-     */
     protected function ___waitingCommentsNum(): int
     {
         return $this->db->fetchObject($this->db->select(['COUNT(coid)' => 'num'])
@@ -212,11 +147,6 @@ class Stat extends Base
             ->where('table.comments.status = ?', 'waiting'))->num;
     }
 
-    /**
-     * 获取当前垃圾评论数目
-     *
-     * @return integer
-     */
     protected function ___spamCommentsNum(): int
     {
         return $this->db->fetchObject($this->db->select(['COUNT(coid)' => 'num'])
@@ -224,11 +154,6 @@ class Stat extends Base
             ->where('table.comments.status = ?', 'spam'))->num;
     }
 
-    /**
-     * 获取当前用户显示的评论数目
-     *
-     * @return integer
-     */
     protected function ___myPublishedCommentsNum(): int
     {
         return $this->db->fetchObject($this->db->select(['COUNT(coid)' => 'num'])
@@ -237,11 +162,6 @@ class Stat extends Base
             ->where('table.comments.ownerId = ?', $this->user->uid))->num;
     }
 
-    /**
-     * 获取当前用户待审核的评论数目
-     *
-     * @return integer
-     */
     protected function ___myWaitingCommentsNum(): int
     {
         return $this->db->fetchObject($this->db->select(['COUNT(coid)' => 'num'])
@@ -250,11 +170,6 @@ class Stat extends Base
             ->where('table.comments.ownerId = ?', $this->user->uid))->num;
     }
 
-    /**
-     * 获取当前用户垃圾评论数目
-     *
-     * @return integer
-     */
     protected function ___mySpamCommentsNum(): int
     {
         return $this->db->fetchObject($this->db->select(['COUNT(coid)' => 'num'])
@@ -263,11 +178,6 @@ class Stat extends Base
             ->where('table.comments.ownerId = ?', $this->user->uid))->num;
     }
 
-    /**
-     * 获取当前文章的评论数目
-     *
-     * @return integer
-     */
     protected function ___currentCommentsNum(): int
     {
         return $this->db->fetchObject($this->db->select(['COUNT(coid)' => 'num'])
@@ -275,11 +185,6 @@ class Stat extends Base
             ->where('table.comments.cid = ?', $this->request->filter('int')->get('cid')))->num;
     }
 
-    /**
-     * 获取当前文章显示的评论数目
-     *
-     * @return integer
-     */
     protected function ___currentPublishedCommentsNum(): int
     {
         return $this->db->fetchObject($this->db->select(['COUNT(coid)' => 'num'])
@@ -288,11 +193,6 @@ class Stat extends Base
             ->where('table.comments.cid = ?', $this->request->filter('int')->get('cid')))->num;
     }
 
-    /**
-     * 获取当前文章待审核的评论数目
-     *
-     * @return integer
-     */
     protected function ___currentWaitingCommentsNum(): int
     {
         return $this->db->fetchObject($this->db->select(['COUNT(coid)' => 'num'])
@@ -301,11 +201,6 @@ class Stat extends Base
             ->where('table.comments.cid = ?', $this->request->filter('int')->get('cid')))->num;
     }
 
-    /**
-     * 获取当前文章垃圾评论数目
-     *
-     * @return integer
-     */
     protected function ___currentSpamCommentsNum(): int
     {
         return $this->db->fetchObject($this->db->select(['COUNT(coid)' => 'num'])
@@ -314,11 +209,6 @@ class Stat extends Base
             ->where('table.comments.cid = ?', $this->request->filter('int')->get('cid')))->num;
     }
 
-    /**
-     * 获取分类数目
-     *
-     * @return integer
-     */
     protected function ___categoriesNum(): int
     {
         return $this->db->fetchObject($this->db->select(['COUNT(mid)' => 'num'])
@@ -326,11 +216,6 @@ class Stat extends Base
             ->where('table.metas.type = ?', 'category'))->num;
     }
 
-    /**
-     * 获取标签数目
-     *
-     * @return integer
-     */
     protected function ___tagsNum(): int
     {
         return $this->db->fetchObject($this->db->select(['COUNT(mid)' => 'num'])

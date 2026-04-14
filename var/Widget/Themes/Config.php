@@ -35,12 +35,6 @@ class Config extends BaseOptions
         }
     }
 
-    /**
-     * 配置功能是否存在
-     *
-     * @param string|null $theme
-     * @return boolean
-     */
     public static function isExists(?string $theme = null): bool
     {
         $options = Options::alloc();

@@ -542,10 +542,6 @@ function install_raise_error($error, $config = null)
     }
 }
 
-/**
- * @param $step
- * @param array|null $config
- */
 function install_success($step, ?array $config = null)
 {
     global $installDb;
@@ -577,9 +573,6 @@ function install_success($step, ?array $config = null)
     }
 }
 
-/**
- * @param $data
- */
 function install_throw_json($data)
 {
     \Typecho\Response::getInstance()->setContentType('application/json')

@@ -2,4 +2,3 @@
 <?php include 'base-js.php'; ?>
 <?php include 'notice-js.php'; ?>
 <?php include 'link-js.php'; ?>
-<?php include 'dropzone-js.php'; ?>

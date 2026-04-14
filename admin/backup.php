@@ -217,6 +217,7 @@ if (is_array($noticeMessages) && !empty($noticeMessages) && in_array($noticeType
 
 <?php
 include 'copyright.php';
+include 'dropzone-js.php';
 include 'common-js.php';
 include 'form-js.php';
 ?>

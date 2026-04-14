@@ -292,6 +292,7 @@ $packageActionLocked = !$upgradeAvailable || $upgradeLockBusy;
 
 <?php
 include 'copyright.php';
+include 'dropzone-js.php';
 include 'common-js.php';
 ?>
 <script>

@@ -44,45 +44,35 @@ body {
     -moz-osx-font-smoothing: grayscale;
 }
 
-/* Reset & Layout Overrides */
-
-/* Reset Container */
 .body.container {
     width: 100% !important;
     max-width: 640px !important;
     padding: 0 !important;
     margin: 0 auto !important;
-    display: block !important; /* Override flex */
+    display: block !important;
 }
 
-/* Reset Grid Row */
 .row.typecho-page-main {
     margin: 0 !important;
     width: auto !important;
-    display: block !important; /* Override flex */
+    display: block !important;
     float: none !important;
 }
 
-/* Reset Grid Columns */
 .col-mb-12, .col-tb-8, .col-tb-offset-2 {
     width: 100% !important;
-    max-width: 640px !important; /* Ensure max-width is consistent */
+    max-width: 640px !important;
     margin: 0 !important;
     padding: 0 !important;
     flex: none !important;
     float: none !important;
 }
 
-/* Force Hidden State - CRITICAL FIX */
 .hidden, .typecho-page-main.hidden {
     display: none !important;
     visibility: hidden !important;
     opacity: 0 !important;
 }
-
-/* Component Styles */
-
-/* Logo */
 h1 {
     text-align: center;
     margin: 0 0 20px 0;
@@ -394,7 +384,6 @@ details[open] summary strong::after {
     transform: rotate(225deg) translateY(-2px);
 }
 
-/* Footer Actions (Step 1) */
 p.submit {
     margin-top: 40px;
     padding-top: 30px;
@@ -404,18 +393,15 @@ p.submit {
     gap: 16px;
 }
 
-/* Submit Section (Step 2 & 3) - Unified Spacing */
 .typecho-option-submit {
     margin-top: 0 !important;
-    padding-top: 0 !important; /* Reduced from 20px */
+    padding-top: 0 !important;
     border-top: none;
 }
 
 .typecho-option-submit li {
-    margin-bottom: 0 !important; /* Remove bottom margin of the button container */
+    margin-bottom: 0 !important;
 }
-
-/* Mobile First Footer */
 p.submit select {
     width: 100%;
     margin: 0 !important;
