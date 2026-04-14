@@ -17,7 +17,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
  * 上传组件
  *
  * @author qining
- * @category typecho
  * @package Widget
  */
 class Upload extends Contents implements ActionInterface
