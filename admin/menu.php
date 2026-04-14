@@ -151,7 +151,11 @@ $userAvatarUrl = \Typecho\Common::gravatarUrl($user->mail, 38);
     </div>
     <div class="tr-topbar-right">
         <?php if (!empty($menu->addLink)): ?>
-            <a class="tr-pill tr-pill-accent" href="<?php echo htmlspecialchars((string) $menu->addLink, ENT_QUOTES, 'UTF-8'); ?>"><?php _e('新增'); ?></a>
+            <a class="tr-pill tr-pill-accent"
+               href="<?php echo htmlspecialchars((string) $menu->addLink, ENT_QUOTES, 'UTF-8'); ?>"
+               <?php if (!empty($menu->addTarget)): ?>target="<?php echo htmlspecialchars((string) $menu->addTarget, ENT_QUOTES, 'UTF-8'); ?>" rel="noopener noreferrer"<?php endif; ?>>
+                <?php echo htmlspecialchars((string) ($menu->addText ?? _t('新增')), ENT_QUOTES, 'UTF-8'); ?>
+            </a>
         <?php endif; ?>
         <div class="tr-topbar-tools" aria-label="<?php _e('快捷工具'); ?>">
             <button type="button" class="tr-pill tr-pill-btn" id="trThemeBtn" aria-haspopup="true" aria-expanded="false" title="<?php _e('主题'); ?>">

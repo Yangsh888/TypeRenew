@@ -213,8 +213,19 @@ $packageActionLocked = !$upgradeAvailable || $upgradeLockBusy;
                                                 <?php foreach ($schemaStatus['items'] as $item): ?>
                                                     <li>
                                                         <?php echo htmlspecialchars($item['label'], ENT_QUOTES, 'UTF-8'); ?>
-                                                        ：<?php echo $item['exists'] ? _t('正常') : _t('缺失'); ?>
+                                                        ：<?php
+                                                        if (!$item['exists']) {
+                                                            echo _t('缺表');
+                                                        } elseif (!$item['columnsOk']) {
+                                                            echo _t('缺字段');
+                                                        } else {
+                                                            echo _t('正常');
+                                                        }
+                                                        ?>
                                                         <span class="tr-help">(<?php echo htmlspecialchars($item['table'], ENT_QUOTES, 'UTF-8'); ?>)</span>
+                                                        <?php if (!empty($item['missingColumns'])): ?>
+                                                            <span class="tr-help">[<?php echo htmlspecialchars(implode(', ', $item['missingColumns']), ENT_QUOTES, 'UTF-8'); ?>]</span>
+                                                        <?php endif; ?>
                                                     </li>
                                                 <?php endforeach; ?>
                                             </ul>
@@ -233,7 +244,7 @@ $packageActionLocked = !$upgradeAvailable || $upgradeLockBusy;
                                         </div>
                                     <?php elseif ($needSchemaRepair): ?>
                                         <div class="tr-help tr-tone-warning tr-mt-12">
-                                            <strong><?php _e('检测到关键结构缺失，建议先执行数据库修复。'); ?></strong>
+                                            <strong><?php _e('检测到关键结构异常，建议先执行数据库修复。'); ?></strong>
                                         </div>
                                         <form action="<?php echo $dbUpgradeUrl; ?>" method="post" class="tr-mt-12">
                                             <input type="hidden" name="do" value="repairCriticalSchema">

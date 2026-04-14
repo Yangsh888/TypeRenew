@@ -1,5 +1,8 @@
 <?php
 include 'common.php';
+$menu->addLink = 'https://github.com/Yangsh888/TypeRenew-plugins';
+$menu->addText = '插件仓库';
+$menu->addTarget = '_blank';
 include 'header.php';
 include 'menu.php';
 ?>

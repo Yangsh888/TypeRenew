@@ -76,9 +76,20 @@ class Upgrade extends BaseOptions implements ActionInterface
                 Notice::alloc()->set(_t('数据库关键结构已是最新状态'), 'success');
             }
         } else {
-            $names = array_map(static fn(array $item): string => (string) ($item['label'] ?? ''), $result['after']['missing']);
+            $names = array_map(static function (array $item): string {
+                $label = (string) ($item['label'] ?? '');
+                if (($item['status'] ?? '') === 'missing_columns' && !empty($item['missingColumns'])) {
+                    return $label . '（缺字段：' . implode(', ', (array) $item['missingColumns']) . '）';
+                }
+
+                if (($item['status'] ?? '') === 'missing_table') {
+                    return $label . '（缺表）';
+                }
+
+                return $label;
+            }, $result['after']['missing']);
             Notice::alloc()->set(
-                _t('仍有关键结构缺失：%s', implode('、', array_filter($names))),
+                _t('仍有关键结构异常：%s', implode('、', array_filter($names))),
                 'error'
             );
         }

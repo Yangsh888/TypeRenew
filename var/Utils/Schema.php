@@ -394,72 +394,96 @@ class Schema
 
     private static function mysqlIndexExists(Db $db, string $table, string $index): bool
     {
-        $row = $db->fetchRow(
-            'SHOW INDEX FROM ' . self::quote($table, 'mysql')
-            . ' WHERE Key_name = ' . self::sqlString($index)
-        );
+        try {
+            $row = $db->fetchRow(
+                'SHOW INDEX FROM ' . self::quote($table, 'mysql')
+                . ' WHERE Key_name = ' . self::sqlString($index)
+            );
 
-        return $row !== null;
+            return $row !== null;
+        } catch (\Throwable $e) {
+            return false;
+        }
     }
 
     private static function mysqlColumnExists(Db $db, string $table, string $column): bool
     {
-        $row = $db->fetchRow(
-            'SHOW COLUMNS FROM ' . self::quote($table, 'mysql')
-            . ' LIKE ' . self::sqlString($column)
-        );
+        try {
+            $row = $db->fetchRow(
+                'SHOW COLUMNS FROM ' . self::quote($table, 'mysql')
+                . ' LIKE ' . self::sqlString($column)
+            );
 
-        return $row !== null;
+            return $row !== null;
+        } catch (\Throwable $e) {
+            return false;
+        }
     }
 
     private static function sqliteIndexExists(Db $db, string $table, string $index): bool
     {
-        $rows = $db->fetchAll('PRAGMA index_list(' . self::quote($table, 'sqlite') . ')');
-        foreach ($rows as $row) {
-            if (($row['name'] ?? null) === $index) {
-                return true;
+        try {
+            $rows = $db->fetchAll('PRAGMA index_list(' . self::quote($table, 'sqlite') . ')');
+            foreach ($rows as $row) {
+                if (($row['name'] ?? null) === $index) {
+                    return true;
+                }
             }
-        }
 
-        return false;
+            return false;
+        } catch (\Throwable $e) {
+            return false;
+        }
     }
 
     private static function sqliteColumnExists(Db $db, string $table, string $column): bool
     {
-        $rows = $db->fetchAll('PRAGMA table_info(' . self::quote($table, 'sqlite') . ')');
-        foreach ($rows as $row) {
-            if (($row['name'] ?? null) === $column) {
-                return true;
+        try {
+            $rows = $db->fetchAll('PRAGMA table_info(' . self::quote($table, 'sqlite') . ')');
+            foreach ($rows as $row) {
+                if (($row['name'] ?? null) === $column) {
+                    return true;
+                }
             }
-        }
 
-        return false;
+            return false;
+        } catch (\Throwable $e) {
+            return false;
+        }
     }
 
     private static function pgsqlIndexExists(Db $db, string $table, string $index): bool
     {
-        $row = $db->fetchRow(
-            'SELECT 1 FROM pg_indexes'
-            . ' WHERE schemaname = ANY (current_schemas(false))'
-            . ' AND tablename = ' . self::sqlString($table)
-            . ' AND indexname = ' . self::sqlString($index)
-            . ' LIMIT 1'
-        );
+        try {
+            $row = $db->fetchRow(
+                'SELECT 1 FROM pg_indexes'
+                . ' WHERE schemaname = ANY (current_schemas(false))'
+                . ' AND tablename = ' . self::sqlString($table)
+                . ' AND indexname = ' . self::sqlString($index)
+                . ' LIMIT 1'
+            );
 
-        return $row !== null;
+            return $row !== null;
+        } catch (\Throwable $e) {
+            return false;
+        }
     }
 
     private static function pgsqlColumnExists(Db $db, string $table, string $column): bool
     {
-        $row = $db->fetchRow(
-            'SELECT 1 FROM information_schema.columns'
-            . ' WHERE table_schema = ANY (current_schemas(false))'
-            . ' AND table_name = ' . self::sqlString($table)
-            . ' AND column_name = ' . self::sqlString($column)
-            . ' LIMIT 1'
-        );
+        try {
+            $row = $db->fetchRow(
+                'SELECT 1 FROM information_schema.columns'
+                . ' WHERE table_schema = ANY (current_schemas(false))'
+                . ' AND table_name = ' . self::sqlString($table)
+                . ' AND column_name = ' . self::sqlString($column)
+                . ' LIMIT 1'
+            );
 
-        return $row !== null;
+            return $row !== null;
+        } catch (\Throwable $e) {
+            return false;
+        }
     }
 
     private static function quote(string $name, string $dialect): string

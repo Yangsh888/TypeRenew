@@ -32,16 +32,22 @@ class SchemaManager
     {
         $items = [];
         $missing = [];
+        $prefix = (string) $db->getPrefix();
 
         foreach (self::CRITICAL_TABLES as $key => $meta) {
             $exists = self::tableExists($db, 'table.' . $key);
-            $columnsOk = $exists && self::columnsExist($db, (string) $options->dbPrefix . $key, (array) ($meta['columns'] ?? []));
+            $missingColumns = $exists
+                ? self::missingColumns($db, $prefix . $key, (array) ($meta['columns'] ?? []))
+                : [];
+            $columnsOk = $exists && $missingColumns === [];
             $item = [
                 'key' => $key,
                 'label' => (string) ($meta['label'] ?? $key),
-                'table' => (string) $options->dbPrefix . $key,
+                'table' => $prefix . $key,
                 'exists' => $exists,
-                'columnsOk' => $columnsOk
+                'columnsOk' => $columnsOk,
+                'missingColumns' => $missingColumns,
+                'status' => !$exists ? 'missing_table' : ($columnsOk ? 'ok' : 'missing_columns')
             ];
             $items[] = $item;
 
@@ -66,7 +72,7 @@ class SchemaManager
         $repaired = [];
         foreach ($before['missing'] as $item) {
             foreach ($after['items'] as $afterItem) {
-                if ($afterItem['key'] === $item['key'] && $afterItem['exists']) {
+                if ($afterItem['key'] === $item['key'] && $afterItem['status'] === 'ok') {
                     $repaired[] = $afterItem;
                     break;
                 }
@@ -92,14 +98,16 @@ class SchemaManager
         }
     }
 
-    private static function columnsExist(Db $db, string $table, array $columns): bool
+    private static function missingColumns(Db $db, string $table, array $columns): array
     {
+        $missing = [];
+
         foreach ($columns as $column) {
             if (!Schema::columnExists($db, $table, (string) $column)) {
-                return false;
+                $missing[] = (string) $column;
             }
         }
 
-        return true;
+        return $missing;
     }
 }

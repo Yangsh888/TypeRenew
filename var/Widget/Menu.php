@@ -40,6 +40,18 @@ class Menu extends Base
     public ?string $addLink = null;
 
     /**
+     * 顶部操作按钮文案
+     * @var string|null
+     */
+    public ?string $addText = null;
+
+    /**
+     * 顶部操作按钮打开方式
+     * @var string|null
+     */
+    public ?string $addTarget = null;
+
+    /**
      * 父菜单列表
      *
      * @var array
