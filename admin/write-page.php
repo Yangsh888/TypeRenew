@@ -19,7 +19,6 @@ while ($parents->next()) {
 ?>
 <main class="main">
     <div class="body container">
-        <?php include 'page-title.php'; ?>
         <form class="row typecho-page-main typecho-post-area" action="<?php $security->index('/action/contents-page-edit'); ?>" method="post" name="write_page">
             <?php
             $permalink = \Typecho\Common::url($options->routingTable['page']['url'], $options->index);

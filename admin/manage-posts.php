@@ -11,7 +11,6 @@ $postToken = htmlspecialchars($security->getToken($options->index . '/action/con
 ?>
 <main class="main">
     <div class="body container">
-        <?php include 'page-title.php'; ?>
         <div class="row typecho-page-main" role="main">
             <div class="col-mb-12 typecho-list">
                 <div class="typecho-list-operate">

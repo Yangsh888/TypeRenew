@@ -17,7 +17,6 @@ $themeHomepage = static function ($value): string {
 
 <main class="main">
     <div class="body container">
-        <?php include 'page-title.php'; ?>
         <?php include 'theme-tabs.php'; ?>
         <div class="row typecho-page-main" role="main">
             <div class="col-mb-12">

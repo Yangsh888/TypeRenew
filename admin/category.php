@@ -6,7 +6,6 @@ include 'menu.php';
 
 <main class="main">
     <div class="body container">
-        <?php include 'page-title.php'; ?>
         <div class="row typecho-page-main" role="form">
             <div class="col-mb-12 col-tb-6 col-tb-offset-3">
                 <?php \Widget\Metas\Category\Edit::alloc()->form()->render(); ?>

@@ -8,7 +8,6 @@ include 'menu.php';
 
 <main class="main">
     <div class="body container">
-        <?php include 'page-title.php'; ?>
         <div class="row typecho-page-main manage-metas">
 
             <div class="col-mb-12 col-tb-8" role="main">
@@ -101,4 +100,3 @@ include 'common-js.php';
     })();
 </script>
 <?php include 'footer.php'; ?>
-

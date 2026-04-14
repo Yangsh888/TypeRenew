@@ -5,12 +5,11 @@ namespace Widget;
 use Typecho\Common;
 use Typecho\Config;
 use Typecho\Db;
+use Typecho\Plugin\Exception as PluginException;
+use Typecho\Date;
 use Typecho\Router;
 use Typecho\Router\Parser;
 use Typecho\Widget;
-use Typecho\Plugin\Exception as PluginException;
-use Typecho\Db\Exception as DbException;
-use Typecho\Date;
 
 if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;

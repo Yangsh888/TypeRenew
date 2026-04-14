@@ -8,7 +8,6 @@ $post = \Widget\Contents\Post\Edit::alloc()->prepare();
 ?>
 <main class="main">
     <div class="body container">
-        <?php include 'page-title.php'; ?>
         <form class="row typecho-page-main typecho-post-area" action="<?php $security->index('/action/contents-post-edit'); ?>" method="post" name="write_post">
             <?php
             $permalink = \Typecho\Common::url($options->routingTable['post']['url'], $options->index);

@@ -190,13 +190,11 @@ class Menu extends Base
                 $hidden = $childNode[4] ?? false;
                 $addLink = $childNode[5] ?? null;
 
-                // 保存最原始的hidden信息
                 $orgHidden = $hidden;
 
                 $menuUrl = $url;
                 $url = Common::url($url, $adminUrl);
 
-                // compare url
                 $urlParts = Common::parseUrl($url);
                 $urlParams = [];
                 if (!empty($urlParts['query'])) {

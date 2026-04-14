@@ -5,7 +5,6 @@ namespace Widget\Comments;
 use Typecho\Config;
 use Typecho\Cookie;
 use Typecho\Router;
-use Typecho\Widget\Exception;
 use Typecho\Widget\Helper\PageNavigator\Box;
 use Widget\Base\Comments;
 use Widget\Base\Contents;
