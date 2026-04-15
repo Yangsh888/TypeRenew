@@ -305,7 +305,15 @@ $(document).ready(function() {
 
     let isFullScreen = false;
 
+    function getPreviewFrame() {
+        return $('.preview-frame').get(0) || null;
+    }
+
     function previewData(cid) {
+        if (getPreviewFrame()) {
+            return;
+        }
+
         isFullScreen = $(document.body).hasClass('fullscreen');
         $(document.body).addClass('fullscreen preview');
 
@@ -331,7 +339,14 @@ $(document).ready(function() {
     $('#btn-cancel-preview').click(cancelPreview);
 
     $(window).bind('message', function (e) {
-        if (e.originalEvent.data === 'cancelPreview') {
+        const frame = getPreviewFrame();
+        const source = e.originalEvent && e.originalEvent.source ? e.originalEvent.source : null;
+
+        if (
+            frame
+            && source === frame.contentWindow
+            && e.originalEvent.data === 'cancelPreview'
+        ) {
             cancelPreview();
         }
     });
