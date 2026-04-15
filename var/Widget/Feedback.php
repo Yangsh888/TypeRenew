@@ -330,14 +330,9 @@ class Feedback extends Comments implements ActionInterface
         }
         try {
             $cache = Cache::getInstance();
-            if (method_exists($cache, 'invalidate')) {
-                $cache->invalidate('comments');
-                $cache->invalidate('contents');
-                $cache->invalidate('metas');
-            } else {
-                $cache->flush();
-            }
-        } catch (\Throwable $e) {
+            $cache->invalidate('contents');
+            $cache->invalidate('metas');
+        } catch (\Throwable) {
             try {
                 Cache::getInstance()->flush();
             } catch (\Throwable $flushError) {

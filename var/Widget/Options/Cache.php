@@ -3,7 +3,6 @@
 namespace Widget\Options;
 
 use Typecho\Cache as CacheFacade;
-use Typecho\Db\Exception;
 use Typecho\Widget\Helper\Form;
 use Widget\ActionInterface;
 use Widget\Base\Options;

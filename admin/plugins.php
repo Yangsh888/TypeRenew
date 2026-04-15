@@ -42,7 +42,6 @@ $pluginVersionMeta = static function ($name, $version, $author, $homepage, $mobi
     $official = $pluginIsOfficial($author, $homepage);
     $defaultStatus = $official ? 'loading' : 'unofficial';
     $defaultTip = $official ? $loadingText : $unofficialText;
-    $mobileAttr = $mobile ? ' data-mobile-only="1"' : '';
 
     return '<span class="tr-plugin-version-wrap' . ($mobile ? ' is-mobile' : '') . '">'
         . ($mobile ? '' : '<span class="tr-plugin-version-text">' . $versionText . '</span>')
@@ -53,7 +52,6 @@ $pluginVersionMeta = static function ($name, $version, $author, $homepage, $mobi
         . ' data-tip="' . $defaultTip . '"'
         . ' tabindex="0"'
         . ' role="img"'
-        . $mobileAttr
         . ' aria-label="' . $defaultTip . '">' . ($official ? '...' : '?') . '</span>'
         . '</span>';
 };
