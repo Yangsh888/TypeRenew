@@ -9,6 +9,7 @@ use Typecho\Db\Query;
 
 class Cache
 {
+    private const FORCE_META_SYNC = true;
     private static ?self $instance = null;
     private bool $enabled = false;
     private int $ttl = 300;
@@ -236,7 +237,7 @@ class Cache
         if (!empty($tables)) {
             $versionParts = [];
             foreach ($tables as $table) {
-                $versionParts[] = $table . '.' . $this->loadTableVersion($table, false);
+                $versionParts[] = $table . '.' . $this->loadTableVersion($table, self::FORCE_META_SYNC);
             }
             sort($versionParts, SORT_STRING);
             return 'sql:' . implode(',', $versionParts) . ':' . sha1($trimmed);
@@ -271,7 +272,7 @@ class Cache
 
     private function key(string $key): string
     {
-        $this->syncNamespaceVersion(false);
+        $this->syncNamespaceVersion(self::FORCE_META_SYNC);
         return $this->namespacePrefix() . $key;
     }
 

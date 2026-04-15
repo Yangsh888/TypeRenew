@@ -103,10 +103,10 @@ class Edit extends Comments implements ActionInterface
             }
 
             if ('approved' != $comment['status'] && 'approved' == $status) {
-                $this->status = 'approved';
                 \Typecho\Mail\Queue::enqueueComment($this, 'approved', $this->options);
-                $this->purgeCommentCache();
             }
+
+            $this->purgeCommentCacheForTransition((string) $comment['status'], $status);
 
             return true;
         }
@@ -189,6 +189,8 @@ class Edit extends Comments implements ActionInterface
                 }
 
                 self::pluginHandle()->call('finishDelete', $comment, $this);
+
+                $this->purgeCommentCacheForTransition((string) $comment['status'], null);
 
                 $deleteRows++;
             }
@@ -298,6 +300,7 @@ class Edit extends Comments implements ActionInterface
             $updatedComment['content'] = $this->content;
 
             self::pluginHandle()->call('finishEdit', $this);
+            $this->purgeCommentCacheForTransition((string) ($commentSelect['status'] ?? ''), (string) ($commentSelect['status'] ?? ''));
 
             $this->response->throwJson([
                 'success' => 1,
@@ -399,11 +402,31 @@ class Edit extends Comments implements ActionInterface
         }
         try {
             $cache = Cache::getInstance();
-            $cache->invalidate('comments');
-            $cache->invalidate('contents');
-            $cache->invalidate('metas');
+            if (method_exists($cache, 'invalidate')) {
+                $cache->invalidate('comments');
+                $cache->invalidate('contents');
+                $cache->invalidate('metas');
+            } else {
+                $cache->flush();
+            }
         } catch (\Throwable $e) {
-            error_log('Widget.Comments.Edit.purgeCommentCache.invalidate: ' . $e->getMessage());
+            try {
+                Cache::getInstance()->flush();
+            } catch (\Throwable $flushError) {
+                error_log('Widget.Comments.Edit.purgeCommentCache.flush: ' . $flushError->getMessage());
+            }
         }
+    }
+
+    private function purgeCommentCacheForTransition(?string $beforeStatus, ?string $afterStatus): void
+    {
+        $before = (string) ($beforeStatus ?? '');
+        $after = (string) ($afterStatus ?? '');
+        if ($before !== 'approved' && $after !== 'approved') {
+            return;
+        }
+
+        $this->status = $after !== '' ? $after : $before;
+        $this->purgeCommentCache();
     }
 }
