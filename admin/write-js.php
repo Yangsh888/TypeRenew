@@ -317,8 +317,6 @@ $(document).ready(function() {
         frame.load(function () {
             frame.removeClass('preview-loading');
         });
-
-        frame.height($(window).height() - 53);
     }
 
     function cancelPreview() {

@@ -3082,6 +3082,31 @@ body.tr-admin.tr-page-write p.submit .right {
     margin-left: auto;
 }
 
+body.tr-admin.tr-page-write .preview-frame {
+    position: fixed;
+    top: 53px;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: calc(100vh - 53px);
+    border: 0;
+    background: var(--tr-surface);
+    z-index: 120;
+}
+
+body.tr-admin.tr-page-write .preview-frame.preview-loading {
+    opacity: 0;
+}
+
+body.tr-admin.tr-page-write.preview #btn-cancel-preview {
+    position: fixed;
+    top: 65px;
+    right: 24px;
+    z-index: 121;
+    box-shadow: var(--tr-shadow-sm);
+}
+
 body.tr-admin.tr-page-write #edit-secondary .tr-side-stack {
     background: var(--tr-surface);
     border: 1px solid var(--tr-border);
@@ -5566,6 +5591,16 @@ body.tr-admin.tr-page-plugins .tr-plugin-actions .btn.btn-link:hover {
 }
 
 @media (max-width: 680px) {
+    body.tr-admin.tr-page-write .preview-frame {
+        top: 53px;
+        height: calc(100vh - 53px);
+    }
+
+    body.tr-admin.tr-page-write.preview #btn-cancel-preview {
+        top: 61px;
+        right: 16px;
+    }
+
     body.tr-admin.tr-page-plugins .tr-plugin-section-head {
         position: static;
         align-items: flex-start;
