@@ -3,6 +3,7 @@
 namespace Widget;
 
 use Typecho\Http\Client;
+use Typecho\Plugin;
 use Typecho\Widget\Exception;
 use Widget\Base\Options as BaseOptions;
 
@@ -15,6 +16,12 @@ class Ajax extends BaseOptions implements ActionInterface
     private const OFFICIAL_FEED_SOURCES = [
         'https://www.typerenew.com/feed/',
     ];
+
+    private const OFFICIAL_PLUGIN_VERSION_SOURCE = 'https://raw.githubusercontent.com/Yangsh888/TypeRenew-plugins/main/README.md';
+
+    private const OFFICIAL_PLUGIN_VERSION_CACHE = 'pluginVersionCache';
+
+    private const OFFICIAL_PLUGIN_VERSION_CACHE_TTL = 7200;
 
     private function decodeFeedText(string $text): string
     {
@@ -79,6 +86,340 @@ class Ajax extends BaseOptions implements ActionInterface
         return $items;
     }
 
+    private function collectInstalledPlugins(): array
+    {
+        $plugins = [];
+        $entries = glob(__TYPECHO_ROOT_DIR__ . '/' . __TYPECHO_PLUGIN_DIR__ . '/*');
+        $entries = is_array($entries) ? $entries : [];
+        natcasesort($entries);
+
+        foreach ($entries as $entry) {
+            $pluginName = null;
+            $pluginFile = null;
+
+            if (is_dir($entry)) {
+                $pluginName = basename($entry);
+                $pluginFile = $entry . '/Plugin.php';
+            } elseif (is_file($entry) && 'index.php' !== basename($entry)) {
+                $part = explode('.', basename($entry));
+                if (2 === count($part) && 'php' === $part[1]) {
+                    $pluginName = $part[0];
+                    $pluginFile = $entry;
+                }
+            }
+
+            if ($pluginName === null || $pluginFile === null || !is_file($pluginFile)) {
+                continue;
+            }
+
+            $info = Plugin::parseInfo($pluginFile);
+            $info['name'] = $pluginName;
+            $plugins[$pluginName] = $info;
+        }
+
+        return $plugins;
+    }
+
+    private function normalizeComparableVersion(?string $version): ?string
+    {
+        $version = trim((string) $version);
+        if ($version === '') {
+            return null;
+        }
+
+        $version = ltrim($version, "vV");
+        return preg_match('/^\d+(?:\.\d+)*$/', $version) ? $version : null;
+    }
+
+    private function cleanMarkdownCell(string $value): string
+    {
+        $value = html_entity_decode($value, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $value = preg_replace('/!\[([^\]]*)\]\([^)]+\)/', '$1', $value);
+        $value = preg_replace('/\[([^\]]+)\]\([^)]+\)/', '$1', $value);
+        $value = preg_replace('/`([^`]+)`/', '$1', $value);
+        $value = preg_replace('/[*_~]/', '', $value);
+        $value = strip_tags((string) $value);
+
+        return trim((string) preg_replace('/\s+/u', ' ', (string) $value));
+    }
+
+    private function parseOfficialPluginVersions(string $markdown): array
+    {
+        $versions = [];
+        $lines = preg_split('/\R/u', $markdown) ?: [];
+
+        foreach ($lines as $line) {
+            $line = trim($line);
+            if ($line === '' || $line[0] !== '|') {
+                continue;
+            }
+
+            $cells = array_map('trim', explode('|', trim($line, '|')));
+            if (count($cells) < 2) {
+                continue;
+            }
+
+            $pluginName = $this->cleanMarkdownCell((string) $cells[0]);
+            $version = $this->normalizeComparableVersion($this->cleanMarkdownCell((string) $cells[1]));
+
+            if ($pluginName === '' || $version === null) {
+                continue;
+            }
+
+            try {
+                $pluginName = Plugin::normalizeName($pluginName);
+            } catch (\Exception $e) {
+                continue;
+            }
+
+            $versions[$pluginName] = $version;
+        }
+
+        return $versions;
+    }
+
+    private function isOfficialPlugin(array $info): bool
+    {
+        $author = strtolower(trim((string) ($info['author'] ?? '')));
+        if ($author !== 'typerenew') {
+            return false;
+        }
+
+        $homepage = trim((string) ($info['homepage'] ?? ''));
+        if ($homepage === '') {
+            return false;
+        }
+
+        $parts = \Typecho\Common::parseUrl($homepage);
+        $host = strtolower((string) ($parts['host'] ?? ''));
+
+        return in_array($host, ['www.typerenew.com', 'typerenew.com'], true);
+    }
+
+    private function readOfficialPluginVersionCache(): ?array
+    {
+        $row = $this->db->fetchRow(
+            $this->db->select('value')
+                ->from('table.options')
+                ->where('name = ?', self::OFFICIAL_PLUGIN_VERSION_CACHE)
+                ->where('user = ?', 0)
+                ->limit(1)
+        );
+
+        if (empty($row['value'])) {
+            return null;
+        }
+
+        $data = json_decode((string) $row['value'], true);
+        if (!is_array($data)) {
+            return null;
+        }
+
+        $checkedAt = max(0, (int) ($data['checkedAt'] ?? 0));
+        $versions = [];
+        foreach ((array) ($data['versions'] ?? []) as $pluginName => $version) {
+            if (!is_string($pluginName)) {
+                continue;
+            }
+
+            $normalizedVersion = $this->normalizeComparableVersion((string) $version);
+            if ($normalizedVersion === null) {
+                continue;
+            }
+
+            $versions[$pluginName] = $normalizedVersion;
+        }
+
+        if ($checkedAt <= 0 || empty($versions)) {
+            return null;
+        }
+
+        return [
+            'checkedAt' => $checkedAt,
+            'versions'  => $versions,
+        ];
+    }
+
+    private function writeOfficialPluginVersionCache(array $versions, int $checkedAt): void
+    {
+        ksort($versions, SORT_NATURAL | SORT_FLAG_CASE);
+        $this->saveOption(self::OFFICIAL_PLUGIN_VERSION_CACHE, [
+            'checkedAt' => $checkedAt,
+            'versions'  => $versions,
+        ]);
+    }
+
+    private function loadOfficialPluginVersions(bool $forceRefresh = false): array
+    {
+        $now = time();
+        if (!$forceRefresh) {
+            $cache = $this->readOfficialPluginVersionCache();
+            if (
+                $cache !== null
+                && ($now - (int) $cache['checkedAt']) < self::OFFICIAL_PLUGIN_VERSION_CACHE_TTL
+            ) {
+                return [
+                    'ok'        => true,
+                    'checkedAt' => (int) $cache['checkedAt'],
+                    'versions'  => $cache['versions'],
+                    'cached'    => true,
+                    'message'   => '',
+                ];
+            }
+        }
+
+        $client = Client::get();
+        if (!$client) {
+            return [
+                'ok'        => false,
+                'checkedAt' => $now,
+                'versions'  => [],
+                'cached'    => false,
+                'message'   => _t('当前环境缺少 curl 扩展，无法访问 GitHub Raw 地址。'),
+            ];
+        }
+
+        try {
+            $client->setHeader('User-Agent', $this->options->generator)
+                ->setHeader('Accept', 'text/plain')
+                ->setTimeout(8)
+                ->send(self::OFFICIAL_PLUGIN_VERSION_SOURCE);
+
+            if ($client->getResponseStatus() !== 200) {
+                return [
+                    'ok'        => false,
+                    'checkedAt' => $now,
+                    'versions'  => [],
+                    'cached'    => false,
+                    'message'   => _t('官方插件仓库返回异常状态，暂时无法检测版本。'),
+                ];
+            }
+
+            $responseUrl = $client->getResponseUrl();
+            $parts = \Typecho\Common::parseUrl($responseUrl);
+            $host = strtolower((string) ($parts['host'] ?? ''));
+            if ($host !== 'raw.githubusercontent.com') {
+                return [
+                    'ok'        => false,
+                    'checkedAt' => $now,
+                    'versions'  => [],
+                    'cached'    => false,
+                    'message'   => _t('官方版本源校验失败，暂时无法检测版本。'),
+                ];
+            }
+
+            $versions = $this->parseOfficialPluginVersions($client->getResponseBody());
+            if (empty($versions)) {
+                return [
+                    'ok'        => false,
+                    'checkedAt' => $now,
+                    'versions'  => [],
+                    'cached'    => false,
+                    'message'   => _t('官方插件仓库文档格式已变化，暂时无法解析版本信息。'),
+                ];
+            }
+
+            $this->writeOfficialPluginVersionCache($versions, $now);
+
+            return [
+                'ok'        => true,
+                'checkedAt' => $now,
+                'versions'  => $versions,
+                'cached'    => false,
+                'message'   => '',
+            ];
+        } catch (\Exception $e) {
+            error_log('[Ajax] pluginVersion: ' . $e->getMessage());
+
+            return [
+                'ok'        => false,
+                'checkedAt' => $now,
+                'versions'  => [],
+                'cached'    => false,
+                'message'   => _t('当前服务器可能无法访问 GitHub Raw 地址，或网络 / SSL 临时异常。'),
+            ];
+        }
+    }
+
+    private function buildPluginVersionStatuses(bool $forceRefresh = false): array
+    {
+        $source = $this->loadOfficialPluginVersions($forceRefresh);
+        $statuses = [];
+
+        foreach ($this->collectInstalledPlugins() as $pluginName => $info) {
+            $localVersionRaw = trim((string) ($info['version'] ?? ''));
+            $localVersion = $this->normalizeComparableVersion($localVersionRaw);
+
+            if (!$this->isOfficialPlugin($info)) {
+                $statuses[$pluginName] = [
+                    'status'  => 'unofficial',
+                    'local'   => $localVersionRaw,
+                    'remote'  => '',
+                    'message' => _t('这并非 TypeRenew 官方插件，无法在官方插件仓库中检测版本状态。'),
+                ];
+                continue;
+            }
+
+            if (!$source['ok']) {
+                $statuses[$pluginName] = [
+                    'status'  => 'failed',
+                    'local'   => $localVersionRaw,
+                    'remote'  => '',
+                    'message' => _t('版本检测失败：%s', $source['message']),
+                ];
+                continue;
+            }
+
+            if ($localVersion === null) {
+                $statuses[$pluginName] = [
+                    'status'  => 'failed',
+                    'local'   => $localVersionRaw,
+                    'remote'  => '',
+                    'message' => _t('本地插件未声明有效版本号，无法完成版本比较。'),
+                ];
+                continue;
+            }
+
+            if (!isset($source['versions'][$pluginName])) {
+                $statuses[$pluginName] = [
+                    'status'  => 'failed',
+                    'local'   => $localVersion,
+                    'remote'  => '',
+                    'message' => _t('官方插件仓库暂未收录该插件的版本信息。'),
+                ];
+                continue;
+            }
+
+            $remoteVersion = (string) $source['versions'][$pluginName];
+            if (version_compare($localVersion, $remoteVersion, '<')) {
+                $statuses[$pluginName] = [
+                    'status'  => 'update',
+                    'local'   => $localVersion,
+                    'remote'  => $remoteVersion,
+                    'message' => _t('检测到新版本：当前 %s，官方最新 %s。请前往官方插件仓库手动更新。', $localVersion, $remoteVersion),
+                ];
+                continue;
+            }
+
+            $statuses[$pluginName] = [
+                'status'  => 'latest',
+                'local'   => $localVersion,
+                'remote'  => $remoteVersion,
+                'message' => _t('当前版本 %s，不低于官方仓库标注的最新版本 %s。', $localVersion, $remoteVersion),
+            ];
+        }
+
+        return [
+            'ok'        => (bool) $source['ok'],
+            'checkedAt' => (int) $source['checkedAt'],
+            'cached'    => (bool) $source['cached'],
+            'ttl'       => self::OFFICIAL_PLUGIN_VERSION_CACHE_TTL,
+            'source'    => self::OFFICIAL_PLUGIN_VERSION_SOURCE,
+            'message'   => (string) $source['message'],
+            'statuses'  => $statuses,
+        ];
+    }
+
     public function remoteCallback()
     {
         if ($this->options->generator == $this->request->getAgent()) {
@@ -124,6 +465,13 @@ class Ajax extends BaseOptions implements ActionInterface
         }
 
         $this->response->throwJson($result);
+    }
+
+    public function pluginVersion()
+    {
+        $this->user->pass('administrator');
+        $forceRefresh = 1 === (int) $this->request->filter('int')->get('refresh');
+        $this->response->throwJson($this->buildPluginVersionStatuses($forceRefresh));
     }
 
     public function feed()
@@ -234,6 +582,7 @@ class Ajax extends BaseOptions implements ActionInterface
         $this->on($this->request->is('do=remoteCallback'))->remoteCallback();
         $this->on($this->request->is('do=feed'))->feed();
         $this->on($this->request->is('do=checkVersion'))->checkVersion();
+        $this->on($this->request->is('do=pluginVersion'))->pluginVersion();
         $this->on($this->request->is('do=editorResize'))->editorResize();
     }
 }
