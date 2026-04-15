@@ -3084,12 +3084,12 @@ body.tr-admin.tr-page-write p.submit .right {
 
 body.tr-admin.tr-page-write .preview-frame {
     position: fixed;
-    top: 53px;
+    top: var(--tr-topbar-h);
     right: 0;
     bottom: 0;
     left: 0;
     width: 100%;
-    height: calc(100vh - 53px);
+    height: calc(100vh - var(--tr-topbar-h));
     border: 0;
     background: var(--tr-surface);
     z-index: 120;
@@ -3101,7 +3101,7 @@ body.tr-admin.tr-page-write .preview-frame.preview-loading {
 
 body.tr-admin.tr-page-write.preview #btn-cancel-preview {
     position: fixed;
-    top: 65px;
+    top: calc(var(--tr-topbar-h) + 12px);
     right: 24px;
     z-index: 121;
     box-shadow: var(--tr-shadow-sm);
@@ -5591,13 +5591,8 @@ body.tr-admin.tr-page-plugins .tr-plugin-actions .btn.btn-link:hover {
 }
 
 @media (max-width: 680px) {
-    body.tr-admin.tr-page-write .preview-frame {
-        top: 53px;
-        height: calc(100vh - 53px);
-    }
-
     body.tr-admin.tr-page-write.preview #btn-cancel-preview {
-        top: 61px;
+        top: calc(var(--tr-topbar-h) + 8px);
         right: 16px;
     }
 
