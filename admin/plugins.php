@@ -60,7 +60,7 @@ $pluginVersionMeta = static function ($name, $version, $author, $homepage, $mobi
 $pluginVersionToolbar = '<div class="tr-plugin-version-toolbar">'
     . '<div class="tr-plugin-version-toolbar-actions">'
     . '<button type="button" class="btn btn-s" id="trPluginVersionRefresh">' . _t('刷新检测') . '</button>'
-    . '<span class="tr-plugin-version-hint" id="trPluginVersionHint" role="status" aria-live="polite">' . _t('插件版本状态缓存 2 小时') . '</span>'
+    . '<span class="tr-plugin-version-hint" id="trPluginVersionHint" role="status" aria-live="polite">' . _t('成功缓存 2 小时，失败缓存 10 分钟') . '</span>'
     . '</div>'
     . '</div>';
 ?>
@@ -223,7 +223,6 @@ include 'common-js.php';
         var store = window.TypechoStore || null;
         var requestUrl = <?php echo json_encode($pluginVersionUrl, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE); ?>;
         var cacheKey = 'trPluginVersionPayload';
-        var ttlMs = 2 * 60 * 60 * 1000;
         var texts = <?php echo json_encode([
             'refresh' => _t('刷新检测'),
             'refreshing' => _t('刷新中...'),
@@ -364,12 +363,13 @@ include 'common-js.php';
             }
 
             var payload = store.sessionGetJson(cacheKey, null);
-            if (!payload || typeof payload !== 'object' || !payload.ok || !payload.statuses) {
+            if (!payload || typeof payload !== 'object' || !payload.statuses) {
                 return null;
             }
 
             var checkedAt = parseInt(payload.checkedAt || 0, 10);
-            if (!checkedAt || (Date.now() - checkedAt * 1000) >= ttlMs) {
+            var ttlMs = Math.max(1, parseInt(payload.ttl || 0, 10)) * 1000;
+            if (!checkedAt || !ttlMs || (Date.now() - checkedAt * 1000) >= ttlMs) {
                 return null;
             }
 
@@ -377,7 +377,7 @@ include 'common-js.php';
         }
 
         function writeSessionCache(payload) {
-            if (!store || !payload || !payload.ok) {
+            if (!store || !payload || typeof payload !== 'object' || !payload.statuses) {
                 return;
             }
 

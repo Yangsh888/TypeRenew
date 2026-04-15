@@ -23,6 +23,10 @@ class Ajax extends BaseOptions implements ActionInterface
 
     private const OFFICIAL_PLUGIN_VERSION_CACHE_TTL = 7200;
 
+    private const OFFICIAL_PLUGIN_VERSION_FAILURE_TTL = 600;
+
+    private const OFFICIAL_PLUGIN_VERSION_TIMEOUT = 4;
+
     private function decodeFeedText(string $text): string
     {
         $text = html_entity_decode($text, ENT_QUOTES | ENT_XML1, 'UTF-8');
@@ -216,6 +220,11 @@ class Ajax extends BaseOptions implements ActionInterface
         }
 
         $checkedAt = max(0, (int) ($data['checkedAt'] ?? 0));
+        $ok = !empty($data['ok']);
+        $ttl = max(1, (int) ($data['ttl'] ?? ($ok
+            ? self::OFFICIAL_PLUGIN_VERSION_CACHE_TTL
+            : self::OFFICIAL_PLUGIN_VERSION_FAILURE_TTL)));
+        $message = trim((string) ($data['message'] ?? ''));
         $versions = [];
         foreach ((array) ($data['versions'] ?? []) as $pluginName => $version) {
             if (!is_string($pluginName)) {
@@ -230,21 +239,34 @@ class Ajax extends BaseOptions implements ActionInterface
             $versions[$pluginName] = $normalizedVersion;
         }
 
-        if ($checkedAt <= 0 || empty($versions)) {
+        if ($checkedAt <= 0) {
+            return null;
+        }
+
+        if ($ok && empty($versions)) {
             return null;
         }
 
         return [
+            'ok'        => $ok,
             'checkedAt' => $checkedAt,
+            'ttl'       => $ttl,
+            'message'   => $message,
             'versions'  => $versions,
         ];
     }
 
-    private function writeOfficialPluginVersionCache(array $versions, int $checkedAt): void
+    private function writeOfficialPluginVersionCache(bool $ok, array $versions, int $checkedAt, string $message = '', ?int $ttl = null): void
     {
         ksort($versions, SORT_NATURAL | SORT_FLAG_CASE);
+        $ttl = max(1, (int) ($ttl ?? ($ok
+            ? self::OFFICIAL_PLUGIN_VERSION_CACHE_TTL
+            : self::OFFICIAL_PLUGIN_VERSION_FAILURE_TTL)));
         $this->saveOption(self::OFFICIAL_PLUGIN_VERSION_CACHE, [
+            'ok'        => $ok ? 1 : 0,
             'checkedAt' => $checkedAt,
+            'ttl'       => $ttl,
+            'message'   => $message,
             'versions'  => $versions,
         ]);
     }
@@ -256,42 +278,49 @@ class Ajax extends BaseOptions implements ActionInterface
             $cache = $this->readOfficialPluginVersionCache();
             if (
                 $cache !== null
-                && ($now - (int) $cache['checkedAt']) < self::OFFICIAL_PLUGIN_VERSION_CACHE_TTL
+                && ($now - (int) $cache['checkedAt']) < (int) ($cache['ttl'] ?? self::OFFICIAL_PLUGIN_VERSION_CACHE_TTL)
             ) {
                 return [
-                    'ok'        => true,
+                    'ok'        => (bool) ($cache['ok'] ?? false),
                     'checkedAt' => (int) $cache['checkedAt'],
+                    'ttl'       => (int) ($cache['ttl'] ?? self::OFFICIAL_PLUGIN_VERSION_CACHE_TTL),
                     'versions'  => $cache['versions'],
                     'cached'    => true,
-                    'message'   => '',
+                    'message'   => (string) ($cache['message'] ?? ''),
                 ];
             }
         }
 
         $client = Client::get();
         if (!$client) {
+            $message = _t('当前环境缺少 curl 扩展，无法访问 GitHub Raw 地址。');
+            $this->writeOfficialPluginVersionCache(false, [], $now, $message, self::OFFICIAL_PLUGIN_VERSION_FAILURE_TTL);
             return [
                 'ok'        => false,
                 'checkedAt' => $now,
+                'ttl'       => self::OFFICIAL_PLUGIN_VERSION_FAILURE_TTL,
                 'versions'  => [],
                 'cached'    => false,
-                'message'   => _t('当前环境缺少 curl 扩展，无法访问 GitHub Raw 地址。'),
+                'message'   => $message,
             ];
         }
 
         try {
             $client->setHeader('User-Agent', $this->options->generator)
                 ->setHeader('Accept', 'text/plain')
-                ->setTimeout(8)
+                ->setTimeout(self::OFFICIAL_PLUGIN_VERSION_TIMEOUT)
                 ->send(self::OFFICIAL_PLUGIN_VERSION_SOURCE);
 
             if ($client->getResponseStatus() !== 200) {
+                $message = _t('官方插件仓库返回异常状态，暂时无法检测版本。');
+                $this->writeOfficialPluginVersionCache(false, [], $now, $message, self::OFFICIAL_PLUGIN_VERSION_FAILURE_TTL);
                 return [
                     'ok'        => false,
                     'checkedAt' => $now,
+                    'ttl'       => self::OFFICIAL_PLUGIN_VERSION_FAILURE_TTL,
                     'versions'  => [],
                     'cached'    => false,
-                    'message'   => _t('官方插件仓库返回异常状态，暂时无法检测版本。'),
+                    'message'   => $message,
                 ];
             }
 
@@ -299,44 +328,52 @@ class Ajax extends BaseOptions implements ActionInterface
             $parts = \Typecho\Common::parseUrl($responseUrl);
             $host = strtolower((string) ($parts['host'] ?? ''));
             if ($host !== 'raw.githubusercontent.com') {
+                $message = _t('官方版本源校验失败，暂时无法检测版本。');
+                $this->writeOfficialPluginVersionCache(false, [], $now, $message, self::OFFICIAL_PLUGIN_VERSION_FAILURE_TTL);
                 return [
                     'ok'        => false,
                     'checkedAt' => $now,
+                    'ttl'       => self::OFFICIAL_PLUGIN_VERSION_FAILURE_TTL,
                     'versions'  => [],
                     'cached'    => false,
-                    'message'   => _t('官方版本源校验失败，暂时无法检测版本。'),
+                    'message'   => $message,
                 ];
             }
 
             $versions = $this->parseOfficialPluginVersions($client->getResponseBody());
             if (empty($versions)) {
+                $message = _t('官方插件仓库文档格式已变化，暂时无法解析版本信息。');
+                $this->writeOfficialPluginVersionCache(false, [], $now, $message, self::OFFICIAL_PLUGIN_VERSION_FAILURE_TTL);
                 return [
                     'ok'        => false,
                     'checkedAt' => $now,
+                    'ttl'       => self::OFFICIAL_PLUGIN_VERSION_FAILURE_TTL,
                     'versions'  => [],
                     'cached'    => false,
-                    'message'   => _t('官方插件仓库文档格式已变化，暂时无法解析版本信息。'),
+                    'message'   => $message,
                 ];
             }
 
-            $this->writeOfficialPluginVersionCache($versions, $now);
+            $this->writeOfficialPluginVersionCache(true, $versions, $now, '', self::OFFICIAL_PLUGIN_VERSION_CACHE_TTL);
 
             return [
                 'ok'        => true,
                 'checkedAt' => $now,
+                'ttl'       => self::OFFICIAL_PLUGIN_VERSION_CACHE_TTL,
                 'versions'  => $versions,
                 'cached'    => false,
                 'message'   => '',
             ];
         } catch (\Exception $e) {
-            error_log('[Ajax] pluginVersion: ' . $e->getMessage());
-
+            $message = _t('当前服务器可能无法访问 GitHub Raw 地址，或网络 / SSL 临时异常。');
+            $this->writeOfficialPluginVersionCache(false, [], $now, $message, self::OFFICIAL_PLUGIN_VERSION_FAILURE_TTL);
             return [
                 'ok'        => false,
                 'checkedAt' => $now,
+                'ttl'       => self::OFFICIAL_PLUGIN_VERSION_FAILURE_TTL,
                 'versions'  => [],
                 'cached'    => false,
-                'message'   => _t('当前服务器可能无法访问 GitHub Raw 地址，或网络 / SSL 临时异常。'),
+                'message'   => $message,
             ];
         }
     }
