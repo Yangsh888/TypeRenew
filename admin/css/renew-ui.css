@@ -3084,12 +3084,12 @@ body.tr-admin.tr-page-write p.submit .right {
 
 body.tr-admin.tr-page-write .preview-frame {
     position: fixed;
-    top: var(--tr-topbar-h);
+    top: 0;
     right: 0;
     bottom: 0;
     left: 0;
     width: 100%;
-    height: calc(100vh - var(--tr-topbar-h));
+    height: 100vh;
     border: 0;
     background: var(--tr-surface);
     z-index: 120;
@@ -3100,8 +3100,11 @@ body.tr-admin.tr-page-write .preview-frame.preview-loading {
 }
 
 body.tr-admin.tr-page-write.preview #btn-cancel-preview {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     position: fixed;
-    top: calc(var(--tr-topbar-h) + 12px);
+    top: 16px;
     right: 24px;
     z-index: 121;
     box-shadow: var(--tr-shadow-sm);
@@ -5592,7 +5595,7 @@ body.tr-admin.tr-page-plugins .tr-plugin-actions .btn.btn-link:hover {
 
 @media (max-width: 680px) {
     body.tr-admin.tr-page-write.preview #btn-cancel-preview {
-        top: calc(var(--tr-topbar-h) + 8px);
+        top: 12px;
         right: 16px;
     }
 

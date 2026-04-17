@@ -338,6 +338,12 @@ $(document).ready(function() {
 
     $('#btn-cancel-preview').click(cancelPreview);
 
+    $(document).on('keydown', function (e) {
+        if (e.key === 'Escape' && getPreviewFrame()) {
+            cancelPreview();
+        }
+    });
+
     $(window).bind('message', function (e) {
         const frame = getPreviewFrame();
         const source = e.originalEvent && e.originalEvent.source ? e.originalEvent.source : null;
