@@ -19,10 +19,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
  */
 class Ping extends Comments
 {
-    /**
-     * _customSinglePingCallback
-     * @var boolean
-     */
     private bool $customSinglePingCallback = false;
 
     /**
@@ -32,7 +28,6 @@ class Ping extends Comments
     {
         $parameter->setDefault('parentId=0');
 
-        /** 初始化回调函数 */
         if (function_exists('singlePing')) {
             $this->customSinglePingCallback = true;
         }
@@ -52,11 +47,6 @@ class Ping extends Comments
         echo sprintf($args[$this->length] ?? array_pop($args), $this->length);
     }
 
-    /**
-     * execute
-     * @return void
-     * @throws Exception
-     */
     public function execute()
     {
         if (!$this->parameter->parentId) {

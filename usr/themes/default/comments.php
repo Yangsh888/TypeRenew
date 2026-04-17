@@ -29,6 +29,8 @@
                 
                 <h3 id="response" class="respond-title"><?php _e('撰写评论'); ?></h3>
                 <form method="post" action="<?php $this->commentUrl() ?>" id="comment-form" role="form">
+                    <?php $security = $this->widget('\Widget\Security'); ?>
+                    <input type="hidden" name="_" value="<?php echo htmlspecialchars($security->getToken($this->request->getRequestUrl()), ENT_QUOTES, 'UTF-8'); ?>">
                     <?php if ($this->user->hasLogin()): ?>
                         <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: var(--sp-3);">
                             <?php _e('登录身份: '); ?><a href="<?php $this->options->profileUrl(); ?>" style="font-weight: 600; color: var(--text-primary);"><?php $this->user->screenName(); ?></a>. 

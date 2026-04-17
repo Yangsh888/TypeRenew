@@ -658,11 +658,14 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
     {
         if ('attachment' == $this->type && isset($this->row['text'])) {
             $content = json_decode($this->row['text'], true);
+            if (!is_array($content)) {
+                $content = [];
+            }
 
             $attachment = new Config($content);
-            $attachment->isImage = in_array($content['type'], [
+            $attachment->isImage = in_array((string) ($content['type'] ?? ''), [
                 'jpg', 'jpeg', 'gif', 'png', 'tiff', 'bmp', 'webp', 'avif'
-            ]);
+            ], true);
             $attachment->url = Upload::attachmentHandle($attachment);
 
             return $attachment;

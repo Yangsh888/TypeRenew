@@ -68,6 +68,35 @@ class Pref
         }
     }
 
+    public static function sync(
+        string $pluginName,
+        array $defaults,
+        callable $normalize,
+        callable $report,
+        ?callable $format = null,
+        ?callable $fetchRaw = null
+    ): array {
+        $fetchRaw = $fetchRaw ?? static fn(): array => (array) Helper::options()->plugin($pluginName)->toArray();
+        $raw = self::fetch($fetchRaw, $report, 'settings.read');
+        $settings = $normalize(array_merge($defaults, $raw));
+        $stored = $format ? $format($settings) : $settings;
+
+        try {
+            Helper::configPlugin($pluginName, is_array($stored) ? $stored : []);
+        } catch (\Throwable $e) {
+            $report('settings.store', $e);
+        }
+
+        return is_array($stored) ? $stored : [];
+    }
+
+    public static function forget(?array &$runtime, string $cacheKey, callable $report): void
+    {
+        self::clear($cacheKey, $report);
+        $runtime = null;
+        \Widget\Options::destroy();
+    }
+
     private static function fetch(callable $fetchRaw, callable $report, string $scope): array
     {
         try {

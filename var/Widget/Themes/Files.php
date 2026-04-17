@@ -102,8 +102,8 @@ class Files extends Base
      */
     public function currentContent(): string
     {
-        return htmlspecialchars(file_get_contents(Options::alloc()
-            ->themeFile($this->currentTheme, $this->currentFile)));
+        $content = file_get_contents(Options::alloc()->themeFile($this->currentTheme, $this->currentFile));
+        return htmlspecialchars($content !== false ? $content : '', ENT_QUOTES, 'UTF-8');
     }
 
     /**

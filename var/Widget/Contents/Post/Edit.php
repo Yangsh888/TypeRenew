@@ -182,8 +182,6 @@ class Edit extends Contents implements ActionInterface
 
                 $markCount++;
             }
-
-            unset($condition);
         }
 
         Notice::alloc()
@@ -235,8 +233,6 @@ class Edit extends Contents implements ActionInterface
 
                 $deleteCount++;
             }
-
-            unset($condition);
         }
 
         if ($deleteCount > 0) {

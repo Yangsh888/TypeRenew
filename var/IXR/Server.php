@@ -155,7 +155,11 @@ class Server
             }
 
             foreach ($ref->getParameters() as $key => $parameter) {
-                if ($parameter->hasType() && !settype($args[$key], $parameter->getType()->getName())) {
+                if (!array_key_exists($key, $args)) {
+                    continue;
+                }
+
+                if ($parameter->hasType() && !$this->coerceArgument($args[$key], $parameter->getType())) {
                     return new Error(
                         -32602,
                         'server error. requested class method "'
@@ -232,6 +236,71 @@ class Server
         header('Date: ' . date('r'));
         echo $xml;
         exit;
+    }
+
+    private function coerceArgument(&$value, \ReflectionType $type): bool
+    {
+        if ($type instanceof \ReflectionNamedType) {
+            return $this->matchNamedType($value, $type);
+        }
+
+        if ($type instanceof \ReflectionUnionType) {
+            foreach ($type->getTypes() as $candidateType) {
+                $candidate = $value;
+                if ($this->matchNamedType($candidate, $candidateType)) {
+                    $value = $candidate;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        if ($type instanceof \ReflectionIntersectionType) {
+            if (!is_object($value)) {
+                return false;
+            }
+
+            foreach ($type->getTypes() as $candidateType) {
+                if (!$this->matchNamedType($value, $candidateType)) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        return true;
+    }
+
+    private function matchNamedType(&$value, \ReflectionNamedType $type): bool
+    {
+        if ($value === null) {
+            return $type->allowsNull();
+        }
+
+        $name = $type->getName();
+        if ($name === 'mixed') {
+            return true;
+        }
+
+        if (!$type->isBuiltin()) {
+            return $value instanceof $name;
+        }
+
+        return match ($name) {
+            'int' => settype($value, 'integer'),
+            'float' => settype($value, 'double'),
+            'bool' => settype($value, 'boolean'),
+            'string' => !is_array($value) && (!is_object($value) || method_exists($value, '__toString'))
+                && settype($value, 'string'),
+            'array' => is_array($value),
+            'object' => is_object($value),
+            'callable' => is_callable($value),
+            'iterable' => is_iterable($value),
+            'null' => $value === null,
+            default => true,
+        };
     }
 
     /**

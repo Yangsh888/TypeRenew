@@ -140,8 +140,6 @@ class Edit extends Contents implements ActionInterface
 
                 $markCount++;
             }
-
-            unset($condition);
         }
 
         Notice::alloc()

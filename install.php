@@ -465,9 +465,6 @@ require_once __TYPECHO_ROOT_DIR__ . '/var/Typecho/Common.php';
     return $code;
 }
 
-/**
- * remove config file if written
- */
 function install_remove_config_file()
 {
     global $configWritten;
@@ -477,12 +474,6 @@ function install_remove_config_file()
     }
 }
 
-/**
- * check install
- *
- * @param string $type
- * @return bool
- */
 function install_check(string $type): bool
 {
     switch ($type) {
@@ -515,12 +506,6 @@ function install_check(string $type): bool
     }
 }
 
-/**
- * raise install error
- *
- * @param mixed $error
- * @param mixed $config
- */
 function install_raise_error($error, $config = null)
 {
     if (install_is_cli()) {
@@ -582,9 +567,6 @@ function install_throw_json($data)
         ->respond();
 }
 
-/**
- * @param string $url
- */
 function install_redirect(string $url)
 {
     \Typecho\Response::getInstance()->setStatus(302)
@@ -592,9 +574,6 @@ function install_redirect(string $url)
         ->respond();
 }
 
-/**
- * add common js support
- */
 function install_js_support()
 {
     ?>

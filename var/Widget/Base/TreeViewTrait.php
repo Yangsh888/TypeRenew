@@ -8,14 +8,6 @@ trait TreeViewTrait
 {
     use TreeTrait;
 
-    /**
-     * treeViewRows
-     *
-     * @param mixed $rowOptions 输出选项
-     * @param string $type 类型
-     * @param string $func 回调函数
-     * @param int $current 当前项
-     */
     protected function listRows(Config $rowOptions, string $type, string $func, int $current = 0)
     {
         $this->stack = $this->getRows($this->top);
@@ -92,23 +84,13 @@ trait TreeViewTrait
         echo '</' . $rowOptions->itemTag . '>';
     }
 
-    /**
-     * treeViewRows
-     *
-     * @param Config $rowOptions 输出选项
-     * @param string $type 类型
-     * @param string $func 回调函数
-     * @param int $current 当前项
-     */
     private function treeViewRows(Config $rowOptions, string $type, string $func, int $current)
     {
         $children = $this->children;
         if ($children) {
-            //缓存变量便于还原
             $tmp = $this->row;
             $this->sequence++;
 
-            //在子评论之前输出
             echo '<' . $rowOptions->wrapTag . (empty($rowOptions->wrapClass)
                     ? '' : ' class="' . $rowOptions->wrapClass . '"') . '>';
 
@@ -118,7 +100,6 @@ trait TreeViewTrait
                 $this->row = $tmp;
             }
 
-            //在子评论之后输出
             echo '</' . $rowOptions->wrapTag . '>';
 
             $this->sequence--;

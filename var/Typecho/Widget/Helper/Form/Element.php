@@ -101,7 +101,6 @@ abstract class Element extends Layout
         ?string $label = null,
         ?string $description = null
     ) {
-        /** 创建html元素,并设置class */
         parent::__construct(
             'ul',
             ['class' => 'typecho-option', 'id' => 'typecho-option-item-' . $name . '-' . self::$uniqueId]
@@ -161,7 +160,6 @@ abstract class Element extends Layout
      */
     public function container(Layout $item): Element
     {
-        /** 创建表单容器 */
         if (empty($this->container)) {
             $this->container = new Layout('li');
             $this->addItem($this->container);
@@ -201,7 +199,6 @@ abstract class Element extends Layout
      */
     public function description(string $description): Element
     {
-        /** 创建描述元素 */
         if (empty($this->description)) {
             $this->description = new Layout('p', ['class' => 'description']);
             $this->container($this->description);

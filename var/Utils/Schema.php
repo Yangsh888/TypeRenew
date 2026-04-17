@@ -15,6 +15,11 @@ class Schema
         self::ensureTables($db, ['mail_queue', 'mail_unsub', 'password_resets']);
     }
 
+    public static function ensureRenewShield(Db $db): void
+    {
+        self::ensureTables($db, ['renew_shield_logs', 'renew_shield_state']);
+    }
+
     public static function ensureRenewGo(Db $db): void
     {
         self::ensureTables($db, ['renew_go_logs']);
@@ -238,6 +243,80 @@ class Schema
                         . ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci',
                 };
 
+            case 'renew_shield_logs':
+                return match ($dialect) {
+                    'sqlite' => 'CREATE TABLE IF NOT EXISTS ' . $name . ' ('
+                        . '"id" INTEGER PRIMARY KEY AUTOINCREMENT,'
+                        . '"scope" TEXT NOT NULL,'
+                        . '"action" TEXT NOT NULL,'
+                        . '"decision" TEXT NOT NULL,'
+                        . '"rule_key" TEXT NOT NULL,'
+                        . '"score" INTEGER NOT NULL DEFAULT 0,'
+                        . '"method" TEXT NOT NULL,'
+                        . '"ip" TEXT DEFAULT NULL,'
+                        . '"path" TEXT DEFAULT NULL,'
+                        . '"ua" TEXT DEFAULT NULL,'
+                        . '"message" TEXT NOT NULL,'
+                        . '"payload" TEXT DEFAULT NULL,'
+                        . '"created_at" INTEGER NOT NULL'
+                        . ')',
+                    'pgsql' => 'CREATE TABLE IF NOT EXISTS ' . $name . ' ('
+                        . '"id" BIGSERIAL PRIMARY KEY,'
+                        . '"scope" VARCHAR(24) NOT NULL,'
+                        . '"action" VARCHAR(24) NOT NULL,'
+                        . '"decision" VARCHAR(16) NOT NULL,'
+                        . '"rule_key" VARCHAR(64) NOT NULL,'
+                        . '"score" INT NOT NULL DEFAULT 0,'
+                        . '"method" VARCHAR(12) NOT NULL,'
+                        . '"ip" VARCHAR(45) DEFAULT NULL,'
+                        . '"path" TEXT DEFAULT NULL,'
+                        . '"ua" TEXT DEFAULT NULL,'
+                        . '"message" VARCHAR(255) NOT NULL,'
+                        . '"payload" TEXT DEFAULT NULL,'
+                        . '"created_at" INTEGER NOT NULL'
+                        . ')',
+                    default => 'CREATE TABLE IF NOT EXISTS ' . $name . ' ('
+                        . '`id` bigint unsigned NOT NULL auto_increment,'
+                        . '`scope` varchar(24) NOT NULL,'
+                        . '`action` varchar(24) NOT NULL,'
+                        . '`decision` varchar(16) NOT NULL,'
+                        . '`rule_key` varchar(64) NOT NULL,'
+                        . '`score` int NOT NULL DEFAULT 0,'
+                        . '`method` varchar(12) NOT NULL,'
+                        . '`ip` varchar(45) DEFAULT NULL,'
+                        . '`path` varchar(1024) DEFAULT NULL,'
+                        . '`ua` varchar(512) DEFAULT NULL,'
+                        . '`message` varchar(255) NOT NULL,'
+                        . '`payload` text DEFAULT NULL,'
+                        . '`created_at` int unsigned NOT NULL,'
+                        . 'PRIMARY KEY (`id`)'
+                        . ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci',
+                };
+
+            case 'renew_shield_state':
+                return match ($dialect) {
+                    'sqlite' => 'CREATE TABLE IF NOT EXISTS ' . $name . ' ('
+                        . '"id" INTEGER PRIMARY KEY AUTOINCREMENT,'
+                        . '"name_hash" TEXT NOT NULL UNIQUE,'
+                        . '"value" TEXT DEFAULT NULL,'
+                        . '"expires_at" INTEGER NOT NULL DEFAULT 0'
+                        . ')',
+                    'pgsql' => 'CREATE TABLE IF NOT EXISTS ' . $name . ' ('
+                        . '"id" BIGSERIAL PRIMARY KEY,'
+                        . '"name_hash" CHAR(40) NOT NULL UNIQUE,'
+                        . '"value" TEXT DEFAULT NULL,'
+                        . '"expires_at" INTEGER NOT NULL DEFAULT 0'
+                        . ')',
+                    default => 'CREATE TABLE IF NOT EXISTS ' . $name . ' ('
+                        . '`id` bigint unsigned NOT NULL auto_increment,'
+                        . '`name_hash` char(40) NOT NULL,'
+                        . '`value` mediumtext DEFAULT NULL,'
+                        . '`expires_at` int unsigned NOT NULL DEFAULT 0,'
+                        . 'PRIMARY KEY (`id`),'
+                        . 'UNIQUE KEY `uniq_name_hash` (`name_hash`)'
+                        . ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci',
+                };
+
             case 'renew_seo_logs':
                 return match ($dialect) {
                     'sqlite' => 'CREATE TABLE IF NOT EXISTS ' . $name . ' ('
@@ -341,6 +420,17 @@ class Schema
             'renew_go_logs' => [
                 ['name' => $name('idx_ip_action_created', 'ip_action_created'), 'columns' => ['ip', 'action', 'created_at']],
                 ['name' => $name('idx_created', 'created'), 'columns' => ['created_at']],
+            ],
+            'renew_shield_logs' => [
+                ['name' => $name('idx_scope_created', 'scope_created'), 'columns' => ['scope', 'created_at']],
+                ['name' => $name('idx_decision_created', 'decision_created'), 'columns' => ['decision', 'created_at']],
+                ['name' => $name('idx_ip_created', 'ip_created'), 'columns' => ['ip', 'created_at']],
+                ['name' => $name('idx_rule_created', 'rule_created'), 'columns' => ['rule_key', 'created_at']],
+                ['name' => $name('idx_created', 'created'), 'columns' => ['created_at']],
+            ],
+            'renew_shield_state' => [
+                ['name' => $name('uniq_name_hash', 'name_hash'), 'columns' => ['name_hash'], 'unique' => true],
+                ['name' => $name('idx_expires', 'expires'), 'columns' => ['expires_at']],
             ],
             'renew_seo_logs' => [
                 ['name' => $name('idx_channel_created', 'channel_created'), 'columns' => ['channel', 'created_at']],

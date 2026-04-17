@@ -302,7 +302,6 @@ class Client
             curl_setopt($ch, CURLOPT_USERAGENT, $this->agent);
         }
 
-        /** 设置header信息 */
         if (!empty($this->headers)) {
             $headers = [];
 

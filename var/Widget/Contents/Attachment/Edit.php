@@ -271,7 +271,6 @@ class Edit extends Contents implements ActionInterface
     protected function deleteByIds(array $posts, int &$deleteCount): void
     {
         foreach ($posts as $post) {
-            // 删除插件接口
             self::pluginHandle()->call('delete', $post, $this);
 
             $condition = $this->db->sql()->where('cid = ?', $post);
@@ -281,20 +280,13 @@ class Edit extends Contents implements ActionInterface
                 ->limit(1), [$this, 'push']);
 
             if ($this->isWriteable(clone $condition) && $this->delete($condition)) {
-                /** 删除文件 */
                 Upload::deleteHandle($this->toColumn(['cid', 'attachment', 'parent']));
-
-                /** 删除评论 */
                 $this->db->query($this->db->delete('table.comments')
                     ->where('cid = ?', $post));
-
-                // 完成删除插件接口
                 self::pluginHandle()->call('finishDelete', $post, $this);
 
                 $deleteCount++;
             }
-
-            unset($condition);
         }
     }
 }

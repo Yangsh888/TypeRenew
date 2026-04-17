@@ -50,7 +50,6 @@ class Box extends PageNavigator
         $template = array_merge($default, $template);
         extract($template);
 
-        // 定义item
         $itemBegin = empty($itemTag) ? '' : ('<' . $itemTag . '>');
         $itemCurrentBegin = empty($itemTag) ? '' : ('<' . $itemTag
             . (empty($currentClass) ? '' : ' class="' . $currentClass . '"') . '>');
@@ -76,7 +75,6 @@ class Box extends PageNavigator
         $from = max(1, $this->currentPage - $splitPage);
         $to = min($this->totalPage, $this->currentPage + $splitPage);
 
-        //输出上一页
         if ($this->currentPage > 1) {
             echo $itemPrevBegin . sprintf(
                 $linkPrevBegin,
@@ -85,19 +83,16 @@ class Box extends PageNavigator
                 . $prevWord . $linkEnd . $itemEnd;
         }
 
-        //输出第一页
         if ($from > 1) {
             echo $itemBegin
                 . sprintf($linkBegin, str_replace($this->pageHolder, 1, $this->pageTemplate) . $this->anchor)
                 . '1' . $linkEnd . $itemEnd;
 
             if ($from > 2) {
-                //输出省略号
                 echo $itemBegin . $textBegin . $splitWord . $textEnd . $itemEnd;
             }
         }
 
-        //输出中间页
         for ($i = $from; $i <= $to; $i++) {
             $current = ($i == $this->currentPage);
 
@@ -108,7 +103,6 @@ class Box extends PageNavigator
                 . $i . $linkEnd . $itemEnd;
         }
 
-        //输出最后页
         if ($to < $this->totalPage) {
             if ($to < $this->totalPage - 1) {
                 echo $itemBegin . $textBegin . $splitWord . $textEnd . $itemEnd;
@@ -122,7 +116,6 @@ class Box extends PageNavigator
                 . $this->totalPage . $linkEnd . $itemEnd;
         }
 
-        //输出下一页
         if ($this->currentPage < $this->totalPage) {
             echo $itemNextBegin . sprintf(
                 $linkNextBegin,

@@ -193,8 +193,8 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
         foreach ($reflectionMethod->getParameters() as $key => $parameter) {
             $name = $parameter->getName();
-            if ($name == 'userName' || $name == 'password') {
-                $auth[$name] = $parameters[$key];
+            if (($name == 'userName' || $name == 'password') && array_key_exists($key, $parameters)) {
+                $auth[$name] = (string) $parameters[$key];
                 $valid--;
             }
         }
@@ -302,8 +302,11 @@ class XmlRpc extends Contents implements ActionInterface, Hook
     {
         $input = [];
         $type = isset($content['post_type']) && 'page' == $content['post_type'] ? 'page' : 'post';
+        $title = $this->arrayString($content, 'title');
+        $description = $this->arrayString($content, 'description');
+        $more = $this->arrayString($content, 'mt_text_more');
 
-        $input['title'] = trim($content['title']) == null ? _t('未命名文档') : $content['title'];
+        $input['title'] = trim($title) === '' ? _t('未命名文档') : $title;
 
         if (isset($content['slug'])) {
             $input['slug'] = $content['slug'];
@@ -311,8 +314,7 @@ class XmlRpc extends Contents implements ActionInterface, Hook
             $input['slug'] = $content['wp_slug'];
         }
 
-        $input['text'] = !empty($content['mt_text_more']) ? $content['description']
-            . "\n<!--more-->\n" . $content['mt_text_more'] : $content['description'];
+        $input['text'] = $more !== '' ? $description . "\n<!--more-->\n" . $more : $description;
         $input['text'] = self::pluginHandle()->filter('textFilter', $input['text'], $this);
 
         $input['password'] = $content["wp_password"] ?? null;
@@ -510,11 +512,11 @@ class XmlRpc extends Contents implements ActionInterface, Hook
     {
         $post = Archive::alloc('type=single', ['cid' => $postId], false);
         if ($post->type == 'attachment') {
-            $attachment['title'] = $content['post_title'];
-            $attachment['slug'] = $content['post_excerpt'];
+            $attachment['title'] = $this->arrayString($content, 'post_title', $post->title ?? '');
+            $attachment['slug'] = $this->arrayString($content, 'post_excerpt', $post->slug ?? '');
 
-            $text = json_decode($post->text, true);
-            $text['description'] = $content['description'];
+            $text = $this->attachmentPayload((string) $post->text);
+            $text['description'] = $this->arrayString($content, 'description', (string) ($text['description'] ?? ''));
 
             $attachment['text'] = json_encode($text);
 
@@ -1066,15 +1068,15 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         ];
 
         if (isset($struct['comment_author'])) {
-            $input['author'] = $struct['author'];
+            $input['author'] = $this->arrayString($struct, 'comment_author');
         }
 
         if (isset($struct['comment_author_email'])) {
-            $input['mail'] = $struct['author_email'];
+            $input['mail'] = $this->arrayString($struct, 'comment_author_email');
         }
 
         if (isset($struct['comment_author_url'])) {
-            $input['url'] = $struct['author_url'];
+            $input['url'] = $this->arrayString($struct, 'comment_author_url');
         }
 
         if (isset($struct['comment_parent'])) {
@@ -1718,6 +1720,30 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         }
 
         return true;
+    }
+
+    private function arrayString(array $data, string $key, string $default = ''): string
+    {
+        if (!array_key_exists($key, $data) || $data[$key] === null) {
+            return $default;
+        }
+
+        $value = $data[$key];
+        if (is_string($value)) {
+            return $value;
+        }
+
+        if (is_scalar($value)) {
+            return (string) $value;
+        }
+
+        return $default;
+    }
+
+    private function attachmentPayload(string $text): array
+    {
+        $decoded = json_decode($text, true);
+        return is_array($decoded) ? $decoded : [];
     }
 
     /**
