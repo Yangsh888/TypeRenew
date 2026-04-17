@@ -94,7 +94,9 @@ class Admin extends Users
      */
     protected function ___domainPath(): string
     {
-        $parts = \Typecho\Common::parseUrl((string) $this->url);
+        $parts = method_exists(\Typecho\Common::class, 'parseUrl')
+            ? \Typecho\Common::parseUrl((string) $this->url)
+            : (parse_url((string) $this->url) ?: []);
         return (string) ($parts['host'] ?? '') . (string) ($parts['path'] ?? '');
     }
 

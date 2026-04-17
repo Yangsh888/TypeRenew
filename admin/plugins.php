@@ -28,7 +28,9 @@ $pluginIsOfficial = static function ($author, $homepage): bool {
         return false;
     }
 
-    $parts = \Typecho\Common::parseUrl($candidate);
+    $parts = method_exists(\Typecho\Common::class, 'parseUrl')
+        ? \Typecho\Common::parseUrl($candidate)
+        : (parse_url($candidate) ?: []);
     $host = strtolower((string) ($parts['host'] ?? ''));
 
     return in_array($host, ['www.typerenew.com', 'typerenew.com'], true);

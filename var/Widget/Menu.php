@@ -153,7 +153,7 @@ class Menu extends Base
         $menu = [];
         $defaultChildNode = [null, null, null, 'administrator', false, null];
 
-        $currentUrlParts = Common::parseUrl($currentUrl);
+        $currentUrlParts = self::parseUrlCompat($currentUrl);
         $currentUrlParams = [];
         if (!empty($currentUrlParts['query'])) {
             parse_str($currentUrlParts['query'], $currentUrlParams);
@@ -195,7 +195,7 @@ class Menu extends Base
                 $menuUrl = $url;
                 $url = Common::url($url, $adminUrl);
 
-                $urlParts = Common::parseUrl($url);
+                $urlParts = self::parseUrlCompat($url);
                 $urlParams = [];
                 if (!empty($urlParts['query'])) {
                     parse_str($urlParts['query'], $urlParams);
@@ -365,6 +365,21 @@ class Menu extends Base
 
         return $tree;
     }
+
+    private static function parseUrlCompat(?string $url): array
+    {
+        if (method_exists(Common::class, 'parseUrl')) {
+            return Common::parseUrl($url);
+        }
+
+        if ($url === null || $url === '') {
+            return [];
+        }
+
+        $parts = parse_url($url);
+        return is_array($parts) ? $parts : [];
+    }
+
 
     /**
      * 输出父级菜单
