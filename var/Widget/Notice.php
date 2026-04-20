@@ -40,11 +40,6 @@ class Notice extends Widget
         }
     }
 
-    public function getHighlightId(): int
-    {
-        return preg_match("/[0-9]+/", $this->highlight, $matches) ? $matches[0] : 0;
-    }
-
     /**
      * 设定堆栈每一行的值
      *

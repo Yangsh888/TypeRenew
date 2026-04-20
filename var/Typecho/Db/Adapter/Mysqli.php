@@ -77,7 +77,7 @@ class Mysqli implements Adapter
 
     public function getVersion($handle): string
     {
-        return (string) $this->dbLink->server_version;
+        return (string) $this->dbLink->server_info;
     }
 
     /**

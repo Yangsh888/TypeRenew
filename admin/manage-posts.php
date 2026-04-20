@@ -168,8 +168,9 @@ $postToken = htmlspecialchars($security->getToken($options->index . '/action/con
                                            title="<?php _e('编辑 %s', htmlspecialchars($posts->title)); ?>"><i
                                                 class="i-edit"></i></a>
                                         <?php if ('post_draft' != $posts->type): ?>
-                                            <a href="<?php $posts->permalink(); ?>"
-                                               title="<?php _e('浏览 %s', htmlspecialchars($posts->title)); ?>"><i
+                                            <?php $futurePreview = (int) $posts->created > (int) $options->time; ?>
+                                            <a href="<?php $futurePreview ? $options->adminUrl('preview.php?cid=' . $posts->cid) : $posts->permalink(); ?>"
+                                               title="<?php $futurePreview ? _e('预览 %s', htmlspecialchars($posts->title)) : _e('浏览 %s', htmlspecialchars($posts->title)); ?>"><i
                                                     class="i-exlink"></i></a>
                                         <?php endif; ?>
                                     </td>

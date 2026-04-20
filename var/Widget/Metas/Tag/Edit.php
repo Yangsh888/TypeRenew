@@ -124,6 +124,7 @@ class Edit extends Metas implements ActionInterface
         /** 插入数据 */
         $tag['mid'] = $this->insert($tag);
         $this->push($tag);
+        self::pluginHandle()->call('finishInsert', $tag, $this);
 
         Notice::alloc()->highlight($this->theId);
 
@@ -235,6 +236,7 @@ class Edit extends Metas implements ActionInterface
 
         $this->update($tag, $this->db->sql()->where('mid = ?', $this->request->filter('int')->get('mid')));
         $this->push($tag);
+        self::pluginHandle()->call('finishUpdate', $tag, $this);
 
         Notice::alloc()->highlight($this->theId);
 
@@ -263,6 +265,10 @@ class Edit extends Metas implements ActionInterface
                     $deleteCount++;
                 }
             }
+        }
+
+        if ($deleteCount > 0) {
+            self::pluginHandle()->call('finishDelete', $tags, $this);
         }
 
         Notice::alloc()->set(
@@ -295,6 +301,7 @@ class Edit extends Metas implements ActionInterface
 
         if ($tags) {
             $this->merge($merge, 'tag', $tags);
+            self::pluginHandle()->call('finishMerge', $merge, $tags, $this);
 
             Notice::alloc()->set(_t('标签已经合并'), 'success');
         } else {
@@ -319,6 +326,7 @@ class Edit extends Metas implements ActionInterface
 
             // 自动清理标签
             $this->clearTags();
+            self::pluginHandle()->call('finishRefresh', $tags, $this);
 
             Notice::alloc()->set(_t('标签刷新已经完成'), 'success');
         } else {
@@ -337,7 +345,7 @@ class Edit extends Metas implements ActionInterface
     {
         // 取出count为0的标签
         $tags = array_column($this->db->fetchAll($this->select('mid')
-            ->where('type = ? AND count = ?', 'tags', 0)), 'mid');
+            ->where('type = ? AND count = ?', 'tag', 0)), 'mid');
 
         foreach ($tags as $tag) {
             // 确认是否已经没有关联了

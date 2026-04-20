@@ -45,7 +45,11 @@
 
     function storageSet(key, value) {
         if (store) {
-            store.setJson(key, value);
+            if (value && typeof value === 'object') {
+                store.setJson(key, value);
+            } else {
+                store.set(key, value);
+            }
         }
     }
 
@@ -164,9 +168,6 @@
         storageSet('trTheme', pref);
         const evt = new CustomEvent('tr-theme-change', { detail: { pref: pref } });
         window.dispatchEvent(evt);
-        if (window.TypechoTheme && typeof window.TypechoTheme.apply === 'function') {
-            window.TypechoTheme.apply();
-        }
     }
 
     function toggleFullscreen() {

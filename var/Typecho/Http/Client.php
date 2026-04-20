@@ -90,14 +90,14 @@ class Client
      *
      * @var integer
      */
-    private int $responseStatus;
+    private int $responseStatus = 0;
 
     /**
      * 回执身体
      *
      * @var string
      */
-    private string $responseBody;
+    private string $responseBody = '';
 
     /**
      * 回执最终地址

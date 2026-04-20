@@ -175,14 +175,4 @@
         });
     }
 
-    window.TypechoTheme = {
-        get: getPref,
-        set: setPref,
-        apply: apply,
-        toggle: () => {
-            const next = pref === 'dark' ? 'light' : 'dark';
-            setPref(next);
-            apply();
-        }
-    };
 })();

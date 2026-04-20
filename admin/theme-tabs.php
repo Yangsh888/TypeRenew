@@ -2,11 +2,12 @@
 <ul class="typecho-option-tabs fix-tabs">
     <li<?php if ($menu->getCurrentMenuUrl() === 'themes.php'): ?> class="current"<?php endif; ?>><a href="<?php $options->adminUrl('themes.php'); ?>"><?php _e('可以使用的外观'); ?></a></li>
     <?php if (\Widget\Themes\Files::isWriteable()): ?>
+        <?php $editingTheme = isset($files) ? $files->currentTheme() : $options->theme; ?>
         <li<?php if ($menu->getCurrentMenuUrl() === 'theme-editor.php'): ?> class="current"<?php endif; ?>><a href="<?php $options->adminUrl('theme-editor.php'); ?>">
-                <?php if (!isset($files) || $options->theme == $files->theme): ?>
+                <?php if (!isset($files) || $options->theme == $editingTheme): ?>
                     <?php _e('编辑当前外观'); ?>
                 <?php else: ?>
-                    <?php _e('编辑%s外观', ' <cite>' . $files->theme . '</cite> '); ?>
+                    <?php _e('编辑%s外观', ' <cite>' . $editingTheme . '</cite> '); ?>
                 <?php endif; ?>
             </a></li>
     <?php endif; ?>

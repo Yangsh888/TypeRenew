@@ -82,7 +82,7 @@ class Mail extends Options implements ActionInterface
         $settings['mailAsyncIps'] = $this->normalizeIpList((string) ($settings['mailAsyncIps'] ?? ''));
         $settings['mailBatchSize'] = max(1, min(200, (int) ($settings['mailBatchSize'] ?? 50)));
         $settings['mailMaxAttempts'] = max(1, min(10, (int) ($settings['mailMaxAttempts'] ?? 3)));
-        $settings['mailKeepDays'] = max(1, min(365, (int) ($settings['mailKeepDays'] ?? 30)));
+        $settings['mailKeepDays'] = max(0, min(365, (int) ($settings['mailKeepDays'] ?? 30)));
 
         $settings['mailNotifyOwner'] = (int) (!empty($settings['mailNotifyOwner']) ? 1 : 0);
         $settings['mailNotifyGuest'] = (int) (!empty($settings['mailNotifyGuest']) ? 1 : 0);

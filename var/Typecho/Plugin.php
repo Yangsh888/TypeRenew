@@ -8,7 +8,7 @@ class Plugin
 {
     private static array $plugin = [];
 
-    private static array $instances;
+    private static array $instances = [];
 
     private static array $tmp = [];
 
@@ -286,8 +286,12 @@ class Plugin
         return $this;
     }
 
-    public function __set(string $component, callable $value)
+    public function __set(string $component, $value): void
     {
+        if (!is_callable($value)) {
+            throw new PluginException('Plugin callback must be callable');
+        }
+
         $weight = 0;
 
         if (strpos($component, '_') > 0) {

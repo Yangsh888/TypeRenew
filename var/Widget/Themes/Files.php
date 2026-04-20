@@ -33,6 +33,58 @@ class Files extends Base
      */
     private string $currentFile;
 
+    private function listEditableFiles(string $themeRoot): array
+    {
+        $files = [];
+        $root = rtrim(str_replace('\\', '/', $themeRoot), '/');
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($themeRoot, \FilesystemIterator::SKIP_DOTS)
+        );
+
+        foreach ($iterator as $file) {
+            if (!$file->isFile()) {
+                continue;
+            }
+
+            $extension = strtolower((string) $file->getExtension());
+            if (!in_array($extension, ['php', 'js', 'css', 'vbs'], true)) {
+                continue;
+            }
+
+            $path = str_replace('\\', '/', $file->getPathname());
+            $relative = ltrim(substr($path, strlen($root)), '/');
+            if ($relative !== '') {
+                $files[] = $relative;
+            }
+        }
+
+        natcasesort($files);
+        return array_values($files);
+    }
+
+    private function resolveCurrentPath(string $themeRoot, string $file): ?string
+    {
+        $relative = ltrim(str_replace('\\', '/', $file), '/');
+        if (
+            $relative === ''
+            || str_contains($relative, "\0")
+            || str_contains($relative, '../')
+            || str_contains($relative, '..\\')
+        ) {
+            return null;
+        }
+
+        $path = realpath($themeRoot . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $relative));
+        $normalizedRoot = rtrim(str_replace('\\', '/', $themeRoot), '/') . '/';
+        $normalizedPath = $path === false ? false : str_replace('\\', '/', $path);
+
+        if ($normalizedPath === false || !str_starts_with($normalizedPath, $normalizedRoot) || !is_file($path)) {
+            return null;
+        }
+
+        return $path;
+    }
+
     /**
      * @throws Widget\Exception
      */
@@ -46,25 +98,20 @@ class Files extends Base
             && is_dir($dir = Options::alloc()->themeFile($this->currentTheme))
             && (!defined('__TYPECHO_THEME_WRITEABLE__') || __TYPECHO_THEME_WRITEABLE__)
         ) {
-            $files = array_filter(glob($dir . '/*'), function ($path) {
-                return preg_match("/\.(php|js|css|vbs)$/i", $path);
-            });
+            $files = $this->listEditableFiles($dir);
 
             $this->currentFile = $this->request->get('file', 'index.php');
+            if (!in_array($this->currentFile, $files, true) && !empty($files)) {
+                $this->currentFile = in_array('index.php', $files, true) ? 'index.php' : $files[0];
+            }
 
-            if (
-                preg_match("/^([_0-9a-z-. ])+$/i", $this->currentFile)
-                && file_exists($dir . '/' . $this->currentFile)
-            ) {
+            if ($this->resolveCurrentPath($dir, $this->currentFile) !== null) {
                 foreach ($files as $file) {
-                    if (file_exists($file)) {
-                        $file = basename($file);
-                        $this->push([
-                            'file'    => $file,
-                            'theme'   => $this->currentTheme,
-                            'current' => ($file == $this->currentFile)
-                        ]);
-                    }
+                    $this->push([
+                        'file'    => $file,
+                        'theme'   => $this->currentTheme,
+                        'current' => ($file == $this->currentFile)
+                    ]);
                 }
 
                 return;
@@ -102,7 +149,9 @@ class Files extends Base
      */
     public function currentContent(): string
     {
-        $content = file_get_contents(Options::alloc()->themeFile($this->currentTheme, $this->currentFile));
+        $themeRoot = Options::alloc()->themeFile($this->currentTheme);
+        $path = $this->resolveCurrentPath($themeRoot, $this->currentFile);
+        $content = $path ? file_get_contents($path) : false;
         return htmlspecialchars($content !== false ? $content : '', ENT_QUOTES, 'UTF-8');
     }
 
@@ -113,9 +162,9 @@ class Files extends Base
      */
     public function currentIsWriteable(): bool
     {
-        return is_writable(Options::alloc()
-                ->themeFile($this->currentTheme, $this->currentFile))
-            && self::isWriteable();
+        $themeRoot = Options::alloc()->themeFile($this->currentTheme);
+        $path = $this->resolveCurrentPath($themeRoot, $this->currentFile);
+        return $path !== null && is_writable($path) && self::isWriteable();
     }
 
     /**

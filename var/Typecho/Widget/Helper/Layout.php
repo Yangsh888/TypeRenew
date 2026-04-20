@@ -22,7 +22,7 @@ class Layout
 
     private ?bool $forceClose = null;
 
-    private string $html;
+    private string $html = '';
 
     private $parent;
 
@@ -195,9 +195,9 @@ class Layout
      * @param string $name 属性名称
      * @param string $value 属性值
      */
-    public function __set(string $name, string $value)
+    public function __set(string $name, $value): void
     {
-        $this->attributes[$name] = $value;
+        $this->attributes[$name] = (string) $value;
     }
 
     /**

@@ -136,7 +136,7 @@ class Queue
         }
 
         $called = true;
-        Response::getInstance()->addResponder(function () use ($options) {
+        Response::getInstance()->addBackgroundResponder(function () use ($options) {
             $client = Client::get();
             if (!$client) {
                 self::recordRuntimeError('async', 'http client unavailable');
@@ -374,6 +374,10 @@ class Queue
 
     public static function maybeCleanup(Db $db, int $keepDays): int
     {
+        if ($keepDays <= 0) {
+            return 0;
+        }
+
         $cache = \Typecho\Cache::getInstance();
         $cacheKey = 'mail:cleanup:last';
         $interval = 3600;
@@ -393,7 +397,11 @@ class Queue
 
     public static function cleanup(Db $db, int $keepDays): int
     {
-        $keepDays = max(1, min(365, $keepDays));
+        if ($keepDays <= 0) {
+            return 0;
+        }
+
+        $keepDays = min(365, $keepDays);
         $before = time() - ($keepDays * 86400);
         try {
             $rows = $db->query($db->delete('table.mail_queue')->where('status = ? AND updated < ?', 'sent', $before));

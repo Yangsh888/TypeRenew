@@ -53,24 +53,7 @@ class Response
 
     public function throwFinish()
     {
-        $isFastCGI = function_exists('fastcgi_finish_request');
-
-        if (!$isFastCGI) {
-            ob_end_clean();
-            ob_start();
-            $this->setHeader('Connection', 'close');
-            $this->setHeader('Content-Encoding', 'none');
-            $this->setHeader('Content-Length', ob_get_length());
-        }
-
-        $this->response->sendHeaders();
-
-        if (!$isFastCGI) {
-            ob_end_flush();
-            flush();
-        } else {
-            fastcgi_finish_request();
-        }
+        $this->response->finish();
     }
 
     public function throwContent(string $content, string $contentType = 'text/html')

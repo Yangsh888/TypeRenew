@@ -25,8 +25,6 @@ class Service extends BaseOptions implements ActionInterface
         $title = $data['title'] ?? '';
         $excerpt = $data['excerpt'] ?? '';
 
-        $response = ['trackback' => [], 'pingback' => []];
-
         if (!Common::timeTokenValidate($token, $this->options->secret, 3) || empty($permalink)) {
             throw new Exception(_t('禁止访问'), 403);
         }
@@ -85,8 +83,6 @@ class Service extends BaseOptions implements ActionInterface
                         }
 
                         if (!empty($xmlrpcUrl)) {
-                            $response['pingback'][] = $url;
-
                             try {
                                 $xmlrpc = new \IXR\Client($xmlrpcUrl);
                                 $xmlrpc->pingback->ping($permalink, $url);
@@ -109,7 +105,6 @@ class Service extends BaseOptions implements ActionInterface
 
             foreach ($links as $url) {
                 $client = Client::get();
-                $response['trackback'][] = $url;
 
                 if ($client) {
                     try {
@@ -130,8 +125,6 @@ class Service extends BaseOptions implements ActionInterface
                 }
             }
         }
-
-        $this->response->throwJson($response);
     }
 
     public function sendPing(Contents $content, ?array $trackback = null)
@@ -202,7 +195,7 @@ class Service extends BaseOptions implements ActionInterface
         static $called;
 
         if (!$called) {
-            Response::getInstance()->addResponder(function () {
+            Response::getInstance()->addBackgroundResponder(function () {
                 if (!empty($this->asyncRequests) && $client = Client::get()) {
                     try {
                         $client->setHeader('User-Agent', $this->options->generator)

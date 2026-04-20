@@ -1833,9 +1833,43 @@ html.tr-theme-dark body.tr-admin.tr-page-write #edit-secondary .typecho-option-t
 }
 
 html.tr-theme-dark body.tr-admin.tr-page-write .edit-draft-notice {
-    border-color: rgba(245, 158, 11, 0.26);
-    background: rgba(245, 158, 11, 0.10);
+    border-color: var(--tr-border);
+    background: var(--tr-surface-2);
     color: rgba(241, 245, 249, 0.92);
+}
+
+html.tr-theme-dark body.tr-admin.tr-page-write .edit-draft-notice.is-revision,
+html.tr-theme-dark body.tr-admin.tr-page-write .edit-draft-notice.is-draft {
+    border-color: rgba(96, 165, 250, 0.22);
+    background: rgba(96, 165, 250, 0.08);
+}
+
+html.tr-theme-dark body.tr-admin.tr-page-write .edit-draft-notice.is-schedule {
+    border-color: rgba(245, 158, 11, 0.22);
+    background: rgba(245, 158, 11, 0.08);
+}
+
+html.tr-theme-dark body.tr-admin.tr-page-write .edit-draft-notice .edit-draft-notice-tag {
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(226, 232, 240, 0.88);
+    border-color: rgba(255, 255, 255, 0.10);
+}
+
+html.tr-theme-dark body.tr-admin.tr-page-write .edit-draft-notice .edit-draft-notice-text {
+    color: rgba(226, 232, 240, 0.92);
+}
+
+html.tr-theme-dark body.tr-admin.tr-page-write .edit-draft-notice a,
+html.tr-theme-dark body.tr-admin.tr-page-write .edit-draft-notice .btn.btn-link {
+    background: rgba(255, 255, 255, 0.04);
+    color: rgba(248, 250, 252, 0.92);
+    border-color: rgba(255, 255, 255, 0.10);
+}
+
+html.tr-theme-dark body.tr-admin.tr-page-write .edit-draft-notice a:hover,
+html.tr-theme-dark body.tr-admin.tr-page-write .edit-draft-notice .btn.btn-link:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.14);
 }
 
 html.tr-theme-dark body.tr-admin .tr-feed-list li .tr-link {
@@ -3052,13 +3086,97 @@ body.tr-admin.tr-page-write .tr-editor-card textarea.tr-editor {
 }
 
 body.tr-admin.tr-page-write .edit-draft-notice {
-    display: block;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
     margin: 0 10px var(--tr-gap-sm);
-    padding: 12px 14px;
+    padding: 8px 12px;
+    min-height: 42px;
     border-radius: 12px;
-    border: 1px solid rgba(245, 158, 11, 0.26);
-    background: rgba(245, 158, 11, 0.10);
+    border: 1px solid rgba(15, 23, 42, 0.12);
+    background: var(--tr-surface);
+    box-shadow: none;
     color: rgba(15, 23, 42, 0.82);
+    font-style: normal;
+}
+
+body.tr-admin.tr-page-write .edit-draft-notice.is-revision,
+body.tr-admin.tr-page-write .edit-draft-notice.is-draft {
+    border-color: rgba(59, 130, 246, 0.18);
+    background: rgba(59, 130, 246, 0.05);
+}
+
+body.tr-admin.tr-page-write .edit-draft-notice.is-schedule {
+    border-color: rgba(245, 158, 11, 0.20);
+    background: rgba(245, 158, 11, 0.06);
+}
+
+body.tr-admin.tr-page-write .edit-draft-notice .edit-draft-notice-tag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 24px;
+    padding: 0 8px;
+    border-radius: 999px;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    background: rgba(15, 23, 42, 0.03);
+    color: rgba(15, 23, 42, 0.68);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .02em;
+}
+
+body.tr-admin.tr-page-write .edit-draft-notice .edit-draft-notice-text {
+    flex: 1 1 260px;
+    min-width: 0;
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+body.tr-admin.tr-page-write .edit-draft-notice .inline-operate-form {
+    display: inline-flex;
+    align-items: center;
+    margin: 0;
+}
+
+body.tr-admin.tr-page-write .edit-draft-notice a,
+body.tr-admin.tr-page-write .edit-draft-notice .btn.btn-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 28px;
+    padding: 0 10px;
+    border-radius: 8px;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    background: rgba(15, 23, 42, 0.03);
+    color: rgba(15, 23, 42, 0.78);
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background .18s ease, border-color .18s ease, color .18s ease;
+}
+
+body.tr-admin.tr-page-write .edit-draft-notice a:hover,
+body.tr-admin.tr-page-write .edit-draft-notice .btn.btn-link:hover {
+    background: rgba(15, 23, 42, 0.05);
+    border-color: rgba(15, 23, 42, 0.14);
+    color: rgba(15, 23, 42, 0.92);
+}
+
+body.tr-admin.tr-page-write .edit-draft-notice .btn.btn-link {
+    box-shadow: none;
+}
+
+@media (max-width: 767px) {
+    body.tr-admin.tr-page-write .edit-draft-notice {
+        align-items: flex-start;
+    }
+
+    body.tr-admin.tr-page-write .edit-draft-notice a,
+    body.tr-admin.tr-page-write .edit-draft-notice .btn.btn-link {
+        width: 100%;
+    }
 }
 
 body.tr-admin.tr-page-write p.submit {
@@ -3396,10 +3514,6 @@ body.tr-admin.tr-page-profile .tr-form-card .tr-card-b {
 
 body.tr-admin.tr-page-profile .tr-form-card form {
     margin: 0;
-}
-
-body.tr-admin.tr-page-profile .tr-submit-hidden {
-    display: none !important;
 }
 
 @media (max-width: 620px) {

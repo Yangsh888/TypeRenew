@@ -53,11 +53,13 @@ class Response
     private string $charset = 'UTF-8';
     private string $contentType = 'text/html';
     private array $responders = [];
+    private array $backgroundResponders = [];
     private array $cookies = [];
     private array $headers = [];
     private int $status = 200;
     private bool $enableAutoSendHeaders = true;
     private bool $sandbox = false;
+    private bool $finished = false;
 
     public function __construct()
     {
@@ -110,6 +112,8 @@ class Response
         $this->cookies = [];
         $this->status = 200;
         $this->responders = [];
+        $this->backgroundResponders = [];
+        $this->finished = false;
         $this->setContentType('text/html');
     }
 
@@ -171,7 +175,64 @@ class Response
             call_user_func($responder, $this);
         }
 
+        if (!empty($this->backgroundResponders)) {
+            $this->finish(true);
+
+            foreach ($this->backgroundResponders as $responder) {
+                try {
+                    call_user_func($responder, $this);
+                } catch (\Throwable $e) {
+                    error_log('Response.background: ' . $e->getMessage());
+                }
+            }
+        }
+
         exit;
+    }
+
+    public function finish(bool $preserveBody = false): void
+    {
+        if ($this->sandbox || $this->finished) {
+            return;
+        }
+
+        $isFastCGI = function_exists('fastcgi_finish_request');
+
+        if (!$isFastCGI) {
+            if ($preserveBody) {
+                if (ob_get_level() <= 0) {
+                    ob_start();
+                }
+
+                $length = ob_get_length();
+                $this->setHeader('Connection', 'close');
+                $this->setHeader('Content-Encoding', 'none');
+                $this->setHeader('Content-Length', (string) max(0, (int) ($length === false ? 0 : $length)));
+            } else {
+                while (ob_get_level() > 0) {
+                    ob_end_clean();
+                }
+
+                ob_start();
+                $this->setHeader('Connection', 'close');
+                $this->setHeader('Content-Encoding', 'none');
+                $this->setHeader('Content-Length', '0');
+            }
+        }
+
+        $this->sendHeaders();
+        $this->finished = true;
+
+        if ($isFastCGI) {
+            fastcgi_finish_request();
+            return;
+        }
+
+        while (ob_get_level() > 0) {
+            ob_end_flush();
+        }
+
+        flush();
     }
 
     public function setStatus(int $code): Response
@@ -284,6 +345,15 @@ class Response
     {
         if (!$this->sandbox) {
             $this->responders[] = $responder;
+        }
+
+        return $this;
+    }
+
+    public function addBackgroundResponder(callable $responder): Response
+    {
+        if (!$this->sandbox) {
+            $this->backgroundResponders[] = $responder;
         }
 
         return $this;

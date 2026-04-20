@@ -808,6 +808,33 @@ function install_step_1_perform()
     }
 }
 
+function install_extract_db_version(string $version): string
+{
+    if (preg_match('/\d+\.\d+(?:\.\d+)?/', $version, $matches) === 1) {
+        return $matches[0];
+    }
+
+    return '';
+}
+
+function install_assert_mysql_compatibility(\Typecho\Db $db): void
+{
+    $rawVersion = $db->getVersion(\Typecho\Db::READ);
+    $version = install_extract_db_version($rawVersion);
+
+    if ($version === '') {
+        install_raise_error(_t('无法识别当前 MySQL 服务端版本：%s', $rawVersion));
+    }
+
+    $isMariaDb = stripos($rawVersion, 'mariadb') !== false;
+    $minimum = $isMariaDb ? '10.3.0' : '5.7.0';
+    $label = $isMariaDb ? 'MariaDB' : 'MySQL';
+
+    if (version_compare($version, $minimum, '<')) {
+        install_raise_error(_t('当前 %s 版本为 %s，安装器最低要求 %s %s，请升级后继续安装。', $label, $rawVersion, $label, $minimum));
+    }
+}
+
 /**
  * display step 2
  */
@@ -1033,13 +1060,10 @@ function install_step_2_perform()
                 ->addRule('dbPort', 'isInteger', _t('数据库端口必须是整数'))
                 ->addRule('dbUser', 'required', _t('数据库用户名不能为空'))
                 ->addRule('dbCharset', 'required', _t('数据库字符集不能为空'))
-                ->addRule('dbCharset', 'enum', _t('数据库字符集仅支持 utf8 或 utf8mb4'), ['utf8', 'utf8mb4'])
+                ->addRule('dbCharset', 'enum', _t('数据库字符集仅支持 utf8mb4'), ['utf8mb4'])
                 ->addRule('dbDatabase', 'required', _t('数据库名不能为空'))
                 ->addRule('dbEngine', 'required', _t('数据表引擎不能为空'))
-                ->addRule('dbEngine', 'enum', _t('数据表引擎仅支持 InnoDB 或 MyISAM'), ['InnoDB', 'MyISAM'])
-                ->addRule('dbEngine', function (string $engine) use ($config) {
-                    return !($engine === 'MyISAM' && ($config['dbCharset'] ?? '') === 'utf8mb4');
-                }, _t('MyISAM 不支持当前 utf8mb4 表结构，请改用 InnoDB 或将字符集切换为 utf8'))
+                ->addRule('dbEngine', 'enum', _t('数据表引擎仅支持 InnoDB'), ['InnoDB'])
                 ->addRule('dbSslCa', 'file_exists', _t('SSL CA 证书路径无效'))
                 ->addRule('dbSslVerify', 'enum', _t('SSL 校验选项无效'), ['on', 'off'])
                 ->run($config);
@@ -1138,6 +1162,9 @@ function install_step_2_perform()
             $installDb = new \Typecho\Db($config['dbAdapter'], $config['dbPrefix']);
             $installDb->addServer($dbConfig, \Typecho\Db::READ | \Typecho\Db::WRITE);
             $installDb->query('SELECT 1=1');
+            if ($type === 'Mysql') {
+                install_assert_mysql_compatibility($installDb);
+            }
         } catch (\Typecho\Db\Adapter\ConnectionException $e) {
             $code = $e->getCode();
             if (('Mysql' == $type && 1049 == $code) || ('Pgsql' == $type && 7 == $code)) {

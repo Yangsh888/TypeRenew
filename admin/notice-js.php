@@ -19,8 +19,7 @@ if (session_status() === PHP_SESSION_ACTIVE) {
 }
 ?>
 <script>
-    (function () {
-        $(document).ready(function() {
+    $(document).ready(function() {
             var sessionNotice = <?php echo json_encode($trSessionNotice, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>,
                 sessionNoticeType = <?php echo json_encode($trSessionNoticeType, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>,
                 sessionHighlight = <?php echo json_encode($trSessionHighlight, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>,
@@ -102,23 +101,16 @@ if (session_status() === PHP_SESSION_ACTIVE) {
                 };
 
                 if (isTrAdmin) {
-                    var payload = {
-                        type: cookies.noticeType,
-                        messages: normalized,
-                        highlight: cookies.highlight || null
-                    };
-                    window.__trNotice = payload;
                     if (window.TypechoNotice && typeof window.TypechoNotice.show === 'function') {
-                        window.TypechoNotice.show(payload.type || 'notice', payload.messages, {allowHtml: true});
-                        if (payload.highlight && typeof window.TypechoNotice.highlight === 'function') {
-                            window.TypechoNotice.highlight(payload.highlight);
+                        window.TypechoNotice.show(cookies.noticeType || 'notice', normalized, {allowHtml: true});
+                        if (cookies.highlight && typeof window.TypechoNotice.highlight === 'function') {
+                            window.TypechoNotice.highlight(cookies.highlight);
                             $.cookie(prefix + '__typecho_notice_highlight', null, {path : path, domain: domain, secure: secure});
                             cookies.highlight = null;
                         }
                     } else {
                         renderLegacyPopup();
                     }
-                    window.__trNotice = null;
                 } else {
                     renderLegacyPopup();
                 }
@@ -128,26 +120,16 @@ if (session_status() === PHP_SESSION_ACTIVE) {
             }
 
             if (cookies.highlight) {
-                var isTrAdmin2 = document.body && (' ' + document.body.className + ' ').indexOf(' tr-admin ') >= 0;
-                if (isTrAdmin2) {
-                    if (!window.__trNotice || typeof window.__trNotice !== 'object') {
-                        window.__trNotice = {};
-                    }
-                    if (!window.__trNotice.highlight) {
-                        window.__trNotice.highlight = cookies.highlight;
-                    }
+                if (isTrAdmin) {
                     if (window.TypechoNotice && typeof window.TypechoNotice.highlight === 'function') {
                         window.TypechoNotice.highlight(cookies.highlight);
-                        window.__trNotice.highlight = null;
                     } else {
                         $('#' + cookies.highlight).effect('highlight', 1000);
-                        window.__trNotice.highlight = null;
                     }
                 } else {
                     $('#' + cookies.highlight).effect('highlight', 1000);
                 }
                 $.cookie(prefix + '__typecho_notice_highlight', null, {path : path, domain: domain, secure: secure});
             }
-        });
-    })();
+    });
 </script>

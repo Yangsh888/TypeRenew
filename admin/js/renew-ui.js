@@ -149,17 +149,6 @@
     window.TypechoNotice.show = (type, messages, options) => notices.show(type, messages, options);
     window.TypechoNotice.highlight = highlight;
 
-    if (window.__trNotice && typeof window.__trNotice === 'object') {
-        const payload = window.__trNotice;
-        window.__trNotice = null;
-        if (payload.messages) {
-            window.TypechoNotice.show(payload.type || 'notice', payload.messages);
-        }
-        if (payload.highlight) {
-            window.TypechoNotice.highlight(payload.highlight);
-        }
-    }
-
     const sidebar = document.querySelector('.tr-shell');
     const overlay = document.querySelector('.tr-overlay');
     const btnNav = document.querySelector('[data-tr-nav]');

@@ -68,44 +68,41 @@ class Edit extends Options implements ActionInterface
     public function changeTheme(string $theme)
     {
         $theme = trim($theme, './');
-        if (is_dir($this->resolveThemePath($theme))) {
-            $oldTheme = $this->options->missingTheme ?: $this->options->theme;
-            $this->delete($this->db->sql()->where('name = ?', 'theme:' . $oldTheme));
+        $this->resolveThemePath($theme);
+        $oldTheme = $this->options->missingTheme ?: $this->options->theme;
+        $this->delete($this->db->sql()->where('name = ?', 'theme:' . $oldTheme));
 
-            $this->update(['value' => $theme], $this->db->sql()->where('name = ?', 'theme'));
+        $this->update(['value' => $theme], $this->db->sql()->where('name = ?', 'theme'));
 
-            if (0 === strpos((string) $this->options->frontPage, 'file:')) {
-                $this->update(['value' => 'recent'], $this->db->sql()->where('name = ?', 'frontPage'));
-            }
+        if (0 === strpos((string) $this->options->frontPage, 'file:')) {
+            $this->update(['value' => 'recent'], $this->db->sql()->where('name = ?', 'frontPage'));
+        }
 
-            $this->options->themeUrl = $this->options->themeUrl(null, $theme);
+        $this->options->themeUrl = $this->options->themeUrl(null, $theme);
 
-            $configFile = $this->options->themeFile($theme, 'functions.php');
+        $configFile = $this->options->themeFile($theme, 'functions.php');
 
-            if (file_exists($configFile)) {
-                require_once $configFile;
+        if (file_exists($configFile)) {
+            require_once $configFile;
 
-                if (function_exists('themeConfig')) {
-                    $form = new Form();
-                    themeConfig($form);
-                    $options = $form->getValues();
+            if (function_exists('themeConfig')) {
+                $form = new Form();
+                themeConfig($form);
+                $options = $form->getValues();
 
-                    if ($options && !$this->configHandle($options, true)) {
-                        $this->insert([
-                            'name'  => 'theme:' . $theme,
-                            'value' => json_encode($options),
-                            'user'  => 0
-                        ]);
-                    }
+                if ($options && !$this->configHandle($options, true)) {
+                    $this->insert([
+                        'name'  => 'theme:' . $theme,
+                        'value' => json_encode($options),
+                        'user'  => 0
+                    ]);
                 }
             }
-
-            Notice::alloc()->highlight('theme-' . $theme);
-            Notice::alloc()->set(_t("外观已经改变"), 'success');
-            $this->response->goBack();
-        } else {
-            throw new Exception(_t('您选择的风格不存在'));
         }
+
+        Notice::alloc()->highlight('theme-' . $theme);
+        Notice::alloc()->set(_t("外观已经改变"), 'success');
+        $this->response->goBack();
     }
 
     /**
@@ -136,12 +133,18 @@ class Edit extends Options implements ActionInterface
         $path = $this->resolveThemePath($theme, $file);
 
         if (
-            file_exists($path) && is_writable($path)
+            is_writable($path)
             && (!defined('__TYPECHO_THEME_WRITEABLE__') || __TYPECHO_THEME_WRITEABLE__)
         ) {
             $handle = fopen($path, 'wb');
-            if ($handle && fwrite($handle, $this->request->get('content'))) {
+            if ($handle) {
+                $written = fwrite($handle, (string) $this->request->get('content'));
                 fclose($handle);
+            } else {
+                $written = false;
+            }
+
+            if ($written !== false) {
                 Notice::alloc()->set(_t("文件 %s 的更改已经保存", $file), 'success');
             } else {
                 Notice::alloc()->set(_t("文件 %s 无法被写入", $file), 'error');

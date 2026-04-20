@@ -13,6 +13,10 @@ trait QueryTrait
             }
         }
 
+        if (isset($sql['offset']) && !isset($sql['limit'])) {
+            $sql['limit'] = PHP_INT_MAX;
+        }
+
         $sql['limit'] = isset($sql['limit']) ? ' LIMIT ' . $sql['limit'] : '';
         $sql['offset'] = isset($sql['offset']) ? ' OFFSET ' . $sql['offset'] : '';
 
