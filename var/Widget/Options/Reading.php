@@ -142,7 +142,7 @@ class Reading extends Permalink
             $selectedFrontPageType = 'page';
         }
 
-        $files = glob($this->options->themeFile($this->options->theme, '*.php'));
+        $files = glob($this->options->themeFile($this->options->theme, '*.php')) ?: [];
         $filesSelect = '';
 
         foreach ($files as $file) {

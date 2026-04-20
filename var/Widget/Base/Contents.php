@@ -299,7 +299,7 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
      */
     public function getTemplates(): array
     {
-        $files = glob($this->options->themeFile($this->options->theme, '*.php'));
+        $files = glob($this->options->themeFile($this->options->theme, '*.php')) ?: [];
         $result = [];
 
         foreach ($files as $file) {

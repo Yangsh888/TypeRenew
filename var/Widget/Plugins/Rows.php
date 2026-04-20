@@ -74,7 +74,7 @@ class Rows extends Widget
      */
     protected function getPlugins(): array
     {
-        return glob(__TYPECHO_ROOT_DIR__ . '/' . __TYPECHO_PLUGIN_DIR__ . '/*');
+        return glob(__TYPECHO_ROOT_DIR__ . '/' . __TYPECHO_PLUGIN_DIR__ . '/*') ?: [];
     }
 
     /**

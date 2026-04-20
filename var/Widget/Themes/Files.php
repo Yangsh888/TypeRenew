@@ -46,7 +46,7 @@ class Files extends Base
             && is_dir($dir = Options::alloc()->themeFile($this->currentTheme))
             && (!defined('__TYPECHO_THEME_WRITEABLE__') || __TYPECHO_THEME_WRITEABLE__)
         ) {
-            $files = array_filter(glob($dir . '/*'), function ($path) {
+            $files = array_filter(glob($dir . '/*') ?: [], function ($path) {
                 return preg_match("/\.(php|js|css|vbs)$/i", $path);
             });
 

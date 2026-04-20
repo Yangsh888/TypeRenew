@@ -128,6 +128,11 @@ RewriteRule . {$basePath}index.php [L]
         $customPattern = $this->request->get('customPattern');
         $postPattern = $this->request->get('postPattern');
 
+        $before = [
+            'rewrite' => (string) ($this->options->rewrite ?? ''),
+            'routingTable' => json_encode($this->options->routingTable),
+        ];
+
         if ($this->form()->validate()) {
             Cookie::set('__typecho_form_item_postPattern', $customPattern);
             $this->response->goBack();
@@ -155,6 +160,10 @@ RewriteRule . {$basePath}index.php [L]
         }
 
         $this->persistOptions($settings);
+        self::pluginHandle()->call('finishUpdate', $before, [
+            'rewrite' => (string) ($settings['rewrite'] ?? $before['rewrite']),
+            'routingTable' => (string) ($settings['routingTable'] ?? $before['routingTable']),
+        ], $this);
 
         if ($patternValid) {
             $this->saveSuccessAndGoBack();

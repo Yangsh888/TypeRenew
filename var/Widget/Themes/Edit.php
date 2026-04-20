@@ -140,8 +140,14 @@ class Edit extends Options implements ActionInterface
             && (!defined('__TYPECHO_THEME_WRITEABLE__') || __TYPECHO_THEME_WRITEABLE__)
         ) {
             $handle = fopen($path, 'wb');
-            if ($handle && fwrite($handle, $this->request->get('content'))) {
+            if ($handle) {
+                $written = fwrite($handle, (string) $this->request->get('content'));
                 fclose($handle);
+            } else {
+                $written = false;
+            }
+
+            if ($written !== false) {
                 Notice::alloc()->set(_t("文件 %s 的更改已经保存", $file), 'success');
             } else {
                 Notice::alloc()->set(_t("文件 %s 无法被写入", $file), 'error');
