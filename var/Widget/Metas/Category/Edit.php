@@ -138,7 +138,6 @@ class Edit extends Metas implements ActionInterface
 
         $category['mid'] = $this->insert($category);
         $this->push($category);
-        self::pluginHandle()->call('finishInsert', $category, $this);
 
         Notice::alloc()->highlight($this->theId);
 
@@ -291,7 +290,6 @@ class Edit extends Metas implements ActionInterface
 
         $this->update($category, $this->db->sql()->where('mid = ?', $this->request->filter('int')->get('mid')));
         $this->push($category);
-        self::pluginHandle()->call('finishUpdate', $category, $current, $this);
 
         Notice::alloc()->highlight($this->theId);
 
@@ -322,10 +320,6 @@ class Edit extends Metas implements ActionInterface
             }
         }
 
-        if ($deleteCount > 0) {
-            self::pluginHandle()->call('finishDelete', $categories, $this);
-        }
-
         Notice::alloc()
             ->set($deleteCount > 0 ? _t('分类已经删除') : _t('没有分类被删除'), $deleteCount > 0 ? 'success' : 'notice');
 
@@ -352,7 +346,6 @@ class Edit extends Metas implements ActionInterface
 
         if ($categories) {
             $this->merge($merge, 'category', $categories);
-            self::pluginHandle()->call('finishMerge', $merge, $categories, $this);
 
             Notice::alloc()->set(_t('分类已经合并'), 'success');
         } else {
@@ -392,8 +385,6 @@ class Edit extends Metas implements ActionInterface
             foreach ($categories as $category) {
                 $this->refreshCountByTypeAndStatus($category, 'post');
             }
-
-            self::pluginHandle()->call('finishRefresh', $categories, $this);
 
             Notice::alloc()->set(_t('分类刷新已经完成'), 'success');
         } else {

@@ -73,16 +73,10 @@ class Edit extends Contents implements ActionInterface
 
             Service::alloc()->sendPing($this);
 
-            $notice = $this->isFuturePublish()
-                ? _t(
-                    '页面 "%s" 已计划于 %s 发布，当前可先<a href="%s">预览</a>',
-                    $this->title,
-                    $this->date('Y-m-d H:i'),
-                    $this->getAdminPreviewUrl()
-                )
-                : _t('页面 "<a href="%s">%s</a>" 已经发布', $this->permalink, $this->title);
-
-            Notice::alloc()->set($notice, 'success');
+            Notice::alloc()->set(
+                _t('页面 "<a href="%s">%s</a>" 已经发布', $this->permalink, $this->title),
+                'success'
+            );
 
             Notice::alloc()->highlight($this->theId);
 

@@ -94,9 +94,8 @@ $pageToken = htmlspecialchars($security->getToken($options->index . '/action/con
                                            title="<?php _e('编辑 %s', htmlspecialchars($pages->title)); ?>"><i
                                                 class="i-edit"></i></a>
                                         <?php if ('page_draft' != $pages->type): ?>
-                                            <?php $futurePreview = (int) $pages->created > (int) $options->time; ?>
-                                            <a href="<?php $futurePreview ? $options->adminUrl('preview.php?cid=' . $pages->cid) : $pages->permalink(); ?>"
-                                               title="<?php $futurePreview ? _e('预览 %s', htmlspecialchars($pages->title)) : _e('浏览 %s', htmlspecialchars($pages->title)); ?>"><i
+                                            <a href="<?php $pages->permalink(); ?>"
+                                               title="<?php _e('浏览 %s', htmlspecialchars($pages->title)); ?>"><i
                                                     class="i-exlink"></i></a>
                                         <?php endif; ?>
                                     </td>

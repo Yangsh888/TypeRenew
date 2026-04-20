@@ -74,13 +74,6 @@ class General extends Options implements ActionInterface
     {
         $this->validateFormOrGoBack($this->form());
 
-        $before = [
-            'siteUrl' => (string) ($this->options->siteUrl ?? ''),
-            'title' => (string) ($this->options->title ?? ''),
-            'description' => (string) ($this->options->description ?? ''),
-            'keywords' => (string) ($this->options->keywords ?? ''),
-        ];
-
         $settings = $this->request->from(
             'title',
             'description',
@@ -123,7 +116,6 @@ class General extends Options implements ActionInterface
 
         $settings['attachmentTypes'] = implode(',', $attachmentTypes);
         $this->persistOptions($settings);
-        self::pluginHandle()->call('finishUpdate', $before, array_merge($before, $settings), $this);
 
         $this->saveSuccessAndGoBack();
     }

@@ -40,7 +40,7 @@ class Rows extends Widget
                         $activated = $key;
                     }
 
-                    $screen = array_filter(glob($theme . '/*') ?: [], function ($path) {
+                    $screen = array_filter(glob($theme . '/*'), function ($path) {
                         return preg_match("/screenshot\.(jpg|png|gif|bmp|jpeg|webp|avif)$/i", $path);
                     });
 
@@ -71,7 +71,7 @@ class Rows extends Widget
      */
     protected function getThemes(): array
     {
-        return glob(__TYPECHO_ROOT_DIR__ . __TYPECHO_THEME_DIR__ . '/*', GLOB_ONLYDIR) ?: [];
+        return glob(__TYPECHO_ROOT_DIR__ . __TYPECHO_THEME_DIR__ . '/*', GLOB_ONLYDIR);
     }
 
     /**

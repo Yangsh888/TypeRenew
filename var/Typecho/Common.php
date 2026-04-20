@@ -431,7 +431,6 @@ EOF;
 
         public static function removeXSS(?string $val): string
         {
-            $val = (string) $val;
             $val = preg_replace('/([\x00-\x08]|[\x0b-\x0c]|[\x0e-\x19])/', '', $val);
             $val = self::cleanHex($val);
 
@@ -893,12 +892,7 @@ EOF;
         {
             if (function_exists('idn_to_utf8') && !empty($url)) {
                 $host = parse_url($url, PHP_URL_HOST);
-                if (is_string($host) && $host !== '') {
-                    $utf8Host = idn_to_utf8($host);
-                    if (is_string($utf8Host) && $utf8Host !== '') {
-                        $url = str_replace($host, $utf8Host, $url);
-                    }
-                }
+                $url = str_replace($host, idn_to_utf8($host), $url);
             }
 
             return $url;

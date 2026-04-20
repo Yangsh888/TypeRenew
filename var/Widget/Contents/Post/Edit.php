@@ -76,20 +76,9 @@ class Edit extends Contents implements ActionInterface
             );
             Service::alloc()->sendPing($this, $trackback);
 
-            if ('post' == $this->type) {
-                $notice = $this->isFuturePublish()
-                    ? _t(
-                        '文章 "%s" 已计划于 %s 发布，当前可先<a href="%s">预览</a>',
-                        $this->title,
-                        $this->date('Y-m-d H:i'),
-                        $this->getAdminPreviewUrl()
-                    )
-                    : _t('文章 "<a href="%s">%s</a>" 已经发布', $this->permalink, $this->title);
-            } else {
-                $notice = _t('文章 "%s" 等待审核', $this->title);
-            }
-
-            Notice::alloc()->set($notice, 'success');
+            Notice::alloc()->set('post' == $this->type ?
+                _t('文章 "<a href="%s">%s</a>" 已经发布', $this->permalink, $this->title) :
+                _t('文章 "%s" 等待审核', $this->title), 'success');
 
             Notice::alloc()->highlight($this->theId);
 

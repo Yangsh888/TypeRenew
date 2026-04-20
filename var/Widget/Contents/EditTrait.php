@@ -2,7 +2,6 @@
 
 namespace Widget\Contents;
 
-use Typecho\Common;
 use Typecho\Config;
 use Typecho\Db\Exception as DbException;
 use Typecho\Validate;
@@ -308,18 +307,6 @@ trait EditTrait
         }
 
         return $created;
-    }
-
-    public function isFuturePublish(?int $created = null): bool
-    {
-        $created = $created ?? (int) ($this->created ?? 0);
-        return $created > 0 && $created > (int) $this->options->time;
-    }
-
-    public function getAdminPreviewUrl(?int $cid = null): string
-    {
-        $cid = $cid ?? (int) ($this->cid ?? 0);
-        return Common::url('preview.php?cid=' . max(0, $cid), $this->options->adminUrl);
     }
 
     protected function setCategories(int $cid, array $categories, bool $beforeCount = true, bool $afterCount = true)
