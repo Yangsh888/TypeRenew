@@ -65,7 +65,7 @@ class Config extends \stdClass implements \Iterator, \ArrayAccess
 
     public function valid(): bool
     {
-        return false !== $this->current();
+        return null !== $this->key();
     }
 
     public function __get(string $name)
@@ -78,7 +78,7 @@ class Config extends \stdClass implements \Iterator, \ArrayAccess
         $this->offsetSet($name, $value);
     }
 
-    public function __isSet(string $name): bool
+    public function __isset(string $name): bool
     {
         return $this->offsetExists($name);
     }

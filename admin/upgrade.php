@@ -141,7 +141,7 @@ $packageActionLocked = !$upgradeAvailable || $upgradeLockBusy;
                                         </div>
                                     <?php endif; ?>
 
-                                    <?php if ($packageId !== '' || $hasArtifacts): ?>
+                                    <?php if ($hasArtifacts): ?>
                                         <div class="tr-card tr-tone-muted tr-mt-16">
                                             <div class="tr-card-b">
                                                 <div class="tr-subtitle"><?php _e('升级状态'); ?></div>
@@ -305,11 +305,4 @@ include 'copyright.php';
 include 'dropzone-js.php';
 include 'common-js.php';
 ?>
-<script>
-    (function () {
-        if (window.sessionStorage) {
-            sessionStorage.removeItem('update');
-        }
-    })();
-</script>
 <?php include 'footer.php'; ?>

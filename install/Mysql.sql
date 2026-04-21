@@ -21,7 +21,11 @@ CREATE TABLE `typecho_comments` (
   `parent` int unsigned default '0',
   PRIMARY KEY  (`coid`),
   KEY `cid` (`cid`),
-  KEY `created` (`created`)
+  KEY `created` (`created`),
+  KEY `typecho_comments_status` (`status`),
+  KEY `typecho_comments_cid_status` (`cid`,`status`),
+  KEY `typecho_comments_owner_status` (`ownerId`,`status`),
+  KEY `typecho_comments_parent` (`parent`)
 ) ENGINE=%engine%  DEFAULT CHARSET=%charset% COLLATE=%collate%;
 
 -- --------------------------------------------------------
@@ -52,7 +56,10 @@ CREATE TABLE `typecho_contents` (
   `parent` int unsigned default '0',
   PRIMARY KEY  (`cid`),
   UNIQUE KEY `slug` (`slug`),
-  KEY `created` (`created`)
+  KEY `created` (`created`),
+  KEY `typecho_contents_type_status_created` (`type`,`status`,`created`),
+  KEY `typecho_contents_author_type_status_created` (`authorId`,`type`,`status`,`created`),
+  KEY `typecho_contents_parent_type` (`parent`,`type`)
 ) ENGINE=%engine%  DEFAULT CHARSET=%charset% COLLATE=%collate%;
 
 -- --------------------------------------------------------
@@ -89,7 +96,9 @@ CREATE TABLE `typecho_metas` (
   `order` int unsigned default '0',
   `parent` int unsigned default '0',
   PRIMARY KEY  (`mid`),
-  KEY `slug` (`slug`)
+  KEY `slug` (`slug`),
+  KEY `typecho_metas_type_slug` (`type`,`slug`),
+  KEY `typecho_metas_type_parent_order` (`type`,`parent`,`order`)
 ) ENGINE=%engine%  DEFAULT CHARSET=%charset% COLLATE=%collate%;
 
 -- --------------------------------------------------------
@@ -114,7 +123,8 @@ CREATE TABLE `typecho_options` (
 CREATE TABLE `typecho_relationships` (
   `cid` int unsigned NOT NULL,
   `mid` int unsigned NOT NULL,
-  PRIMARY KEY  (`cid`,`mid`)
+  PRIMARY KEY  (`cid`,`mid`),
+  KEY `typecho_relationships_mid` (`mid`)
 ) ENGINE=%engine% DEFAULT CHARSET=%charset% COLLATE=%collate%;
 
 -- --------------------------------------------------------

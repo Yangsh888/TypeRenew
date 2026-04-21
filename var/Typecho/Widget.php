@@ -277,7 +277,7 @@ abstract class Widget
         }
     }
 
-    public function __isSet(string $name)
+    public function __isset(string $name)
     {
         $method = '___' . $name;
         $key = '#' . $name;

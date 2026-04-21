@@ -3,8 +3,6 @@
 namespace Widget\Contents\Page;
 
 use Typecho\Common;
-use Typecho\Date;
-use Typecho\Db\Exception as DbException;
 use Typecho\Widget\Exception;
 use Widget\Base\Contents;
 use Widget\Contents\EditTrait;
@@ -44,24 +42,7 @@ class Edit extends Contents implements ActionInterface
         $contents['created'] = $this->getCreated();
         $contents['visibility'] = ('hidden' == $contents['visibility'] ? 'hidden' : 'publish');
         $contents['parent'] = $this->getParent();
-        
-        $attachmentCids = $this->request->get('attachment_cids', '');
-        if (!empty($attachmentCids)) {
-            $cids = array_filter(array_map('intval', explode(',', $attachmentCids)));
-            if (!empty($cids)) {
-                $contents['attachment'] = $cids;
-            }
-        }
-        
-        if (empty($this->cid)) {
-            $contents['attachUnattached'] = true;
-        } else {
-            $contents['oldCid'] = $this->cid;
-        }
-
-        if ($this->request->is('markdown=1')) {
-            $contents['text'] = '<!--markdown-->' . $contents['text'];
-        }
+        $contents = $this->normalizeWriteContents($contents);
 
         $contents = self::pluginHandle()->filter('write', $contents, $this);
 
@@ -93,22 +74,11 @@ class Edit extends Contents implements ActionInterface
             $draftId = $this->save($contents, false);
 
             self::pluginHandle()->call('finishSave', $contents, $this);
-
-            Notice::alloc()->highlight($this->cid);
-
-            if ($this->request->isAjax()) {
-                $created = new Date($this->options->time);
-                $this->response->throwJson([
-                    'success' => 1,
-                    'time'    => $created->format('H:i:s A'),
-                    'cid'     => $this->cid,
-                    'draftId' => $draftId
-                ]);
-            } else {
-                Notice::alloc()->set(_t('草稿 "%s" 已经被保存', htmlspecialchars((string) $this->title, ENT_QUOTES, 'UTF-8')), 'success');
-
-                $this->response->redirect(Common::url('write-page.php?cid=' . $this->cid, $this->options->adminUrl));
-            }
+            $this->finishSaveResponse(
+                (string) $this->title,
+                $draftId,
+                Common::url('write-page.php?cid=' . $this->cid, $this->options->adminUrl)
+            );
         }
     }
 
@@ -222,6 +192,14 @@ class Edit extends Contents implements ActionInterface
         $deleteCount = 0;
 
         foreach ($pages as $page) {
+            $condition = $this->db->sql()
+                ->where('cid = ?', $page)
+                ->where('type = ? OR type = ?', 'page', 'page_draft');
+
+            if (!$this->isWriteable(clone $condition)) {
+                continue;
+            }
+
             $draft = $this->db->fetchRow($this->db->select('cid')
                 ->from('table.contents')
                 ->where('table.contents.parent = ? AND table.contents.type = ?', $page, 'revision')
@@ -292,7 +270,7 @@ class Edit extends Contents implements ActionInterface
 
         if ($this->request->is('parent')) {
             $page = $this->db->fetchRow($this->select()
-                ->where('table.contents.type = ? OR table.contents.type', 'page', 'page_draft')
+                ->where('table.contents.type = ? OR table.contents.type = ?', 'page', 'page_draft')
                 ->where('table.contents.cid = ?', $this->request->filter('int')->get('parent')));
 
             if (!empty($page)) {

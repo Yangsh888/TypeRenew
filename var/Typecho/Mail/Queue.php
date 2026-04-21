@@ -137,17 +137,20 @@ class Queue
 
         $called = true;
         Response::getInstance()->addBackgroundResponder(function () use ($options) {
+            $fallback = static function () use ($options): void {
+                self::deliverBatch(Db::get(), $options, min(20, (int) ($options->mailBatchSize ?? 20)));
+            };
             $client = Client::get();
             if (!$client) {
                 self::recordRuntimeError('async', 'http client unavailable');
-                self::deliverBatch(Db::get(), $options, min(20, (int) ($options->mailBatchSize ?? 20)));
+                $fallback();
                 return;
             }
 
-            $allowedIps = self::parseAllowedIps((string) ($options->mailAsyncIps ?? ''));
             $serverIp = self::getServerIp();
-            if (!empty($allowedIps) && !in_array($serverIp, $allowedIps, true)) {
-                self::deliverBatch(Db::get(), $options, min(20, (int) ($options->mailBatchSize ?? 20)));
+            if (!self::isAsyncRequesterAllowed($options, $serverIp)) {
+                self::recordRuntimeError('async', 'server ip not allowed: ' . $serverIp);
+                $fallback();
                 return;
             }
 
@@ -170,7 +173,7 @@ class Queue
                 }
             } catch (\Throwable $e) {
                 self::recordRuntimeError('async', $e->getMessage());
-                self::deliverBatch(Db::get(), $options, min(20, (int) ($options->mailBatchSize ?? 20)));
+                $fallback();
             }
         });
         return true;
@@ -190,24 +193,33 @@ class Queue
         }
 
         $expectedSig = hash_hmac('sha256', 'async|' . $ts, $secret);
-        return hash_equals($expectedSig, $sig);
+        return hash_equals($expectedSig, $sig)
+            && self::guardReplay('mail_async', $token, max(1, $maxAge));
     }
 
-    private static function getClientIp(): string
+    public static function isAsyncRequesterAllowed(Options $options, ?string $ip = null): bool
     {
-        $ip = (string) ($_SERVER['REMOTE_ADDR'] ?? '');
-        if ($ip !== '' && filter_var($ip, FILTER_VALIDATE_IP)) {
-            return $ip;
+        $allowedIps = self::parseAllowedIps((string) ($options->mailAsyncIps ?? ''));
+        if (empty($allowedIps)) {
+            return true;
         }
 
-        foreach (['HTTP_X_FORWARDED_FOR', 'HTTP_CLIENT_IP'] as $header) {
-            $value = (string) ($_SERVER[$header] ?? '');
-            if ($value !== '' && filter_var($value, FILTER_VALIDATE_IP)) {
-                return $value;
-            }
+        $ip = trim((string) $ip);
+        if ($ip === '' || !filter_var($ip, FILTER_VALIDATE_IP)) {
+            return false;
         }
 
-        return '127.0.0.1';
+        return in_array($ip, $allowedIps, true);
+    }
+
+    public static function guardReplay(string $scope, string $value, int $ttl): bool
+    {
+        $cache = \Typecho\Cache::getInstance();
+        if (!$cache->enabled()) {
+            return true;
+        }
+
+        return $cache->tryLock('replay:' . $scope . ':' . sha1($value), max(1, $ttl));
     }
 
     private static function parseAllowedIps(string $config): array
@@ -237,7 +249,8 @@ class Queue
     {
         $limit = max(1, min(200, $limit));
         $now = time();
-        $lockedUntil = $now + 300;
+        $lockedUntil = $now + 900;
+        $cache = \Typecho\Cache::getInstance();
 
         $keepDays = (int) ($options->mailKeepDays ?? 7);
         if ($keepDays > 0) {
@@ -286,6 +299,16 @@ class Queue
                 continue;
             }
 
+            $cacheLockKey = 'mail:queue:send:' . $id;
+            if ($cache->enabled() && !$cache->tryLock($cacheLockKey, max(60, $lockedUntil - $now))) {
+                $db->query($db->update('table.mail_queue')->rows([
+                    'status' => 'pending',
+                    'lockedUntil' => 0,
+                    'updated' => $now
+                ])->where('id = ? AND status = ? AND lockedUntil = ?', $id, 'processing', $lockedUntil));
+                continue;
+            }
+
             $ok = false;
             $err = '';
 
@@ -322,7 +345,7 @@ class Queue
                     'attempts' => $attempts + 1,
                     'lastError' => '',
                     'updated' => time()
-                ])->where('id = ?', $id));
+                ])->where('id = ? AND status = ? AND lockedUntil = ?', $id, 'processing', $lockedUntil));
             } else {
                 $failed++;
                 $errors[] = ['id' => $id, 'error' => $err];
@@ -336,7 +359,11 @@ class Queue
                     'sendAt' => $isDead ? $now : ($now + self::retryDelay($nextAttempts)),
                     'lastError' => $truncatedErr,
                     'updated' => time()
-                ])->where('id = ?', $id));
+                ])->where('id = ? AND status = ? AND lockedUntil = ?', $id, 'processing', $lockedUntil));
+            }
+
+            if ($cache->enabled()) {
+                $cache->delete($cacheLockKey);
             }
         }
 

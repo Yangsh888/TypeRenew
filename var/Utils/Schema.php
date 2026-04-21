@@ -35,13 +35,16 @@ class Schema
         $prefix = $db->getPrefix();
 
         self::ensureIndex($db, $prefix . 'comments', $prefix . 'comments_status', ['status']);
+        self::ensureIndex($db, $prefix . 'comments', $prefix . 'comments_cid_status', ['cid', 'status']);
         self::ensureIndex($db, $prefix . 'comments', $prefix . 'comments_owner_status', ['ownerId', 'status']);
         self::ensureIndex($db, $prefix . 'comments', $prefix . 'comments_parent', ['parent']);
 
         self::ensureIndex($db, $prefix . 'contents', $prefix . 'contents_type_status_created', ['type', 'status', 'created']);
+        self::ensureIndex($db, $prefix . 'contents', $prefix . 'contents_author_type_status_created', ['authorId', 'type', 'status', 'created']);
         self::ensureIndex($db, $prefix . 'contents', $prefix . 'contents_parent_type', ['parent', 'type']);
 
         self::ensureIndex($db, $prefix . 'metas', $prefix . 'metas_type_slug', ['type', 'slug']);
+        self::ensureIndex($db, $prefix . 'metas', $prefix . 'metas_type_parent_order', ['type', 'parent', 'order']);
         self::ensureIndex($db, $prefix . 'relationships', $prefix . 'relationships_mid', ['mid']);
     }
 
@@ -406,6 +409,7 @@ class Schema
         return match ($tableKey) {
             'mail_queue' => [
                 ['name' => $name('idx_status_sendat', 'status_sendat'), 'columns' => ['status', 'sendAt']],
+                ['name' => $name('idx_status_updated', 'status_updated'), 'columns' => ['status', 'updated']],
                 ['name' => $name('idx_locked', 'lockedUntil'), 'columns' => ['lockedUntil']],
                 ['name' => $name('uniq_dedupe', 'dedupeKey'), 'columns' => ['dedupeKey'], 'unique' => true],
             ],

@@ -4,9 +4,7 @@ namespace Widget\Contents;
 
 use Typecho\Common;
 use Typecho\Config;
-use Typecho\Db\Exception as DbException;
 use Typecho\Validate;
-use Typecho\Widget\Exception;
 use Typecho\Widget\Helper\Form\Element;
 use Typecho\Widget\Helper\Layout;
 use Widget\Base\Contents;
@@ -446,6 +444,9 @@ trait EditTrait
                 if ($attachmentCid <= 0) {
                     continue;
                 }
+                if (!$this->canWriteAttachment($attachmentCid)) {
+                    continue;
+                }
                 $this->db->query($this->db->update('table.contents')->rows([
                     'parent' => $cid,
                     'status' => 'publish',
@@ -510,7 +511,8 @@ trait EditTrait
             if ($requestCid > 0) {
                 $existingDraft = $this->db->fetchRow($this->select()
                     ->where('table.contents.cid = ? AND table.contents.parent = ?', $requestCid, 0)
-                    ->where("table.contents.type LIKE '%_draft'")
+                    ->where('table.contents.type = ?', $contents['type'] . '_draft')
+                    ->where('table.contents.authorId = ?', $this->user->uid)
                     ->limit(1));
                 
                 if ($existingDraft) {
@@ -672,5 +674,57 @@ trait EditTrait
             $contents['status'] = 'waiting';
             $contents['password'] = '';
         }
+    }
+
+    protected function canWriteAttachment(int $attachmentCid): bool
+    {
+        return $this->isWriteable(
+            $this->db->sql()
+                ->where('cid = ?', $attachmentCid)
+                ->where('type = ?', 'attachment')
+        );
+    }
+
+    protected function normalizeWriteContents(array $contents): array
+    {
+        $attachmentCids = trim((string) $this->request->get('attachment_cids', ''));
+        if ($attachmentCids !== '') {
+            $cids = array_filter(array_map('intval', explode(',', $attachmentCids)));
+            if (!empty($cids)) {
+                $contents['attachment'] = $cids;
+            }
+        }
+
+        if (empty($this->cid)) {
+            $contents['attachUnattached'] = true;
+        } else {
+            $contents['oldCid'] = $this->cid;
+        }
+
+        if ($this->request->is('markdown=1')) {
+            $contents['text'] = '<!--markdown-->' . (string) ($contents['text'] ?? '');
+        }
+
+        return $contents;
+    }
+
+    protected function finishSaveResponse(string $title, int $draftId, string $redirect): void
+    {
+        \Widget\Notice::alloc()->highlight($this->cid);
+
+        if ($this->request->isAjax()) {
+            $this->response->throwJson([
+                'success' => 1,
+                'time' => date('H:i:s A', (int) $this->options->time),
+                'cid' => $this->cid,
+                'draftId' => $draftId
+            ]);
+        }
+
+        \Widget\Notice::alloc()->set(
+            _t('草稿 "%s" 已经被保存', htmlspecialchars((string) $title, ENT_QUOTES, 'UTF-8')),
+            'success'
+        );
+        $this->response->redirect($redirect);
     }
 }

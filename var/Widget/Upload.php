@@ -475,29 +475,10 @@ class Upload extends Contents implements ActionInterface
         }
 
         if ($error !== UPLOAD_ERR_OK || !is_uploaded_file((string) ($file['tmp_name'] ?? ''))) {
-            throw new \RuntimeException($this->uploadErrorMessage($error));
+            throw new \RuntimeException(Common::uploadErrorMessage($error, '附件上传', '没有选择任何附件文件'));
         }
 
         return $file;
-    }
-
-    private function uploadErrorMessage(int $error): string
-    {
-        switch ($error) {
-            case UPLOAD_ERR_INI_SIZE:
-            case UPLOAD_ERR_FORM_SIZE:
-                return _t('附件上传失败：文件体积超过服务器限制');
-            case UPLOAD_ERR_PARTIAL:
-                return _t('附件上传失败：文件仅部分上传');
-            case UPLOAD_ERR_NO_TMP_DIR:
-                return _t('附件上传失败：服务器缺少临时目录');
-            case UPLOAD_ERR_CANT_WRITE:
-                return _t('附件上传失败：无法写入服务器磁盘');
-            case UPLOAD_ERR_EXTENSION:
-                return _t('附件上传失败：上传被扩展中止');
-            default:
-                return _t('附件上传失败');
-        }
     }
 
     private function throwUploadError(string $message): void

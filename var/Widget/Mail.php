@@ -2,7 +2,6 @@
 
 namespace Widget;
 
-use Typecho\Common;
 use Typecho\Db;
 use Typecho\Widget\Exception;
 use Widget\Base\Options as BaseOptions;
@@ -24,6 +23,10 @@ class Mail extends BaseOptions implements ActionInterface
 
         if (!Queue::verifyAsyncToken($token, (string) ($this->options->secret ?? ''), 5)) {
             throw new Exception(_t('禁止访问'), 403);
+        }
+
+        if (!Queue::isAsyncRequesterAllowed($this->options, (string) $this->request->getIp())) {
+            throw new Exception(_t('异步回调来源未被允许'), 403);
         }
 
         $this->response->throwFinish();
@@ -165,7 +168,7 @@ class Mail extends BaseOptions implements ActionInterface
             if (abs(time() - $time) <= self::CRON_SIGN_TTL) {
                 $expected = hash_hmac('sha256', $ts . '|deliver', $stored);
                 if (hash_equals($expected, $sign)) {
-                    return true;
+                    return Queue::guardReplay('mail_deliver', $ts . '|' . $sign, self::CRON_SIGN_TTL);
                 }
             }
         }

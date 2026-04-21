@@ -3,6 +3,7 @@
 namespace Utils\Migration;
 
 use Utils\Migration\Steps\CoreIndexStep;
+use Utils\Migration\Steps\IndexTuneStep;
 use Utils\Migration\Steps\InstallMailAndResetInfrastructureStep;
 use Utils\Migration\Steps\NormalizeLegacyStorageStep;
 use Utils\Migration\Steps\PasswordStorageStep;
@@ -19,7 +20,8 @@ class Registry
             new NormalizeLegacyStorageStep(),
             new InstallMailAndResetInfrastructureStep(),
             new CoreIndexStep(),
-            new PasswordStorageStep()
+            new PasswordStorageStep(),
+            new IndexTuneStep()
         ];
 
         usort($steps, static function (StepInterface $left, StepInterface $right): int {

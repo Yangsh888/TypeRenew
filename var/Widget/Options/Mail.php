@@ -140,15 +140,6 @@ class Mail extends Options implements ActionInterface
         exit;
     }
 
-    public function deliverNow()
-    {
-        $result = Queue::deliverBatch(Db::get(), $this->options, (int) ($this->options->mailBatchSize ?? 50));
-        $this->noticeAndGoBack(
-            _t('投递完成：成功 %d，失败 %d', (int) $result['sent'], (int) $result['failed']),
-            ((int) $result['failed'] > 0) ? 'notice' : 'success'
-        );
-    }
-
     public function cleanupQueue()
     {
         $count = Queue::cleanup(Db::get(), (int) ($this->options->mailKeepDays ?? 30));
@@ -166,12 +157,6 @@ class Mail extends Options implements ActionInterface
             _t('已重试 %d 条任务（失败 %d，已放弃 %d）', $count, $failed, $dead),
             $count > 0 ? 'success' : 'notice'
         );
-    }
-
-    public function retryDead()
-    {
-        $count = Queue::retry(Db::get(), 'dead', (int) ($this->options->mailBatchSize ?? 50));
-        $this->noticeAndGoBack(_t('已重试 %d 条已放弃任务', $count), $count > 0 ? 'success' : 'notice');
     }
 
     public function regenerateCronKey()
@@ -402,7 +387,11 @@ class Mail extends Options implements ActionInterface
         if ($this->request->isPost()) {
             $do = (string) $this->request->get('do');
             if ($do === 'deliver') {
-                $this->deliverNow();
+                $result = Queue::deliverBatch(Db::get(), $this->options, (int) ($this->options->mailBatchSize ?? 50));
+                $this->noticeAndGoBack(
+                    _t('投递完成：成功 %d，失败 %d', (int) $result['sent'], (int) $result['failed']),
+                    ((int) $result['failed'] > 0) ? 'notice' : 'success'
+                );
                 return;
             }
             if ($do === 'cleanup') {
@@ -411,10 +400,6 @@ class Mail extends Options implements ActionInterface
             }
             if ($do === 'retry_failed') {
                 $this->retryFailed();
-                return;
-            }
-            if ($do === 'retry_dead') {
-                $this->retryDead();
                 return;
             }
             if ($do === 'regen_key') {

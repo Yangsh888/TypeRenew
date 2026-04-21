@@ -125,6 +125,27 @@ namespace Typecho {
                 . str_replace('//', '/', ltrim($path, '/'));
         }
 
+        public static function uploadErrorMessage(int $error, string $prefix, ?string $noFile = null): string
+        {
+            switch ($error) {
+                case UPLOAD_ERR_NO_FILE:
+                    return $noFile === null ? _t('%s失败', $prefix) : _t($noFile);
+                case UPLOAD_ERR_INI_SIZE:
+                case UPLOAD_ERR_FORM_SIZE:
+                    return _t('%s失败：文件体积超过服务器限制', $prefix);
+                case UPLOAD_ERR_PARTIAL:
+                    return _t('%s失败：文件仅部分上传', $prefix);
+                case UPLOAD_ERR_NO_TMP_DIR:
+                    return _t('%s失败：服务器缺少临时目录', $prefix);
+                case UPLOAD_ERR_CANT_WRITE:
+                    return _t('%s失败：无法写入服务器磁盘', $prefix);
+                case UPLOAD_ERR_EXTENSION:
+                    return _t('%s失败：上传被扩展中止', $prefix);
+                default:
+                    return _t('%s失败', $prefix);
+            }
+        }
+
         public static function init()
         {
             Response::getInstance()->enableAutoSendHeaders(false);

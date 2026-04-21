@@ -58,7 +58,7 @@ class Package extends BaseOptions implements ActionInterface
 
         $error = (int) ($file['error'] ?? UPLOAD_ERR_NO_FILE);
         if ($error !== UPLOAD_ERR_OK) {
-            throw new Exception($this->uploadErrorMessage($error), 400);
+            throw new Exception(Common::uploadErrorMessage($error, '升级包上传', '请选择升级包 ZIP 文件'), 400);
         }
 
         $allowInstall = !empty($this->request->get('allowInstall'));
@@ -107,24 +107,4 @@ class Package extends BaseOptions implements ActionInterface
         throw new Exception(_t($message), 500);
     }
 
-    private function uploadErrorMessage(int $error): string
-    {
-        switch ($error) {
-            case UPLOAD_ERR_NO_FILE:
-                return _t('请选择升级包 ZIP 文件');
-            case UPLOAD_ERR_INI_SIZE:
-            case UPLOAD_ERR_FORM_SIZE:
-                return _t('升级包上传失败：文件体积超过服务器限制');
-            case UPLOAD_ERR_PARTIAL:
-                return _t('升级包上传失败：文件仅部分上传');
-            case UPLOAD_ERR_NO_TMP_DIR:
-                return _t('升级包上传失败：服务器缺少临时目录');
-            case UPLOAD_ERR_CANT_WRITE:
-                return _t('升级包上传失败：无法写入服务器磁盘');
-            case UPLOAD_ERR_EXTENSION:
-                return _t('升级包上传失败：上传被扩展中止');
-            default:
-                return _t('升级包上传失败');
-        }
-    }
 }

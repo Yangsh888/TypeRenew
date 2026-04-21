@@ -273,11 +273,17 @@ class Edit extends Contents implements ActionInterface
         foreach ($posts as $post) {
             self::pluginHandle()->call('delete', $post, $this);
 
-            $condition = $this->db->sql()->where('cid = ?', $post);
+            $condition = $this->db->sql()
+                ->where('cid = ?', $post)
+                ->where('type = ?', 'attachment');
             $row = $this->db->fetchRow($this->select()
                 ->where('table.contents.type = ?', 'attachment')
                 ->where('table.contents.cid = ?', $post)
                 ->limit(1), [$this, 'push']);
+
+            if (empty($row)) {
+                continue;
+            }
 
             if ($this->isWriteable(clone $condition) && $this->delete($condition)) {
                 Upload::deleteHandle($this->toColumn(['cid', 'attachment', 'parent']));

@@ -3,12 +3,9 @@
 namespace Widget\Contents\Post;
 
 use Typecho\Common;
-use Typecho\Widget\Exception;
 use Widget\Base\Contents;
 use Widget\Base\Metas;
 use Widget\ActionInterface;
-use Typecho\Db\Exception as DbException;
-use Typecho\Date as TypechoDate;
 use Widget\Contents\EditTrait;
 use Widget\Contents\PrepareEditTrait;
 use Widget\Notice;
@@ -44,24 +41,7 @@ class Edit extends Contents implements ActionInterface
         $contents['category'] = $this->request->getArray('category');
         $contents['title'] = $this->request->get('title', _t('未命名文档'));
         $contents['created'] = $this->getCreated();
-        
-        $attachmentCidsStr = $this->request->get('attachment_cids', '');
-        if (!empty($attachmentCidsStr)) {
-            $cids = array_filter(array_map('intval', explode(',', $attachmentCidsStr)));
-            if (!empty($cids)) {
-                $contents['attachment'] = $cids;
-            }
-        }
-        
-        if (empty($this->cid)) {
-            $contents['attachUnattached'] = true;
-        } else {
-            $contents['oldCid'] = $this->cid;
-        }
-
-        if ($this->request->is('markdown=1')) {
-            $contents['text'] = '<!--markdown-->' . $contents['text'];
-        }
+        $contents = $this->normalizeWriteContents($contents);
 
         $contents = self::pluginHandle()->filter('write', $contents, $this);
 
@@ -93,42 +73,27 @@ class Edit extends Contents implements ActionInterface
 
             Notice::alloc()->highlight($this->theId);
 
-            $pageQuery = $this->getPageOffsetQuery($this->cid);
-
-            $this->response->redirect(Common::url('manage-posts.php?' . $pageQuery, $this->options->adminUrl));
+            $this->response->redirect(Common::url(
+                'manage-posts.php?page=' . $this->getPageOffset(
+                    'cid',
+                    $this->cid,
+                    'post',
+                    null,
+                    $this->request->is('__typecho_all_posts=on') ? 0 : $this->user->uid
+                ),
+                $this->options->adminUrl
+            ));
         } else {
             $contents['type'] = 'post_draft';
             $draftId = $this->save($contents);
 
             self::pluginHandle()->call('finishSave', $contents, $this);
-
-            Notice::alloc()->highlight($this->cid);
-
-            if ($this->request->isAjax()) {
-                $created = new TypechoDate();
-                $this->response->throwJson([
-                    'success' => 1,
-                    'time'    => $created->format('H:i:s A'),
-                    'cid'     => $this->cid,
-                    'draftId' => $draftId
-                ]);
-            } else {
-                Notice::alloc()->set(_t('草稿 "%s" 已经被保存', htmlspecialchars((string) $this->title, ENT_QUOTES, 'UTF-8')), 'success');
-
-                $this->response->redirect(Common::url('write-post.php?cid=' . $this->cid, $this->options->adminUrl));
-            }
+            $this->finishSaveResponse(
+                (string) $this->title,
+                $draftId,
+                Common::url('write-post.php?cid=' . $this->cid, $this->options->adminUrl)
+            );
         }
-    }
-
-    protected function getPageOffsetQuery(int $cid, ?string $status = null): string
-    {
-        return 'page=' . $this->getPageOffset(
-            'cid',
-            $cid,
-            'post',
-            $status,
-            $this->request->is('__typecho_all_posts=on') ? 0 : $this->user->uid
-        );
     }
 
     public function markPost()
@@ -264,6 +229,14 @@ class Edit extends Contents implements ActionInterface
         $deleteCount = 0;
 
         foreach ($posts as $post) {
+            $condition = $this->db->sql()
+                ->where('cid = ?', $post)
+                ->where('type = ? OR type = ?', 'post', 'post_draft');
+
+            if (!$this->isWriteable(clone $condition)) {
+                continue;
+            }
+
             $draft = $this->db->fetchRow($this->db->select('cid')
                 ->from('table.contents')
                 ->where('table.contents.parent = ? AND table.contents.type = ?', $post, 'revision')

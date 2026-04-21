@@ -60,6 +60,8 @@ class Backup extends BaseOptions implements ActionInterface
 
     private bool $login = false;
 
+    private ?array $pendingLoginUser = null;
+
     private array $statusWhitelist = ['approved', 'waiting', 'spam'];
 
     private array $repairResult = [
@@ -260,13 +262,17 @@ class Backup extends BaseOptions implements ActionInterface
 
             $this->beginImportTransaction();
             $this->clearAllCoreTables();
-            $this->importPayload($payload);
+            $this->importPayload($payload, $this->shouldStrictImportPlugins());
 
             if ($doRepair) {
                 $this->repairResult = $this->repairData();
             }
 
             $this->commitImportTransaction();
+
+            if ($this->pendingLoginUser !== null) {
+                $this->reLogin($this->pendingLoginUser);
+            }
 
             $messages = $this->buildReportMessages($payload, $preflight, false, false, $snapshotName, $doRepair, $doSnapshot);
             Notice::alloc()->set($messages, 'success');
@@ -302,7 +308,7 @@ class Backup extends BaseOptions implements ActionInterface
                 return $file['tmp_name'];
             }
 
-            return $this->failAndFinish($this->uploadErrorMessage((int) $file['error']));
+            return $this->failAndFinish(Common::uploadErrorMessage((int) $file['error'], '备份文件上传'));
         }
 
         if (!$this->request->is('file')) {
@@ -599,6 +605,7 @@ class Backup extends BaseOptions implements ActionInterface
         $this->cleared = [];
         $this->inTransaction = false;
         $this->login = false;
+        $this->pendingLoginUser = null;
         $this->repairResult = [
             'ownerFixed' => 0,
             'statusFixed' => 0,
@@ -670,7 +677,7 @@ class Backup extends BaseOptions implements ActionInterface
             || false !== strpos($adapter, 'sqlite');
     }
 
-    private function importPayload(array $payload): void
+    private function importPayload(array $payload, bool $strictPlugins = true): void
     {
         foreach (array_keys($this->types) as $table) {
             foreach ($payload['rows'][$table] ?? [] as $row) {
@@ -683,6 +690,9 @@ class Backup extends BaseOptions implements ActionInterface
             try {
                 self::pluginHandle()->import($type, $header, $body);
             } catch (Throwable $e) {
+                if ($strictPlugins) {
+                    throw new Exception(_t('插件扩展导入失败(type=%s): %s', (string) $type, $e->getMessage()));
+                }
                 $this->pluginWarnings[] = _t('插件扩展导入失败(type=%s): %s', (string) $type, $e->getMessage());
             }
         }
@@ -695,10 +705,15 @@ class Backup extends BaseOptions implements ActionInterface
         }
     }
 
+    private function shouldStrictImportPlugins(): bool
+    {
+        return !$this->request->is('pluginStrict=0');
+    }
+
     private function insertData(string $table, array $data): void
     {
         if (!$this->login && 'users' === $table && (($data['group'] ?? '') === 'administrator')) {
-            $this->reLogin($data);
+            $data = $this->prepareLoginUser($data);
         }
 
         $this->db->query($this->db->insert('table.' . $table)->rows($this->applyFields($table, $data, true)));
@@ -882,31 +897,6 @@ class Backup extends BaseOptions implements ActionInterface
         }
     }
 
-    private function uploadErrorMessage(int $code): string
-    {
-        if (UPLOAD_ERR_INI_SIZE === $code || UPLOAD_ERR_FORM_SIZE === $code) {
-            return _t('备份文件上传失败：文件体积超过服务器限制');
-        }
-
-        if (UPLOAD_ERR_PARTIAL === $code) {
-            return _t('备份文件上传失败：文件仅部分上传');
-        }
-
-        if (UPLOAD_ERR_NO_TMP_DIR === $code) {
-            return _t('备份文件上传失败：服务器缺少临时目录');
-        }
-
-        if (UPLOAD_ERR_CANT_WRITE === $code) {
-            return _t('备份文件上传失败：无法写入服务器磁盘');
-        }
-
-        if (UPLOAD_ERR_EXTENSION === $code) {
-            return _t('备份文件上传失败：上传被扩展中止');
-        }
-
-        return _t('备份文件上传失败');
-    }
-
     private function finish(): void
     {
         $this->response->redirect($this->options->adminUrl('backup.php', true));
@@ -921,11 +911,10 @@ class Backup extends BaseOptions implements ActionInterface
 
     /**
      * 备份过程会重写用户数据
-     * 所以需要重新登录当前用户
+     * 所以需要在事务提交后重新登录当前用户
      *
-     * @param $user
      */
-    private function reLogin(&$user)
+    private function prepareLoginUser(array $user): array
     {
         if (empty($user['authCode'])) {
             $user['authCode'] = function_exists('openssl_random_pseudo_bytes') ?
@@ -934,9 +923,17 @@ class Backup extends BaseOptions implements ActionInterface
 
         $user['activated'] = $this->options->time;
         $user['logged'] = $user['activated'];
+        $this->pendingLoginUser = $user;
+        $this->login = true;
 
+        return $user;
+    }
+
+    private function reLogin(array $user): void
+    {
         Cookie::set('__typecho_uid', $user['uid']);
         Cookie::set('__typecho_authCode', Common::hash($user['authCode']));
         $this->login = true;
+        $this->pendingLoginUser = null;
     }
 }

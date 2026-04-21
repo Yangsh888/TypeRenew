@@ -226,19 +226,7 @@ class Edit extends Users implements ActionInterface
         Notice::alloc()->set(_t('用户 %s 已经被更新', $user['screenName']), 'success');
 
         $this->response->redirect(Common::url('manage-users.php?' .
-            $this->getPageOffsetQuery($this->request->get('uid')), $this->options->adminUrl));
-    }
-
-    /**
-     * 获取页面偏移的URL Query
-     *
-     * @param integer $uid 用户id
-     * @return string
-     * @throws \Typecho\Db\Exception
-     */
-    protected function getPageOffsetQuery(int $uid): string
-    {
-        return 'page=' . $this->getPageOffset('uid', $uid);
+            'page=' . $this->getPageOffset('uid', (int) $this->request->get('uid')), $this->options->adminUrl));
     }
 
     /**

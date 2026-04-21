@@ -12,6 +12,16 @@ class Runner
     private string $rootDir;
     private const MAX_ZIP_FILES = 20000;
     private const MAX_ZIP_UNPACKED_BYTES = 2147483648;
+    private const ALLOWED_USR_PREFIXES = [
+        'usr/plugins/RenewAvatar/',
+        'usr/plugins/RenewGo/',
+        'usr/plugins/RenewSEO/',
+        'usr/plugins/RenewShield/',
+        'usr/plugins/VditorRenew/',
+        'usr/themes/default/',
+        'usr/themes/LanternTown/',
+        'usr/themes/TypeShow/',
+    ];
 
     public function __construct(?Store $store = null)
     {
@@ -463,7 +473,7 @@ class Runner
                 }
 
                 if (!$this->isAllowed($relative, $allowInstall)) {
-                    continue;
+                    throw new RuntimeException('升级包包含受保护路径: ' . $relative);
                 }
 
                 $files[$relative] = $relative;
@@ -655,7 +665,13 @@ class Runner
         }
 
         if (str_starts_with($relative, 'usr/')) {
-            return true;
+            foreach (self::ALLOWED_USR_PREFIXES as $prefix) {
+                if (str_starts_with($relative, $prefix)) {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         if (str_starts_with($relative, 'var/')) {
