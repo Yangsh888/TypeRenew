@@ -49,11 +49,9 @@ class Reading extends Permalink
                 ->where('cid = ?', $pageId = intval($this->request->get('frontPagePage'))))
         ) {
             $settings['frontPage'] = 'page:' . $pageId;
-        } elseif (
-            'file' == $settings['frontPage'] && $this->request->is('frontPageFile') &&
-            file_exists(__TYPECHO_ROOT_DIR__ . '/' . __TYPECHO_THEME_DIR__ . '/' . $this->options->theme . '/' .
-                ($file = trim((string) $this->request->get('frontPageFile', ''), " ./\\")))
-        ) {
+        } elseif ('file' == $settings['frontPage']
+            && $this->request->is('frontPageFile')
+            && null !== ($file = $this->resolveFrontPageFile((string) $this->request->get('frontPageFile', '')))) {
             $settings['frontPage'] = 'file:' . $file;
         } else {
             $settings['frontPage'] = 'recent';
@@ -225,5 +223,21 @@ class Reading extends Permalink
         $this->security->protect();
         $this->on($this->request->isPost())->updateReadingSettings();
         $this->response->redirect($this->options->adminUrl);
+    }
+
+    private function resolveFrontPageFile(string $file): ?string
+    {
+        $file = basename(str_replace('\\', '/', trim($file)));
+        if ($file === '' || str_contains($file, "\0") || !preg_match('/^[A-Za-z0-9._-]+\.php$/', $file)) {
+            return null;
+        }
+
+        $path = $this->options->themeFile($this->options->theme, $file);
+        if (!is_file($path)) {
+            return null;
+        }
+
+        $info = Plugin::parseInfo($path);
+        return ('index.php' !== $file && 'index' === ($info['title'] ?? '')) ? $file : null;
     }
 }

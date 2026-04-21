@@ -83,7 +83,6 @@ RewriteRule ^(.*)$ {$basePath}index.php/$1 [L]
                         unlink($htaccess);
                     }
 
-                    // Enhance compatibility for FastCGI-like setups using a WordPress-style rewrite rule.
                     $hasWrote = file_put_contents($htaccess, "<IfModule mod_rewrite.c>
 RewriteEngine On
 RewriteBase {$basePath}

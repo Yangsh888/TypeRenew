@@ -28,9 +28,7 @@ $pluginIsOfficial = static function ($author, $homepage): bool {
         return false;
     }
 
-    $parts = method_exists(\Typecho\Common::class, 'parseUrl')
-        ? \Typecho\Common::parseUrl($candidate)
-        : (parse_url($candidate) ?: []);
+    $parts = \Typecho\Common::parseUrl($candidate);
     $host = strtolower((string) ($parts['host'] ?? ''));
 
     return in_array($host, ['www.typerenew.com', 'typerenew.com'], true);
@@ -59,8 +57,8 @@ $pluginVersionMeta = static function ($name, $version, $author, $homepage, $mobi
 };
 $pluginVersionToolbar = '<div class="tr-plugin-version-toolbar">'
     . '<div class="tr-plugin-version-toolbar-actions">'
-    . '<button type="button" class="btn btn-s" id="trPluginVersionRefresh">' . _t('刷新检测') . '</button>'
-    . '<span class="tr-plugin-version-hint" id="trPluginVersionHint" role="status" aria-live="polite">' . _t('成功缓存 2 小时，失败缓存 10 分钟') . '</span>'
+    . '<button type="button" class="btn btn-s tr-plugin-version-refresh">' . _t('刷新检测') . '</button>'
+    . '<span class="tr-plugin-version-hint" role="status" aria-live="polite">' . _t('成功缓存 2 小时，失败缓存 10 分钟') . '</span>'
     . '</div>'
     . '</div>';
 ?>
@@ -213,9 +211,9 @@ include 'common-js.php';
 <script>
     (function () {
         var badges = document.querySelectorAll('.tr-plugin-version-badge[data-plugin-name]');
-        var refreshBtn = document.getElementById('trPluginVersionRefresh');
-        var hint = document.getElementById('trPluginVersionHint');
-        if (!badges.length || !hint || !window.jQuery) {
+        var refreshButtons = document.querySelectorAll('.tr-plugin-version-refresh');
+        var hints = document.querySelectorAll('.tr-plugin-version-hint');
+        if (!badges.length || !hints.length || !window.jQuery) {
             return;
         }
 
@@ -299,8 +297,10 @@ include 'common-js.php';
         }
 
         function setHint(text, tone) {
-            hint.textContent = text;
-            hint.className = 'tr-plugin-version-hint' + (tone ? ' is-' + tone : '');
+            Array.prototype.forEach.call(hints, function (node) {
+                node.textContent = text;
+                node.className = 'tr-plugin-version-hint' + (tone ? ' is-' + tone : '');
+            });
         }
 
         function setLoading(active) {
@@ -323,13 +323,11 @@ include 'common-js.php';
                 node.setAttribute('aria-label', texts.loadingBadge);
             });
 
-            if (!refreshBtn) {
-                return;
-            }
-
-            refreshBtn.disabled = active;
-            refreshBtn.setAttribute('aria-busy', active ? 'true' : 'false');
-            refreshBtn.textContent = active ? texts.refreshing : texts.refresh;
+            Array.prototype.forEach.call(refreshButtons, function (node) {
+                node.disabled = active;
+                node.setAttribute('aria-busy', active ? 'true' : 'false');
+                node.textContent = active ? texts.refreshing : texts.refresh;
+            });
         }
 
         function applyStatus(name, payload) {
@@ -451,11 +449,11 @@ include 'common-js.php';
             });
         }
 
-        if (refreshBtn) {
-            refreshBtn.addEventListener('click', function () {
+        Array.prototype.forEach.call(refreshButtons, function (node) {
+            node.addEventListener('click', function () {
                 loadVersions(true);
             });
-        }
+        });
 
         var cachedPayload = readSessionCache();
         if (cachedPayload) {

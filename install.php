@@ -1034,7 +1034,7 @@ function install_step_2_perform()
         ->addRule('dbPrefix', 'required', _t('数据库前缀不能为空'))
         ->addRule('dbPrefix', 'minLength', _t('数据库前缀至少 1 个字符'), 1)
         ->addRule('dbPrefix', 'maxLength', _t('数据库前缀不能超过 16 个字符'), 16)
-        ->addRule('dbPrefix', 'alphaDash', _t('数据库前缀仅允许字母、数字、下划线和中划线'))
+        ->addRule('dbPrefix', 'regexp', _t('数据库前缀仅允许字母、数字和下划线'), '/^[_a-z0-9]+$/i')
         ->addRule('dbAdapter', 'required', _t('请选择数据库适配器'))
         ->addRule('dbAdapter', 'enum', _t('数据库适配器无效'), array_keys($drivers))
         ->addRule('dbNext', 'required', _t('安装流程状态无效'))
@@ -1064,7 +1064,9 @@ function install_step_2_perform()
                 ->addRule('dbDatabase', 'required', _t('数据库名不能为空'))
                 ->addRule('dbEngine', 'required', _t('数据表引擎不能为空'))
                 ->addRule('dbEngine', 'enum', _t('数据表引擎仅支持 InnoDB'), ['InnoDB'])
-                ->addRule('dbSslCa', 'file_exists', _t('SSL CA 证书路径无效'))
+                ->addRule('dbSslCa', static function (?string $path): bool {
+                    return empty($path) || file_exists((string) $path);
+                }, _t('SSL CA 证书路径无效'))
                 ->addRule('dbSslVerify', 'enum', _t('SSL 校验选项无效'), ['on', 'off'])
                 ->run($config);
             break;
@@ -1442,7 +1444,6 @@ function install_step_3_perform()
             ])
         );
 
-        // write comment
         $installDb->query(
             $installDb->insert('table.comments')->rows([
                 'cid' => 1, 'created' => \Typecho\Date::time(),

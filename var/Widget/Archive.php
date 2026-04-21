@@ -261,6 +261,46 @@ class Archive extends Contents
         $this->themeDir = $themeDir;
     }
 
+    private function resolveThemeFilePath(?string $themeFile): ?string
+    {
+        if ($themeFile === null || $themeFile === '' || str_contains($themeFile, "\0")) {
+            return null;
+        }
+
+        $relativePath = ltrim(str_replace('\\', '/', $themeFile), '/');
+        if ($relativePath === '') {
+            return null;
+        }
+
+        $path = realpath($this->themeDir . str_replace('/', DIRECTORY_SEPARATOR, $relativePath));
+        if ($path === false || !is_file($path)) {
+            return null;
+        }
+
+        $themeRoot = realpath($this->themeDir);
+        if ($themeRoot === false) {
+            return null;
+        }
+
+        $normalizedRoot = rtrim(str_replace('\\', '/', $themeRoot), '/') . '/';
+        $normalizedPath = str_replace('\\', '/', $path);
+        return str_starts_with($normalizedPath, $normalizedRoot) ? $path : null;
+    }
+
+    private function requireThemeFile(string $themeFile, bool $once = false): void
+    {
+        $path = $this->resolveThemeFilePath($themeFile);
+        if ($path === null) {
+            throw new WidgetException(_t('文件不存在'), 500);
+        }
+
+        if ($once) {
+            require_once $path;
+        } else {
+            require $path;
+        }
+    }
+
     public function execute()
     {
         if ($this->have()) {
@@ -302,6 +342,13 @@ class Archive extends Contents
                 );
             }
         }
+
+        $this->archiveFeedUrl = $this->options->feedUrl;
+        $this->archiveFeedRssUrl = $this->options->feedRssUrl;
+        $this->archiveFeedAtomUrl = $this->options->feedAtomUrl;
+        $this->archiveKeywords = $this->options->keywords;
+        $this->archiveDescription = $this->options->description;
+        $this->archiveUrl = $this->options->siteUrl;
 
         $frontPage = $this->options->frontPage;
         if (!$this->invokeByFeed && ('index' == $this->parameter->type || 'index_page' == $this->parameter->type)) {
@@ -371,13 +418,6 @@ class Archive extends Contents
         }
 
         self::pluginHandle()->call('handleInit', $this, $select);
-
-        $this->archiveFeedUrl = $this->options->feedUrl;
-        $this->archiveFeedRssUrl = $this->options->feedRssUrl;
-        $this->archiveFeedAtomUrl = $this->options->feedAtomUrl;
-        $this->archiveKeywords = $this->options->keywords;
-        $this->archiveDescription = $this->options->description;
-        $this->archiveUrl = $this->options->siteUrl;
 
         if (isset($handles[$this->parameter->type])) {
             $handle = $handles[$this->parameter->type];
@@ -903,7 +943,7 @@ EOF;
 
     public function need(string $fileName)
     {
-        require $this->themeDir . $fileName;
+        $this->requireThemeFile($fileName);
     }
 
     public function render()
@@ -916,7 +956,7 @@ EOF;
         $valid = false;
 
         if (!empty($this->themeFile)) {
-            if (file_exists($this->themeDir . $this->themeFile)) {
+            if (null !== $this->resolveThemeFilePath($this->themeFile)) {
                 $valid = true;
             }
         }
@@ -971,7 +1011,7 @@ EOF;
 
         self::pluginHandle()->call('beforeRender', $this);
 
-        require_once $this->themeDir . $this->themeFile;
+        $this->requireThemeFile($this->themeFile, true);
 
         self::pluginHandle()->call('afterRender', $this);
     }
@@ -1494,7 +1534,7 @@ EOF;
         };
 
         $this->archiveFeedUrl = Router::url('search', $this->pageRow, $this->options->feedUrl);
-        $this->archiveFeedRssUrl = Router::url('search', $this->pageRow, $this->options->feedAtomUrl);
+        $this->archiveFeedRssUrl = Router::url('search', $this->pageRow, $this->options->feedRssUrl);
         $this->archiveFeedAtomUrl = Router::url('search', $this->pageRow, $this->options->feedAtomUrl);
         $this->archiveTitle = $keywords;
         $this->archiveType = 'search';

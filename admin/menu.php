@@ -40,9 +40,7 @@ if (!empty($menu->addLink)) {
 }
 
 $trIconOf = function (string $href) use ($trIconMap, $trPanelIconMap): ?string {
-    $parts = method_exists(\Typecho\Common::class, 'parseUrl')
-        ? \Typecho\Common::parseUrl($href)
-        : (parse_url($href) ?: []);
+    $parts = \Typecho\Common::parseUrl($href);
     $path = $parts['path'] ?? '';
     $base = $path !== '' ? basename($path) : basename($href);
     if ($base === 'extending.php') {

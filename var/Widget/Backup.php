@@ -179,8 +179,9 @@ class Backup extends BaseOptions implements ActionInterface
         $schema = [];
 
         foreach ($data as $key => $val) {
-            $schema[$key] = null === $val ? null : strlen($val);
-            $body .= $val;
+            $value = null === $val ? null : (string) $val;
+            $schema[$key] = null === $value ? null : strlen($value);
+            $body .= $value ?? '';
         }
 
         $header = json_encode($schema);
@@ -234,8 +235,6 @@ class Backup extends BaseOptions implements ActionInterface
             return;
         }
 
-        $this->pluginWarnings = [];
-        $this->runtimeWarnings = [];
         $doRepair = !$this->request->is('repair=0');
         $doSnapshot = !$this->request->is('snapshot=0');
 
@@ -249,6 +248,8 @@ class Backup extends BaseOptions implements ActionInterface
                 return;
             }
 
+            $this->resetImportState();
+
             $snapshotName = null;
             if ($doSnapshot) {
                 $snapshotName = $this->makeSnapshot();
@@ -257,7 +258,6 @@ class Backup extends BaseOptions implements ActionInterface
                 }
             }
 
-            $this->resetImportState();
             $this->beginImportTransaction();
             $this->clearAllCoreTables();
             $this->importPayload($payload);
@@ -528,7 +528,7 @@ class Backup extends BaseOptions implements ActionInterface
 
         try {
             if (false !== strpos($adapter, 'mysql')) {
-                $rows = $this->db->fetchAll($this->db->query('SHOW COLUMNS FROM `' . $tableName . '`'));
+                $rows = $this->db->fetchAll($this->db->query('SHOW COLUMNS FROM ' . $this->quoteIdentifier($tableName)));
                 return array_values(array_map(static fn($row) => (string) ($row['Field'] ?? ''), $rows));
             }
 
@@ -542,7 +542,7 @@ class Backup extends BaseOptions implements ActionInterface
             }
 
             if (false !== strpos($adapter, 'sqlite')) {
-                $rows = $this->db->fetchAll($this->db->query('PRAGMA table_info("' . $tableName . '")'));
+                $rows = $this->db->fetchAll($this->db->query('PRAGMA table_info(' . $this->quoteIdentifier($tableName) . ')'));
                 return array_values(array_map(static fn($row) => (string) ($row['name'] ?? ''), $rows));
             }
         } catch (Throwable) {
@@ -550,6 +550,17 @@ class Backup extends BaseOptions implements ActionInterface
         }
 
         return [];
+    }
+
+    private function quoteIdentifier(string $name): string
+    {
+        $adapter = $this->db->getAdapter();
+        $parts = array_map(
+            static fn(string $part): string => $adapter->quoteColumn($part),
+            explode('.', $name)
+        );
+
+        return implode('.', $parts);
     }
 
     private function isUtf8(string $value): bool
@@ -679,41 +690,46 @@ class Backup extends BaseOptions implements ActionInterface
         if (false !== strpos(strtolower($this->db->getAdapterName()), 'pgsql')) {
             foreach ($this->lastIds as $table => $id) {
                 $seq = $this->db->getPrefix() . $table . '_seq';
-                $this->db->query('ALTER SEQUENCE ' . $seq . ' RESTART WITH ' . ((int) $id + 1));
+                $this->db->query('ALTER SEQUENCE ' . $this->quoteIdentifier($seq) . ' RESTART WITH ' . ((int) $id + 1));
             }
         }
     }
 
     private function insertData(string $table, array $data): void
     {
-        $db = $this->db;
-
         if (!$this->login && 'users' === $table && (($data['group'] ?? '') === 'administrator')) {
             $this->reLogin($data);
         }
 
-        $db->query($db->insert('table.' . $table)->rows($this->applyFields($table, $data, true)));
+        $this->db->query($this->db->insert('table.' . $table)->rows($this->applyFields($table, $data, true)));
     }
 
     private function repairData(): array
     {
         $prefix = $this->db->getPrefix();
-        $comments = $prefix . 'comments';
-        $contents = $prefix . 'contents';
+        $comments = $this->quoteIdentifier($prefix . 'comments');
+        $contents = $this->quoteIdentifier($prefix . 'contents');
+        $authorIdColumn = $this->quoteIdentifier('authorId');
+        $cidColumn = $this->quoteIdentifier('cid');
+        $coidColumn = $this->quoteIdentifier('coid');
+        $ownerIdColumn = $this->quoteIdentifier('ownerId');
+        $statusColumn = $this->quoteIdentifier('status');
 
-        $ownerSql = 'UPDATE ' . $comments . ' SET ownerId = (SELECT authorId FROM ' . $contents
-            . ' WHERE ' . $contents . '.cid = ' . $comments . '.cid)'
-            . ' WHERE (ownerId IS NULL OR ownerId = 0)'
-            . ' AND EXISTS (SELECT 1 FROM ' . $contents . ' WHERE ' . $contents . '.cid = ' . $comments . '.cid)';
+        $ownerSql = 'UPDATE ' . $comments . ' SET ' . $ownerIdColumn . ' = (SELECT ' . $authorIdColumn . ' FROM ' . $contents
+            . ' WHERE ' . $contents . '.' . $cidColumn . ' = ' . $comments . '.' . $cidColumn . ')'
+            . ' WHERE (' . $ownerIdColumn . ' IS NULL OR ' . $ownerIdColumn . ' = 0)'
+            . ' AND EXISTS (SELECT 1 FROM ' . $contents . ' WHERE ' . $contents . '.' . $cidColumn
+            . ' = ' . $comments . '.' . $cidColumn . ')';
         $ownerFixed = (int) $this->db->query($ownerSql, Db::WRITE, Db::UPDATE);
 
-        $statusSql = "UPDATE " . $comments . " SET status = 'waiting'"
-            . " WHERE status IS NULL OR status NOT IN ('approved','waiting','spam')";
+        $statusSql = 'UPDATE ' . $comments . " SET " . $statusColumn . " = 'waiting'"
+            . ' WHERE ' . $statusColumn . " IS NULL OR " . $statusColumn . " NOT IN ('approved','waiting','spam')";
         $statusFixed = (int) $this->db->query($statusSql, Db::WRITE, Db::UPDATE);
 
         $orphanRows = $this->db->fetchAll(
             $this->db->query(
-                'SELECT c.coid FROM ' . $comments . ' c LEFT JOIN ' . $contents . ' t ON t.cid = c.cid WHERE t.cid IS NULL'
+                'SELECT c.' . $coidColumn . ' AS coid FROM ' . $comments . ' c LEFT JOIN ' . $contents . ' t'
+                . ' ON t.' . $cidColumn . ' = c.' . $cidColumn . ' WHERE t.' . $cidColumn . ' IS NULL'
             )
         );
 
@@ -725,8 +741,8 @@ class Backup extends BaseOptions implements ActionInterface
             $coids = array_values(array_filter($coids, static fn($coid) => $coid > 0));
 
             foreach (array_chunk($coids, 200) as $chunk) {
-                $sql = 'UPDATE ' . $comments . ' SET cid = ' . $holderCid
-                    . ' WHERE coid IN (' . implode(',', $chunk) . ')';
+                $sql = 'UPDATE ' . $comments . ' SET ' . $cidColumn . ' = ' . $holderCid
+                    . ' WHERE ' . $coidColumn . ' IN (' . implode(',', $chunk) . ')';
                 $orphanMoved += (int) $this->db->query($sql, Db::WRITE, Db::UPDATE);
             }
         }
@@ -734,7 +750,8 @@ class Backup extends BaseOptions implements ActionInterface
         $this->db->query($this->db->update('table.contents')->rows(['commentsNum' => 0]));
         $countRows = $this->db->fetchAll(
             $this->db->query(
-                "SELECT cid, COUNT(coid) AS num FROM " . $comments . " WHERE status = 'approved' GROUP BY cid"
+                'SELECT ' . $cidColumn . ' AS cid, COUNT(' . $coidColumn . ') AS num FROM ' . $comments
+                . " WHERE " . $statusColumn . " = 'approved' GROUP BY " . $cidColumn
             )
         );
         foreach ($countRows as $row) {

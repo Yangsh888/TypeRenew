@@ -249,7 +249,8 @@ class Edit extends Users implements ActionInterface
     public function deleteUser()
     {
         $users = $this->request->filter('int')->getArray('uid');
-        $masterUserId = $this->db->fetchObject($this->db->select(['MIN(uid)' => 'num'])->from('table.users'))->num;
+        $row = $this->db->fetchObject($this->db->select(['MIN(uid)' => 'num'])->from('table.users'));
+        $masterUserId = (int) ($row->num ?? 0);
         $deleteCount = 0;
 
         foreach ($users as $user) {

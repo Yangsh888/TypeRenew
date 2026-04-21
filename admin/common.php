@@ -26,9 +26,7 @@ $response = $options->response;
 $currentMenu = $menu->getCurrentMenu();
 
 if (!empty($currentMenu)) {
-    $params = method_exists(\Typecho\Common::class, 'parseUrl')
-        ? \Typecho\Common::parseUrl((string) $currentMenu[2])
-        : (parse_url((string) $currentMenu[2]) ?: []);
+    $params = \Typecho\Common::parseUrl((string) $currentMenu[2]);
     $adminFile = basename((string) ($params['path'] ?? ''));
 
     if ($user->pass('administrator', true)) {

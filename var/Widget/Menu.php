@@ -178,7 +178,6 @@ class Menu extends Base
         }
 
         foreach ($parentNodes as $key => $parentNode) {
-            // this is a simple struct than before
             $children = [];
             $showedChildrenCount = 0;
             $firstUrl = null;
@@ -368,16 +367,7 @@ class Menu extends Base
 
     private static function parseUrlCompat(?string $url): array
     {
-        if (method_exists(Common::class, 'parseUrl')) {
-            return Common::parseUrl($url);
-        }
-
-        if ($url === null || $url === '') {
-            return [];
-        }
-
-        $parts = parse_url($url);
-        return is_array($parts) ? $parts : [];
+        return Common::parseUrl($url);
     }
 
 

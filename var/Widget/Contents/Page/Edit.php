@@ -164,7 +164,12 @@ class Edit extends Contents implements ActionInterface
 
         foreach ($pages as $page) {
             self::pluginHandle()->call('delete', $page, $this);
-            $parent = $this->db->fetchObject($this->select()->where('cid = ?', $page))->parent;
+            $row = $this->db->fetchObject($this->select()->where('cid = ?', $page));
+            if (!$row) {
+                continue;
+            }
+
+            $parent = (int) ($row->parent ?? 0);
 
             if ($this->delete($this->db->sql()->where('cid = ?', $page))) {
                 $this->db->query($this->db->delete('table.comments')

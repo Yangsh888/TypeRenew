@@ -170,8 +170,9 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
     public function applySlug(?string $slug, $cid, string $title = ''): string
     {
         if ($cid instanceof Query) {
-            $cid = $this->db->fetchObject($cid->select('cid')
-                ->from('table.contents')->limit(1))->cid;
+            $row = $this->db->fetchObject($cid->select('cid')
+                ->from('table.contents')->limit(1));
+            $cid = (int) ($row->cid ?? 0);
         }
 
         if ((!isset($slug) || strlen($slug) === 0) && preg_match_all("/\w+/", $title, $matches)) {
@@ -189,10 +190,13 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
         }
 
         $count = 1;
-        while (
-            $this->db->fetchObject($this->db->select(['COUNT(cid)' => 'num'])
-                ->from('table.contents')->where('slug = ? AND cid <> ?', $result, $cid))->num > 0
-        ) {
+        while (true) {
+            $row = $this->db->fetchObject($this->db->select(['COUNT(cid)' => 'num'])
+                ->from('table.contents')->where('slug = ? AND cid <> ?', $result, $cid));
+            if ((int) ($row->num ?? 0) <= 0) {
+                break;
+            }
+
             $result = $slug . '-' . $count;
             $count++;
         }

@@ -393,11 +393,7 @@ class Request
             return false;
         }
 
-        return filter_var(
-            $remote,
-            FILTER_VALIDATE_IP,
-            FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE
-        ) === false;
+        return false;
     }
 
     private function ipInCidr(string $ip, string $cidr): bool
@@ -670,7 +666,7 @@ class Request
         } elseif (0 === strpos($requestUri, dirname($baseUrl))) {
             // directory portion of $baseUrl matches
             $finalBaseUrl = rtrim(dirname($baseUrl), '/');
-        } elseif (!strpos($requestUri, basename($baseUrl))) {
+        } elseif (false === strpos($requestUri, basename($baseUrl))) {
             // no match whatsoever; set it blank
             $finalBaseUrl = '';
         } elseif (

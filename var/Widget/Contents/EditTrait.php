@@ -647,7 +647,8 @@ trait EditTrait
             $select->where('table.contents.authorId = ?', $authorId);
         }
 
-        $count = $this->db->fetchObject($select)->num + 1;
+        $row = $this->db->fetchObject($select);
+        $count = (int) ($row->num ?? 0) + 1;
         return ceil($count / $pageSize);
     }
 

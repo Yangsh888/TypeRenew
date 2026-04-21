@@ -54,8 +54,6 @@ class Edit extends Metas implements ActionInterface
 
     /**
      * 判断分类名称是否可用
-     * fix #1843 将重复性判断限制在同一父分类下
-     *
      * @param string $name 分类名称
      * @throws Exception
      */
@@ -313,7 +311,12 @@ class Edit extends Metas implements ActionInterface
         $deleteCount = 0;
 
         foreach ($categories as $category) {
-            $parent = $this->db->fetchObject($this->select()->where('mid = ?', $category))->parent;
+            $row = $this->db->fetchObject($this->select()->where('mid = ?', $category));
+            if (!$row) {
+                continue;
+            }
+
+            $parent = (int) ($row->parent ?? 0);
 
             if ($this->delete($this->db->sql()->where('mid = ?', $category))) {
                 $this->db->query($this->db->delete('table.relationships')->where('mid = ?', $category));

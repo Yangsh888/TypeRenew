@@ -174,28 +174,43 @@ $(document).ready(function() {
         }
     });
 
-    Typecho.savePost = function(cb) {
-        if (!changed) {
-            cb && cb();
-            return;
+    function hasPendingUploads() {
+        if (!window.Typecho || typeof window.Typecho.getUploadPending !== 'function') {
+            return false;
         }
 
-        const callback = function (o) {
-            lastSaveTime = o.time;
-            cid = o.cid;
-            draftId = o.draftId;
-            idInput.val(cid);
-            autoSave.text('<?php _e('已保存'); ?>' + ' (' + o.time + ')').effect('highlight', 1000);
+        return (parseInt(window.Typecho.getUploadPending() || '0', 10) || 0) > 0;
+    }
 
-            cb && cb();
-        };
+    function canSave() {
+        if (!hasPendingUploads()) {
+            return true;
+        }
 
-        changed = false;
+        showNotice('<?php _e('正在上传附件，请等待上传完成后再提交'); ?>', 'notice');
+        return false;
+    }
+
+    function applySaveResult(o) {
+        lastSaveTime = o.time;
+        cid = o.cid;
+        draftId = o.draftId;
+        idInput.val(cid);
+        autoSave.text('<?php _e('已保存'); ?>' + ' (' + o.time + ')').effect('highlight', 1000);
+    }
+
+    function requestSave(cb, markClean) {
+        if (!canSave()) {
+            return false;
+        }
+
+        if (markClean) {
+            changed = false;
+        }
+
         autoSave.text('<?php _e('正在保存'); ?>');
-
         const data = new FormData(form.get(0));
         data.append('do', 'save');
-        form.triggerHandler('submit');
 
         $.ajax({
             url: form.attr('action'),
@@ -203,14 +218,33 @@ $(document).ready(function() {
             contentType: false,
             type: 'POST',
             data: data,
-            success: callback,
+            success: function (o) {
+                applySaveResult(o);
+                cb && cb(o);
+            },
             error: function () {
+                if (markClean) {
+                    changed = true;
+                }
                 autoSave.text('<?php _e('保存失败, 请重试'); ?>');
             },
             complete: function () {
                 form.trigger('submitted');
             }
         });
+
+        return true;
+    }
+
+    Typecho.savePost = function(cb) {
+        if (!changed) {
+            cb && cb();
+            return;
+        }
+
+        requestSave(function () {
+            cb && cb();
+        }, true);
     };
 
     Typecho.ensureCid = function (cb) {
@@ -220,34 +254,9 @@ $(document).ready(function() {
             return;
         }
 
-        const callback = function (o) {
-            lastSaveTime = o.time;
-            cid = o.cid;
-            draftId = o.draftId;
-            idInput.val(cid);
-            autoSave.text('<?php _e('已保存'); ?>' + ' (' + o.time + ')').effect('highlight', 1000);
-            cb && cb(cid);
-        };
-
-        autoSave.text('<?php _e('正在保存'); ?>');
-        const data = new FormData(form.get(0));
-        data.append('do', 'save');
-        form.triggerHandler('submit');
-
-        $.ajax({
-            url: form.attr('action'),
-            processData: false,
-            contentType: false,
-            type: 'POST',
-            data: data,
-            success: callback,
-            error: function () {
-                autoSave.text('<?php _e('保存失败, 请重试'); ?>');
-            },
-            complete: function () {
-                form.trigger('submitted');
-            }
-        });
+        requestSave(function (o) {
+            cb && cb(o.cid);
+        }, changed);
     };
 
     <?php if ($options->autoSave): ?>
@@ -277,14 +286,11 @@ $(document).ready(function() {
     <?php endif; ?>
 
     form.on('submit', function (e) {
-        if (window.Typecho && typeof window.Typecho.getUploadPending === 'function') {
-            const pending = parseInt(window.Typecho.getUploadPending() || '0', 10) || 0;
-            if (pending > 0) {
-                e.preventDefault();
-                showNotice('<?php _e('正在上传附件，请等待上传完成后再提交'); ?>', 'notice');
-                return false;
-            }
+        if (!canSave()) {
+            e.preventDefault();
+            return false;
         }
+
         form.addClass('submitting');
     });
 
