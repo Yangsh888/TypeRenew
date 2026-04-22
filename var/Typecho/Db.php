@@ -188,6 +188,7 @@ class Db
     {
         $table = null;
         $isWriteSql = false;
+        $forceWriteConnection = false;
 
         if ($query instanceof Query) {
             $action = $query->getAttribute('action');
@@ -196,9 +197,12 @@ class Db
                 || self::INSERT == $action) ? self::WRITE : self::READ;
         } elseif (is_string($query)) {
             $isWriteSql = (bool) preg_match('/^\s*(INSERT|UPDATE|DELETE|REPLACE|ALTER|DROP|TRUNCATE|CREATE)\b/i', $query);
+            $forceWriteConnection = $this->isWriteControlSql($query);
             if ($isWriteSql) {
                 $op = self::WRITE;
                 $table = $this->normalizeInvalidateTable($this->parseWriteTable($query));
+            } elseif ($forceWriteConnection) {
+                $op = self::WRITE;
             }
         } elseif (!is_string($query)) {
             return $query;
@@ -255,6 +259,14 @@ class Db
         }
 
         return null;
+    }
+
+    private function isWriteControlSql(string $sql): bool
+    {
+        return (bool) preg_match(
+            '/^\s*(?:START\s+TRANSACTION|BEGIN|COMMIT|ROLLBACK|SAVEPOINT|RELEASE\s+SAVEPOINT|LOCK\s+TABLES|UNLOCK\s+TABLES|SET\s+TRANSACTION)\b/i',
+            $sql
+        );
     }
 
     private function normalizeInvalidateTable(?string $table): ?string

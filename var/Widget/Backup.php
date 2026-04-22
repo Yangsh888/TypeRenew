@@ -77,6 +77,8 @@ class Backup extends BaseOptions implements ActionInterface
 
     private bool $inTransaction = false;
 
+    private ?bool $transactionSupported = null;
+
     /**
      * 列出已有备份文件
      *
@@ -604,6 +606,7 @@ class Backup extends BaseOptions implements ActionInterface
         $this->lastIds = [];
         $this->cleared = [];
         $this->inTransaction = false;
+        $this->transactionSupported = null;
         $this->login = false;
         $this->pendingLoginUser = null;
         $this->repairResult = [
@@ -671,10 +674,51 @@ class Backup extends BaseOptions implements ActionInterface
 
     private function supportsTransaction(): bool
     {
+        if ($this->transactionSupported !== null) {
+            return $this->transactionSupported;
+        }
+
         $adapter = strtolower($this->db->getAdapterName());
-        return false !== strpos($adapter, 'mysql')
-            || false !== strpos($adapter, 'pgsql')
-            || false !== strpos($adapter, 'sqlite');
+        if (false !== strpos($adapter, 'pgsql') || false !== strpos($adapter, 'sqlite')) {
+            return $this->transactionSupported = true;
+        }
+
+        if (false !== strpos($adapter, 'mysql')) {
+            return $this->transactionSupported = $this->supportsMysqlTransaction();
+        }
+
+        return $this->transactionSupported = false;
+    }
+
+    private function supportsMysqlTransaction(): bool
+    {
+        $adapter = $this->db->getAdapter();
+
+        foreach (array_keys($this->types) as $table) {
+            $tableName = $this->db->getPrefix() . $table;
+
+            try {
+                $row = $this->db->fetchRow(
+                    $this->db->query('SHOW TABLE STATUS LIKE ' . $adapter->quoteValue($tableName))
+                );
+            } catch (Throwable $e) {
+                $this->runtimeWarnings[] = _t('无法确认表 %s 的事务能力，恢复将按非事务方式执行: %s', $table, $e->getMessage());
+                return false;
+            }
+
+            $engine = strtolower((string) ($row['Engine'] ?? ''));
+            if ($engine === '') {
+                $this->runtimeWarnings[] = _t('无法确认表 %s 的存储引擎，恢复将按非事务方式执行', $table);
+                return false;
+            }
+
+            if (!in_array($engine, ['innodb', 'xtradb'], true)) {
+                $this->runtimeWarnings[] = _t('表 %s 当前使用 %s 引擎，恢复将按非事务方式执行', $table, strtoupper($engine));
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private function importPayload(array $payload, bool $strictPlugins = true): void

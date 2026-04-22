@@ -653,13 +653,14 @@ class Options extends Base
 
     protected function ___software(): string
     {
-        [$software] = explode(' ', $this->generator);
-        return $software;
+        $parts = preg_split('/\s+/', trim((string) $this->generator), 2) ?: [];
+        return (string) ($parts[0] ?? '');
     }
 
     protected function ___version(): string
     {
-        [, $version] = explode(' ', $this->generator);
+        $parts = preg_split('/\s+/', trim((string) $this->generator), 2) ?: [];
+        $version = (string) ($parts[1] ?? '');
         $pos = strpos($version, '/');
 
         if ($pos !== false) {

@@ -113,13 +113,27 @@ class Upload extends Contents implements ActionInterface
             );
 
             if (!$this->have()) {
-                $this->response->setStatus(404);
-                exit;
+                if ($this->request->isAjax()) {
+                    $this->response->setStatus(404)->throwJson([
+                        'success' => 0,
+                        'message' => _t('附件不存在')
+                    ]);
+                }
+
+                $this->response->setStatus(404)->throwCallback(static function () {
+                }, 'text/plain');
             }
 
             if (!$this->allow('edit')) {
-                $this->response->setStatus(403);
-                exit;
+                if ($this->request->isAjax()) {
+                    $this->response->setStatus(403)->throwJson([
+                        'success' => 0,
+                        'message' => _t('没有编辑该附件的权限')
+                    ]);
+                }
+
+                $this->response->setStatus(403)->throwCallback(static function () {
+                }, 'text/plain');
             }
 
             if ($this->request->isAjax()) {

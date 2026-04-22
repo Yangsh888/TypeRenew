@@ -17,16 +17,16 @@ class Message
     /**
      * @var string
      */
-    public string $messageType;  // methodCall / methodResponse / fault
+    public string $messageType = '';  // methodCall / methodResponse / fault
 
-    public int $faultCode;
+    public int $faultCode = 0;
 
-    public string $faultString;
+    public string $faultString = '';
 
     /**
      * @var string
      */
-    public string $methodName;
+    public string $methodName = '';
 
     /**
      * @var array
@@ -85,9 +85,19 @@ class Message
             return false;
         }
         xml_parser_free($parser);
-        if ($this->messageType == 'fault') {
-            $this->faultCode = intval($this->params[0]['faultCode']);
-            $this->faultString = $this->params[0]['faultString'];
+
+        if ($this->messageType === '') {
+            return false;
+        }
+
+        if ($this->messageType === 'fault') {
+            if (!isset($this->params[0]) || !is_array($this->params[0])) {
+                return false;
+            }
+
+            $fault = $this->params[0];
+            $this->faultCode = (int) ($fault['faultCode'] ?? 0);
+            $this->faultString = (string) ($fault['faultString'] ?? '');
         }
         return true;
     }

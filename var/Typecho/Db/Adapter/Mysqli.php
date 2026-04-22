@@ -108,7 +108,7 @@ class Mysqli implements Adapter
 
     public function fetch($resource): ?array
     {
-        return $resource->fetch_assoc();
+        return $resource->fetch_assoc() ?: null;
     }
 
     public function fetchAll($resource): array
@@ -118,7 +118,7 @@ class Mysqli implements Adapter
 
     public function fetchObject($resource): ?\stdClass
     {
-        return $resource->fetch_object();
+        return $resource->fetch_object() ?: null;
     }
 
     public function quoteValue($string): string

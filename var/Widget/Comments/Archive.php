@@ -157,14 +157,12 @@ class Archive extends Comments
     {
         $value = $this->filter($value);
 
-        /** 计算深度 */
         if (0 != $value['parent'] && isset($this->stack[$value['parent']]['levels'])) {
             $value['levels'] = $this->stack[$value['parent']]['levels'] + 1;
         } else {
             $value['levels'] = 0;
         }
 
-        /** 重载push函数,使用coid作为数组键值,便于索引 */
         $this->stack[$value['coid']] = $value;
         $this->length ++;
 

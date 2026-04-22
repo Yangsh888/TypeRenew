@@ -64,14 +64,16 @@ class Mail extends BaseOptions implements ActionInterface
         $ok = Queue::unsub($email, $scope, Db::get());
         $message = $ok ? _t('退订成功') : _t('退订失败');
         $mask = preg_replace('/(^.).*(@.*$)/u', '$1***$2', $email) ?: $email;
-        $this->response->setContentType('text/html');
-        echo '<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>'
+        $html = '<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>'
             . htmlspecialchars($message, ENT_QUOTES, 'UTF-8') . '</title></head><body style="margin:0;padding:40px 16px;background:#f6f6f3;color:#222;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,PingFang SC,Microsoft YaHei,sans-serif;">'
             . '<div style="max-width:640px;margin:0 auto;background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:12px;padding:18px 20px;">'
             . '<div style="font-size:18px;font-weight:600;">' . htmlspecialchars($message, ENT_QUOTES, 'UTF-8') . '</div>'
             . '<div style="margin-top:10px;font-size:14px;color:#666;">' . htmlspecialchars($mask, ENT_QUOTES, 'UTF-8') . '</div>'
             . '</div></body></html>';
-        exit;
+
+        $this->response->throwCallback(static function () use ($html) {
+            echo $html;
+        }, 'text/html');
     }
 
     public function action()

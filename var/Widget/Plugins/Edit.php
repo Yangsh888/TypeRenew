@@ -88,36 +88,54 @@ class Edit extends Options implements ActionInterface
                     $this->db->sql()->where('name = ?', 'plugins')
                 );
             } catch (\Throwable $e) {
-                try {
-                    $this->db->query($this->db->delete('table.options')->where('name = ?', 'plugin:' . $pluginName));
-                } catch (\Throwable) {
-                }
-
-                try {
-                    $this->db->query($this->db->delete('table.options')->where('name = ?', '_plugin:' . $pluginName));
-                } catch (\Throwable) {
-                }
+                $rollbackErrors = [];
+                $this->rollbackActivateStep(
+                    _t('删除全局配置'),
+                    function () use ($pluginName): void {
+                        $this->db->query($this->db->delete('table.options')->where('name = ?', 'plugin:' . $pluginName));
+                    },
+                    $rollbackErrors
+                );
+                $this->rollbackActivateStep(
+                    _t('删除个人配置'),
+                    function () use ($pluginName): void {
+                        $this->db->query($this->db->delete('table.options')->where('name = ?', '_plugin:' . $pluginName));
+                    },
+                    $rollbackErrors
+                );
 
                 if ($activated) {
-                    try {
-                        call_user_func([$className, 'deactivate']);
-                    } catch (\Throwable) {
-                    }
+                    $this->rollbackActivateStep(
+                        _t('执行插件停用回滚'),
+                        function () use ($className): void {
+                            call_user_func([$className, 'deactivate']);
+                        },
+                        $rollbackErrors
+                    );
                 }
 
                 if ($persisted) {
-                    try {
-                        Plugin::deactivate($pluginName);
-                        $this->update(
-                            ['value' => json_encode(Plugin::export())],
-                            $this->db->sql()->where('name = ?', 'plugins')
-                        );
-                    } catch (\Throwable) {
-                    }
+                    $this->rollbackActivateStep(
+                        _t('回滚插件激活状态'),
+                        function () use ($pluginName): void {
+                            Plugin::deactivate($pluginName);
+                            $this->update(
+                                ['value' => json_encode(Plugin::export())],
+                                $this->db->sql()->where('name = ?', 'plugins')
+                            );
+                        },
+                        $rollbackErrors
+                    );
                 }
 
-                Notice::alloc()->set($e->getMessage(), 'error');
+                $message = $e->getMessage();
+                if ($rollbackErrors !== []) {
+                    $message .= "\n" . _t('回滚阶段附加错误：%s', implode('；', $rollbackErrors));
+                }
+
+                Notice::alloc()->set($message, 'error');
                 $this->response->goBack();
+                return;
             }
         } else {
             $result = _t('<a href="%s">%s</a> 无法在此版本的typecho下正常工作', $info['homepage'], $info['title']);
@@ -231,6 +249,16 @@ class Edit extends Options implements ActionInterface
             || str_contains($message, '1062')
             || str_contains($message, '23000')
             || str_contains($message, '23505');
+    }
+
+    private function rollbackActivateStep(string $label, callable $callback, array &$errors): void
+    {
+        try {
+            $callback();
+        } catch (\Throwable $e) {
+            $errors[] = _t('%s失败: %s', $label, $e->getMessage());
+            error_log('Widget.Plugins.Edit.activateRollback ' . $label . ': ' . $e->getMessage());
+        }
     }
 
     /**

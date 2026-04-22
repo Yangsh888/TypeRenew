@@ -1614,11 +1614,9 @@ class XmlRpc extends Contents implements ActionInterface, Hook
             throw new Exception(_t('Pingback 接口已关闭'), 49);
         }
 
-        /** 检查目标地址是否正确*/
         $pathInfo = Common::url(substr($target, strlen((string) $this->options->index)), '/');
         $post = Router::match($pathInfo);
 
-        /** 检查源地址是否合法 */
         $params = Common::parseUrl($source);
         if (!isset($params['host']) || !isset($params['scheme']) || !in_array($params['scheme'], ['http', 'https'])) {
             throw new Exception(_t('源地址服务器错误'), 16);
@@ -1633,58 +1631,46 @@ class XmlRpc extends Contents implements ActionInterface, Hook
             throw new Exception(_t('这个目标地址不存在'), 33);
         }
 
-        if ($post) {
-            /** 检查是否可以ping*/
-            if ($post->allowPing) {
+        if (!$post->allowPing) {
+            throw new Exception(_t('目标地址禁止Ping'), 49);
+        }
 
-                /** 现在可以ping了，但是还得检查下这个pingback是否已经存在了*/
-                $pingNum = $this->db->fetchObject($this->db->select(['COUNT(coid)' => 'num'])
-                    ->from('table.comments')
-                    ->where(
-                        'table.comments.cid = ? AND table.comments.url = ? AND table.comments.type <> ?',
-                        $post->cid,
-                        $source,
-                        'comment'
-                    ))->num;
+        $pingNum = $this->db->fetchObject($this->db->select(['COUNT(coid)' => 'num'])
+            ->from('table.comments')
+            ->where(
+                'table.comments.cid = ? AND table.comments.url = ? AND table.comments.type <> ?',
+                $post->cid,
+                $source,
+                'comment'
+            ))->num;
 
-                if ($pingNum <= 0) {
-                    try {
-                        $pingbackRequest = new Pingback($source, $target);
+        if ($pingNum > 0) {
+            throw new Exception(_t('PingBack已经存在'), 48);
+        }
 
-                        $pingback = [
-                            'cid'     => $post->cid,
-                            'created' => $this->options->time,
-                            'agent'   => $this->request->getAgent(),
-                            'ip'      => $this->request->getIp(),
-                            'author'  => $pingbackRequest->getTitle(),
-                            'url'     => Common::safeUrl($source),
-                            'text'    => $pingbackRequest->getContent(),
-                            'ownerId' => $post->author->uid,
-                            'type'    => 'pingback',
-                            'status'  => $this->options->commentsRequireModeration ? 'waiting' : 'approved'
-                        ];
+        try {
+            $pingbackRequest = new Pingback($source, $target);
 
-                        /** 加入plugin */
-                        $pingback = self::pluginHandle()->filter('pingback', $pingback, $post);
+            $pingback = [
+                'cid'     => $post->cid,
+                'created' => $this->options->time,
+                'agent'   => $this->request->getAgent(),
+                'ip'      => $this->request->getIp(),
+                'author'  => $pingbackRequest->getTitle(),
+                'url'     => Common::safeUrl($source),
+                'text'    => $pingbackRequest->getContent(),
+                'ownerId' => $post->author->uid,
+                'type'    => 'pingback',
+                'status'  => $this->options->commentsRequireModeration ? 'waiting' : 'approved'
+            ];
 
-                        /** 执行插入*/
-                        $insertId = Comments::alloc()->insert($pingback);
+            $pingback = self::pluginHandle()->filter('pingback', $pingback, $post);
+            $insertId = Comments::alloc()->insert($pingback);
+            self::pluginHandle()->call('finishPingback', $this);
 
-                        /** 评论完成接口 */
-                        self::pluginHandle()->call('finishPingback', $this);
-
-                        return $insertId;
-                    } catch (WidgetException $e) {
-                        throw new Exception(_t('源地址服务器错误'), 16);
-                    }
-                } else {
-                    throw new Exception(_t('PingBack已经存在'), 48);
-                }
-            } else {
-                throw new Exception(_t('目标地址禁止Ping'), 49);
-            }
-        } else {
-            throw new Exception(_t('这个目标地址不存在'), 33);
+            return $insertId;
+        } catch (WidgetException $e) {
+            throw new Exception(_t('源地址服务器错误'), 16);
         }
     }
 
@@ -1758,7 +1744,7 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         }
 
         if (isset($this->request->rsd)) {
-            echo
+            $xml =
             <<<EOF
 <?xml version="1.0" encoding="{$this->options->charset}"?>
 <rsd version="1.0" xmlns="http://archipelago.phrasewise.com/rsd">
@@ -1775,8 +1761,11 @@ class XmlRpc extends Contents implements ActionInterface, Hook
     </service>
 </rsd>
 EOF;
+            $this->response->throwCallback(static function () use ($xml) {
+                echo $xml;
+            }, 'text/xml');
         } elseif (isset($this->request->wlw)) {
-            echo
+            $xml =
             <<<EOF
 <?xml version="1.0" encoding="{$this->options->charset}"?>
 <manifest xmlns="http://schemas.microsoft.com/wlw/manifest/weblog">
@@ -1812,6 +1801,9 @@ EOF;
     </options>
 </manifest>
 EOF;
+            $this->response->throwCallback(static function () use ($xml) {
+                echo $xml;
+            }, 'text/xml');
         } else {
             $api = [
                 /** WordPress API */

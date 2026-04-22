@@ -289,7 +289,15 @@ class Menu extends Base
      */
     public function getCurrentMenu(): ?array
     {
-        return $this->currentParent > 0 ? $this->menu[$this->currentParent][3][$this->currentChild] : null;
+        if (
+            $this->currentParent <= 0
+            || !isset($this->menu[$this->currentParent][3])
+            || !isset($this->menu[$this->currentParent][3][$this->currentChild])
+        ) {
+            return null;
+        }
+
+        return $this->menu[$this->currentParent][3][$this->currentChild];
     }
 
     /**

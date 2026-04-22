@@ -66,8 +66,4 @@ class Mysql extends Pdo
         return $pdo;
     }
 
-    public function quoteValue($string): string
-    {
-        return parent::quoteValue($string);
-    }
 }

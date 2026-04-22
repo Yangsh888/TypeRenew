@@ -135,9 +135,9 @@ class Mail extends Options implements ActionInterface
         $vars = $this->mockTemplateVars($tpl);
         $html = Template::render($tpl, $vars, $this->options);
 
-        $this->response->setContentType('text/html');
-        echo $html;
-        exit;
+        $this->response->throwCallback(static function () use ($html) {
+            echo $html;
+        }, 'text/html');
     }
 
     public function cleanupQueue()

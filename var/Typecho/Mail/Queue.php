@@ -724,6 +724,7 @@ class Queue
                 self::clearRuntimeError();
             }
         } catch (\Throwable $e) {
+            self::logRuntimeOptionFailure('clearRulesRuntimeError', $e);
         }
     }
 
@@ -742,6 +743,12 @@ class Queue
                 ]));
             }
         } catch (\Throwable $e) {
+            self::logRuntimeOptionFailure('setRuntimeOption:' . $name, $e);
         }
+    }
+
+    private static function logRuntimeOptionFailure(string $scope, \Throwable $e): void
+    {
+        error_log('TypeRenew.MailQueue.' . $scope . ': ' . $e->getMessage());
     }
 }

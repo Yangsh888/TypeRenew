@@ -142,7 +142,7 @@ class Client
     public function getResponse()
     {
         // methodResponses can only have one param - return that
-        return $this->message->params[0];
+        return $this->message->params[0] ?? null;
     }
 
     /**

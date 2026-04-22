@@ -54,17 +54,11 @@ class Action extends Widget
      */
     public function execute()
     {
-        /** 验证路由地址 **/
         $action = $this->request->get('action');
-
-        /** 判断是否为plugin */
         $actionTable = array_merge($this->map, Options::alloc()->actionTable);
+        $widgetName = $actionTable[$action] ?? null;
 
-        if (isset($actionTable[$action])) {
-            $widgetName = $actionTable[$action];
-        }
-
-        if (isset($widgetName) && class_exists($widgetName)) {
+        if (is_string($widgetName) && class_exists($widgetName)) {
             $widget = self::widget($widgetName);
 
             if ($widget instanceof ActionInterface) {

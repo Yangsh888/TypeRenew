@@ -71,18 +71,11 @@ class Feedback extends Comments implements ActionInterface
                     $refererPart = Common::parseUrl($referer);
                     $currentPart = Common::parseUrl((string) $this->content->permalink);
 
-                    if (
-                        ($refererPart['host'] ?? null) != ($currentPart['host'] ?? null) ||
-                        strncmp((string) ($refererPart['path'] ?? ''), (string) ($currentPart['path'] ?? ''), strlen((string) ($currentPart['path'] ?? ''))) !== 0
-                    ) {
-                        //自定义首页支持
+                    if (!$this->sameRefererTarget($refererPart, $currentPart)) {
                         if ('page:' . $this->content->cid == $this->options->frontPage) {
                             $currentPart = Common::parseUrl(rtrim($this->options->siteUrl, '/') . '/');
 
-                            if (
-                                ($refererPart['host'] ?? null) != ($currentPart['host'] ?? null) ||
-                                strncmp((string) ($refererPart['path'] ?? ''), (string) ($currentPart['path'] ?? ''), strlen((string) ($currentPart['path'] ?? ''))) !== 0
-                            ) {
+                            if (!$this->sameRefererTarget($refererPart, $currentPart)) {
                                 throw new Exception(_t('评论来源页错误.'), 403);
                             }
                         } else {
@@ -313,6 +306,34 @@ class Feedback extends Comments implements ActionInterface
         self::pluginHandle()->call('finishTrackback', $this);
 
         $this->response->throwXml(['success' => 0, 'message' => 'Trackback has registered.']);
+    }
+
+    private function sameRefererTarget(array $refererPart, array $currentPart): bool
+    {
+        $refererHost = strtolower((string) ($refererPart['host'] ?? ''));
+        $currentHost = strtolower((string) ($currentPart['host'] ?? ''));
+        if ($refererHost === '' || $currentHost === '' || $refererHost !== $currentHost) {
+            return false;
+        }
+
+        $refererPort = (int) ($refererPart['port'] ?? 0);
+        $currentPort = (int) ($currentPart['port'] ?? 0);
+        if (($refererPort !== 0 || $currentPort !== 0) && $refererPort !== $currentPort) {
+            return false;
+        }
+
+        return $this->normalizeRefererPath($refererPart) === $this->normalizeRefererPath($currentPart);
+    }
+
+    private function normalizeRefererPath(array $parts): string
+    {
+        $path = (string) ($parts['path'] ?? '/');
+        if ($path === '') {
+            return '/';
+        }
+
+        $path = '/' . ltrim($path, '/');
+        return $path === '/' ? '/' : rtrim($path, '/');
     }
 
     private function purgeCommentCache(): void

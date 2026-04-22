@@ -90,6 +90,7 @@ abstract class Pdo implements Adapter
 
     public function lastInsertId($resource, $handle): int
     {
-        return $handle->lastInsertId();
+        $lastInsertId = $handle->lastInsertId();
+        return $lastInsertId === false ? 0 : (int) $lastInsertId;
     }
 }

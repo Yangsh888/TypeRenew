@@ -31,6 +31,8 @@ class Request
      */
     private ?string $urlPrefix = null;
 
+    private ?string $host = null;
+
     public static function getInstance(): Request
     {
         if (!isset(self::$instance)) {
@@ -432,6 +434,93 @@ class Request
         return ((ord($ipBin[$bytes]) & $maskByte) === (ord($subnetBin[$bytes]) & $maskByte));
     }
 
+    private function getTrustedHost(): string
+    {
+        if ($this->host !== null) {
+            return $this->host;
+        }
+
+        $remote = $this->filterIp($this->getServer('REMOTE_ADDR', ''));
+        $trusted = $remote !== '' && $this->isTrustedProxy($remote);
+        $candidates = [];
+
+        if ($trusted) {
+            $forwardedHost = (string) $this->getHeader('X-Forwarded-Host', '');
+            if ($forwardedHost !== '') {
+                [$forwardedHost] = array_map('trim', explode(',', $forwardedHost));
+                $candidates[] = $forwardedHost;
+            }
+
+            $forwarded = (string) $this->getHeader('Forwarded', '');
+            if ($forwarded !== '' && preg_match('/(?:^|[,;])\s*host=(?:"?)(\[[^\]]+\]|[^";,\s]+)(?:"?)/i', $forwarded, $matches)) {
+                $candidates[] = $matches[1];
+            }
+        }
+
+        $candidates[] = (string) $this->getServer('HTTP_HOST', '');
+        $candidates[] = (string) $this->getServer('SERVER_NAME', '');
+
+        foreach ($candidates as $candidate) {
+            $host = $this->sanitizeHost($candidate);
+            if ($host !== '') {
+                return $this->host = $host;
+            }
+        }
+
+        return $this->host = 'localhost';
+    }
+
+    private function sanitizeHost(?string $host): string
+    {
+        $value = trim((string) $host);
+        if ($value === '') {
+            return '';
+        }
+
+        if (str_contains($value, ',')) {
+            [$value] = array_map('trim', explode(',', $value, 2));
+        }
+
+        if (str_contains($value, '://')) {
+            $parsed = parse_url($value, PHP_URL_HOST);
+            $port = parse_url($value, PHP_URL_PORT);
+            $value = is_string($parsed) ? $parsed . ($port ? ':' . $port : '') : '';
+        }
+
+        if ($value === '' || preg_match('/[\/\\\\@\?#]/', $value)) {
+            return '';
+        }
+
+        if (preg_match('/^\[(?<ip>[0-9a-f:.]+)\](?::(?<port>\d{1,5}))?$/i', $value, $matches)) {
+            if (!filter_var($matches['ip'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
+                return '';
+            }
+
+            $port = isset($matches['port']) ? (int) $matches['port'] : 0;
+            if ($port < 0 || $port > 65535) {
+                return '';
+            }
+
+            return '[' . strtolower($matches['ip']) . ']' . ($port > 0 ? ':' . $port : '');
+        }
+
+        if (!preg_match('/^(?<name>[A-Za-z0-9.-]+)(?::(?<port>\d{1,5}))?$/', $value, $matches)) {
+            return '';
+        }
+
+        $name = strtolower($matches['name']);
+        if ($name !== 'localhost' && !filter_var($name, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME)) {
+            return '';
+        }
+
+        $port = isset($matches['port']) ? (int) $matches['port'] : 0;
+        if ($port < 0 || $port > 65535) {
+            return '';
+        }
+
+        return $name . ($port > 0 ? ':' . $port : '');
+    }
+
     /**
      * get header value
      *
@@ -582,8 +671,9 @@ class Request
         } elseif (isset($_SERVER['REQUEST_URI'])) {
             $requestUri = $_SERVER['REQUEST_URI'];
             $parts = parse_url($requestUri);
+            $host = $this->getTrustedHost();
 
-            if (isset($_SERVER['HTTP_HOST']) && strstr($requestUri, $_SERVER['HTTP_HOST'])) {
+            if ($host !== '' && str_contains($requestUri, $host)) {
                 if (false !== $parts) {
                     $requestUri = (empty($parts['path']) ? '' : $parts['path'])
                         . ((empty($parts['query'])) ? '' : '?' . $parts['query']);
@@ -612,8 +702,7 @@ class Request
             if (defined('__TYPECHO_URL_PREFIX__')) {
                 $this->urlPrefix = __TYPECHO_URL_PREFIX__;
             } elseif (php_sapi_name() != 'cli') {
-                $this->urlPrefix = ($this->isSecure() ? 'https' : 'http') . '://'
-                    . ($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME']);
+                $this->urlPrefix = ($this->isSecure() ? 'https' : 'http') . '://' . $this->getTrustedHost();
             }
         }
 

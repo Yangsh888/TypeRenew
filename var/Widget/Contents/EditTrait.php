@@ -248,7 +248,10 @@ trait EditTrait
                     continue;
                 }
 
-                $fields[$val] = [$data['fieldTypes'][$key], $data['fieldValues'][$key]];
+                $fields[$val] = [
+                    $data['fieldTypes'][$key] ?? 'str',
+                    $data['fieldValues'][$key] ?? ''
+                ];
             }
         }
 

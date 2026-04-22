@@ -163,7 +163,6 @@ class Edit extends Options implements ActionInterface
      */
     public function config(string $theme)
     {
-        // 已经载入了外观函数
         $form = Config::alloc()->config();
 
         if (!Config::isExists($theme) || $form->validate()) {

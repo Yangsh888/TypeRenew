@@ -110,7 +110,7 @@ namespace Typecho {
     class Common
     {
         public const SOFTWARE = 'TypeRenew';
-        public const VERSION = '1.4.1';
+        public const VERSION = '1.4.2';
 
         public static function generator(?string $version = null): string
         {
@@ -343,9 +343,10 @@ EOF;
                     $attrs = self::parseAttrs($str);
                     $parsedAttrs = [];
                     $tag = strtolower($matches[1]);
+                    $allowed = $allowableAttributes[$tag] ?? [];
 
                     foreach ($attrs as $key => $val) {
-                        if (in_array($key, $allowableAttributes[$tag])) {
+                        if (in_array($key, $allowed, true)) {
                             $parsedAttrs[] = " {$key}" . (empty($val) ? '' : "={$val}");
                         }
                     }
@@ -776,13 +777,29 @@ EOF;
             $inet = inet_pton($address);
 
             if (false === $inet) {
+                if (!function_exists('dns_get_record')) {
+                    return false;
+                }
+
                 $records = dns_get_record($host, DNS_AAAA);
 
                 if (empty($records)) {
                     return false;
                 }
 
-                $address = $records[0]['ipv6'];
+                $address = '';
+                foreach ($records as $record) {
+                    $ipv6 = (string) ($record['ipv6'] ?? '');
+                    if ($ipv6 !== '') {
+                        $address = $ipv6;
+                        break;
+                    }
+                }
+
+                if ($address === '') {
+                    return false;
+                }
+
                 $inet = inet_pton($address);
             }
 

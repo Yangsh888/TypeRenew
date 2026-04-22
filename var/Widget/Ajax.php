@@ -460,8 +460,13 @@ class Ajax extends BaseOptions implements ActionInterface
     public function remoteCallback()
     {
         if ($this->options->generator == $this->request->getAgent()) {
-            echo 'OK';
+            $this->response->throwCallback(static function () {
+                echo 'OK';
+            }, 'text/plain');
         }
+
+        $this->response->setStatus(403)->throwCallback(static function () {
+        }, 'text/plain');
     }
 
     public function checkVersion()
