@@ -80,7 +80,7 @@ class Edit extends Users implements ActionInterface
         }
 
         $user = $this->request->from('name', 'mail', 'screenName', 'password', 'url', 'group');
-        $user['screenName'] = empty($user['screenName']) ? $user['name'] : $user['screenName'];
+        $user['screenName'] = Common::strBy($user['screenName'] ?? null, $user['name']);
         $user['password'] = Password::hash($user['password']);
         $user['created'] = $this->options->time;
 
@@ -212,7 +212,7 @@ class Edit extends Users implements ActionInterface
         }
 
         $user = $this->request->from('mail', 'screenName', 'password', 'url', 'group');
-        $user['screenName'] = empty($user['screenName']) ? $user['name'] : $user['screenName'];
+        $user['screenName'] = Common::strBy($user['screenName'] ?? null, $this->name);
         if (empty($user['password'])) {
             unset($user['password']);
         } else {

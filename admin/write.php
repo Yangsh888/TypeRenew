@@ -6,6 +6,15 @@ if (!defined('__TYPECHO_ADMIN__')) {
 $content = $write['content'];
 $draftAction = $options->index . '/action/' . $write['draftAction'];
 $draftToken = $security->getToken($draftAction);
+$vditorForceMarkdown = false;
+if (class_exists('VditorRenew_Plugin')) {
+    $vditorSettings = \VditorRenew_Plugin::getSettings();
+    $vditorEnabled = !empty($vditorSettings['enabled']);
+    $vditorLegacy = ($content->have() && !$content->isMarkdown)
+        ? (string) ($vditorSettings['legacy'] ?? 'convert')
+        : 'raw';
+    $vditorForceMarkdown = $vditorEnabled && (!$content->have() || $content->isMarkdown || $vditorLegacy === 'convert');
+}
 ?>
 <div class="col-mb-12 col-tb-9" role="main">
     <?php if ($content->draft): ?>
@@ -72,7 +81,7 @@ $draftToken = $security->getToken($draftAction);
             <?php if (
                 $content->isMarkdown
                 || ($options->markdown && !$content->have())
-                || (class_exists('VditorRenew_Plugin') && !empty(\VditorRenew_Plugin::getSettings()['enabled']))
+                || $vditorForceMarkdown
             ): ?>
                 <input type="hidden" name="markdown" value="1"/>
             <?php endif; ?>

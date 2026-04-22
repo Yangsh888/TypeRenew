@@ -10,6 +10,7 @@ use Typecho\Http\Client as HttpClient;
  *
  * @package IXR
  */
+#[\AllowDynamicProperties]
 class Client
 {
     /** 默认客户端 */

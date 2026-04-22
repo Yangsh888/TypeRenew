@@ -92,6 +92,23 @@ class Upgrade extends BaseOptions implements ActionInterface
                     return $label . '（缺表）';
                 }
 
+                if (($item['status'] ?? '') === 'schema_mismatch') {
+                    $parts = [];
+                    if (!empty($item['missingIndexes'])) {
+                        $parts[] = '缺索引：' . implode(', ', (array) $item['missingIndexes']);
+                    }
+                    if (!empty($item['typeMismatches'])) {
+                        $parts[] = '类型不符：' . implode(', ', (array) $item['typeMismatches']);
+                    }
+                    if (isset($item['collationOk']) && !$item['collationOk']) {
+                        $parts[] = '排序规则：' . (string) ($item['tableCollation'] ?? '');
+                    }
+
+                    if (!empty($parts)) {
+                        return $label . '（' . implode('；', $parts) . '）';
+                    }
+                }
+
                 return $label;
             }, $result['after']['missing']);
             Notice::alloc()->set(

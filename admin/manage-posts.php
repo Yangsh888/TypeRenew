@@ -8,6 +8,16 @@ $posts = \Widget\Contents\Post\Admin::alloc();
 $isAllPosts = ('on' == $request->get('__typecho_all_posts') || 'on' == \Typecho\Cookie::get('__typecho_all_posts'));
 $postAction = htmlspecialchars($options->index . '/action/contents-post-edit', ENT_QUOTES, 'UTF-8');
 $postToken = htmlspecialchars($security->getToken($options->index . '/action/contents-post-edit'), ENT_QUOTES, 'UTF-8');
+$uidQuery = isset($request->uid) ? '?uid=' . $request->filter('encode')->uid : '';
+$uidTail = isset($request->uid) ? '&uid=' . $request->filter('encode')->uid : '';
+$filterBase = [];
+if (isset($request->status)) {
+    $filterBase[] = 'status=' . $request->filter('encode')->status;
+}
+if (isset($request->uid)) {
+    $filterBase[] = 'uid=' . $request->filter('encode')->uid;
+}
+$cancelFilterUrl = 'manage-posts.php' . ($filterBase ? '?' . implode('&', $filterBase) : '');
 ?>
 <main class="main">
     <div class="body container">
@@ -16,12 +26,10 @@ $postToken = htmlspecialchars($security->getToken($options->index . '/action/con
                 <div class="typecho-list-operate">
                     <ul class="typecho-option-tabs">
                         <li<?php if (!isset($request->status) || 'all' == $request->get('status')): ?> class="current"<?php endif; ?>>
-                            <a href="<?php $options->adminUrl('manage-posts.php'
-                                . (isset($request->uid) ? '?uid=' . $request->filter('encode')->uid : '')); ?>"><?php _e('可用'); ?></a>
+                            <a href="<?php $options->adminUrl('manage-posts.php' . $uidQuery); ?>"><?php _e('可用'); ?></a>
                         </li>
                         <li<?php if ('waiting' == $request->get('status')): ?> class="current"<?php endif; ?>><a
-                                href="<?php $options->adminUrl('manage-posts.php?status=waiting'
-                                    . (isset($request->uid) ? '&uid=' . $request->filter('encode')->uid : '')); ?>"><?php _e('待审核'); ?>
+                                href="<?php $options->adminUrl('manage-posts.php?status=waiting' . $uidTail); ?>"><?php _e('待审核'); ?>
                                 <?php if (!$isAllPosts && $stat->myWaitingPostsNum > 0 && !isset($request->uid)): ?>
                                     <span class="balloon"><?php $stat->myWaitingPostsNum(); ?></span>
                                 <?php elseif ($isAllPosts && $stat->waitingPostsNum > 0 && !isset($request->uid)): ?>
@@ -31,8 +39,7 @@ $postToken = htmlspecialchars($security->getToken($options->index . '/action/con
                                 <?php endif; ?>
                             </a></li>
                         <li<?php if ('draft' == $request->get('status')): ?> class="current"<?php endif; ?>><a
-                                href="<?php $options->adminUrl('manage-posts.php?status=draft'
-                                    . (isset($request->uid) ? '&uid=' . $request->filter('encode')->uid : '')); ?>"><?php _e('草稿'); ?>
+                                href="<?php $options->adminUrl('manage-posts.php?status=draft' . $uidTail); ?>"><?php _e('草稿'); ?>
                                 <?php if (!$isAllPosts && $stat->myDraftPostsNum > 0 && !isset($request->uid)): ?>
                                     <span class="balloon"><?php $stat->myDraftPostsNum(); ?></span>
                                 <?php elseif ($isAllPosts && $stat->draftPostsNum > 0 && !isset($request->uid)): ?>
@@ -86,10 +93,7 @@ $postToken = htmlspecialchars($security->getToken($options->index . '/action/con
                     </div>
                     <div class="search" role="search">
                         <?php if ('' != $request->keywords || '' != $request->category): ?>
-                            <a href="<?php $options->adminUrl('manage-posts.php'
-                                . (isset($request->status) || isset($request->uid) ? '?' .
-                                    (isset($request->status) ? 'status=' . $request->filter('encode')->status : '') .
-                                    (isset($request->uid) ? (isset($request->status) ? '&' : '') . 'uid=' . $request->filter('encode')->uid : '') : '')); ?>"><?php _e('&laquo; 取消筛选'); ?></a>
+                            <a href="<?php $options->adminUrl($cancelFilterUrl); ?>"><?php _e('&laquo; 取消筛选'); ?></a>
                         <?php endif; ?>
                         <input type="text" class="text-s" placeholder="<?php _e('请输入关键字'); ?>"
                                value="<?php echo $request->filter('html')->keywords; ?>" name="keywords"/>

@@ -8,6 +8,16 @@ $comments = \Widget\Comments\Admin::alloc();
 $isAllComments = ('on' == $request->get('__typecho_all_comments') || 'on' == \Typecho\Cookie::get('__typecho_all_comments'));
 $commentAction = htmlspecialchars($options->index . '/action/comments-edit', ENT_QUOTES, 'UTF-8');
 $commentToken = htmlspecialchars($security->getToken($options->index . '/action/comments-edit'), ENT_QUOTES, 'UTF-8');
+$cidQuery = isset($request->cid) ? '?cid=' . $request->filter('encode')->cid : '';
+$cidTail = isset($request->cid) ? '&cid=' . $request->filter('encode')->cid : '';
+$filterBase = [];
+if (isset($request->status)) {
+    $filterBase[] = 'status=' . $request->filter('encode')->status;
+}
+if (isset($request->cid)) {
+    $filterBase[] = 'cid=' . $request->filter('encode')->cid;
+}
+$cancelFilterUrl = 'manage-comments.php' . ($filterBase ? '?' . implode('&', $filterBase) : '');
 ?>
 <main class="main">
     <div class="body container">
@@ -15,10 +25,8 @@ $commentToken = htmlspecialchars($security->getToken($options->index . '/action/
             <div class="col-mb-12 typecho-list">
                 <div class="typecho-list-operate">
                     <ul class="typecho-option-tabs">
-                        <li<?php if(!isset($request->status) || 'approved' == $request->get('status')): ?> class="current"<?php endif; ?>><a href="<?php $options->adminUrl('manage-comments.php'
-                        . (isset($request->cid) ? '?cid=' . $request->filter('encode')->cid : '')); ?>"><?php _e('已通过'); ?></a></li>
-                        <li<?php if('waiting' == $request->get('status')): ?> class="current"<?php endif; ?>><a href="<?php $options->adminUrl('manage-comments.php?status=waiting'
-                        . (isset($request->cid) ? '&cid=' . $request->filter('encode')->cid : '')); ?>"><?php _e('待审核'); ?>
+                        <li<?php if(!isset($request->status) || 'approved' == $request->get('status')): ?> class="current"<?php endif; ?>><a href="<?php $options->adminUrl('manage-comments.php' . $cidQuery); ?>"><?php _e('已通过'); ?></a></li>
+                        <li<?php if('waiting' == $request->get('status')): ?> class="current"<?php endif; ?>><a href="<?php $options->adminUrl('manage-comments.php?status=waiting' . $cidTail); ?>"><?php _e('待审核'); ?>
                         <?php if(!$isAllComments && $stat->myWaitingCommentsNum > 0 && !isset($request->cid)): ?> 
                             <span class="balloon"><?php $stat->myWaitingCommentsNum(); ?></span>
                         <?php elseif($isAllComments && $stat->waitingCommentsNum > 0 && !isset($request->cid)): ?>
@@ -27,8 +35,7 @@ $commentToken = htmlspecialchars($security->getToken($options->index . '/action/
                             <span class="balloon"><?php $stat->currentWaitingCommentsNum(); ?></span>
                         <?php endif; ?>
                         </a></li>
-                        <li<?php if('spam' == $request->get('status')): ?> class="current"<?php endif; ?>><a href="<?php $options->adminUrl('manage-comments.php?status=spam'
-                        . (isset($request->cid) ? '&cid=' . $request->filter('encode')->cid : '')); ?>"><?php _e('垃圾'); ?>
+                        <li<?php if('spam' == $request->get('status')): ?> class="current"<?php endif; ?>><a href="<?php $options->adminUrl('manage-comments.php?status=spam' . $cidTail); ?>"><?php _e('垃圾'); ?>
                         <?php if(!$isAllComments && $stat->mySpamCommentsNum > 0 && !isset($request->cid)): ?> 
                             <span class="balloon"><?php $stat->mySpamCommentsNum(); ?></span>
                         <?php elseif($isAllComments && $stat->spamCommentsNum > 0 && !isset($request->cid)): ?>
@@ -65,10 +72,7 @@ $commentToken = htmlspecialchars($security->getToken($options->index . '/action/
                     </div>
                     <div class="search" role="search">
                         <?php if ('' != $request->keywords || '' != $request->category): ?>
-                        <a href="<?php $options->adminUrl('manage-comments.php'
-                        . (isset($request->status) || isset($request->cid) ? '?' .
-                        (isset($request->status) ? 'status=' . $request->filter('encode')->status : '') .
-                        (isset($request->cid) ? (isset($request->status) ? '&' : '') . 'cid=' . $request->filter('encode')->cid : '') : '')); ?>"><?php _e('&laquo; 取消筛选'); ?></a>
+                        <a href="<?php $options->adminUrl($cancelFilterUrl); ?>"><?php _e('&laquo; 取消筛选'); ?></a>
                         <?php endif; ?>
                         <input type="text" class="text-s" placeholder="<?php _e('请输入关键字'); ?>" value="<?php echo $request->filter('html')->keywords; ?>"<?php if ('' == $request->keywords): ?> onclick="value='';name='keywords';" <?php else: ?> name="keywords"<?php endif; ?>/>
                         <?php if(isset($request->status)): ?>

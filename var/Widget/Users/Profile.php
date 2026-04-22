@@ -174,7 +174,7 @@ class Profile extends Users implements ActionInterface
         }
 
         $user = $this->request->from('mail', 'screenName', 'url');
-        $user['screenName'] = empty($user['screenName']) ? $user['name'] : $user['screenName'];
+        $user['screenName'] = Common::strBy($user['screenName'] ?? null, $this->user->name);
 
         $this->update($user, $this->db->sql()->where('uid = ?', $this->user->uid));
 

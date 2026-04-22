@@ -64,6 +64,7 @@ abstract class Widget
         if ($sandbox || !isset(self::$widgetPool[$key])) {
             $requestObject = new WidgetRequest(Request::getInstance(), isset($request) ? new Config($request) : null);
             $responseObject = new WidgetResponse(Request::getInstance(), Response::getInstance());
+            $widget = null;
 
             try {
                 $widget = new $className($requestObject, $responseObject, $params);
@@ -73,7 +74,6 @@ abstract class Widget
                     call_user_func($disableSandboxOrCallback, $widget);
                 }
             } catch (Terminal $e) {
-                $widget = $widget ?? null;
             } finally {
                 if ($sandbox) {
                     Response::getInstance()->endSandbox();

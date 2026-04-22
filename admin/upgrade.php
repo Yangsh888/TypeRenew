@@ -215,8 +215,10 @@ $packageActionLocked = !$upgradeAvailable || $upgradeLockBusy;
                                                         ：<?php
                                                         if (!$item['exists']) {
                                                             echo _t('缺表');
-                                                        } elseif (!$item['columnsOk']) {
+                                                        } elseif (!empty($item['missingColumns'])) {
                                                             echo _t('缺字段');
+                                                        } elseif (($item['status'] ?? '') === 'schema_mismatch') {
+                                                            echo _t('结构不一致');
                                                         } else {
                                                             echo _t('正常');
                                                         }
@@ -224,6 +226,15 @@ $packageActionLocked = !$upgradeAvailable || $upgradeLockBusy;
                                                         <span class="tr-help">(<?php echo htmlspecialchars($item['table'], ENT_QUOTES, 'UTF-8'); ?>)</span>
                                                         <?php if (!empty($item['missingColumns'])): ?>
                                                             <span class="tr-help">[<?php echo htmlspecialchars(implode(', ', $item['missingColumns']), ENT_QUOTES, 'UTF-8'); ?>]</span>
+                                                        <?php endif; ?>
+                                                        <?php if (!empty($item['missingIndexes'])): ?>
+                                                            <span class="tr-help">[<?php _e('索引'); ?>: <?php echo htmlspecialchars(implode(', ', $item['missingIndexes']), ENT_QUOTES, 'UTF-8'); ?>]</span>
+                                                        <?php endif; ?>
+                                                        <?php if (!empty($item['typeMismatches'])): ?>
+                                                            <span class="tr-help">[<?php _e('类型'); ?>: <?php echo htmlspecialchars(implode(', ', $item['typeMismatches']), ENT_QUOTES, 'UTF-8'); ?>]</span>
+                                                        <?php endif; ?>
+                                                        <?php if (isset($item['collationOk']) && !$item['collationOk']): ?>
+                                                            <span class="tr-help">[<?php _e('排序规则'); ?>: <?php echo htmlspecialchars((string) ($item['tableCollation'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>]</span>
                                                         <?php endif; ?>
                                                     </li>
                                                 <?php endforeach; ?>

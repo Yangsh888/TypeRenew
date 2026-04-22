@@ -9,6 +9,7 @@ use Typecho\Widget\Exception as WidgetException;
  *
  * @package IXR
  */
+#[\AllowDynamicProperties]
 class Server
 {
     /**

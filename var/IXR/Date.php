@@ -7,6 +7,7 @@ namespace IXR;
  *
  * @package IXR
  */
+#[\AllowDynamicProperties]
 class Date
 {
     private string $year;

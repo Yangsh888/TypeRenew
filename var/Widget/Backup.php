@@ -3,7 +3,6 @@
 namespace Widget;
 
 use Typecho\Common;
-use Typecho\Cookie;
 use Typecho\Db;
 use Typecho\Exception;
 use Throwable;
@@ -58,9 +57,9 @@ class Backup extends BaseOptions implements ActionInterface
 
     private array $cleared = [];
 
-    private bool $login = false;
-
     private ?array $pendingLoginUser = null;
+
+    private ?array $currentOperator = null;
 
     private array $statusWhitelist = ['approved', 'waiting', 'spam'];
 
@@ -253,6 +252,7 @@ class Backup extends BaseOptions implements ActionInterface
             }
 
             $this->resetImportState();
+            $this->captureCurrentOperator();
 
             $snapshotName = null;
             if ($doSnapshot) {
@@ -270,10 +270,13 @@ class Backup extends BaseOptions implements ActionInterface
                 $this->repairResult = $this->repairData();
             }
 
+            $this->pendingLoginUser = $this->resolveLoginUser();
             $this->commitImportTransaction();
 
             if ($this->pendingLoginUser !== null) {
                 $this->reLogin($this->pendingLoginUser);
+            } else {
+                $this->runtimeWarnings[] = _t('恢复完成，但未能自动恢复当前登录态，请使用恢复后的账号重新登录');
             }
 
             $messages = $this->buildReportMessages($payload, $preflight, false, false, $snapshotName, $doRepair, $doSnapshot);
@@ -607,8 +610,8 @@ class Backup extends BaseOptions implements ActionInterface
         $this->cleared = [];
         $this->inTransaction = false;
         $this->transactionSupported = null;
-        $this->login = false;
         $this->pendingLoginUser = null;
+        $this->currentOperator = null;
         $this->repairResult = [
             'ownerFixed' => 0,
             'statusFixed' => 0,
@@ -756,10 +759,6 @@ class Backup extends BaseOptions implements ActionInterface
 
     private function insertData(string $table, array $data): void
     {
-        if (!$this->login && 'users' === $table && (($data['group'] ?? '') === 'administrator')) {
-            $data = $this->prepareLoginUser($data);
-        }
-
         $this->db->query($this->db->insert('table.' . $table)->rows($this->applyFields($table, $data, true)));
     }
 
@@ -795,7 +794,7 @@ class Backup extends BaseOptions implements ActionInterface
         $orphanMoved = 0;
         $holderCid = 0;
         if (!empty($orphanRows)) {
-            $holderCid = $this->ensureHolderContent();
+            $holderCid = $this->ensureHolderContent($this->resolveHolderAuthorId());
             $coids = array_map(static fn($row) => (int) ($row['coid'] ?? 0), $orphanRows);
             $coids = array_values(array_filter($coids, static fn($coid) => $coid > 0));
 
@@ -830,7 +829,7 @@ class Backup extends BaseOptions implements ActionInterface
         ];
     }
 
-    private function ensureHolderContent(): int
+    private function ensureHolderContent(int $authorId): int
     {
         $existing = $this->db->fetchRow(
             $this->db->select('cid')
@@ -853,7 +852,7 @@ class Backup extends BaseOptions implements ActionInterface
                 'modified' => $now,
                 'text' => _t('该内容由迁移修复任务自动创建，用于承接原站点中未能匹配到文章的评论数据。'),
                 'order' => 0,
-                'authorId' => (int) $this->user->uid,
+                'authorId' => $authorId,
                 'template' => null,
                 'type' => 'page',
                 'status' => 'hidden',
@@ -953,31 +952,94 @@ class Backup extends BaseOptions implements ActionInterface
         return null;
     }
 
-    /**
-     * 备份过程会重写用户数据
-     * 所以需要在事务提交后重新登录当前用户
-     *
-     */
-    private function prepareLoginUser(array $user): array
+    private function captureCurrentOperator(): void
     {
-        if (empty($user['authCode'])) {
-            $user['authCode'] = function_exists('openssl_random_pseudo_bytes') ?
-                bin2hex(openssl_random_pseudo_bytes(16)) : sha1(Common::randString(20));
+        $this->currentOperator = [
+            'uid' => (int) ($this->user->uid ?? 0),
+            'name' => (string) ($this->user->name ?? ''),
+            'mail' => (string) ($this->user->mail ?? ''),
+        ];
+    }
+
+    private function resolveLoginUser(): ?array
+    {
+        if (null === $this->currentOperator) {
+            return null;
         }
 
-        $user['activated'] = $this->options->time;
-        $user['logged'] = $user['activated'];
-        $this->pendingLoginUser = $user;
-        $this->login = true;
+        $uid = (int) ($this->currentOperator['uid'] ?? 0);
+        if ($uid > 0) {
+            $user = $this->findUserBy('uid', $uid);
+            if (null !== $user) {
+                return $user;
+            }
+        }
 
-        return $user;
+        $mail = trim((string) ($this->currentOperator['mail'] ?? ''));
+        if ($mail !== '') {
+            $user = $this->findUserBy('mail', $mail);
+            if (null !== $user) {
+                return $user;
+            }
+        }
+
+        $name = trim((string) ($this->currentOperator['name'] ?? ''));
+        if ($name !== '') {
+            $user = $this->findUserBy('name', $name);
+            if (null !== $user) {
+                return $user;
+            }
+        }
+
+        return null;
+    }
+
+    private function resolveHolderAuthorId(): int
+    {
+        $loginUser = $this->resolveLoginUser();
+        if (!empty($loginUser['uid'])) {
+            return (int) $loginUser['uid'];
+        }
+
+        $admin = $this->db->fetchRow(
+            $this->db->select('uid')
+                ->from('table.users')
+                ->where('group = ?', 'administrator')
+                ->order('uid', Db::SORT_ASC)
+                ->limit(1)
+        );
+        if (!empty($admin['uid'])) {
+            return (int) $admin['uid'];
+        }
+
+        $user = $this->db->fetchRow(
+            $this->db->select('uid')
+                ->from('table.users')
+                ->order('uid', Db::SORT_ASC)
+                ->limit(1)
+        );
+        if (!empty($user['uid'])) {
+            return (int) $user['uid'];
+        }
+
+        throw new Exception(_t('恢复后的用户数据无有效作者，无法创建迁移占位内容'));
+    }
+
+    private function findUserBy(string $field, int|string $value): ?array
+    {
+        $user = $this->db->fetchRow(
+            $this->db->select()
+                ->from('table.users')
+                ->where($field . ' = ?', $value)
+                ->limit(1)
+        );
+
+        return empty($user) ? null : $user;
     }
 
     private function reLogin(array $user): void
     {
-        Cookie::set('__typecho_uid', $user['uid']);
-        Cookie::set('__typecho_authCode', Common::hash($user['authCode']));
-        $this->login = true;
+        User::alloc()->commitLogin($user);
         $this->pendingLoginUser = null;
     }
 }

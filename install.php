@@ -1228,8 +1228,7 @@ function install_step_2_perform()
 
         if (isset($dbConfig['charset'])) {
             $scripts = str_replace('%charset%', $dbConfig['charset'], $scripts);
-            $collation = $dbConfig['charset'] === 'utf8mb4' ? 'utf8mb4_unicode_ci' : 'utf8_unicode_ci';
-            $scripts = str_replace('%collate%', $collation, $scripts);
+            $scripts = str_replace('%collate%', 'utf8mb4_unicode_ci', $scripts);
         }
 
         if (isset($dbConfig['engine'])) {
