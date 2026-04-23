@@ -18,17 +18,26 @@ class Native implements Transport
         $subject = Mime::encodeHeader($message->subject);
         $content = implode("\r\n", $body);
 
-        $ok = @mail($to, $subject, $content, implode("\r\n", $headers));
+        $errorMessage = null;
+        set_error_handler(static function (int $severity, string $message) use (&$errorMessage): bool {
+            $errorMessage = $message;
+            return true;
+        });
+
+        try {
+            $ok = mail($to, $subject, $content, implode("\r\n", $headers));
+        } finally {
+            restore_error_handler();
+        }
+
         if ($ok) {
             return true;
         }
 
-        $error = error_get_last();
         $msg = 'mail() failed';
-        if (is_array($error) && !empty($error['message'])) {
-            $msg .= ': ' . $error['message'];
+        if ($errorMessage !== null && $errorMessage !== '') {
+            $msg .= ': ' . $errorMessage;
         }
         return $msg;
     }
-
 }

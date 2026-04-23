@@ -76,6 +76,10 @@ class Message
             }
         }
 
+        if (!function_exists('xml_parser_create')) {
+            return false;
+        }
+
         $parser = xml_parser_create();
         xml_parser_set_option($parser, XML_OPTION_CASE_FOLDING, false);
         xml_set_object($parser, $this);

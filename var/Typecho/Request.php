@@ -292,7 +292,8 @@ class Request
         $requestUri = $this->getRequestUri();
         $finalBaseUrl = $this->getBaseUrl();
 
-        if ($pos = strpos($requestUri, '?')) {
+        $pos = strpos($requestUri, '?');
+        if ($pos !== false) {
             $requestUri = substr($requestUri, 0, $pos);
         }
 

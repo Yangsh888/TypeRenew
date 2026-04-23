@@ -370,18 +370,37 @@ EOF;
                 return $default;
             }
 
-            mb_regex_encoding('UTF-8');
-            mb_ereg_search_init($str, "[\w" . preg_quote('_-') . "]+");
-            $result = mb_ereg_search();
             $return = '';
 
-            if ($result) {
-                $regs = mb_ereg_search_getregs();
-                $pos = 0;
-                do {
-                    $return .= ($pos > 0 ? '-' : '') . $regs[0];
-                    $pos++;
-                } while ($regs = mb_ereg_search_regs());
+            if (
+                function_exists('mb_regex_encoding')
+                && function_exists('mb_ereg_search_init')
+                && function_exists('mb_ereg_search')
+                && function_exists('mb_ereg_search_getregs')
+                && function_exists('mb_ereg_search_regs')
+            ) {
+                mb_regex_encoding('UTF-8');
+                mb_ereg_search_init($str, "[\w" . preg_quote('_-') . "]+");
+                $result = mb_ereg_search();
+
+                if ($result) {
+                    $regs = mb_ereg_search_getregs();
+                    $pos = 0;
+                    do {
+                        $return .= ($pos > 0 ? '-' : '') . $regs[0];
+                        $pos++;
+                    } while ($regs = mb_ereg_search_regs());
+                }
+            } else {
+                $matches = [];
+                $matched = preg_match_all('/[\pL\pN_-]+/u', $str, $matches);
+                if ($matched === false) {
+                    $matched = preg_match_all('/[A-Za-z0-9_-]+/', $str, $matches);
+                }
+
+                if ($matched && !empty($matches[0])) {
+                    $return = implode('-', $matches[0]);
+                }
             }
 
             $str = trim($return, '-_');

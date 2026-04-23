@@ -14,8 +14,7 @@ class Package extends BaseOptions implements ActionInterface
     public function action()
     {
         if (!$this->user->pass('administrator', true) || !$this->request->isPost()) {
-            $this->response->setStatus(403);
-            return;
+            $this->response->setStatus(403)->throwContent('', 'text/plain');
         }
 
         $this->security->protect();

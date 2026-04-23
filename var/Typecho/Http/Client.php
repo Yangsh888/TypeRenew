@@ -106,6 +106,8 @@ class Client
      */
     private string $responseUrl = '';
 
+    private bool $useCurl = true;
+
     /**
      * 设置指定的COOKIE值
      *
@@ -286,6 +288,11 @@ class Client
         }
 
         $url = Common::buildUrl($params);
+        if (!$this->useCurl) {
+            $this->sendWithStreams($url);
+            return;
+        }
+
         $ch = curl_init();
 
         curl_setopt($ch, CURLOPT_URL, $url);
@@ -351,6 +358,77 @@ class Client
         unset($ch);
     }
 
+    private function sendWithStreams(string $url): void
+    {
+        $headers = [];
+
+        foreach ($this->headers as $key => $val) {
+            $headers[] = $key . ': ' . $val;
+        }
+
+        $content = null;
+        if (!empty($this->data)) {
+            $content = $this->data;
+            if (!$this->multipart) {
+                $content = is_array($content) ? http_build_query($content) : $content;
+            }
+        }
+
+        $context = stream_context_create([
+            'http' => [
+                'method' => $this->method,
+                'timeout' => $this->timeout,
+                'ignore_errors' => true,
+                'follow_location' => 0,
+                'protocol_version' => 1.1,
+                'header' => implode("\r\n", $headers),
+                'content' => $content,
+            ],
+        ]);
+
+        $response = @file_get_contents($url, false, $context);
+        if ($response === false) {
+            $error = error_get_last();
+            throw new Exception($error['message'] ?? 'Stream request failed', 500);
+        }
+
+        $this->responseHeader = [];
+        $this->responseStatus = 200;
+        $responseHeaders = is_array($http_response_header ?? null) ? $http_response_header : [];
+        foreach ($responseHeaders as $index => $header) {
+            if ($index === 0) {
+                if (preg_match('#\s(\d{3})(?:\s|$)#', $header, $matches)) {
+                    $this->responseStatus = (int) $matches[1];
+                }
+                continue;
+            }
+
+            $parts = explode(':', $header, 2);
+            if (count($parts) === 2) {
+                [$key, $value] = $parts;
+                $this->responseHeader[strtolower(trim($key))] = trim($value);
+            }
+        }
+
+        $this->responseUrl = $url;
+        $this->responseBody = $response;
+    }
+
+    private static function canUseStreams(): bool
+    {
+        if (!function_exists('file_get_contents')) {
+            return false;
+        }
+
+        $allowUrlFopen = strtolower((string) ini_get('allow_url_fopen'));
+        if ($allowUrlFopen === '0' || $allowUrlFopen === 'off') {
+            return false;
+        }
+
+        $wrappers = stream_get_wrappers();
+        return in_array('http', $wrappers, true) || in_array('https', $wrappers, true);
+    }
+
     /**
      * 获取回执的头部信息
      *
@@ -393,6 +471,15 @@ class Client
      */
     public static function get(): ?Client
     {
-        return extension_loaded('curl') ? new static() : null;
+        $client = new static();
+        $client->useCurl = extension_loaded('curl')
+            && function_exists('curl_init')
+            && defined('CURLOPT_URL');
+
+        if (!$client->useCurl && !self::canUseStreams()) {
+            return null;
+        }
+
+        return $client;
     }
 }

@@ -91,7 +91,7 @@ class Upload extends Contents implements ActionInterface
                 $this->upload();
             }
         } else {
-            $this->response->setStatus(403);
+            $this->response->setStatus(403)->throwContent('', 'text/plain');
         }
     }
 
@@ -120,8 +120,7 @@ class Upload extends Contents implements ActionInterface
                     ]);
                 }
 
-                $this->response->setStatus(404)->throwCallback(static function () {
-                }, 'text/plain');
+                $this->response->setStatus(404)->throwContent('', 'text/plain');
             }
 
             if (!$this->allow('edit')) {
@@ -132,8 +131,7 @@ class Upload extends Contents implements ActionInterface
                     ]);
                 }
 
-                $this->response->setStatus(403)->throwCallback(static function () {
-                }, 'text/plain');
+                $this->response->setStatus(403)->throwContent('', 'text/plain');
             }
 
             if ($this->request->isAjax()) {

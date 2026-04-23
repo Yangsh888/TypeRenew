@@ -42,10 +42,14 @@ class Pingback
         }
 
         try {
-            $client->setTimeout(5)
-                ->setOption(CURLOPT_FOLLOWLOCATION, false)
-                ->setOption(CURLOPT_MAXREDIRS, 0)
-                ->send($url);
+            $client->setTimeout(5);
+            if (defined('CURLOPT_FOLLOWLOCATION')) {
+                $client->setOption(CURLOPT_FOLLOWLOCATION, false);
+            }
+            if (defined('CURLOPT_MAXREDIRS')) {
+                $client->setOption(CURLOPT_MAXREDIRS, 0);
+            }
+            $client->send($url);
         } catch (HttpException $e) {
             throw new Exception('Pingback http error', 50);
         }

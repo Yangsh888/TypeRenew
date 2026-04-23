@@ -66,9 +66,11 @@ class Service extends BaseOptions implements ActionInterface
 
                 if ($spider) {
                     try {
-                        $spider->setTimeout(10)
-                            ->setOption(CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1)
-                            ->send($url);
+                        $spider->setTimeout(10);
+                        if (defined('CURLOPT_HTTP_VERSION') && defined('CURL_HTTP_VERSION_1_1')) {
+                            $spider->setOption(CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
+                        }
+                        $spider->send($url);
 
                         if (!($xmlrpcUrl = $spider->getResponseHeader('x-pingback'))) {
                             if (
@@ -108,15 +110,19 @@ class Service extends BaseOptions implements ActionInterface
 
                 if ($client) {
                     try {
-                        $client->setTimeout(5)
-                            ->setOption(CURLOPT_CONNECTTIMEOUT, 3)
-                            ->setOption(CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1)
-                            ->setData([
+                        $client->setTimeout(5);
+                        if (defined('CURLOPT_CONNECTTIMEOUT')) {
+                            $client->setOption(CURLOPT_CONNECTTIMEOUT, 3);
+                        }
+                        if (defined('CURLOPT_HTTP_VERSION') && defined('CURL_HTTP_VERSION_1_1')) {
+                            $client->setOption(CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
+                        }
+                        $client->setData([
                                 'blog_name' => $this->options->title . ' &raquo ' . $title,
                                 'url' => $permalink,
                                 'excerpt' => $excerpt
-                            ])
-                            ->send($url);
+                            ]);
+                        $client->send($url);
 
                         unset($client);
                     } catch (Client\Exception $e) {
@@ -154,9 +160,11 @@ class Service extends BaseOptions implements ActionInterface
                 }
 
                 $client->setHeader('User-Agent', $this->options->generator)
-                    ->setTimeout(5)
-                    ->setOption(CURLOPT_CONNECTTIMEOUT, 3)
-                    ->setJson($input)
+                    ->setTimeout(5);
+                if (defined('CURLOPT_CONNECTTIMEOUT')) {
+                    $client->setOption(CURLOPT_CONNECTTIMEOUT, 3);
+                }
+                $client->setJson($input)
                     ->send($this->getServiceUrl('ping'));
             } catch (Client\Exception $e) {
                 $this->reportException('sendPing', $e);

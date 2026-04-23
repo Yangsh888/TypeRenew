@@ -465,8 +465,7 @@ class Ajax extends BaseOptions implements ActionInterface
             }, 'text/plain');
         }
 
-        $this->response->setStatus(403)->throwCallback(static function () {
-        }, 'text/plain');
+        $this->response->setStatus(403)->throwContent('', 'text/plain');
     }
 
     public function checkVersion()

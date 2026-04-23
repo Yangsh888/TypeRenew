@@ -779,15 +779,16 @@ class Schema
         }
 
         try {
+            $version = $db->getVersion(Db::READ);
+
             foreach (['contents', 'options', 'users'] as $tableKey) {
                 $table = $db->getPrefix() . $tableKey;
                 $collation = self::mysqlTableCollation($db, $table);
                 if ($collation !== '') {
-                    return $collation;
+                    return DbInfo::resolveMysqlCollation('utf8mb4', $version, $collation);
                 }
             }
 
-            $version = $db->getVersion(Db::READ);
             return DbInfo::resolveMysqlCollation('utf8mb4', $version);
         } catch (\Throwable) {
         }
