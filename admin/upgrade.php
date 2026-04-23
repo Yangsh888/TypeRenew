@@ -10,7 +10,7 @@ $packageActionUrl = $security->getTokenUrl(
     \Typecho\Router::url('do', ['action' => 'upgrade-package', 'widget' => 'Upgrade\\Package'], \Typecho\Common::url('index.php', $options->rootUrl))
 );
 $needDbUpgrade = version_compare(\Typecho\Common::VERSION, $options->version, '>');
-$schemaStatus = \Utils\Upgrade::inspectCriticalSchema(\Typecho\Db::get(), $options);
+$schemaStatus = \Utils\Migration\SchemaManager::inspectCriticalSchema(\Typecho\Db::get());
 $needSchemaRepair = !$schemaStatus['healthy'];
 $upgradeReport = \Typecho\Upgrade\Runner::inspect();
 $state = $upgradeReport['state'];
@@ -261,13 +261,10 @@ $packageActionLocked = !$upgradeAvailable || $upgradeLockBusy;
                                             <button class="tr-btn primary tr-block" type="submit"><?php _e('修复关键数据库结构'); ?></button>
                                         </form>
                                         <div class="tr-help tr-mt-12">
-                                            <?php _e('该操作会补齐邮件通知与密码找回依赖的关键表，不会覆盖已有业务数据。'); ?>
+                                            <?php _e('该操作会补齐邮件通知与密码找回依赖的关键表、索引、字段类型和排序规则，不会覆盖已有业务数据。'); ?>
                                         </div>
                                     <?php else: ?>
                                         <div class="tr-help tr-mt-12"><?php _e('数据库结构已是最新状态'); ?></div>
-                                        <div class="tr-help tr-mt-12">
-                                            <?php _e('如果刚完成在线升级但这里仍显示无需升级，请刷新页面确认程序版本是否已更新。'); ?>
-                                        </div>
                                     <?php endif; ?>
                                 </div>
                             </div>
@@ -300,7 +297,7 @@ $packageActionLocked = !$upgradeAvailable || $upgradeLockBusy;
                                 <li class="tr-flow-item">
                                     <div class="tr-flow-dot"><span>5</span></div>
                                     <div class="tr-flow-title"><?php _e('收尾'); ?></div>
-                                    <div class="tr-flow-desc"><?php _e('升级成功后，系统自动清理升级包及临时目录；请刷新页面确认版本更新，必要时手动执行数据库升级操作'); ?></div>
+                                    <div class="tr-flow-desc"><?php _e('升级成功后请刷新页面确认版本；如提示仍有版本差异，再执行数据库升级'); ?></div>
                                 </li>
                             </ol>
                         </div>

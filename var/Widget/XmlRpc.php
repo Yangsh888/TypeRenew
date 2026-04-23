@@ -1351,10 +1351,7 @@ class XmlRpc extends Contents implements ActionInterface, Hook
      */
     public function mtGetRecentPostTitles(int $blogId, string $userName, string $password, int $postsNum): array
     {
-        /** 读取数据*/
         $posts = PostAdmin::alloc('pageSize=' . $postsNum, 'status=all');
-
-        /**初始化*/
         $postTitleStructs = [];
         while ($posts->next()) {
             $postTitleStructs[] = [
@@ -1852,7 +1849,6 @@ EOF;
                 'blogger.setTemplate'       => [$this, 'bloggerSetTemplate'],
                 'blogger.deletePost'        => [$this, 'bloggerDeletePost'],
 
-                /** MetaWeblog API (with MT extensions to structs) */
                 'metaWeblog.newPost'        => [$this, 'mwNewPost'],
                 'metaWeblog.editPost'       => [$this, 'mwEditPost'],
                 'metaWeblog.getPost'        => [$this, 'mwGetPost'],
@@ -1860,13 +1856,11 @@ EOF;
                 'metaWeblog.getCategories'  => [$this, 'mwGetCategories'],
                 'metaWeblog.newMediaObject' => [$this, 'mwNewMediaObject'],
 
-                /** MetaWeblog API aliases for Blogger API */
                 'metaWeblog.deletePost'     => [$this, 'bloggerDeletePost'],
                 'metaWeblog.getTemplate'    => [$this, 'bloggerGetTemplate'],
                 'metaWeblog.setTemplate'    => [$this, 'bloggerSetTemplate'],
                 'metaWeblog.getUsersBlogs'  => [$this, 'bloggerGetUsersBlogs'],
 
-                /** MovableType API */
                 'mt.getCategoryList'        => [$this, 'mtGetCategoryList'],
                 'mt.getRecentPostTitles'    => [$this, 'mtGetRecentPostTitles'],
                 'mt.getPostCategories'      => [$this, 'mtGetPostCategories'],

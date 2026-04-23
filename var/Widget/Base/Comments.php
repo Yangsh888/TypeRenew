@@ -208,7 +208,7 @@ class Comments extends Base implements QueryInterface, RowFilterInterface, Prima
 
     public function mail(bool $link = false)
     {
-        $mail = htmlspecialchars($this->mail);
+        $mail = htmlspecialchars((string) ($this->mail ?? ''), ENT_QUOTES, 'UTF-8');
         echo $link ? 'mailto:' . $mail : $mail;
     }
 

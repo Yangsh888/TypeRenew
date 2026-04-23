@@ -17,20 +17,12 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
 class Notice extends Widget
 {
     /**
-     * 提示高亮
-     *
-     * @var string
-     */
-    public string $highlight;
-
-    /**
      * 高亮相关元素
      *
      * @param string $theId 需要高亮元素的id
      */
     public function highlight(string $theId)
     {
-        $this->highlight = $theId;
         Cookie::set(
             '__typecho_notice_highlight',
             $theId
@@ -40,13 +32,7 @@ class Notice extends Widget
         }
     }
 
-    /**
-     * 设定堆栈每一行的值
-     *
-     * @param string|array $value 值对应的键值
-     * @param string|null $type 提示类型
-     * @param string $typeFix 兼容老插件
-     */
+    /** @param string|array $value */
     public function set($value, ?string $type = 'notice', string $typeFix = 'notice')
     {
         $notice = is_array($value) ? array_values($value) : [$value];

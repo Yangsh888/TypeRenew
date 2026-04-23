@@ -58,8 +58,6 @@ class Server
      */
     public function listMethods(): array
     {
-        // Returns a list of methods - uses array_reverse to ensure user defined
-        // methods are listed before server defined methods
         return array_reverse(array_keys($this->callbacks));
     }
 

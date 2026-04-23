@@ -60,7 +60,7 @@ class Mysqli implements Adapter
 
                 if ($config->charset) {
                     $this->dbLink->set_charset($config->charset);
-                    $collation = $this->resolveCollation((string) $config->charset);
+                    $collation = $this->resolveCollation((string) $config->charset, (string) $this->dbLink->server_info);
                     if ($collation !== null) {
                         $this->dbLink->query("SET NAMES '{$config->charset}' COLLATE '{$collation}'");
                     }

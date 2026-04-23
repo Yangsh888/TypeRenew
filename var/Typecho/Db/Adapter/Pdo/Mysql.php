@@ -49,7 +49,10 @@ class Mysql extends Pdo
         );
 
         if ($config->charset) {
-            $collation = $this->resolveCollation((string) $config->charset);
+            $collation = $this->resolveCollation(
+                (string) $config->charset,
+                (string) $pdo->getAttribute(\PDO::ATTR_SERVER_VERSION)
+            );
             $sql = "SET NAMES '{$config->charset}'";
             if ($collation !== null) {
                 $sql .= " COLLATE '{$collation}'";

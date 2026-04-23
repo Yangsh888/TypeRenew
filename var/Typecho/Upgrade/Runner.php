@@ -51,8 +51,6 @@ class Runner
 
         return [
             'root' => $report['root'],
-            'stateFile' => $report['stateFile'],
-            'lockFile' => $report['lockFile'],
             'state' => $report['state'],
             'lockBusy' => $report['lockBusy'],
             'artifactCount' => $report['artifactCount'],
@@ -219,7 +217,6 @@ class Runner
             'stageDir' => $stageDir,
             'payloadDir' => $payloadRoot,
             'status' => 'ready',
-            'createdAt' => time(),
             'mode' => $mode,
             'allowInstall' => $allowInstall,
             'manifest' => $manifest,
@@ -269,8 +266,7 @@ class Runner
             $this->checkWritable($files);
 
             $state['status'] = 'applying';
-            $state['applyingAt'] = time();
-            $state['progress'] = ['done' => 0, 'total' => count($files), 'file' => ''];
+            $state['progress'] = ['done' => 0, 'total' => count($files)];
             $this->store->writeState($state);
 
             $backupRoot = $this->store->path('Backup/' . $id . '/files');
@@ -303,15 +299,14 @@ class Runner
                 $this->atomicReplace($source, $target);
 
                 if ($done === 1 || $done === $total || ($done % 20) === 0) {
-                    $state['progress'] = ['done' => $done, 'total' => $total, 'file' => $relative];
+                    $state['progress'] = ['done' => $done, 'total' => $total];
                     $this->store->writeState($state);
                 }
             }
 
             $state['status'] = 'applied';
-            $state['appliedAt'] = time();
             $state['appliedFiles'] = $done;
-            $state['progress'] = ['done' => $done, 'total' => $total, 'file' => ''];
+            $state['progress'] = ['done' => $done, 'total' => $total];
             $this->store->writeState($state);
             return $state;
         } catch (\Throwable $e) {
@@ -319,7 +314,6 @@ class Runner
             $state = $this->store->readState();
             if (is_array($state)) {
                 $state['status'] = 'failed';
-                $state['failedAt'] = time();
                 $state['error'] = $e->getMessage();
                 $state['progress'] = $state['progress'] ?? null;
                 $this->store->writeState($state);

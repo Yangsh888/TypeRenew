@@ -8,22 +8,25 @@ $actionUrl = $security->getTokenUrl(
         \Typecho\Common::url('index.php', $options->rootUrl)), $request->getRequestUrl());
 
 $backupFiles = \Widget\Backup::alloc()->listFiles();
-$noticeMessages = json_decode((string) \Typecho\Cookie::get('__typecho_notice', '[]'), true);
-$noticeType = (string) \Typecho\Cookie::get('__typecho_notice_type', '');
-$reportLines = ['blocking' => [], 'warning' => [], 'info' => []];
-if (is_array($noticeMessages) && !empty($noticeMessages) && in_array($noticeType, ['success', 'error', 'notice'], true)) {
-    foreach ($noticeMessages as $line) {
-        $line = trim((string) $line);
-        if ('' === $line) {
-            continue;
-        }
+$reportLines = \Widget\Backup::consumeReport();
+if (!is_array($reportLines)) {
+    $noticeMessages = json_decode((string) \Typecho\Cookie::get('__typecho_notice', '[]'), true);
+    $noticeType = (string) \Typecho\Cookie::get('__typecho_notice_type', '');
+    $reportLines = ['blocking' => [], 'warning' => [], 'info' => []];
+    if (is_array($noticeMessages) && !empty($noticeMessages) && in_array($noticeType, ['success', 'error', 'notice'], true)) {
+        foreach ($noticeMessages as $line) {
+            $line = trim((string) $line);
+            if ('' === $line) {
+                continue;
+            }
 
-        if (strpos($line, '阻断：') === 0) {
-            $reportLines['blocking'][] = trim(substr($line, strlen('阻断：')));
-        } elseif (strpos($line, '预警：') === 0) {
-            $reportLines['warning'][] = trim(substr($line, strlen('预警：')));
-        } else {
-            $reportLines['info'][] = $line;
+            if (strpos($line, '阻断：') === 0) {
+                $reportLines['blocking'][] = trim(substr($line, strlen('阻断：')));
+            } elseif (strpos($line, '预警：') === 0) {
+                $reportLines['warning'][] = trim(substr($line, strlen('预警：')));
+            } else {
+                $reportLines['info'][] = $line;
+            }
         }
     }
 }

@@ -5,9 +5,6 @@ namespace Typecho\Widget;
 use Typecho\Config;
 use Typecho\Request as HttpRequest;
 
-/**
- * Widget Request Wrapper
- */
 class Request
 {
     /**

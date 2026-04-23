@@ -23,6 +23,32 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
  */
 class Edit extends Options implements ActionInterface
 {
+    private function cleanupTempFile(string $path): void
+    {
+        set_error_handler(static function (): bool {
+            return true;
+        });
+
+        try {
+            unlink($path);
+        } finally {
+            restore_error_handler();
+        }
+    }
+
+    private function restoreBackupFile(string $from, string $to): void
+    {
+        set_error_handler(static function (): bool {
+            return true;
+        });
+
+        try {
+            rename($from, $to);
+        } finally {
+            restore_error_handler();
+        }
+    }
+
     private function writeThemeFile(string $path, string $content, string $file): void
     {
         $directory = dirname($path);
@@ -55,10 +81,10 @@ class Edit extends Options implements ActionInterface
             }
         } finally {
             if (is_file($tempPath)) {
-                @unlink($tempPath);
+                $this->cleanupTempFile($tempPath);
             }
             if (is_file($backupPath) && !is_file($path)) {
-                @rename($backupPath, $path);
+                $this->restoreBackupFile($backupPath, $path);
             }
         }
     }

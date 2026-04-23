@@ -156,7 +156,7 @@ class Files extends Base
     }
 
     /**
-     * 获取文件是否可读
+     * 获取文件是否可写
      *
      * @return bool
      */

@@ -476,7 +476,7 @@ EOF;
             ];
             $ra = array_merge($ra1, $ra2);
 
-            $found = true; // keep replacing as long as the previous round replaced something
+            $found = true;
             while ($found == true) {
                 $val_before = $val;
                 for ($i = 0; $i < sizeof($ra); $i++) {
@@ -492,11 +492,10 @@ EOF;
                         $pattern .= $ra[$i][$j];
                     }
                     $pattern .= '/i';
-                    $replacement = substr($ra[$i], 0, 2) . '<x>' . substr($ra[$i], 2); // add in <> to nerf the tag
-                    $val = preg_replace($pattern, $replacement, $val); // filter out the hex tags
+                    $replacement = substr($ra[$i], 0, 2) . '<x>' . substr($ra[$i], 2);
+                    $val = preg_replace($pattern, $replacement, $val);
 
                     if ($val_before == $val) {
-                        // no replacements were made, so exit the loop
                         $found = false;
                     }
                 }
@@ -745,7 +744,12 @@ EOF;
             }
 
             if ('FILE' == $version) {
-                $bodyLen = array_reduce(json_decode($header, true), function ($carry, $len) {
+                $headerMap = json_decode($header, true);
+                if (!is_array($headerMap)) {
+                    return false;
+                }
+
+                $bodyLen = array_reduce($headerMap, function ($carry, $len) {
                     return null === $len ? $carry : $carry + $len;
                 }, 0);
             }

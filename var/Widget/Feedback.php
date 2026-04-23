@@ -112,11 +112,7 @@ class Feedback extends Comments implements ActionInterface
         }
     }
 
-    /**
-     * 评论处理函数
-     *
-     * @throws \Exception
-     */
+    /** @throws \Exception */
     private function comment()
     {
         // 使用安全模块保护
@@ -243,11 +239,7 @@ class Feedback extends Comments implements ActionInterface
         $this->response->redirect($this->permalink);
     }
 
-    /**
-     * 引用处理函数
-     *
-     * @throws Exception|Db\Exception
-     */
+    /** @throws Exception|Db\Exception */
     private function trackback()
     {
         if (!$this->request->isPost() || $this->request->getReferer()) {

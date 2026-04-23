@@ -810,11 +810,7 @@ function install_step_1_perform()
 
 function install_extract_db_version(string $version): string
 {
-    if (preg_match('/\d+\.\d+(?:\.\d+)?/', $version, $matches) === 1) {
-        return $matches[0];
-    }
-
-    return '';
+    return \Utils\DbInfo::extractVersion($version);
 }
 
 function install_assert_mysql_compatibility(\Typecho\Db $db): void
@@ -826,9 +822,8 @@ function install_assert_mysql_compatibility(\Typecho\Db $db): void
         install_raise_error(_t('无法识别当前 MySQL 服务端版本：%s', $rawVersion));
     }
 
-    $isMariaDb = stripos($rawVersion, 'mariadb') !== false;
-    $minimum = $isMariaDb ? '10.3.0' : '5.7.0';
-    $label = $isMariaDb ? 'MariaDB' : 'MySQL';
+    $minimum = \Utils\DbInfo::minimumMysqlVersion($rawVersion);
+    $label = \Utils\DbInfo::mysqlLabel($rawVersion);
 
     if (version_compare($version, $minimum, '<')) {
         install_raise_error(_t('当前 %s 版本为 %s，安装器最低要求 %s %s，请升级后继续安装。', $label, $rawVersion, $label, $minimum));
@@ -837,22 +832,8 @@ function install_assert_mysql_compatibility(\Typecho\Db $db): void
 
 function install_resolve_mysql_collation(\Typecho\Db $db, string $charset): string
 {
-    $charset = strtolower(trim($charset));
-    if ($charset !== 'utf8mb4') {
-        return $charset === 'utf8' ? 'utf8_unicode_ci' : $charset . '_unicode_ci';
-    }
-
     $rawVersion = $db->getVersion(\Typecho\Db::READ);
-    if (stripos($rawVersion, 'mariadb') !== false) {
-        return 'utf8mb4_unicode_ci';
-    }
-
-    $version = install_extract_db_version($rawVersion);
-    if ($version !== '' && version_compare($version, '8.0.0', '>=')) {
-        return 'utf8mb4_0900_ai_ci';
-    }
-
-    return 'utf8mb4_unicode_ci';
+    return \Utils\DbInfo::resolveMysqlCollation($charset, $rawVersion);
 }
 
 /**

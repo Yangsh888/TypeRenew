@@ -2,17 +2,15 @@
 
 namespace Typecho\Db\Adapter;
 
+use Utils\DbInfo;
+
 trait MysqlTrait
 {
     use QueryTrait;
 
-    protected function resolveCollation(string $charset): ?string
+    protected function resolveCollation(string $charset, string $serverVersion = '', ?string $existingCollation = null): ?string
     {
-        return match (strtolower($charset)) {
-            'utf8mb4' => 'utf8mb4_unicode_ci',
-            'utf8' => 'utf8_unicode_ci',
-            default => null,
-        };
+        return DbInfo::resolveMysqlCollation($charset, $serverVersion, $existingCollation);
     }
 
     /**

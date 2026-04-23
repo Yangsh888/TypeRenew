@@ -129,24 +129,26 @@ class Pingback
         /** 此处将$target quote,留着后面用*/
         $pregLink = preg_quote($this->target);
 
-        /** 找出含有target链接的最长的一行作为$finalText*/
-        $finalText = null;
+        $finalText = '';
+        $matched = false;
         $lines = explode("\n", $text);
 
         foreach ($lines as $line) {
             $line = trim($line);
-            if (null != $line) {
-                if (preg_match("|<a[^>]*href=[\"']{$pregLink}[\"'][^>]*>(.*?)</a>|", $line)) {
-                    if (strlen($line) > strlen($finalText)) {
-                        /** <a>也要干掉，*/
-                        $finalText = Common::stripTags($line);
-                        break;
-                    }
+            if ($line === '') {
+                continue;
+            }
+
+            if (preg_match("|<a[^>]*href=[\"']{$pregLink}[\"'][^>]*>(.*?)</a>|", $line)) {
+                $candidate = Common::stripTags($line);
+                if (strlen($candidate) > strlen($finalText)) {
+                    $finalText = $candidate;
+                    $matched = true;
                 }
             }
         }
 
-        if (!isset($finalText)) {
+        if (!$matched) {
             throw new Exception("Source page doesn't have target url", 50);
         }
 

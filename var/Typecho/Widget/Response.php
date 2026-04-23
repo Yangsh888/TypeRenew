@@ -6,9 +6,6 @@ use Typecho\Common;
 use Typecho\Request as HttpRequest;
 use Typecho\Response as HttpResponse;
 
-/**
- * Widget Response Wrapper
- */
 class Response
 {
     private HttpRequest $request;

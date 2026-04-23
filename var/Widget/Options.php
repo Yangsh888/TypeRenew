@@ -308,7 +308,7 @@ class Options extends Base
      */
     public function commentsHTMLTagAllowed()
     {
-        echo htmlspecialchars($this->commentsHTMLTagAllowed);
+        echo htmlspecialchars((string) ($this->commentsHTMLTagAllowed ?? ''), ENT_QUOTES, 'UTF-8');
     }
 
     /**

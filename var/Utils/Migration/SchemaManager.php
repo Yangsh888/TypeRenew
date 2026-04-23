@@ -2,10 +2,9 @@
 
 namespace Utils\Migration;
 
+use Typecho\Common;
 use Typecho\Db;
 use Utils\Schema;
-use Utils\Migration\Steps\InstallMailAndResetInfrastructureStep;
-use Widget\Options;
 
 if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
@@ -13,85 +12,53 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
 
 class SchemaManager
 {
-    private const CRITICAL_TABLES = [
-        'mail_queue' => [
-            'label' => '邮件队列表',
-            'columns' => ['id', 'type', 'status', 'attempts', 'lockedUntil', 'sendAt', 'created', 'updated', 'lastError', 'dedupeKey', 'payload'],
-            'indexes' => ['idx_status_sendat', 'idx_status_updated', 'idx_locked', 'uniq_dedupe'],
-            'mysql' => [
-                'collationPrefix' => 'utf8mb4_',
-                'columnTypes' => [
-                    'id' => 'bigint unsigned',
-                    'type' => 'varchar(16)',
-                    'status' => 'varchar(16)',
-                    'attempts' => 'int unsigned',
-                    'lockedUntil' => 'int unsigned',
-                    'sendAt' => 'int unsigned',
-                    'created' => 'int unsigned',
-                    'updated' => 'int unsigned',
-                    'lastError' => 'varchar(500)',
-                    'dedupeKey' => 'char(40)',
-                    'payload' => 'longtext',
-                ],
-            ],
-        ],
-        'mail_unsub' => [
-            'label' => '邮件退订表',
-            'columns' => ['id', 'email', 'scope', 'created'],
-            'indexes' => ['uniq_email_scope'],
-            'mysql' => [
-                'collationPrefix' => 'utf8mb4_',
-                'columnTypes' => [
-                    'id' => 'bigint unsigned',
-                    'email' => 'varchar(255)',
-                    'scope' => 'varchar(32)',
-                    'created' => 'int unsigned',
-                ],
-            ],
-        ],
-        'password_resets' => [
-            'label' => '密码重置表',
-            'columns' => ['id', 'email', 'token', 'created', 'expires', 'used'],
-            'indexes' => ['idx_email', 'idx_token', 'idx_expires'],
-            'mysql' => [
-                'collationPrefix' => 'utf8mb4_',
-                'columnTypes' => [
-                    'id' => 'bigint unsigned',
-                    'email' => 'varchar(150)',
-                    'token' => 'varchar(64)',
-                    'created' => 'int unsigned',
-                    'expires' => 'int unsigned',
-                    'used' => 'tinyint unsigned',
-                ],
-            ],
-        ],
-    ];
+    public static function syncCurrentRelease(Db $db, array $activatedPlugins = []): array
+    {
+        self::ensureMailInfrastructure($db);
+        Schema::ensureCoreIndexes($db);
+        Schema::ensureUserPasswordStorage($db);
+
+        if (in_array('RenewGo', $activatedPlugins, true)) {
+            Schema::ensureRenewGo($db);
+        }
+
+        if (in_array('RenewSEO', $activatedPlugins, true)) {
+            Schema::ensureRenewSeo($db);
+        }
+
+        self::updateGenerator($db, Common::VERSION);
+
+        return [
+            'messages' => [_t('当前版本所需的数据库结构已同步')],
+        ];
+    }
 
     public static function inspectCriticalSchema(Db $db): array
     {
         $items = [];
         $missing = [];
         $prefix = (string) $db->getPrefix();
-        $dialect = self::dialect($db);
+        $dialect = Schema::dialect($db);
+        $expectedCollation = $dialect === 'mysql' ? Schema::detectMysqlCollation($db) : '';
+        $tables = Schema::criticalSchema();
 
-        foreach (self::CRITICAL_TABLES as $key => $meta) {
+        foreach ($tables as $key => $meta) {
             $exists = self::tableExists($db, 'table.' . $key);
             $missingColumns = $exists
-                ? self::missingColumns($db, $prefix . $key, (array) ($meta['columns'] ?? []))
+                ? self::missingColumns($db, $prefix . $key, Schema::criticalColumns($key))
                 : [];
             $missingIndexes = $exists
-                ? self::missingIndexes($db, $prefix . $key, (array) ($meta['indexes'] ?? []))
+                ? self::missingIndexes($db, $prefix . $key, Schema::criticalIndexes($db, $key, $prefix . $key))
                 : [];
             $typeMismatches = ($exists && $dialect === 'mysql')
-                ? self::mysqlTypeMismatches($db, $prefix . $key, (array) (($meta['mysql']['columnTypes'] ?? [])))
+                ? Schema::mysqlTypeMismatches($db, $prefix . $key, (array) (($meta['mysql']['definitions'] ?? [])))
                 : [];
             $tableCollation = ($exists && $dialect === 'mysql')
-                ? self::mysqlTableCollation($db, $prefix . $key)
+                ? Schema::mysqlTableCollation($db, $prefix . $key)
                 : '';
-            $collationPrefix = (string) ($meta['mysql']['collationPrefix'] ?? '');
-            $collationOk = $tableCollation === '' || $collationPrefix === ''
+            $collationOk = $tableCollation === '' || $expectedCollation === ''
                 ? true
-                : str_starts_with(strtolower($tableCollation), strtolower($collationPrefix));
+                : strtolower($tableCollation) === strtolower($expectedCollation);
             $schemaOk = $exists
                 && $missingColumns === []
                 && $missingIndexes === []
@@ -102,11 +69,11 @@ class SchemaManager
                 'label' => (string) ($meta['label'] ?? $key),
                 'table' => $prefix . $key,
                 'exists' => $exists,
-                'columnsOk' => $schemaOk,
                 'missingColumns' => $missingColumns,
                 'missingIndexes' => $missingIndexes,
                 'typeMismatches' => $typeMismatches,
                 'tableCollation' => $tableCollation,
+                'expectedCollation' => $expectedCollation,
                 'collationOk' => $collationOk,
                 'status' => !$exists
                     ? 'missing_table'
@@ -128,10 +95,11 @@ class SchemaManager
         ];
     }
 
-    public static function repairCriticalSchema(Db $db, Options $options): array
+    public static function repairCriticalSchema(Db $db): array
     {
         $before = self::inspectCriticalSchema($db);
-        (new InstallMailAndResetInfrastructureStep())->up($db, $options);
+        self::ensureMailInfrastructure($db);
+        Schema::repairMailInfra($db);
         $after = self::inspectCriticalSchema($db);
 
         $repaired = [];
@@ -149,6 +117,60 @@ class SchemaManager
             'after' => $after,
             'repaired' => $repaired
         ];
+    }
+
+    private static function ensureMailInfrastructure(Db $db): void
+    {
+        Schema::ensureMailInfra($db);
+
+        foreach (self::defaultMailOptions() as $name => $value) {
+            $exists = $db->fetchRow(
+                $db->select('name')->from('table.options')->where('name = ? AND user = 0', $name)->limit(1)
+            );
+            if ($exists) {
+                continue;
+            }
+
+            $db->query($db->insert('table.options')->rows(['name' => $name, 'user' => 0, 'value' => $value]));
+        }
+    }
+
+    private static function defaultMailOptions(): array
+    {
+        return [
+            'mailEnable' => '0',
+            'mailTransport' => 'smtp',
+            'mailAdmin' => '',
+            'mailFrom' => '',
+            'mailFromName' => '',
+            'mailSmtpHost' => '',
+            'mailSmtpPort' => '25',
+            'mailSmtpUser' => '',
+            'mailSmtpPass' => '',
+            'mailSmtpSecure' => '',
+            'mailQueueMode' => 'async',
+            'mailAsyncIps' => '',
+            'mailCronKey' => Common::randString(32),
+            'mailBatchSize' => '50',
+            'mailMaxAttempts' => '3',
+            'mailKeepDays' => '30',
+            'mailNotifyOwner' => '1',
+            'mailNotifyGuest' => '1',
+            'mailNotifyPending' => '1',
+            'mailNotifyMe' => '0',
+            'mailSubjectOwner' => '',
+            'mailSubjectGuest' => '',
+            'mailSubjectPending' => ''
+        ];
+    }
+
+    private static function updateGenerator(Db $db, string $version): void
+    {
+        $db->query(
+            $db->update('table.options')
+                ->rows(['value' => Common::generator($version)])
+                ->where('name = ?', 'generator')
+        );
     }
 
     private static function tableExists(Db $db, string $tableAlias): bool
@@ -179,7 +201,7 @@ class SchemaManager
         $missing = [];
 
         foreach ($indexes as $index) {
-            if (!self::indexExists($db, $table, (string) $index)) {
+            if (!Schema::indexExists($db, $table, (string) $index)) {
                 $missing[] = (string) $index;
             }
         }
@@ -187,133 +209,4 @@ class SchemaManager
         return $missing;
     }
 
-    private static function mysqlTypeMismatches(Db $db, string $table, array $columns): array
-    {
-        $mismatches = [];
-        $columnMap = self::mysqlColumns($db, $table);
-
-        foreach ($columns as $column => $expectedType) {
-            $actual = strtolower((string) ($columnMap[$column]['Type'] ?? ''));
-            if ($actual === '') {
-                continue;
-            }
-
-            if (!str_contains($actual, strtolower((string) $expectedType))) {
-                $mismatches[] = (string) $column;
-            }
-        }
-
-        return $mismatches;
-    }
-
-    private static function mysqlColumns(Db $db, string $table): array
-    {
-        try {
-            $rows = $db->fetchAll('SHOW FULL COLUMNS FROM ' . self::quoteMysql($table));
-        } catch (\Throwable $e) {
-            return [];
-        }
-
-        $map = [];
-        foreach ($rows as $row) {
-            $field = (string) ($row['Field'] ?? '');
-            if ($field !== '') {
-                $map[$field] = $row;
-            }
-        }
-
-        return $map;
-    }
-
-    private static function mysqlTableCollation(Db $db, string $table): string
-    {
-        try {
-            $row = $db->fetchRow('SHOW TABLE STATUS LIKE ' . self::sqlString($table));
-        } catch (\Throwable $e) {
-            return '';
-        }
-
-        return (string) ($row['Collation'] ?? '');
-    }
-
-    private static function indexExists(Db $db, string $table, string $index): bool
-    {
-        return match (self::dialect($db)) {
-            'sqlite' => self::sqliteIndexExists($db, $table, $index),
-            'pgsql' => self::pgsqlIndexExists($db, $table, $index),
-            default => self::mysqlIndexExists($db, $table, $index),
-        };
-    }
-
-    private static function dialect(Db $db): string
-    {
-        $adapter = strtolower($db->getAdapterName());
-
-        if (str_contains($adapter, 'sqlite')) {
-            return 'sqlite';
-        }
-
-        if (str_contains($adapter, 'pgsql')) {
-            return 'pgsql';
-        }
-
-        return 'mysql';
-    }
-
-    private static function mysqlIndexExists(Db $db, string $table, string $index): bool
-    {
-        try {
-            $row = $db->fetchRow(
-                'SHOW INDEX FROM ' . self::quoteMysql($table)
-                . ' WHERE Key_name = ' . self::sqlString($index)
-            );
-        } catch (\Throwable $e) {
-            return false;
-        }
-
-        return !empty($row);
-    }
-
-    private static function sqliteIndexExists(Db $db, string $table, string $index): bool
-    {
-        try {
-            $rows = $db->fetchAll('PRAGMA index_list("' . str_replace('"', '""', $table) . '")');
-        } catch (\Throwable $e) {
-            return false;
-        }
-
-        foreach ($rows as $row) {
-            if ((string) ($row['name'] ?? '') === $index) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private static function pgsqlIndexExists(Db $db, string $table, string $index): bool
-    {
-        try {
-            $row = $db->fetchRow(
-                'SELECT 1 FROM pg_indexes'
-                . ' WHERE schemaname = ANY (current_schemas(false))'
-                . ' AND tablename = ' . self::sqlString($table)
-                . ' AND indexname = ' . self::sqlString($index)
-            );
-        } catch (\Throwable $e) {
-            return false;
-        }
-
-        return !empty($row);
-    }
-
-    private static function quoteMysql(string $name): string
-    {
-        return '`' . str_replace('`', '``', $name) . '`';
-    }
-
-    private static function sqlString(string $value): string
-    {
-        return "'" . str_replace("'", "''", $value) . "'";
-    }
 }

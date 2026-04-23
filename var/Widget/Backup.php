@@ -21,6 +21,7 @@ class Backup extends BaseOptions implements ActionInterface
 {
     public const HEADER = '%TYPECHO_BACKUP_XXXX%';
     public const HEADER_VERSION = '0001';
+    private const REPORT_SESSION_KEY = '__typecho_backup_report';
 
     private array $types = [
         'contents'      => 1,
@@ -221,11 +222,15 @@ class Backup extends BaseOptions implements ActionInterface
         try {
             $payload = $this->readBackup($path, false);
             $preflight = $this->buildPreflight($payload);
-            $messages = $this->buildReportMessages($payload, $preflight, true, true);
+            $report = $this->buildReport($payload, $preflight, true, true);
+            $messages = $this->reportMessages($report);
+            $this->stashReport($report);
             $type = empty($preflight['blocking']) ? 'success' : 'error';
             Notice::alloc()->set($messages, $type);
         } catch (Throwable $e) {
-            Notice::alloc()->set(_t('预检失败: %s', $e->getMessage()), 'error');
+            $messages = [_t('预检失败: %s', $e->getMessage())];
+            $this->stashReport($this->reportFromMessages($messages));
+            Notice::alloc()->set($messages, 'error');
         }
 
         $this->finish();
@@ -246,7 +251,10 @@ class Backup extends BaseOptions implements ActionInterface
             $preflight = $this->buildPreflight($payload);
 
             if (!empty($preflight['blocking'])) {
-                Notice::alloc()->set($this->buildReportMessages($payload, $preflight, true, true), 'error');
+                $report = $this->buildReport($payload, $preflight, true, true);
+                $messages = $this->reportMessages($report);
+                $this->stashReport($report);
+                Notice::alloc()->set($messages, 'error');
                 $this->finish();
                 return;
             }
@@ -274,12 +282,21 @@ class Backup extends BaseOptions implements ActionInterface
             $this->commitImportTransaction();
 
             if ($this->pendingLoginUser !== null) {
-                $this->reLogin($this->pendingLoginUser);
+                try {
+                    $this->reLogin($this->pendingLoginUser);
+                } catch (Throwable $e) {
+                    $this->runtimeWarnings[] = _t(
+                        '恢复完成，但自动恢复当前登录态失败：%s',
+                        $e->getMessage()
+                    );
+                }
             } else {
                 $this->runtimeWarnings[] = _t('恢复完成，但未能自动恢复当前登录态，请使用恢复后的账号重新登录');
             }
 
-            $messages = $this->buildReportMessages($payload, $preflight, false, false, $snapshotName, $doRepair, $doSnapshot);
+            $report = $this->buildReport($payload, $preflight, false, false, $snapshotName, $doRepair, $doSnapshot);
+            $messages = $this->reportMessages($report);
+            $this->stashReport($report);
             Notice::alloc()->set($messages, 'success');
         } catch (Throwable $e) {
             $rolledBack = $this->rollbackImportTransaction();
@@ -291,6 +308,7 @@ class Backup extends BaseOptions implements ActionInterface
                     $messages[] = _t('恢复在清表后中断，数据库可能处于部分恢复状态，请使用快照或备份回滚');
                 }
             }
+            $this->stashReport($this->reportFromMessages($messages));
             Notice::alloc()->set($messages, 'error');
         }
 
@@ -866,7 +884,7 @@ class Backup extends BaseOptions implements ActionInterface
         );
     }
 
-    private function buildReportMessages(
+    private function buildReport(
         array $payload,
         array $preflight,
         bool $isCheck,
@@ -876,9 +894,13 @@ class Backup extends BaseOptions implements ActionInterface
         bool $snapshotRequested = false
     ): array {
         $counts = $payload['counts'];
-        $messages = [];
+        $report = [
+            'blocking' => [],
+            'warning' => [],
+            'info' => [],
+        ];
 
-        $messages[] = _t(
+        $report['info'][] = _t(
             '记录统计：文章 %d、评论 %d、分类与标签 %d、关系 %d、用户 %d、字段 %d',
             $counts['contents'] ?? 0,
             $counts['comments'] ?? 0,
@@ -887,29 +909,29 @@ class Backup extends BaseOptions implements ActionInterface
             $counts['users'] ?? 0,
             $counts['fields'] ?? 0
         );
-        $messages[] = _t('预检阻断项：%d，预警项：%d', count($preflight['blocking']), count($preflight['warnings']));
+        $report['info'][] = _t('预检阻断项：%d，预警项：%d', count($preflight['blocking']), count($preflight['warnings']));
         if (!empty($preflight['infos'])) {
             foreach ($preflight['infos'] as $line) {
-                $messages[] = $line;
+                $report['info'][] = $line;
             }
         }
 
         if ($isCheck) {
-            $messages[] = _t('当前为预检模式，不会写入任何数据');
+            $report['info'][] = _t('当前为预检模式，不会写入任何数据');
         } else {
-            $messages[] = _t('恢复已完成：核心数据已导入');
+            $report['info'][] = _t('恢复已完成：核心数据已导入');
         }
 
         if ($snapshotRequested) {
             if ($snapshotName) {
-                $messages[] = _t('已生成恢复前快照：%s', $snapshotName);
+                $report['info'][] = _t('已生成恢复前快照：%s', $snapshotName);
             } else {
-                $messages[] = _t('预警：恢复前快照创建失败');
+                $report['warning'][] = _t('恢复前快照创建失败');
             }
         }
 
         if (!$isCheck && $didRepair) {
-            $messages[] = _t(
+            $report['info'][] = _t(
                 '修复结果：ownerId %d 条，状态 %d 条，孤儿评论 %d 条，计数回填 %d 篇',
                 $this->repairResult['ownerFixed'],
                 $this->repairResult['statusFixed'],
@@ -917,27 +939,96 @@ class Backup extends BaseOptions implements ActionInterface
                 $this->repairResult['commentsRecounted']
             );
         } elseif (!$isCheck) {
-            $messages[] = _t('本次恢复未执行迁移后修复');
+            $report['info'][] = _t('本次恢复未执行迁移后修复');
         }
 
         if ($withBlocking) {
-            $this->appendTaggedMessages($messages, $preflight['blocking'], '阻断');
+            foreach ($preflight['blocking'] as $line) {
+                $report['blocking'][] = (string) $line;
+            }
         }
 
-        $this->appendTaggedMessages($messages, $preflight['warnings'], '预警');
+        foreach ($preflight['warnings'] as $line) {
+            $report['warning'][] = (string) $line;
+        }
+        foreach ($this->runtimeWarnings as $line) {
+            $report['warning'][] = (string) $line;
+        }
+        foreach ($this->pluginWarnings as $line) {
+            $report['warning'][] = (string) $line;
+        }
 
-        $this->appendTaggedMessages($messages, $this->runtimeWarnings, '预警');
+        return $report;
+    }
 
-        $this->appendTaggedMessages($messages, $this->pluginWarnings, '预警');
+    private function reportMessages(array $report): array
+    {
+        $messages = array_values(array_filter((array) ($report['info'] ?? []), 'is_string'));
+
+        foreach ((array) ($report['blocking'] ?? []) as $line) {
+            $messages[] = _t('阻断：%s', $line);
+        }
+
+        foreach ((array) ($report['warning'] ?? []) as $line) {
+            $messages[] = _t('预警：%s', $line);
+        }
 
         return $messages;
     }
 
-    private function appendTaggedMessages(array &$messages, array $lines, string $tag): void
+    public static function consumeReport(): ?array
     {
-        foreach ($lines as $line) {
-            $messages[] = _t('%s：%s', $tag, $line);
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            return null;
         }
+
+        $report = $_SESSION[self::REPORT_SESSION_KEY] ?? null;
+        unset($_SESSION[self::REPORT_SESSION_KEY]);
+
+        if (!is_array($report)) {
+            return null;
+        }
+
+        return [
+            'blocking' => array_values(array_filter((array) ($report['blocking'] ?? []), 'is_string')),
+            'warning' => array_values(array_filter((array) ($report['warning'] ?? []), 'is_string')),
+            'info' => array_values(array_filter((array) ($report['info'] ?? []), 'is_string')),
+        ];
+    }
+
+    private function stashReport(array $report): void
+    {
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            return;
+        }
+
+        $_SESSION[self::REPORT_SESSION_KEY] = [
+            'blocking' => array_values(array_filter((array) ($report['blocking'] ?? []), 'is_string')),
+            'warning' => array_values(array_filter((array) ($report['warning'] ?? []), 'is_string')),
+            'info' => array_values(array_filter((array) ($report['info'] ?? []), 'is_string')),
+        ];
+    }
+
+    private function reportFromMessages(array $messages): array
+    {
+        $report = ['blocking' => [], 'warning' => [], 'info' => []];
+
+        foreach ($messages as $line) {
+            $line = trim((string) $line);
+            if ($line === '') {
+                continue;
+            }
+
+            if (strpos($line, '阻断：') === 0) {
+                $report['blocking'][] = trim(substr($line, strlen('阻断：')));
+            } elseif (strpos($line, '预警：') === 0) {
+                $report['warning'][] = trim(substr($line, strlen('预警：')));
+            } else {
+                $report['info'][] = $line;
+            }
+        }
+
+        return $report;
     }
 
     private function finish(): void
@@ -947,7 +1038,9 @@ class Backup extends BaseOptions implements ActionInterface
 
     private function failAndFinish(string $message): ?string
     {
-        Notice::alloc()->set($message, 'error');
+        $messages = [$message];
+        $this->stashReport($this->reportFromMessages($messages));
+        Notice::alloc()->set($messages, 'error');
         $this->finish();
         return null;
     }

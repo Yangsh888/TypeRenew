@@ -15,6 +15,68 @@ class Schema
         self::ensureTables($db, ['mail_queue', 'mail_unsub', 'password_resets']);
     }
 
+    public static function criticalSchema(): array
+    {
+        return [
+            'mail_queue' => [
+                'label' => '邮件队列表',
+                'mysql' => [
+                    'definitions' => [
+                        'id' => '`id` bigint unsigned NOT NULL auto_increment',
+                        'type' => '`type` varchar(16) NOT NULL',
+                        'status' => '`status` varchar(16) NOT NULL',
+                        'attempts' => '`attempts` int unsigned NOT NULL default 0',
+                        'lockedUntil' => '`lockedUntil` int unsigned NOT NULL default 0',
+                        'sendAt' => '`sendAt` int unsigned NOT NULL default 0',
+                        'created' => '`created` int unsigned NOT NULL default 0',
+                        'updated' => '`updated` int unsigned NOT NULL default 0',
+                        'lastError' => '`lastError` varchar(500) NOT NULL default ""',
+                        'dedupeKey' => '`dedupeKey` char(40) NOT NULL default ""',
+                        'payload' => '`payload` longtext',
+                    ],
+                ],
+            ],
+            'mail_unsub' => [
+                'label' => '邮件退订表',
+                'mysql' => [
+                    'definitions' => [
+                        'id' => '`id` bigint unsigned NOT NULL auto_increment',
+                        'email' => '`email` varchar(255) NOT NULL',
+                        'scope' => '`scope` varchar(32) NOT NULL',
+                        'created' => '`created` int unsigned NOT NULL default 0',
+                    ],
+                ],
+            ],
+            'password_resets' => [
+                'label' => '密码重置表',
+                'mysql' => [
+                    'definitions' => [
+                        'id' => '`id` bigint unsigned NOT NULL auto_increment',
+                        'email' => '`email` varchar(150) NOT NULL',
+                        'token' => '`token` varchar(64) NOT NULL',
+                        'created' => '`created` int unsigned NOT NULL default 0',
+                        'expires' => '`expires` int unsigned NOT NULL default 0',
+                        'used' => '`used` tinyint unsigned NOT NULL default 0',
+                    ],
+                ],
+            ],
+        ];
+    }
+
+    public static function criticalColumns(string $tableKey): array
+    {
+        $mysqlMeta = (array) (self::criticalSchema()[$tableKey]['mysql'] ?? []);
+        return array_keys((array) ($mysqlMeta['definitions'] ?? []));
+    }
+
+    public static function criticalIndexes(Db $db, string $tableKey, string $table): array
+    {
+        return array_map(
+            static fn(array $index): string => (string) ($index['name'] ?? ''),
+            self::tableIndexes(self::dialect($db), $tableKey, $table)
+        );
+    }
+
     public static function ensureRenewShield(Db $db): void
     {
         self::ensureTables($db, ['renew_shield_logs', 'renew_shield_state']);
@@ -46,6 +108,25 @@ class Schema
         self::ensureIndex($db, $prefix . 'metas', $prefix . 'metas_type_slug', ['type', 'slug']);
         self::ensureIndex($db, $prefix . 'metas', $prefix . 'metas_type_parent_order', ['type', 'parent', 'order']);
         self::ensureIndex($db, $prefix . 'relationships', $prefix . 'relationships_mid', ['mid']);
+    }
+
+    public static function repairMailInfra(Db $db): void
+    {
+        if (self::dialect($db) !== 'mysql') {
+            return;
+        }
+
+        $expectedCollation = self::detectMysqlCollation($db);
+        foreach (['mail_queue', 'mail_unsub', 'password_resets'] as $tableKey) {
+            $table = $db->getPrefix() . $tableKey;
+            self::ensureMysqlTableCollation($db, $table, $expectedCollation);
+            self::ensureMysqlColumnDefinitions($db, $tableKey, $table);
+        }
+    }
+
+    public static function detectMysqlCollation(Db $db): string
+    {
+        return self::mysqlCollation($db, self::dialect($db));
     }
 
     public static function ensureUserPasswordStorage(Db $db): void
@@ -98,7 +179,7 @@ class Schema
         }
     }
 
-    private static function dialect(Db $db): string
+    public static function dialect(Db $db): string
     {
         $adapter = strtolower($db->getAdapterName());
 
@@ -476,7 +557,7 @@ class Schema
         };
     }
 
-    private static function indexExists(Db $db, string $table, string $index): bool
+    public static function indexExists(Db $db, string $table, string $index): bool
     {
         $dialect = self::dialect($db);
 
@@ -485,6 +566,45 @@ class Schema
             'pgsql' => self::pgsqlIndexExists($db, $table, $index),
             default => self::mysqlIndexExists($db, $table, $index),
         };
+    }
+
+    public static function mysqlColumns(Db $db, string $table): array
+    {
+        try {
+            $rows = $db->fetchAll('SHOW FULL COLUMNS FROM ' . self::quote($table, 'mysql'));
+        } catch (\Throwable) {
+            return [];
+        }
+
+        $map = [];
+        foreach ($rows as $row) {
+            $field = (string) ($row['Field'] ?? '');
+            if ($field !== '') {
+                $map[$field] = $row;
+            }
+        }
+
+        return $map;
+    }
+
+    public static function mysqlTypeMismatches(Db $db, string $table, array $definitions): array
+    {
+        $mismatches = [];
+        $columnMap = self::mysqlColumns($db, $table);
+
+        foreach ($definitions as $column => $definition) {
+            $actual = strtolower((string) ($columnMap[$column]['Type'] ?? ''));
+            $expectedType = self::mysqlDefinitionType((string) $definition);
+            if ($actual === '') {
+                continue;
+            }
+
+            if ($expectedType !== '' && !str_contains($actual, $expectedType)) {
+                $mismatches[] = (string) $column;
+            }
+        }
+
+        return $mismatches;
     }
 
     private static function mysqlIndexExists(Db $db, string $table, string $index): bool
@@ -593,6 +713,65 @@ class Schema
         return '\'' . str_replace('\'', '\'\'', $value) . '\'';
     }
 
+    private static function ensureMysqlTableCollation(Db $db, string $table, string $collation): void
+    {
+        $current = self::mysqlTableCollation($db, $table);
+        if ($current === '' || strtolower($current) === strtolower($collation)) {
+            return;
+        }
+
+        $db->query(
+            'ALTER TABLE ' . self::quote($table, 'mysql')
+            . ' CONVERT TO CHARACTER SET utf8mb4 COLLATE ' . $collation,
+            Db::WRITE
+        );
+    }
+
+    private static function ensureMysqlColumnDefinitions(Db $db, string $tableKey, string $table): void
+    {
+        $columnMap = self::mysqlColumns($db, $table);
+        $mysqlMeta = (array) (self::criticalSchema()[$tableKey]['mysql'] ?? []);
+        $definitions = (array) ($mysqlMeta['definitions'] ?? []);
+
+        foreach ($definitions as $column => $definition) {
+            $actualType = strtolower((string) ($columnMap[$column]['Type'] ?? ''));
+            $expectedType = self::mysqlDefinitionType((string) $definition);
+            if ($actualType === '') {
+                continue;
+            }
+
+            if ($expectedType !== '' && str_contains($actualType, $expectedType)) {
+                continue;
+            }
+
+            $db->query(
+                'ALTER TABLE ' . self::quote($table, 'mysql')
+                . ' MODIFY COLUMN ' . $definition,
+                Db::WRITE
+            );
+        }
+    }
+
+    private static function mysqlDefinitionType(string $definition): string
+    {
+        if (preg_match('/^`[^`]+`\s+(.+?)(?:\s+NOT\s+NULL|\s+DEFAULT|\s+NULL|\s+AUTO_INCREMENT|$)/i', trim($definition), $matches) !== 1) {
+            return '';
+        }
+
+        return strtolower(trim((string) ($matches[1] ?? '')));
+    }
+
+    public static function mysqlTableCollation(Db $db, string $table): string
+    {
+        try {
+            $row = $db->fetchRow('SHOW TABLE STATUS LIKE ' . self::sqlString($table));
+        } catch (\Throwable) {
+            return '';
+        }
+
+        return trim((string) ($row['Collation'] ?? ''));
+    }
+
     private static function mysqlCollation(Db $db, string $dialect): string
     {
         if ($dialect !== 'mysql') {
@@ -602,20 +781,14 @@ class Schema
         try {
             foreach (['contents', 'options', 'users'] as $tableKey) {
                 $table = $db->getPrefix() . $tableKey;
-                $row = $db->fetchRow('SHOW TABLE STATUS LIKE ' . self::sqlString($table));
-                $collation = trim((string) ($row['Collation'] ?? ''));
+                $collation = self::mysqlTableCollation($db, $table);
                 if ($collation !== '') {
                     return $collation;
                 }
             }
 
             $version = $db->getVersion(Db::READ);
-            if (stripos($version, 'mariadb') === false
-                && preg_match('/\d+\.\d+(?:\.\d+)?/', $version, $matches) === 1
-                && version_compare($matches[0], '8.0.0', '>=')
-            ) {
-                return 'utf8mb4_0900_ai_ci';
-            }
+            return DbInfo::resolveMysqlCollation('utf8mb4', $version);
         } catch (\Throwable) {
         }
 

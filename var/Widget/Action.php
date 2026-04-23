@@ -47,11 +47,7 @@ class Action extends Widget
         'mail'                     => '\Widget\Mail'
     ];
 
-    /**
-     * 入口函数,初始化路由器
-     *
-     * @throws Widget\Exception
-     */
+    /** @throws Widget\Exception */
     public function execute()
     {
         $action = $this->request->get('action');

@@ -91,8 +91,6 @@ class Store
 
         return [
             'root' => $root,
-            'stateFile' => $stateFile,
-            'lockFile' => $lockFile,
             'state' => $state,
             'lockBusy' => $lockBusy,
             'artifactCount' => $artifacts,
