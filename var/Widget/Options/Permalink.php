@@ -25,6 +25,12 @@ class Permalink extends Options implements ActionInterface
      */
     public function checkPagePattern($value): bool
     {
+        if (!is_scalar($value)) {
+            return false;
+        }
+
+        $value = (string) $value;
+
         return strpos($value, '{slug}') !== false
             || strpos($value, '{cid}') !== false
             || strpos($value, '{directory}') !== false;
@@ -38,6 +44,12 @@ class Permalink extends Options implements ActionInterface
      */
     public function checkCategoryPattern($value): bool
     {
+        if (!is_scalar($value)) {
+            return false;
+        }
+
+        $value = (string) $value;
+
         return strpos($value, '{slug}') !== false
             || strpos($value, '{mid}') !== false
             || strpos($value, '{directory}') !== false;
@@ -99,7 +111,7 @@ RewriteRule . {$basePath}index.php [L]
                         unlink($htaccess);
                     }
                 }
-            } catch (Client\Exception $e) {
+            } catch (Client\Exception) {
                 if ($hasWrote && isset($htaccess) && is_file($htaccess) && is_writable($htaccess)) {
                     unlink($htaccess);
                 }

@@ -184,11 +184,19 @@ class Request
     {
         $result = $this->get($key, [], $exists);
 
-        if (!empty($result) || !$exists) {
+        if (!$exists) {
+            return [];
+        }
+
+        if (is_array($result)) {
             return $result;
         }
 
-        return [$this->get($key)];
+        if ($result === null || $result === '') {
+            return [];
+        }
+
+        return [$result];
     }
 
     /**

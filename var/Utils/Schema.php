@@ -79,7 +79,7 @@ class Schema
 
         foreach ($tables as $tableKey) {
             $table = $db->getPrefix() . $tableKey;
-            $sql = self::tableSql($dialect, $tableKey, $table);
+            $sql = self::tableSql($db, $dialect, $tableKey, $table);
             if ($sql === '') {
                 continue;
             }
@@ -113,9 +113,10 @@ class Schema
         return 'mysql';
     }
 
-    private static function tableSql(string $dialect, string $tableKey, string $table): string
+    private static function tableSql(Db $db, string $dialect, string $tableKey, string $table): string
     {
         $name = self::quote($table, $dialect);
+        $mysqlCollation = self::mysqlCollation($db, $dialect);
 
         switch ($tableKey) {
             case 'mail_queue':
@@ -159,7 +160,7 @@ class Schema
                         . '`dedupeKey` char(40) NOT NULL default "",'
                         . '`payload` longtext,'
                         . 'PRIMARY KEY (`id`)'
-                        . ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci',
+                        . ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=' . $mysqlCollation,
                 };
 
             case 'mail_unsub':
@@ -182,7 +183,7 @@ class Schema
                         . '`scope` varchar(32) NOT NULL,'
                         . '`created` int unsigned NOT NULL default 0,'
                         . 'PRIMARY KEY (`id`)'
-                        . ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci',
+                        . ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=' . $mysqlCollation,
                 };
 
             case 'password_resets':
@@ -211,7 +212,7 @@ class Schema
                         . '`expires` int unsigned NOT NULL default 0,'
                         . '`used` tinyint unsigned NOT NULL default 0,'
                         . 'PRIMARY KEY (`id`)'
-                        . ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci',
+                        . ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=' . $mysqlCollation,
                 };
 
             case 'renew_go_logs':
@@ -243,7 +244,7 @@ class Schema
                         . '`referer` varchar(512) DEFAULT NULL,'
                         . '`created_at` int unsigned NOT NULL,'
                         . 'PRIMARY KEY (`id`)'
-                        . ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci',
+                        . ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=' . $mysqlCollation,
                 };
 
             case 'renew_shield_logs':
@@ -293,7 +294,7 @@ class Schema
                         . '`payload` text DEFAULT NULL,'
                         . '`created_at` int unsigned NOT NULL,'
                         . 'PRIMARY KEY (`id`)'
-                        . ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci',
+                        . ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=' . $mysqlCollation,
                 };
 
             case 'renew_shield_state':
@@ -317,7 +318,7 @@ class Schema
                         . '`expires_at` int unsigned NOT NULL DEFAULT 0,'
                         . 'PRIMARY KEY (`id`),'
                         . 'UNIQUE KEY `uniq_name_hash` (`name_hash`)'
-                        . ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci',
+                        . ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=' . $mysqlCollation,
                 };
 
             case 'renew_seo_logs':
@@ -352,7 +353,7 @@ class Schema
                         . '`payload` text DEFAULT NULL,'
                         . '`created_at` int unsigned NOT NULL,'
                         . 'PRIMARY KEY (`id`)'
-                        . ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci',
+                        . ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=' . $mysqlCollation,
                 };
 
             case 'renew_seo_404':
@@ -393,7 +394,7 @@ class Schema
                         . '`first_seen` int unsigned NOT NULL,'
                         . '`last_seen` int unsigned NOT NULL,'
                         . 'PRIMARY KEY (`id`)'
-                        . ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci',
+                        . ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=' . $mysqlCollation,
                 };
         }
 
@@ -495,7 +496,7 @@ class Schema
             );
 
             return $row !== null;
-        } catch (\Throwable $e) {
+        } catch (\Throwable) {
             return false;
         }
     }
@@ -509,7 +510,7 @@ class Schema
             );
 
             return $row !== null;
-        } catch (\Throwable $e) {
+        } catch (\Throwable) {
             return false;
         }
     }
@@ -525,7 +526,7 @@ class Schema
             }
 
             return false;
-        } catch (\Throwable $e) {
+        } catch (\Throwable) {
             return false;
         }
     }
@@ -541,7 +542,7 @@ class Schema
             }
 
             return false;
-        } catch (\Throwable $e) {
+        } catch (\Throwable) {
             return false;
         }
     }
@@ -558,7 +559,7 @@ class Schema
             );
 
             return $row !== null;
-        } catch (\Throwable $e) {
+        } catch (\Throwable) {
             return false;
         }
     }
@@ -575,7 +576,7 @@ class Schema
             );
 
             return $row !== null;
-        } catch (\Throwable $e) {
+        } catch (\Throwable) {
             return false;
         }
     }
@@ -590,5 +591,34 @@ class Schema
     private static function sqlString(string $value): string
     {
         return '\'' . str_replace('\'', '\'\'', $value) . '\'';
+    }
+
+    private static function mysqlCollation(Db $db, string $dialect): string
+    {
+        if ($dialect !== 'mysql') {
+            return 'utf8mb4_unicode_ci';
+        }
+
+        try {
+            foreach (['contents', 'options', 'users'] as $tableKey) {
+                $table = $db->getPrefix() . $tableKey;
+                $row = $db->fetchRow('SHOW TABLE STATUS LIKE ' . self::sqlString($table));
+                $collation = trim((string) ($row['Collation'] ?? ''));
+                if ($collation !== '') {
+                    return $collation;
+                }
+            }
+
+            $version = $db->getVersion(Db::READ);
+            if (stripos($version, 'mariadb') === false
+                && preg_match('/\d+\.\d+(?:\.\d+)?/', $version, $matches) === 1
+                && version_compare($matches[0], '8.0.0', '>=')
+            ) {
+                return 'utf8mb4_0900_ai_ci';
+            }
+        } catch (\Throwable) {
+        }
+
+        return 'utf8mb4_unicode_ci';
     }
 }

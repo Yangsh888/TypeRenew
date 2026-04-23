@@ -216,7 +216,7 @@ class Archive extends Contents
         return $this->currentPage;
     }
 
-    public function ____currentPage(): int
+    public function ___currentPage(): int
     {
         return $this->getCurrentPage();
     }

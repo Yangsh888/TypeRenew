@@ -7,7 +7,6 @@ namespace IXR;
  *
  * @package IXR
  */
-#[\AllowDynamicProperties]
 class Message
 {
     /**

@@ -98,7 +98,16 @@ class NormalizeLegacyStorageStep implements StepInterface
             return null;
         }
 
-        $result = @unserialize($value, ['allowed_classes' => false]);
+        set_error_handler(static function (): bool {
+            return true;
+        });
+
+        try {
+            $result = unserialize($value, ['allowed_classes' => false]);
+        } finally {
+            restore_error_handler();
+        }
+
         if ($result === false && $value !== 'b:0;' && $value !== 'N;') {
             return null;
         }

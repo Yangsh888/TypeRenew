@@ -494,9 +494,9 @@ function install_check(string $type): bool
                 if ($type == 'db_data' && empty($installed['value'])) {
                     return false;
                 }
-            } catch (\Typecho\Db\Adapter\ConnectionException $e) {
+            } catch (\Typecho\Db\Adapter\ConnectionException) {
                 return false;
-            } catch (\Typecho\Db\Adapter\SQLException $e) {
+            } catch (\Typecho\Db\Adapter\SQLException) {
                 return false;
             }
 
@@ -833,6 +833,26 @@ function install_assert_mysql_compatibility(\Typecho\Db $db): void
     if (version_compare($version, $minimum, '<')) {
         install_raise_error(_t('当前 %s 版本为 %s，安装器最低要求 %s %s，请升级后继续安装。', $label, $rawVersion, $label, $minimum));
     }
+}
+
+function install_resolve_mysql_collation(\Typecho\Db $db, string $charset): string
+{
+    $charset = strtolower(trim($charset));
+    if ($charset !== 'utf8mb4') {
+        return $charset === 'utf8' ? 'utf8_unicode_ci' : $charset . '_unicode_ci';
+    }
+
+    $rawVersion = $db->getVersion(\Typecho\Db::READ);
+    if (stripos($rawVersion, 'mariadb') !== false) {
+        return 'utf8mb4_unicode_ci';
+    }
+
+    $version = install_extract_db_version($rawVersion);
+    if ($version !== '' && version_compare($version, '8.0.0', '>=')) {
+        return 'utf8mb4_0900_ai_ci';
+    }
+
+    return 'utf8mb4_unicode_ci';
 }
 
 /**
@@ -1228,7 +1248,7 @@ function install_step_2_perform()
 
         if (isset($dbConfig['charset'])) {
             $scripts = str_replace('%charset%', $dbConfig['charset'], $scripts);
-            $scripts = str_replace('%collate%', 'utf8mb4_unicode_ci', $scripts);
+            $scripts = str_replace('%collate%', install_resolve_mysql_collation($installDb, (string) $dbConfig['charset']), $scripts);
         }
 
         if (isset($dbConfig['engine'])) {

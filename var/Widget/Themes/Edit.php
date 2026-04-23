@@ -23,6 +23,46 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
  */
 class Edit extends Options implements ActionInterface
 {
+    private function writeThemeFile(string $path, string $content, string $file): void
+    {
+        $directory = dirname($path);
+        $tempPath = $directory . DIRECTORY_SEPARATOR . '.' . basename($path) . '.tmp.' . bin2hex(random_bytes(6));
+        $backupPath = $directory . DIRECTORY_SEPARATOR . '.' . basename($path) . '.bak.' . bin2hex(random_bytes(6));
+        $backupCreated = false;
+
+        $written = file_put_contents($tempPath, $content, LOCK_EX);
+        if ($written === false) {
+            throw new Exception(_t('文件 %s 无法被写入', $file));
+        }
+
+        try {
+            if (is_file($path)) {
+                if (!rename($path, $backupPath)) {
+                    throw new Exception(_t('文件 %s 无法被写入', $file));
+                }
+                $backupCreated = true;
+            }
+
+            if (!rename($tempPath, $path)) {
+                if ($backupCreated && is_file($backupPath)) {
+                    rename($backupPath, $path);
+                }
+                throw new Exception(_t('文件 %s 无法被写入', $file));
+            }
+
+            if ($backupCreated && is_file($backupPath) && !unlink($backupPath) && is_file($backupPath)) {
+                throw new Exception(_t('文件 %s 无法被写入', $file));
+            }
+        } finally {
+            if (is_file($tempPath)) {
+                @unlink($tempPath);
+            }
+            if (is_file($backupPath) && !is_file($path)) {
+                @rename($backupPath, $path);
+            }
+        }
+    }
+
     /**
      * 解析主题内文件真实路径，阻止目录穿越到主题目录外
      *
@@ -136,17 +176,10 @@ class Edit extends Options implements ActionInterface
             is_writable($path)
             && (!defined('__TYPECHO_THEME_WRITEABLE__') || __TYPECHO_THEME_WRITEABLE__)
         ) {
-            $handle = fopen($path, 'wb');
-            if ($handle) {
-                $written = fwrite($handle, (string) $this->request->get('content'));
-                fclose($handle);
-            } else {
-                $written = false;
-            }
-
-            if ($written !== false) {
+            try {
+                $this->writeThemeFile($path, (string) $this->request->get('content'), $file);
                 Notice::alloc()->set(_t("文件 %s 的更改已经保存", $file), 'success');
-            } else {
+            } catch (Exception $e) {
                 Notice::alloc()->set(_t("文件 %s 无法被写入", $file), 'error');
             }
             $this->response->goBack();
