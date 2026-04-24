@@ -3,12 +3,12 @@
 namespace Widget;
 
 use Typecho\Common;
-use Typecho\Cache;
 use Typecho\Cookie;
 use Typecho\Db;
 use Typecho\Router;
 use Typecho\Validate;
 use Typecho\Widget\Exception;
+use Utils\Comment;
 use Widget\Base\Comments;
 
 if (!defined('__TYPECHO_ROOT_DIR__')) {
@@ -330,27 +330,15 @@ class Feedback extends Comments implements ActionInterface
 
     private function purgeCommentCache(): void
     {
-        if ((int) ($this->options->cacheCommentFlush ?? 1) !== 1) {
-            return;
-        }
         if ((string) ($this->status ?? '') !== 'approved') {
             return;
         }
-        try {
-            self::pluginHandle()->call('commentCachePurge', $this);
-        } catch (\Throwable $e) {
-            error_log('Widget.Feedback.purgeCommentCache.plugin: ' . $e->getMessage());
-        }
-        try {
-            $cache = Cache::getInstance();
-            $cache->invalidate('contents');
-            $cache->invalidate('metas');
-        } catch (\Throwable) {
+        Comment::purgeCache((int) ($this->options->cacheCommentFlush ?? 1), function (): void {
             try {
-                Cache::getInstance()->flush();
-            } catch (\Throwable $flushError) {
-                error_log('Widget.Feedback.purgeCommentCache.flush: ' . $flushError->getMessage());
+                self::pluginHandle()->call('commentCachePurge', $this);
+            } catch (\Throwable $e) {
+                error_log('Widget.Feedback.purgeCommentCache.plugin: ' . $e->getMessage());
             }
-        }
+        });
     }
 }

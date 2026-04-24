@@ -2,9 +2,9 @@
 
 namespace Widget\Comments;
 
-use Typecho\Cache;
 use Typecho\Db\Exception;
 use Typecho\Db\Query;
+use Utils\Comment;
 use Widget\Base\Comments;
 use Widget\ActionInterface;
 use Widget\Notice;
@@ -392,25 +392,13 @@ class Edit extends Comments implements ActionInterface
 
     private function purgeCommentCache(): void
     {
-        if ((int) ($this->options->cacheCommentFlush ?? 1) !== 1) {
-            return;
-        }
-        try {
-            self::pluginHandle()->call('commentCachePurge', $this);
-        } catch (\Throwable $e) {
-            error_log('Widget.Comments.Edit.purgeCommentCache.plugin: ' . $e->getMessage());
-        }
-        try {
-            $cache = Cache::getInstance();
-            $cache->invalidate('contents');
-            $cache->invalidate('metas');
-        } catch (\Throwable) {
+        Comment::purgeCache((int) ($this->options->cacheCommentFlush ?? 1), function (): void {
             try {
-                Cache::getInstance()->flush();
-            } catch (\Throwable $flushError) {
-                error_log('Widget.Comments.Edit.purgeCommentCache.flush: ' . $flushError->getMessage());
+                self::pluginHandle()->call('commentCachePurge', $this);
+            } catch (\Throwable $e) {
+                error_log('Widget.Comments.Edit.purgeCommentCache.plugin: ' . $e->getMessage());
             }
-        }
+        });
     }
 
     private function purgeCommentCacheForTransition(?string $beforeStatus, ?string $afterStatus): void

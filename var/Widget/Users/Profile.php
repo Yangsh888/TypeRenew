@@ -173,10 +173,14 @@ class Profile extends Users implements ActionInterface
             $this->response->goBack();
         }
 
+        $currentScreenName = (string) $this->user->screenName;
         $user = $this->request->from('mail', 'screenName', 'url');
         $user['screenName'] = Common::strBy($user['screenName'] ?? null, $this->user->name);
 
-        $this->update($user, $this->db->sql()->where('uid = ?', $this->user->uid));
+        $updateRows = $this->update($user, $this->db->sql()->where('uid = ?', $this->user->uid));
+        if ($updateRows > 0 && $currentScreenName !== $user['screenName']) {
+            $this->syncCommentAuthor($this->user->uid, $user['screenName']);
+        }
 
         Notice::alloc()->highlight('user-' . $this->user->uid);
 

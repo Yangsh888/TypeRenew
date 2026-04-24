@@ -4,7 +4,9 @@ namespace Utils\Migration;
 
 use Typecho\Common;
 use Typecho\Db;
+use Utils\Comment;
 use Utils\Schema;
+use Widget\Options;
 
 if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
@@ -14,9 +16,14 @@ class SchemaManager
 {
     public static function syncCurrentRelease(Db $db, array $activatedPlugins = []): array
     {
+        $messages = [_t('当前版本所需的数据库结构已同步')];
         self::ensureMailInfrastructure($db);
         Schema::ensureCoreIndexes($db);
         Schema::ensureUserPasswordStorage($db);
+        $syncedComments = self::syncCommentAuthors($db);
+        if ($syncedComments > 0) {
+            $messages[] = _t('已同步 %d 条历史评论的作者昵称', $syncedComments);
+        }
 
         if (in_array('RenewGo', $activatedPlugins, true)) {
             Schema::ensureRenewGo($db);
@@ -29,7 +36,7 @@ class SchemaManager
         self::updateGenerator($db, Common::VERSION);
 
         return [
-            'messages' => [_t('当前版本所需的数据库结构已同步')],
+            'messages' => $messages,
         ];
     }
 
@@ -238,6 +245,15 @@ class SchemaManager
         );
     }
 
+    private static function syncCommentAuthors(Db $db): int
+    {
+        if (!self::tableExists($db, 'table.users') || !self::tableExists($db, 'table.comments')) {
+            return 0;
+        }
+
+        return Comment::syncAllAuthors($db, self::commentCacheFlush());
+    }
+
     private static function tableExists(Db $db, string $tableAlias): bool
     {
         try {
@@ -245,6 +261,15 @@ class SchemaManager
             return true;
         } catch (\Typecho\Db\Adapter\SQLException $e) {
             return false;
+        }
+    }
+
+    private static function commentCacheFlush(): int
+    {
+        try {
+            return (int) (Options::alloc()->cacheCommentFlush ?? 1);
+        } catch (\Throwable) {
+            return 1;
         }
     }
 

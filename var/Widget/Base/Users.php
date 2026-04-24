@@ -8,6 +8,7 @@ use Typecho\Db\Exception;
 use Typecho\Db\Query;
 use Typecho\Router;
 use Typecho\Router\ParamsDelegateInterface;
+use Utils\Comment;
 use Widget\Base;
 
 if (!defined('__TYPECHO_ROOT_DIR__')) {
@@ -106,6 +107,22 @@ class Users extends Base implements QueryInterface, RowFilterInterface, PrimaryK
     public function update(array $rows, Query $condition): int
     {
         return $this->db->query($condition->update('table.users')->rows($rows));
+    }
+
+    /**
+     * 将注册用户的历史评论作者名同步为当前昵称
+     *
+     * @throws Exception
+     */
+    protected function syncCommentAuthor(int $uid, string $screenName): void
+    {
+        Comment::syncUserAuthor(
+            $this->db,
+            $uid,
+            $screenName,
+            null,
+            (int) ($this->options->cacheCommentFlush ?? 1)
+        );
     }
 
     public function delete(Query $condition): int

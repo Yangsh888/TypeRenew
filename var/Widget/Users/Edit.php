@@ -211,6 +211,7 @@ class Edit extends Users implements ActionInterface
             $this->response->goBack();
         }
 
+        $currentScreenName = (string) $this->screenName;
         $user = $this->request->from('mail', 'screenName', 'password', 'url', 'group');
         $user['screenName'] = Common::strBy($user['screenName'] ?? null, $this->name);
         if (empty($user['password'])) {
@@ -219,7 +220,10 @@ class Edit extends Users implements ActionInterface
             $user['password'] = Password::hash($user['password']);
         }
 
-        $this->update($user, $this->db->sql()->where('uid = ?', $this->request->get('uid')));
+        $updateRows = $this->update($user, $this->db->sql()->where('uid = ?', $this->request->get('uid')));
+        if ($updateRows > 0 && $currentScreenName !== $user['screenName']) {
+            $this->syncCommentAuthor((int) $this->request->get('uid'), $user['screenName']);
+        }
 
         Notice::alloc()->highlight('user-' . $this->request->get('uid'));
 
