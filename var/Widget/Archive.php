@@ -1493,7 +1493,9 @@ EOF;
 
     private function searchHandle(Query $select, bool &$hasPushed)
     {
-        $keywords = $this->request->filter('url', 'search')->get('keywords');
+        // Route params here are plain search terms, not full URLs. Applying `url`
+        // filtering would strip spaces and break multi-word searches.
+        $keywords = $this->request->filter('search')->get('keywords');
         self::pluginHandle()->trigger($hasPushed)->call('search', $keywords, $this);
 
         if (!$hasPushed) {
