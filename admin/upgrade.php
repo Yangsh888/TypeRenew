@@ -12,6 +12,8 @@ $packageActionUrl = $security->getTokenUrl(
 $needDbUpgrade = version_compare(\Typecho\Common::VERSION, $options->version, '>');
 $schemaStatus = \Utils\Migration\SchemaManager::inspectCriticalSchema(\Typecho\Db::get());
 $needSchemaRepair = !$schemaStatus['healthy'];
+$mysqlRiskStatus = \Utils\Migration\SchemaManager::inspectMysqlUpgradeRisks(\Typecho\Db::get());
+$hasMysqlRisk = (bool) ($mysqlRiskStatus['supported'] ?? false) && !(bool) ($mysqlRiskStatus['healthy'] ?? true);
 $upgradeReport = \Typecho\Upgrade\Runner::inspect();
 $state = $upgradeReport['state'];
 $upgradeBlocking = $upgradeReport['blocking'];
@@ -204,6 +206,9 @@ $packageActionLocked = !$upgradeAvailable || $upgradeLockBusy;
 
                                     <div class="tr-help tr-mt-12"><?php _e('数据库版本 %s', $options->version); ?></div>
                                     <div class="tr-help tr-mt-12"><?php _e('关键结构状态：%s', $needSchemaRepair ? _t('需修复') : _t('正常')); ?></div>
+                                    <?php if (!empty($mysqlRiskStatus['supported'])): ?>
+                                        <div class="tr-help tr-mt-12"><?php _e('MySQL 兼容预检：%s', $hasMysqlRisk ? _t('需关注') : _t('正常')); ?></div>
+                                    <?php endif; ?>
 
                                     <div class="tr-card tr-tone-muted tr-mt-16">
                                         <div class="tr-card-b">
@@ -241,6 +246,45 @@ $packageActionLocked = !$upgradeAvailable || $upgradeLockBusy;
                                             </ul>
                                         </div>
                                     </div>
+
+                                    <?php if (!empty($mysqlRiskStatus['supported'])): ?>
+                                        <div class="tr-card tr-tone-muted tr-mt-16">
+                                            <div class="tr-card-b">
+                                                <div class="tr-subtitle"><?php _e('MySQL 升级预检查'); ?></div>
+                                                <ul class="tr-help">
+                                                    <?php foreach (($mysqlRiskStatus['items'] ?? []) as $item): ?>
+                                                        <li>
+                                                            <?php echo htmlspecialchars((string) ($item['label'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>
+                                                            ：<?php echo (($item['status'] ?? 'ok') === 'ok') ? _t('正常') : _t('需处理'); ?>
+                                                            <?php if (!empty($item['detail'])): ?>
+                                                                <span class="tr-help">(<?php echo htmlspecialchars((string) $item['detail'], ENT_QUOTES, 'UTF-8'); ?>)</span>
+                                                            <?php endif; ?>
+                                                            <?php if (!empty($item['samples']) && is_array($item['samples'])): ?>
+                                                                <span class="tr-help">
+                                                                    [<?php
+                                                                    $samples = [];
+                                                                    foreach ($item['samples'] as $sample) {
+                                                                        if (isset($sample['email'], $sample['scope'])) {
+                                                                            $samples[] = (string) $sample['email'] . ' / ' . (string) $sample['scope'] . ' x' . (int) ($sample['count'] ?? 0);
+                                                                        } elseif (isset($sample['mail'])) {
+                                                                            $samples[] = (string) $sample['mail'] . ' x' . (int) ($sample['count'] ?? 0);
+                                                                        }
+                                                                    }
+                                                                    echo htmlspecialchars(implode('；', $samples), ENT_QUOTES, 'UTF-8');
+                                                                    ?>]
+                                                                </span>
+                                                            <?php endif; ?>
+                                                        </li>
+                                                    <?php endforeach; ?>
+                                                </ul>
+                                                <?php if ($hasMysqlRisk): ?>
+                                                    <div class="tr-help tr-tone-warning tr-mt-12">
+                                                        <?php _e('建议先处理上述重复值或排序规则风险，再执行数据库升级/结构修复，以免唯一索引或排序规则转换失败。'); ?>
+                                                    </div>
+                                                <?php endif; ?>
+                                            </div>
+                                        </div>
+                                    <?php endif; ?>
 
                                     <?php if ($needDbUpgrade): ?>
                                         <div class="tr-help tr-tone-warning tr-mt-12">

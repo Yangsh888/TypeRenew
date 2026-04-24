@@ -17,6 +17,10 @@ class Service extends BaseOptions implements ActionInterface
 {
     public array $asyncRequests = [];
 
+    private const REQUEST_TIMEOUT = 10;
+    private const TRACKBACK_TIMEOUT = 5;
+    private const CONNECT_TIMEOUT = 3;
+
     public function sendPingHandle()
     {
         $data = $this->request->get('@json');
@@ -40,25 +44,12 @@ class Service extends BaseOptions implements ActionInterface
         }
 
         if (!empty($data['pingback'])) {
-            $links = $data['pingback'];
+            $links = is_array($data['pingback']) ? $data['pingback'] : [];
             $permalinkPart = Common::parseUrl((string) $permalink);
             $permalinkHost = (string) ($permalinkPart['host'] ?? '');
             foreach ($links as $url) {
-                $urlPart = Common::parseUrl((string) $url);
-                if ($urlPart === [] || empty($urlPart['host'])) {
-                    continue;
-                }
-
-                if (isset($urlPart['scheme'])) {
-                    if ('http' != $urlPart['scheme'] && 'https' != $urlPart['scheme']) {
-                        continue;
-                    }
-                } else {
-                    $urlPart['scheme'] = 'http';
-                    $url = Common::buildUrl($urlPart);
-                }
-
-                if ($permalinkHost !== '' && $permalinkHost == $urlPart['host']) {
+                $targetUrl = $this->normalizeServiceUrl($url);
+                if ($targetUrl === null || !$this->isSafeRemoteUrl($targetUrl, $permalinkHost)) {
                     continue;
                 }
 
@@ -66,11 +57,14 @@ class Service extends BaseOptions implements ActionInterface
 
                 if ($spider) {
                     try {
-                        $spider->setTimeout(10);
+                        $spider->setTimeout(self::REQUEST_TIMEOUT);
                         if (defined('CURLOPT_HTTP_VERSION') && defined('CURL_HTTP_VERSION_1_1')) {
                             $spider->setOption(CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
                         }
-                        $spider->send($url);
+                        if (defined('CURLOPT_CONNECTTIMEOUT')) {
+                            $spider->setOption(CURLOPT_CONNECTTIMEOUT, self::CONNECT_TIMEOUT);
+                        }
+                        $spider->send($targetUrl);
 
                         if (!($xmlrpcUrl = $spider->getResponseHeader('x-pingback'))) {
                             if (
@@ -85,9 +79,14 @@ class Service extends BaseOptions implements ActionInterface
                         }
 
                         if (!empty($xmlrpcUrl)) {
+                            $xmlrpcUrl = $this->normalizeServiceUrl($xmlrpcUrl);
+                            if ($xmlrpcUrl === null || !$this->isSafeRemoteUrl($xmlrpcUrl, $permalinkHost)) {
+                                continue;
+                            }
+
                             try {
                                 $xmlrpc = new \IXR\Client($xmlrpcUrl);
-                                $xmlrpc->pingback->ping($permalink, $url);
+                                $xmlrpc->pingback->ping($permalink, $targetUrl);
                                 unset($xmlrpc);
                             } catch (\IXR\Exception $e) {
                                 $this->reportException('sendPingHandle.pingback', $e);
@@ -103,16 +102,23 @@ class Service extends BaseOptions implements ActionInterface
         }
 
         if (!empty($data['trackback'])) {
-            $links = $data['trackback'];
+            $links = is_array($data['trackback']) ? $data['trackback'] : [];
+            $permalinkPart = Common::parseUrl((string) $permalink);
+            $permalinkHost = (string) ($permalinkPart['host'] ?? '');
 
             foreach ($links as $url) {
+                $targetUrl = $this->normalizeServiceUrl($url);
+                if ($targetUrl === null || !$this->isSafeRemoteUrl($targetUrl, $permalinkHost)) {
+                    continue;
+                }
+
                 $client = Client::get();
 
                 if ($client) {
                     try {
-                        $client->setTimeout(5);
+                        $client->setTimeout(self::TRACKBACK_TIMEOUT);
                         if (defined('CURLOPT_CONNECTTIMEOUT')) {
-                            $client->setOption(CURLOPT_CONNECTTIMEOUT, 3);
+                            $client->setOption(CURLOPT_CONNECTTIMEOUT, self::CONNECT_TIMEOUT);
                         }
                         if (defined('CURLOPT_HTTP_VERSION') && defined('CURL_HTTP_VERSION_1_1')) {
                             $client->setOption(CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
@@ -122,7 +128,7 @@ class Service extends BaseOptions implements ActionInterface
                                 'url' => $permalink,
                                 'excerpt' => $excerpt
                             ]);
-                        $client->send($url);
+                        $client->send($targetUrl);
 
                         unset($client);
                     } catch (Client\Exception $e) {
@@ -137,6 +143,10 @@ class Service extends BaseOptions implements ActionInterface
     {
         $this->user->pass('contributor');
 
+        if (empty($content->allowPing)) {
+            return;
+        }
+
         if ($client = Client::get()) {
             try {
                 $input = [
@@ -147,8 +157,18 @@ class Service extends BaseOptions implements ActionInterface
                     'token' => Common::timeToken($this->options->secret)
                 ];
 
+                $permalinkPart = Common::parseUrl((string) $content->permalink);
+                $permalinkHost = (string) ($permalinkPart['host'] ?? '');
+
                 if (preg_match_all("|<a[^>]*href=[\"'](.*?)[\"'][^>]*>(.*?)</a>|", $content->content, $matches)) {
-                    $pingback = array_unique($matches[1]);
+                    $pingback = [];
+                    foreach (array_unique($matches[1]) as $url) {
+                        $targetUrl = $this->normalizeServiceUrl($url);
+                        if ($targetUrl === null || !$this->isSafeRemoteUrl($targetUrl, $permalinkHost)) {
+                            continue;
+                        }
+                        $pingback[] = $targetUrl;
+                    }
 
                     if (!empty($pingback)) {
                         $input['pingback'] = $pingback;
@@ -156,13 +176,24 @@ class Service extends BaseOptions implements ActionInterface
                 }
 
                 if (!empty($trackback)) {
-                    $input['trackback'] = $trackback;
+                    $safeTrackback = [];
+                    foreach ($trackback as $url) {
+                        $targetUrl = $this->normalizeServiceUrl($url);
+                        if ($targetUrl === null || !$this->isSafeRemoteUrl($targetUrl, $permalinkHost)) {
+                            continue;
+                        }
+                        $safeTrackback[] = $targetUrl;
+                    }
+
+                    if (!empty($safeTrackback)) {
+                        $input['trackback'] = $safeTrackback;
+                    }
                 }
 
                 $client->setHeader('User-Agent', $this->options->generator)
-                    ->setTimeout(5);
+                    ->setTimeout(self::TRACKBACK_TIMEOUT);
                 if (defined('CURLOPT_CONNECTTIMEOUT')) {
-                    $client->setOption(CURLOPT_CONNECTTIMEOUT, 3);
+                    $client->setOption(CURLOPT_CONNECTTIMEOUT, self::CONNECT_TIMEOUT);
                 }
                 $client->setJson($input)
                     ->send($this->getServiceUrl('ping'));
@@ -265,5 +296,75 @@ class Service extends BaseOptions implements ActionInterface
     private function reportException(string $scope, \Throwable $e): void
     {
         error_log('Service.' . $scope . ': ' . $e->getMessage());
+    }
+
+    private function normalizeServiceUrl(mixed $url): ?string
+    {
+        if (!is_scalar($url)) {
+            return null;
+        }
+
+        $candidate = trim((string) $url);
+        if ($candidate === '') {
+            return null;
+        }
+
+        $parts = Common::parseUrl($candidate);
+        if ($parts === [] || empty($parts['host'])) {
+            return null;
+        }
+
+        if (!isset($parts['scheme'])) {
+            $parts['scheme'] = 'http';
+            $candidate = Common::buildUrl($parts);
+        }
+
+        return $candidate;
+    }
+
+    private function isSafeRemoteUrl(string $url, string $permalinkHost = ''): bool
+    {
+        $parts = Common::parseUrl($url);
+        if ($parts === [] || empty($parts['host'])) {
+            return false;
+        }
+
+        $scheme = strtolower((string) ($parts['scheme'] ?? ''));
+        if ($scheme !== 'http' && $scheme !== 'https') {
+            return false;
+        }
+
+        $host = strtolower((string) $parts['host']);
+        if ($permalinkHost !== '' && $host === strtolower($permalinkHost)) {
+            return false;
+        }
+
+        if ($this->isReservedHost($host)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private function isReservedHost(string $host): bool
+    {
+        if ($host === '') {
+            return true;
+        }
+
+        if ($host === 'localhost' || $host === 'localhost.localdomain') {
+            return true;
+        }
+
+        $ip = filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_IPV6);
+        if ($ip === false) {
+            return false;
+        }
+
+        return !filter_var(
+            $ip,
+            FILTER_VALIDATE_IP,
+            FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE
+        );
     }
 }

@@ -269,21 +269,40 @@ class Edit extends Metas implements ActionInterface
         /** 取出数据 */
         $category = $this->request->from('name', 'slug', 'description', 'parent');
         $category['mid'] = $this->request->get('mid');
+        $category['parent'] = (int) ($category['parent'] ?? 0);
         $category['slug'] = Common::slugName(Common::strBy($category['slug'] ?? null, $category['name']));
         $category['type'] = 'category';
         $current = $this->db->fetchRow($this->select()->where('mid = ?', $category['mid']));
 
-        if ($current['parent'] != $category['parent']) {
-            $parent = $this->db->fetchRow($this->select()->where('mid = ?', $category['parent']));
+        if (!is_array($current)) {
+            Notice::alloc()->set(_t('分类不存在'), 'error');
+            $this->response->goBack();
+        }
 
-            if ($parent['mid'] == $category['mid']) {
-                $category['order'] = $parent['order'];
-                $this->update([
-                    'parent' => $current['parent'],
-                    'order'  => $current['order']
-                ], $this->db->sql()->where('mid = ?', $parent['mid']));
+        if ((int) ($current['parent'] ?? 0) !== $category['parent']) {
+            if ($category['parent'] > 0) {
+                $parent = $this->db->fetchRow($this->select()->where('mid = ?', $category['parent']));
+
+                if (!is_array($parent)) {
+                    Notice::alloc()->set(_t('父分类不存在'), 'error');
+                    $this->response->goBack();
+                }
+
+                if ((int) ($parent['mid'] ?? 0) === (int) $category['mid']) {
+                    $currentParent = (int) ($current['parent'] ?? 0);
+                    $currentOrder = (int) ($current['order'] ?? 0);
+                    $parentOrder = (int) ($parent['order'] ?? 0);
+
+                    $category['order'] = $parentOrder;
+                    $this->update([
+                        'parent' => $currentParent,
+                        'order'  => $currentOrder
+                    ], $this->db->sql()->where('mid = ?', (int) $parent['mid']));
+                } else {
+                    $category['order'] = $this->getMaxOrder('category', $category['parent']) + 1;
+                }
             } else {
-                $category['order'] = $this->getMaxOrder('category', $category['parent']) + 1;
+                $category['order'] = $this->getMaxOrder('category', 0) + 1;
             }
         }
 

@@ -23,27 +23,14 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
  */
 class Edit extends Options implements ActionInterface
 {
-    private function cleanupTempFile(string $path): void
+    private function ignoreFsWarning(callable $callback): void
     {
         set_error_handler(static function (): bool {
             return true;
         });
 
         try {
-            unlink($path);
-        } finally {
-            restore_error_handler();
-        }
-    }
-
-    private function restoreBackupFile(string $from, string $to): void
-    {
-        set_error_handler(static function (): bool {
-            return true;
-        });
-
-        try {
-            rename($from, $to);
+            $callback();
         } finally {
             restore_error_handler();
         }
@@ -81,10 +68,14 @@ class Edit extends Options implements ActionInterface
             }
         } finally {
             if (is_file($tempPath)) {
-                $this->cleanupTempFile($tempPath);
+                $this->ignoreFsWarning(static function () use ($tempPath): void {
+                    unlink($tempPath);
+                });
             }
             if (is_file($backupPath) && !is_file($path)) {
-                $this->restoreBackupFile($backupPath, $path);
+                $this->ignoreFsWarning(static function () use ($backupPath, $path): void {
+                    rename($backupPath, $path);
+                });
             }
         }
     }
@@ -107,17 +98,8 @@ class Edit extends Options implements ActionInterface
             return $themeRoot;
         }
 
-        $relativePath = ltrim(str_replace('\\', '/', $file), '/');
-
-        if ($relativePath === '' || str_contains($relativePath, "\0")) {
-            throw new Exception(_t('您编辑的文件不存在'));
-        }
-
-        $path = realpath($themeRoot . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $relativePath));
-        $normalizedRoot = rtrim(str_replace('\\', '/', $themeRoot), '/') . '/';
-        $normalizedPath = $path === false ? false : str_replace('\\', '/', $path);
-
-        if ($normalizedPath === false || !str_starts_with($normalizedPath, $normalizedRoot) || !is_file($path)) {
+        $path = Files::resolveFilePath($themeRoot, $file);
+        if ($path === null) {
             throw new Exception(_t('您编辑的文件不存在'));
         }
 

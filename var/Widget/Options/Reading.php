@@ -60,7 +60,7 @@ class Reading extends Permalink
         if ('recent' != $settings['frontPage']) {
             $settings['frontArchive'] = empty($settings['frontArchive']) ? 0 : 1;
             if ($settings['frontArchive']) {
-                $routingTable = $this->options->routingTable;
+                $routingTable = $this->routingTable();
                 $routingTable['archive']['url'] = '/' . ltrim($this->encodeRule($this->request->get('archivePattern')), '/');
                 $routingTable['archive_page']['url'] = rtrim($routingTable['archive']['url'], '/')
                     . '/page/[page:digital]/';
@@ -113,7 +113,7 @@ class Reading extends Permalink
 <label for="frontArchive">' . _t(
                 '同时将文章列表页路径更改为 %s',
                 '<input type="text" name="archivePattern" class="w-20 mono" value="'
-                . htmlspecialchars($this->decodeRule($this->options->routingTable['archive']['url'])) . '" />'
+                . htmlspecialchars($this->decodeRule((string) $this->routingTable()['archive']['url'])) . '" />'
             )
             . '</label>';
 

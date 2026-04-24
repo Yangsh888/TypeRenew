@@ -17,6 +17,49 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
 
 class Permalink extends Options implements ActionInterface
 {
+    protected function routingTable(): array
+    {
+        $routingTable = $this->options->routingTable;
+
+        if (isset($routingTable[0]) && is_array($routingTable[0])) {
+            unset($routingTable[0]);
+        }
+
+        $defaults = [
+            'post' => [
+                'url' => '/archives/[cid:digital]/',
+            ],
+            'page' => [
+                'url' => '/[slug].html',
+            ],
+            'category' => [
+                'url' => '/category/[slug]/',
+            ],
+            'category_page' => [
+                'url' => '/category/[slug]/[page:digital]/',
+            ],
+            'archive' => [
+                'url' => '/blog/',
+            ],
+            'archive_page' => [
+                'url' => '/blog/page/[page:digital]/',
+            ],
+        ];
+
+        foreach ($defaults as $key => $value) {
+            if (!isset($routingTable[$key]) || !is_array($routingTable[$key])) {
+                $routingTable[$key] = $value;
+                continue;
+            }
+
+            if (!isset($routingTable[$key]['url']) || !is_string($routingTable[$key]['url']) || $routingTable[$key]['url'] === '') {
+                $routingTable[$key]['url'] = $value['url'];
+            }
+        }
+
+        return $routingTable;
+    }
+
     /**
      * 检查pagePattern里是否含有必要参数
      *
@@ -157,7 +200,7 @@ RewriteRule . {$basePath}index.php [L]
 
         $settings = defined('__TYPECHO_REWRITE__') ? [] : $this->request->from('rewrite');
         if (isset($postPattern) && $this->request->is('pagePattern')) {
-            $routingTable = $this->options->routingTable;
+            $routingTable = $this->routingTable();
             $routingTable['post']['url'] = $postPattern;
             $routingTable['page']['url'] = '/' . ltrim($this->encodeRule($this->request->get('pagePattern')), '/');
             $routingTable['category']['url'] = '/' . ltrim($this->encodeRule($this->request->get('categoryPattern')), '/');
@@ -232,7 +275,8 @@ RewriteRule . {$basePath}index.php [L]
                 . ' <code>/{category}/{slug}.html</code>'
         ];
 
-        $postPatternValue = $this->options->routingTable['post']['url'];
+        $routingTable = $this->routingTable();
+        $postPatternValue = (string) $routingTable['post']['url'];
 
         $customPatternValue = null;
         if ($this->request->is('__typecho_form_item_postPattern')) {
@@ -261,7 +305,7 @@ RewriteRule . {$basePath}index.php [L]
         $pagePattern = new Form\Element\Text(
             'pagePattern',
             null,
-            $this->decodeRule($this->options->routingTable['page']['url']),
+            $this->decodeRule((string) $routingTable['page']['url']),
             _t('独立页面路径'),
             _t('可用参数: <code>{cid}</code> 页面 ID, <code>{slug}</code> 页面缩略名，<code>{directory}</code> 多级页面')
             . '<br />' . _t('请在路径中至少包含上述的一项参数')
@@ -272,7 +316,7 @@ RewriteRule . {$basePath}index.php [L]
         $categoryPattern = new Form\Element\Text(
             'categoryPattern',
             null,
-            $this->decodeRule($this->options->routingTable['category']['url']),
+            $this->decodeRule((string) $routingTable['category']['url']),
             _t('分类路径'),
             _t('可用参数: <code>{mid}</code> 分类 ID, <code>{slug}</code> 分类缩略名，<code>{directory}</code> 多级分类')
             . '<br />' . _t('请在路径中至少包含上述的一项参数')
@@ -324,7 +368,7 @@ RewriteRule . {$basePath}index.php [L]
             return true;
         }
 
-        $routingTable = $this->options->routingTable;
+        $routingTable = $this->routingTable();
         $currentTable = ['custom' => ['url' => $this->encodeRule($this->request->get('customPattern'))]];
         $parser = new Parser($currentTable);
         $currentTable = $parser->parse();

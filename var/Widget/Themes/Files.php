@@ -62,7 +62,7 @@ class Files extends Base
         return array_values($files);
     }
 
-    private function resolveCurrentPath(string $themeRoot, string $file): ?string
+    public static function resolveFilePath(string $themeRoot, string $file): ?string
     {
         $relative = ltrim(str_replace('\\', '/', $file), '/');
         if (
@@ -105,7 +105,7 @@ class Files extends Base
                 $this->currentFile = in_array('index.php', $files, true) ? 'index.php' : $files[0];
             }
 
-            if ($this->resolveCurrentPath($dir, $this->currentFile) !== null) {
+            if (self::resolveFilePath($dir, $this->currentFile) !== null) {
                 foreach ($files as $file) {
                     $this->push([
                         'file'    => $file,
@@ -150,7 +150,7 @@ class Files extends Base
     public function currentContent(): string
     {
         $themeRoot = Options::alloc()->themeFile($this->currentTheme);
-        $path = $this->resolveCurrentPath($themeRoot, $this->currentFile);
+        $path = self::resolveFilePath($themeRoot, $this->currentFile);
         $content = $path ? file_get_contents($path) : false;
         return htmlspecialchars($content !== false ? $content : '', ENT_QUOTES, 'UTF-8');
     }
@@ -163,7 +163,7 @@ class Files extends Base
     public function currentIsWriteable(): bool
     {
         $themeRoot = Options::alloc()->themeFile($this->currentTheme);
-        $path = $this->resolveCurrentPath($themeRoot, $this->currentFile);
+        $path = self::resolveFilePath($themeRoot, $this->currentFile);
         return $path !== null && is_writable($path) && self::isWriteable();
     }
 

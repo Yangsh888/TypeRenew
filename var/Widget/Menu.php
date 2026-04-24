@@ -182,7 +182,7 @@ class Menu extends Base
             $showedChildrenCount = 0;
             $firstUrl = null;
 
-            foreach ($childNodes[$key] as $inKey => $childNode) {
+            foreach (($childNodes[$key] ?? []) as $inKey => $childNode) {
                 $childNode += $defaultChildNode;
                 [$name, $title, $url, $access] = $childNode;
 

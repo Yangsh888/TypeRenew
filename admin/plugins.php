@@ -8,6 +8,7 @@ include 'menu.php';
 $pluginAction = htmlspecialchars($options->index . '/action/plugins-edit', ENT_QUOTES, 'UTF-8');
 $pluginToken = htmlspecialchars($security->getToken($options->index . '/action/plugins-edit'), ENT_QUOTES, 'UTF-8');
 $pluginVersionUrl = \Typecho\Common::url('/action/ajax?do=pluginVersion', $options->index);
+$pluginVersionRefreshUrl = $security->getIndex('/action/ajax?do=pluginVersion');
 $pluginHomepage = static function ($value): string {
     $candidate = trim((string) $value);
 
@@ -220,6 +221,7 @@ include 'common-js.php';
         var $ = window.jQuery;
         var store = window.TypechoStore || null;
         var requestUrl = <?php echo json_encode($pluginVersionUrl, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE); ?>;
+        var refreshUrl = <?php echo json_encode($pluginVersionRefreshUrl, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE); ?>;
         var cacheKey = 'trPluginVersionPayload';
         var texts = <?php echo json_encode([
             'refresh' => _t('刷新检测'),
@@ -425,11 +427,18 @@ include 'common-js.php';
             setHint(forceRefresh ? texts.refreshingHint : texts.loadingHint, '');
 
             var url = requestUrl + (requestUrl.indexOf('?') >= 0 ? '&' : '?') + '_=' + Date.now();
-            if (forceRefresh) {
-                url += '&refresh=1';
-            }
+            var request = forceRefresh
+                ? $.ajax({
+                    url: refreshUrl,
+                    type: 'POST',
+                    dataType: 'json',
+                    data: {
+                        refresh: 1
+                    }
+                })
+                : $.get(url, null, null, 'json');
 
-            $.get(url, function (payload) {
+            request.done(function (payload) {
                 payload = payload && typeof payload === 'object' ? payload : {};
                 applyStatuses(payload.statuses || null);
 
@@ -440,7 +449,7 @@ include 'common-js.php';
                 }
 
                 applySummary(payload, forceRefresh);
-            }, 'json').fail(function () {
+            }).fail(function () {
                 clearSessionCache();
                 applyRequestFailure();
                 setHint(texts.failedRequest, 'error');

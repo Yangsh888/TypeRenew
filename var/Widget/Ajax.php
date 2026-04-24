@@ -468,50 +468,21 @@ class Ajax extends BaseOptions implements ActionInterface
         $this->response->setStatus(403)->throwContent('', 'text/plain');
     }
 
-    public function checkVersion()
-    {
-        $this->user->pass('editor');
-        $client = Client::get();
-        $result = ['available' => 0];
-        if ($client) {
-            $client->setHeader('User-Agent', $this->options->generator)
-                ->setTimeout(10);
-
-            try {
-                $client->send('https://typecho.org/version.json');
-
-                /** 读取响应体并解析 release 信息 */
-                $response = $client->getResponseBody();
-                $json = json_decode($response, true);
-
-                if (!empty($json)) {
-                    $version = $this->options->version;
-
-                    if (
-                        isset($json['release'])
-                        && preg_match("/^[0-9.]+$/", $json['release'])
-                        && version_compare($json['release'], $version, '>')
-                    ) {
-                        $result = [
-                            'available' => 1,
-                            'latest'    => $json['release'],
-                            'current'   => $version,
-                            'link'      => 'https://typecho.org/download'
-                        ];
-                    }
-                }
-            } catch (\Exception $e) {
-                error_log('[Ajax] checkVersion: ' . $e->getMessage());
-            }
-        }
-
-        $this->response->throwJson($result);
-    }
-
     public function pluginVersion()
     {
         $this->user->pass('administrator');
         $forceRefresh = 1 === (int) $this->request->filter('int')->get('refresh');
+        if ($forceRefresh) {
+            if (!$this->request->isPost()) {
+                $this->response->setStatus(405)->throwJson([
+                    'ok' => false,
+                    'message' => _t('强制刷新必须使用 POST 请求。'),
+                ]);
+            }
+
+            $this->security->protect();
+        }
+
         $this->response->throwJson($this->buildPluginVersionStatuses($forceRefresh));
     }
 
@@ -595,6 +566,7 @@ class Ajax extends BaseOptions implements ActionInterface
     public function editorResize()
     {
         $this->user->pass('contributor');
+        $this->security->protect();
         $size = $this->request->filter('int')->get('size');
 
         if (
@@ -622,7 +594,6 @@ class Ajax extends BaseOptions implements ActionInterface
 
         $this->on($this->request->is('do=remoteCallback'))->remoteCallback();
         $this->on($this->request->is('do=feed'))->feed();
-        $this->on($this->request->is('do=checkVersion'))->checkVersion();
         $this->on($this->request->is('do=pluginVersion'))->pluginVersion();
         $this->on($this->request->is('do=editorResize'))->editorResize();
     }
