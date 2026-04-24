@@ -204,12 +204,6 @@ $packageActionLocked = !$upgradeAvailable;
                                         </div>
                                     </div>
 
-                                    <div class="tr-help tr-mt-12"><?php _e('数据库版本 %s', $options->version); ?></div>
-                                    <div class="tr-help tr-mt-12"><?php _e('关键结构状态：%s', $needSchemaRepair ? _t('需修复') : _t('正常')); ?></div>
-                                    <?php if (!empty($mysqlRiskStatus['supported'])): ?>
-                                        <div class="tr-help tr-mt-12"><?php _e('MySQL 兼容预检：%s', $hasMysqlRisk ? _t('需关注') : _t('正常')); ?></div>
-                                    <?php endif; ?>
-
                                     <div class="tr-card tr-tone-muted tr-mt-16">
                                         <div class="tr-card-b">
                                             <div class="tr-subtitle"><?php _e('关键表自检'); ?></div>
@@ -305,7 +299,7 @@ $packageActionLocked = !$upgradeAvailable;
                                             <button class="tr-btn primary tr-block" type="submit"><?php _e('修复关键数据库结构'); ?></button>
                                         </form>
                                         <div class="tr-help tr-mt-12">
-                                            <?php _e('该操作会补齐邮件通知与密码找回依赖的关键表、索引、字段类型和排序规则，不会覆盖已有业务数据。'); ?>
+                                            <?php _e('该操作会补齐邮件通知与密码找回依赖的关键表、索引、字段类型和排序规则，并同步历史评论作者昵称，不会覆盖已有业务数据。'); ?>
                                         </div>
                                     <?php else: ?>
                                         <div class="tr-help tr-mt-12"><?php _e('数据库结构已是最新状态'); ?></div>

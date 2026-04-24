@@ -6,6 +6,7 @@ use Typecho\Common;
 use Typecho\Db;
 use Typecho\Exception;
 use Utils\Schema;
+use Utils\Migration\SchemaManager;
 use Throwable;
 use Widget\Base\Options as BaseOptions;
 
@@ -69,7 +70,8 @@ class Backup extends BaseOptions implements ActionInterface
         'ownerFixed' => 0,
         'statusFixed' => 0,
         'orphanMoved' => 0,
-        'commentsRecounted' => 0
+        'commentsRecounted' => 0,
+        'commentAuthorsSynced' => 0
     ];
 
     private array $pluginWarnings = [];
@@ -635,7 +637,8 @@ class Backup extends BaseOptions implements ActionInterface
             'ownerFixed' => 0,
             'statusFixed' => 0,
             'orphanMoved' => 0,
-            'commentsRecounted' => 0
+            'commentsRecounted' => 0,
+            'commentAuthorsSynced' => 0
         ];
         $this->pluginWarnings = [];
         $this->runtimeWarnings = [];
@@ -835,12 +838,14 @@ class Backup extends BaseOptions implements ActionInterface
             );
         }
         $commentsRecounted = count($countRows);
+        $commentAuthorsSynced = SchemaManager::syncCommentAuthors($this->db);
 
         return [
             'ownerFixed' => $ownerFixed,
             'statusFixed' => $statusFixed,
             'orphanMoved' => $orphanMoved,
-            'commentsRecounted' => $commentsRecounted
+            'commentsRecounted' => $commentsRecounted,
+            'commentAuthorsSynced' => $commentAuthorsSynced
         ];
     }
 
@@ -929,11 +934,12 @@ class Backup extends BaseOptions implements ActionInterface
 
         if (!$isCheck && $didRepair) {
             $report['info'][] = _t(
-                '修复结果：ownerId %d 条，状态 %d 条，孤儿评论 %d 条，计数回填 %d 篇',
+                '修复结果：ownerId %d 条，状态 %d 条，孤儿评论 %d 条，计数回填 %d 篇，作者昵称同步 %d 条',
                 $this->repairResult['ownerFixed'],
                 $this->repairResult['statusFixed'],
                 $this->repairResult['orphanMoved'],
-                $this->repairResult['commentsRecounted']
+                $this->repairResult['commentsRecounted'],
+                $this->repairResult['commentAuthorsSynced']
             );
         } elseif (!$isCheck) {
             $report['info'][] = _t('本次恢复未执行迁移后修复');

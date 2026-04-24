@@ -31,10 +31,7 @@ class Upgrade extends BaseOptions implements ActionInterface
         } catch (\Throwable) {
         }
 
-        Notice::alloc()->set(
-            empty($result['messages']) ? _t("升级已经完成") : $result['messages'],
-            empty($result['messages']) ? 'success' : 'notice'
-        );
+        Notice::alloc()->set($result['messages'], 'notice');
     }
 
     public function repairCriticalSchema(): void
@@ -47,15 +44,19 @@ class Upgrade extends BaseOptions implements ActionInterface
         }
 
         if ($result['healthy']) {
+            $messages = [];
             if (!empty($result['repaired'])) {
                 $names = array_map(static fn(array $item): string => (string) ($item['label'] ?? ''), $result['repaired']);
-                Notice::alloc()->set(
-                    _t('数据库关键结构已修复：%s', implode('、', array_filter($names))),
-                    'success'
-                );
+                $messages[] = _t('数据库关键结构已修复：%s', implode('、', array_filter($names)));
             } else {
-                Notice::alloc()->set(_t('数据库关键结构已是最新状态'), 'success');
+                $messages[] = _t('数据库关键结构已是最新状态');
             }
+
+            if (($result['syncedComments'] ?? 0) > 0) {
+                $messages[] = _t('已同步 %d 条历史评论的作者昵称', (int) $result['syncedComments']);
+            }
+
+            Notice::alloc()->set($messages, 'success');
         } else {
             $names = array_map(
                 static fn(array $item): string => (string) ($item['label'] ?? ''),

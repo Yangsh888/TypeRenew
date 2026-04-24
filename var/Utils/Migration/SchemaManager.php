@@ -108,6 +108,7 @@ class SchemaManager
         self::ensureMailInfrastructure($db);
         Schema::repairMailInfra($db);
         $after = self::inspectCriticalSchema($db);
+        $syncedComments = self::syncCommentAuthors($db);
 
         $repaired = [];
         foreach ($before['missing'] as $item) {
@@ -122,7 +123,8 @@ class SchemaManager
         return [
             'healthy' => $after['healthy'],
             'after' => $after,
-            'repaired' => $repaired
+            'repaired' => $repaired,
+            'syncedComments' => $syncedComments
         ];
     }
 
@@ -245,7 +247,7 @@ class SchemaManager
         );
     }
 
-    private static function syncCommentAuthors(Db $db): int
+    public static function syncCommentAuthors(Db $db): int
     {
         if (!self::tableExists($db, 'table.users') || !self::tableExists($db, 'table.comments')) {
             return 0;
