@@ -74,158 +74,7 @@ function install_default_sqlite_file(): string
  */
 function install_get_default_routers(): array
 {
-    return [
-        'index'              =>
-            [
-                'url'    => '/',
-                'widget' => '\Widget\Archive',
-                'action' => 'render',
-            ],
-        'archive'            =>
-            [
-                'url'    => '/blog/',
-                'widget' => '\Widget\Archive',
-                'action' => 'render',
-            ],
-        'do'                 =>
-            [
-                'url'    => '/action/[action:alpha]',
-                'widget' => '\Widget\Action',
-                'action' => 'action',
-            ],
-        'post'               =>
-            [
-                'url'    => '/archives/[cid:digital]/',
-                'widget' => '\Widget\Archive',
-                'action' => 'render',
-            ],
-        'attachment'         =>
-            [
-                'url'    => '/attachment/[cid:digital]/',
-                'widget' => '\Widget\Archive',
-                'action' => 'render',
-            ],
-        'category'           =>
-            [
-                'url'    => '/category/[slug]/',
-                'widget' => '\Widget\Archive',
-                'action' => 'render',
-            ],
-        'tag'                =>
-            [
-                'url'    => '/tag/[slug]/',
-                'widget' => '\Widget\Archive',
-                'action' => 'render',
-            ],
-        'author'             =>
-            [
-                'url'    => '/author/[uid:digital]/',
-                'widget' => '\Widget\Archive',
-                'action' => 'render',
-            ],
-        'search'             =>
-            [
-                'url'    => '/search/[keywords]/',
-                'widget' => '\Widget\Archive',
-                'action' => 'render',
-            ],
-        'index_page'         =>
-            [
-                'url'    => '/page/[page:digital]/',
-                'widget' => '\Widget\Archive',
-                'action' => 'render',
-            ],
-        'archive_page'       =>
-            [
-                'url'    => '/blog/page/[page:digital]/',
-                'widget' => '\Widget\Archive',
-                'action' => 'render',
-            ],
-        'category_page'      =>
-            [
-                'url'    => '/category/[slug]/[page:digital]/',
-                'widget' => '\Widget\Archive',
-                'action' => 'render',
-            ],
-        'tag_page'           =>
-            [
-                'url'    => '/tag/[slug]/[page:digital]/',
-                'widget' => '\Widget\Archive',
-                'action' => 'render',
-            ],
-        'author_page'        =>
-            [
-                'url'    => '/author/[uid:digital]/[page:digital]/',
-                'widget' => '\Widget\Archive',
-                'action' => 'render',
-            ],
-        'search_page'        =>
-            [
-                'url'    => '/search/[keywords]/[page:digital]/',
-                'widget' => '\Widget\Archive',
-                'action' => 'render',
-            ],
-        'archive_year'       =>
-            [
-                'url'    => '/[year:digital:4]/',
-                'widget' => '\Widget\Archive',
-                'action' => 'render',
-            ],
-        'archive_month'      =>
-            [
-                'url'    => '/[year:digital:4]/[month:digital:2]/',
-                'widget' => '\Widget\Archive',
-                'action' => 'render',
-            ],
-        'archive_day'        =>
-            [
-                'url'    => '/[year:digital:4]/[month:digital:2]/[day:digital:2]/',
-                'widget' => '\Widget\Archive',
-                'action' => 'render',
-            ],
-        'archive_year_page'  =>
-            [
-                'url'    => '/[year:digital:4]/page/[page:digital]/',
-                'widget' => '\Widget\Archive',
-                'action' => 'render',
-            ],
-        'archive_month_page' =>
-            [
-                'url'    => '/[year:digital:4]/[month:digital:2]/page/[page:digital]/',
-                'widget' => '\Widget\Archive',
-                'action' => 'render',
-            ],
-        'archive_day_page'   =>
-            [
-                'url'    => '/[year:digital:4]/[month:digital:2]/[day:digital:2]/page/[page:digital]/',
-                'widget' => '\Widget\Archive',
-                'action' => 'render',
-            ],
-        'comment_page'       =>
-            [
-                'url'    => '[permalink:string]/comment-page-[commentPage:digital]',
-                'widget' => '\Widget\CommentPage',
-                'action' => 'action',
-            ],
-        'feed'               =>
-            [
-                'url'    => '/feed[feed:string:0]',
-                'widget' => '\Widget\Feed',
-                'action' => 'render',
-            ],
-        'page'               =>
-            [
-                'url'    => '/[slug].html',
-                'widget' => '\Widget\Archive',
-                'action' => 'render',
-            ],
-        'feedback'           =>
-            [
-                'url'    => '[permalink:string]/[type:alpha]',
-                'widget' => '\Widget\Feedback',
-                'action' => 'action',
-            ],
-    ];
+    return \Utils\Defaults::routingTable();
 }
 
 /**
@@ -315,33 +164,12 @@ function install_get_default_options(): array
             'cacheRedisPort' => 6379,
             'cacheRedisPassword' => '',
             'cacheRedisDatabase' => 0,
-            'mailEnable' => 0,
-            'mailTransport' => 'smtp',
-            'mailAdmin' => '',
-            'mailFrom' => '',
-            'mailFromName' => '',
-            'mailSmtpHost' => '',
-            'mailSmtpPort' => 25,
-            'mailSmtpUser' => '',
-            'mailSmtpPass' => '',
-            'mailSmtpSecure' => '',
-            'mailQueueMode' => 'async',
-            'mailAsyncIps' => '',
             'mailCronKey' => \Typecho\Common::randString(32),
-            'mailBatchSize' => 50,
-            'mailMaxAttempts' => 3,
-            'mailKeepDays' => 30,
-            'mailNotifyOwner' => 1,
-            'mailNotifyGuest' => 1,
-            'mailNotifyPending' => 1,
-            'mailNotifyMe' => 0,
-            'mailSubjectOwner' => '',
-            'mailSubjectGuest' => '',
-            'mailSubjectPending' => '',
             'secret' => \Typecho\Common::randString(32, true),
             'installed' => 0,
             'allowXmlRpc' => 1
         ];
+        $options = array_merge($options, \Utils\Defaults::mailOptions());
     }
 
     return $options;
@@ -808,15 +636,10 @@ function install_step_1_perform()
     }
 }
 
-function install_extract_db_version(string $version): string
-{
-    return \Utils\DbInfo::extractVersion($version);
-}
-
 function install_assert_mysql_compatibility(\Typecho\Db $db): void
 {
     $rawVersion = $db->getVersion(\Typecho\Db::READ);
-    $version = install_extract_db_version($rawVersion);
+    $version = \Utils\DbInfo::extractVersion($rawVersion);
 
     if ($version === '') {
         install_raise_error(_t('无法识别当前 MySQL 服务端版本：%s', $rawVersion));
@@ -834,6 +657,104 @@ function install_resolve_mysql_collation(\Typecho\Db $db, string $charset): stri
 {
     $rawVersion = $db->getVersion(\Typecho\Db::READ);
     return \Utils\DbInfo::resolveMysqlCollation($charset, $rawVersion);
+}
+
+function install_split_sql_statements(string $sql): array
+{
+    $sql = preg_replace('/^\xEF\xBB\xBF/', '', $sql) ?? $sql;
+    $length = strlen($sql);
+    $statements = [];
+    $buffer = '';
+    $quote = null;
+    $lineComment = false;
+    $blockComment = false;
+
+    for ($i = 0; $i < $length; $i++) {
+        $char = $sql[$i];
+        $next = $i + 1 < $length ? $sql[$i + 1] : '';
+
+        if ($lineComment) {
+            if ($char === "\n") {
+                $lineComment = false;
+            }
+            continue;
+        }
+
+        if ($blockComment) {
+            if ($char === '*' && $next === '/') {
+                $blockComment = false;
+                $i++;
+            }
+            continue;
+        }
+
+        if ($quote === null) {
+            if ($char === '-' && $next === '-') {
+                $after = $i + 2 < $length ? $sql[$i + 2] : '';
+                if ($after === '' || $after === ' ' || $after === "\t" || $after === "\r" || $after === "\n") {
+                    $lineComment = true;
+                    $i++;
+                    continue;
+                }
+            }
+
+            if ($char === '#') {
+                $lineComment = true;
+                continue;
+            }
+
+            if ($char === '/' && $next === '*') {
+                $blockComment = true;
+                $i++;
+                continue;
+            }
+
+            if ($char === '\'' || $char === '"' || $char === '`') {
+                $quote = $char;
+                $buffer .= $char;
+                continue;
+            }
+
+            if ($char === ';') {
+                $statement = trim($buffer);
+                if ($statement !== '') {
+                    $statements[] = $statement;
+                }
+                $buffer = '';
+                continue;
+            }
+
+            $buffer .= $char;
+            continue;
+        }
+
+        $buffer .= $char;
+
+        if (($quote === '\'' || $quote === '"') && $char === '\\') {
+            if ($i + 1 < $length) {
+                $buffer .= $sql[++$i];
+            }
+            continue;
+        }
+
+        if ($char !== $quote) {
+            continue;
+        }
+
+        if (($quote === '\'' || $quote === '"') && $next === $quote) {
+            $buffer .= $sql[++$i];
+            continue;
+        }
+
+        $quote = null;
+    }
+
+    $statement = trim($buffer);
+    if ($statement !== '') {
+        $statements[] = $statement;
+    }
+
+    return $statements;
 }
 
 /**
@@ -1225,6 +1146,9 @@ function install_step_2_perform()
 
     try {
         $scripts = file_get_contents(__TYPECHO_ROOT_DIR__ . '/install/' . $type . '.sql');
+        if (!is_string($scripts) || $scripts === '') {
+            install_raise_error(_t('安装程序无法读取数据库初始化脚本，请检查 install/%s.sql 文件是否存在且可读。', $type));
+        }
         $scripts = str_replace('typecho_', $config['dbPrefix'], $scripts);
 
         if (isset($dbConfig['charset'])) {
@@ -1236,8 +1160,7 @@ function install_step_2_perform()
             $scripts = str_replace('%engine%', $dbConfig['engine'], $scripts);
         }
 
-        $scripts = explode(';', $scripts);
-        foreach ($scripts as $script) {
+        foreach (install_split_sql_statements($scripts) as $script) {
             $script = trim($script);
             if ($script) {
                 $installDb->query($script, \Typecho\Db::WRITE);

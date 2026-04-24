@@ -43,7 +43,7 @@ $statusMap = [
     'failed' => _t('失败')
 ];
 $statusLabel = $statusMap[$status] ?? ($status !== '' ? $status : _t('无'));
-$packageActionLocked = !$upgradeAvailable || $upgradeLockBusy;
+$packageActionLocked = !$upgradeAvailable;
 ?>
 
 <main class="main">

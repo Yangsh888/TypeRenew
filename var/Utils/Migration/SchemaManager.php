@@ -166,25 +166,25 @@ class SchemaManager
                     : '当前已与目标排序规则一致'),
         ];
 
-        $mailUnsubDuplicates = self::mailUnsubDuplicateGroups($db);
+        $mailUnsubDuplicates = self::mailUnsubDuplicateGroups($db, $collation);
         $items[] = [
             'key' => 'mail_unsub_duplicates',
             'label' => 'mail_unsub 唯一值冲突',
             'status' => $mailUnsubDuplicates === [] ? 'ok' : 'warning',
             'detail' => $mailUnsubDuplicates === []
-                ? '未发现 email + scope 冲突'
-                : '发现 ' . count($mailUnsubDuplicates) . ' 组 email + scope 重复，修复索引前需先清理',
+                ? '未发现按目标排序规则归一后的 email + scope 冲突'
+                : '发现 ' . count($mailUnsubDuplicates) . ' 组按目标排序规则归一后的 email + scope 重复，修复索引前需先清理',
             'samples' => $mailUnsubDuplicates,
         ];
 
-        $userDuplicates = self::usersMailDuplicateGroups($db);
+        $userDuplicates = self::usersMailDuplicateGroups($db, $collation);
         $items[] = [
             'key' => 'users_mail_duplicates',
             'label' => 'users 邮箱唯一值冲突',
             'status' => $userDuplicates === [] ? 'ok' : 'warning',
             'detail' => $userDuplicates === []
-                ? '未发现 users.mail 重复'
-                : '发现 ' . count($userDuplicates) . ' 组重复邮箱，排序规则升级后可能触发唯一键冲突',
+                ? '未发现按目标排序规则归一后的 users.mail 重复'
+                : '发现 ' . count($userDuplicates) . ' 组按目标排序规则归一后的重复邮箱，排序规则升级后可能触发唯一键冲突',
             'samples' => $userDuplicates,
         ];
 
@@ -223,31 +223,10 @@ class SchemaManager
 
     private static function defaultMailOptions(): array
     {
-        return [
-            'mailEnable' => '0',
-            'mailTransport' => 'smtp',
-            'mailAdmin' => '',
-            'mailFrom' => '',
-            'mailFromName' => '',
-            'mailSmtpHost' => '',
-            'mailSmtpPort' => '25',
-            'mailSmtpUser' => '',
-            'mailSmtpPass' => '',
-            'mailSmtpSecure' => '',
-            'mailQueueMode' => 'async',
-            'mailAsyncIps' => '',
-            'mailCronKey' => Common::randString(32),
-            'mailBatchSize' => '50',
-            'mailMaxAttempts' => '3',
-            'mailKeepDays' => '30',
-            'mailNotifyOwner' => '1',
-            'mailNotifyGuest' => '1',
-            'mailNotifyPending' => '1',
-            'mailNotifyMe' => '0',
-            'mailSubjectOwner' => '',
-            'mailSubjectGuest' => '',
-            'mailSubjectPending' => ''
-        ];
+        return array_merge(
+            Defaults::mailOptions(),
+            ['mailCronKey' => Common::randString(32)]
+        );
     }
 
     private static function updateGenerator(Db $db, string $version): void
@@ -296,17 +275,19 @@ class SchemaManager
     }
 
 
-    private static function mailUnsubDuplicateGroups(Db $db): array
+    private static function mailUnsubDuplicateGroups(Db $db, string $collation): array
     {
         if (!self::tableExists($db, 'table.mail_unsub')) {
             return [];
         }
 
         try {
+            $normalizedEmail = self::mysqlNormalizedText('email', $collation);
+            $normalizedScope = self::mysqlNormalizedText('scope', $collation);
             $rows = $db->fetchAll(
-                'SELECT email, scope, COUNT(*) AS num'
+                'SELECT MIN(email) AS email, MIN(scope) AS scope, COUNT(*) AS num'
                 . ' FROM ' . $db->getPrefix() . 'mail_unsub'
-                . ' GROUP BY email, scope'
+                . ' GROUP BY ' . $normalizedEmail . ', ' . $normalizedScope
                 . ' HAVING COUNT(*) > 1'
                 . ' ORDER BY num DESC, email ASC'
                 . ' LIMIT 5'
@@ -324,18 +305,19 @@ class SchemaManager
         }, $rows);
     }
 
-    private static function usersMailDuplicateGroups(Db $db): array
+    private static function usersMailDuplicateGroups(Db $db, string $collation): array
     {
         if (!self::tableExists($db, 'table.users')) {
             return [];
         }
 
         try {
+            $normalizedMail = self::mysqlNormalizedText('mail', $collation);
             $rows = $db->fetchAll(
-                'SELECT mail, COUNT(*) AS num'
+                'SELECT MIN(mail) AS mail, COUNT(*) AS num'
                 . ' FROM ' . $db->getPrefix() . 'users'
                 . ' WHERE mail IS NOT NULL AND mail <> \'\''
-                . ' GROUP BY mail'
+                . ' GROUP BY ' . $normalizedMail
                 . ' HAVING COUNT(*) > 1'
                 . ' ORDER BY num DESC, mail ASC'
                 . ' LIMIT 5'
@@ -350,5 +332,14 @@ class SchemaManager
                 'count' => (int) ($row['num'] ?? 0),
             ];
         }, $rows);
+    }
+
+    private static function mysqlNormalizedText(string $column, string $collation): string
+    {
+        $safeCollation = preg_match('/^[A-Za-z0-9_]+$/', $collation) === 1
+            ? $collation
+            : 'utf8mb4_unicode_ci';
+
+        return 'CONVERT(' . $column . ' USING utf8mb4) COLLATE ' . $safeCollation;
     }
 }

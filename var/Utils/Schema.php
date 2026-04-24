@@ -713,6 +713,19 @@ class Schema
         return '\'' . str_replace('\'', '\'\'', $value) . '\'';
     }
 
+    public static function mysqlTableStatus(Db $db, string $table): array
+    {
+        try {
+            $row = $db->fetchRow(
+                'SHOW TABLE STATUS WHERE Name = ' . self::sqlString($table)
+            );
+        } catch (\Throwable) {
+            return [];
+        }
+
+        return is_array($row) ? $row : [];
+    }
+
     private static function ensureMysqlTableCollation(Db $db, string $table, string $collation): void
     {
         $current = self::mysqlTableCollation($db, $table);
@@ -763,12 +776,7 @@ class Schema
 
     public static function mysqlTableCollation(Db $db, string $table): string
     {
-        try {
-            $row = $db->fetchRow('SHOW TABLE STATUS LIKE ' . self::sqlString($table));
-        } catch (\Throwable) {
-            return '';
-        }
-
+        $row = self::mysqlTableStatus($db, $table);
         return trim((string) ($row['Collation'] ?? ''));
     }
 

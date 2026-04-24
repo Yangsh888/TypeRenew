@@ -5,6 +5,7 @@ namespace Widget;
 use Typecho\Common;
 use Typecho\Db;
 use Typecho\Exception;
+use Utils\Schema;
 use Throwable;
 use Widget\Base\Options as BaseOptions;
 
@@ -713,15 +714,11 @@ class Backup extends BaseOptions implements ActionInterface
 
     private function supportsMysqlTransaction(): bool
     {
-        $adapter = $this->db->getAdapter();
-
         foreach (array_keys($this->types) as $table) {
             $tableName = $this->db->getPrefix() . $table;
 
             try {
-                $row = $this->db->fetchRow(
-                    $this->db->query('SHOW TABLE STATUS LIKE ' . $adapter->quoteValue($tableName))
-                );
+                $row = Schema::mysqlTableStatus($this->db, $tableName);
             } catch (Throwable $e) {
                 $this->runtimeWarnings[] = _t('无法确认表 %s 的事务能力，恢复将按非事务方式执行: %s', $table, $e->getMessage());
                 return false;
@@ -976,17 +973,17 @@ class Backup extends BaseOptions implements ActionInterface
         return $messages;
     }
 
-    public static function consumeReport(): ?array
+    public static function consumeReport(): array
     {
         if (session_status() !== PHP_SESSION_ACTIVE) {
-            return null;
+            return self::reportFromNoticeCookie();
         }
 
         $report = $_SESSION[self::REPORT_SESSION_KEY] ?? null;
         unset($_SESSION[self::REPORT_SESSION_KEY]);
 
         if (!is_array($report)) {
-            return null;
+            return self::reportFromNoticeCookie();
         }
 
         return [
@@ -1009,7 +1006,7 @@ class Backup extends BaseOptions implements ActionInterface
         ];
     }
 
-    private function reportFromMessages(array $messages): array
+    public static function reportFromMessages(array $messages): array
     {
         $report = ['blocking' => [], 'warning' => [], 'info' => []];
 
@@ -1031,6 +1028,18 @@ class Backup extends BaseOptions implements ActionInterface
         return $report;
     }
 
+    private static function reportFromNoticeCookie(): array
+    {
+        $noticeMessages = json_decode((string) \Typecho\Cookie::get('__typecho_notice', '[]'), true);
+        $noticeType = (string) \Typecho\Cookie::get('__typecho_notice_type', '');
+
+        if (is_array($noticeMessages) && !empty($noticeMessages) && in_array($noticeType, ['success', 'error', 'notice'], true)) {
+            return self::reportFromMessages($noticeMessages);
+        }
+
+        return ['blocking' => [], 'warning' => [], 'info' => []];
+    }
+
     private function finish(): void
     {
         $this->response->redirect($this->options->adminUrl('backup.php', true));
@@ -1039,7 +1048,7 @@ class Backup extends BaseOptions implements ActionInterface
     private function failAndFinish(string $message): ?string
     {
         $messages = [$message];
-        $this->stashReport($this->reportFromMessages($messages));
+        $this->stashReport(self::reportFromMessages($messages));
         Notice::alloc()->set($messages, 'error');
         $this->finish();
         return null;

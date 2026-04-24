@@ -171,9 +171,14 @@ class Options extends Base
 
             $options = array_column($values, 'value', 'name');
 
-            $themeOptionsKey = 'theme:' . $options['theme'];
-            if (!empty($options[$themeOptionsKey])) {
-                $themeOptions = $this->tryDeserialize($options[$themeOptionsKey]);
+            $theme = isset($options['theme']) && is_string($options['theme']) && trim($options['theme']) !== ''
+                ? $options['theme']
+                : 'default';
+            $options['theme'] = $theme;
+
+            $themeOptionsKey = 'theme:' . $theme;
+            if (array_key_exists($themeOptionsKey, $options)) {
+                $themeOptions = $this->decodeArrayOption($themeOptionsKey, $options[$themeOptionsKey], [], true);
                 $options = array_merge($options, $themeOptions);
             }
         } elseif (function_exists('install_get_default_options')) {
@@ -320,10 +325,9 @@ class Options extends Base
     public function plugin($pluginName)
     {
         if (!isset($this->pluginConfig[$pluginName])) {
-            if (
-                !empty($this->row['plugin:' . $pluginName])
-                && false !== ($options = $this->tryDeserialize($this->row['plugin:' . $pluginName]))
-            ) {
+            $name = 'plugin:' . $pluginName;
+            if (array_key_exists($name, $this->row)) {
+                $options = $this->decodeArrayOption($name, $this->row[$name], [], true);
                 $this->pluginConfig[$pluginName] = new Config($options);
             } else {
                 throw new PluginException(_t('插件%s的配置信息没有找到', $pluginName), 500);
@@ -343,10 +347,9 @@ class Options extends Base
     public function personalPlugin($pluginName)
     {
         if (!isset($this->personalPluginConfig[$pluginName])) {
-            if (
-                !empty($this->row['_plugin:' . $pluginName])
-                && false !== ($options = $this->tryDeserialize($this->row['_plugin:' . $pluginName]))
-            ) {
+            $name = '_plugin:' . $pluginName;
+            if (array_key_exists($name, $this->row)) {
+                $options = $this->decodeArrayOption($name, $this->row[$name], [], true);
                 $this->personalPluginConfig[$pluginName] = new Config($options);
             } else {
                 throw new PluginException(_t('插件%s的配置信息没有找到', $pluginName), 500);
@@ -358,14 +361,13 @@ class Options extends Base
 
     protected function ___routingTable(): array
     {
-        $routingTable = $this->tryDeserialize($this->row['routingTable']);
+        $routingTable = $this->decodeArrayOption('routingTable', $this->row['routingTable'] ?? null, \Utils\Defaults::routingTable(), true);
 
         if (isset($this->db) && !isset($routingTable[0])) {
             $parser = new Parser($routingTable);
             $parsedRoutingTable = $parser->parse();
             $routingTable = array_merge([$parsedRoutingTable], $routingTable);
-            $this->db->query($this->db->update('table.options')->rows(['value' => json_encode($routingTable)])
-                ->where('name = ?', 'routingTable'));
+            $this->repairArrayOption('routingTable', $routingTable);
         }
 
         return $routingTable;
@@ -373,17 +375,17 @@ class Options extends Base
 
     protected function ___actionTable(): array
     {
-        return $this->tryDeserialize($this->row['actionTable']);
+        return $this->decodeArrayOption('actionTable', $this->row['actionTable'] ?? null, [], true);
     }
 
     protected function ___panelTable(): array
     {
-        return $this->tryDeserialize($this->row['panelTable']);
+        return $this->decodeArrayOption('panelTable', $this->row['panelTable'] ?? null, [], true);
     }
 
     protected function ___plugins(): array
     {
-        return $this->tryDeserialize($this->row['plugins']);
+        return $this->decodeArrayOption('plugins', $this->row['plugins'] ?? null, [], true);
     }
 
     /**
@@ -693,6 +695,39 @@ class Options extends Base
         }
 
         return $attachmentTypesResult;
+    }
+
+    private function decodeArrayOption(string $name, mixed $rawValue, array $fallback = [], bool $repairInvalid = false): array
+    {
+        $decoded = is_array($rawValue)
+            ? $rawValue
+            : (is_string($rawValue) ? $this->tryDeserialize($rawValue) : null);
+
+        if (is_array($decoded)) {
+            return $decoded;
+        }
+
+        if ($repairInvalid) {
+            $this->repairArrayOption($name, $fallback);
+        }
+
+        return $fallback;
+    }
+
+    private function repairArrayOption(string $name, array $value): void
+    {
+        if (!isset($this->db)) {
+            return;
+        }
+
+        try {
+            $this->saveOption($name, $value);
+            $encoded = json_encode($value);
+            if (is_string($encoded)) {
+                $this->row[$name] = $encoded;
+            }
+        } catch (\Throwable) {
+        }
     }
 
     /**
