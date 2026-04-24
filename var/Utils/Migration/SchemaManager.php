@@ -104,26 +104,14 @@ class SchemaManager
 
     public static function repairCriticalSchema(Db $db): array
     {
-        $before = self::inspectCriticalSchema($db);
         self::ensureMailInfrastructure($db);
         Schema::repairMailInfra($db);
         $after = self::inspectCriticalSchema($db);
         $syncedComments = self::syncCommentAuthors($db);
 
-        $repaired = [];
-        foreach ($before['missing'] as $item) {
-            foreach ($after['items'] as $afterItem) {
-                if ($afterItem['key'] === $item['key'] && $afterItem['status'] === 'ok') {
-                    $repaired[] = $afterItem;
-                    break;
-                }
-            }
-        }
-
         return [
             'healthy' => $after['healthy'],
             'after' => $after,
-            'repaired' => $repaired,
             'syncedComments' => $syncedComments
         ];
     }
@@ -179,22 +167,30 @@ class SchemaManager
         $items[] = [
             'key' => 'mail_unsub_duplicates',
             'label' => 'mail_unsub 唯一值冲突',
-            'status' => $mailUnsubDuplicates === [] ? 'ok' : 'warning',
-            'detail' => $mailUnsubDuplicates === []
+            'status' => $mailUnsubDuplicates['error'] !== null
+                ? 'warning'
+                : ($mailUnsubDuplicates['rows'] === [] ? 'ok' : 'warning'),
+            'detail' => $mailUnsubDuplicates['error'] !== null
+                ? '重复值检查失败：' . $mailUnsubDuplicates['error']
+                : ($mailUnsubDuplicates['rows'] === []
                 ? '未发现按目标排序规则归一后的 email + scope 冲突'
-                : '发现 ' . count($mailUnsubDuplicates) . ' 组按目标排序规则归一后的 email + scope 重复，修复索引前需先清理',
-            'samples' => $mailUnsubDuplicates,
+                : '发现 ' . count($mailUnsubDuplicates['rows']) . ' 组按目标排序规则归一后的 email + scope 重复，修复索引前需先清理'),
+            'samples' => $mailUnsubDuplicates['rows'],
         ];
 
         $userDuplicates = self::usersMailDuplicateGroups($db, $collation);
         $items[] = [
             'key' => 'users_mail_duplicates',
             'label' => 'users 邮箱唯一值冲突',
-            'status' => $userDuplicates === [] ? 'ok' : 'warning',
-            'detail' => $userDuplicates === []
+            'status' => $userDuplicates['error'] !== null
+                ? 'warning'
+                : ($userDuplicates['rows'] === [] ? 'ok' : 'warning'),
+            'detail' => $userDuplicates['error'] !== null
+                ? '重复值检查失败：' . $userDuplicates['error']
+                : ($userDuplicates['rows'] === []
                 ? '未发现按目标排序规则归一后的 users.mail 重复'
-                : '发现 ' . count($userDuplicates) . ' 组按目标排序规则归一后的重复邮箱，排序规则升级后可能触发唯一键冲突',
-            'samples' => $userDuplicates,
+                : '发现 ' . count($userDuplicates['rows']) . ' 组按目标排序规则归一后的重复邮箱，排序规则升级后可能触发唯一键冲突'),
+            'samples' => $userDuplicates['rows'],
         ];
 
         $healthy = true;
@@ -308,7 +304,7 @@ class SchemaManager
     private static function mailUnsubDuplicateGroups(Db $db, string $collation): array
     {
         if (!self::tableExists($db, 'table.mail_unsub')) {
-            return [];
+            return ['rows' => [], 'error' => null];
         }
 
         try {
@@ -322,23 +318,26 @@ class SchemaManager
                 . ' ORDER BY num DESC, email ASC'
                 . ' LIMIT 5'
             );
-        } catch (\Throwable) {
-            return [];
+        } catch (\Throwable $e) {
+            return ['rows' => [], 'error' => $e->getMessage()];
         }
 
-        return array_map(static function (array $row): array {
-            return [
-                'email' => (string) ($row['email'] ?? ''),
-                'scope' => (string) ($row['scope'] ?? ''),
-                'count' => (int) ($row['num'] ?? 0),
-            ];
-        }, $rows);
+        return [
+            'rows' => array_map(static function (array $row): array {
+                return [
+                    'email' => (string) ($row['email'] ?? ''),
+                    'scope' => (string) ($row['scope'] ?? ''),
+                    'count' => (int) ($row['num'] ?? 0),
+                ];
+            }, $rows),
+            'error' => null,
+        ];
     }
 
     private static function usersMailDuplicateGroups(Db $db, string $collation): array
     {
         if (!self::tableExists($db, 'table.users')) {
-            return [];
+            return ['rows' => [], 'error' => null];
         }
 
         try {
@@ -352,16 +351,19 @@ class SchemaManager
                 . ' ORDER BY num DESC, mail ASC'
                 . ' LIMIT 5'
             );
-        } catch (\Throwable) {
-            return [];
+        } catch (\Throwable $e) {
+            return ['rows' => [], 'error' => $e->getMessage()];
         }
 
-        return array_map(static function (array $row): array {
-            return [
-                'mail' => (string) ($row['mail'] ?? ''),
-                'count' => (int) ($row['num'] ?? 0),
-            ];
-        }, $rows);
+        return [
+            'rows' => array_map(static function (array $row): array {
+                return [
+                    'mail' => (string) ($row['mail'] ?? ''),
+                    'count' => (int) ($row['num'] ?? 0),
+                ];
+            }, $rows),
+            'error' => null,
+        ];
     }
 
     private static function mysqlNormalizedText(string $column, string $collation): string

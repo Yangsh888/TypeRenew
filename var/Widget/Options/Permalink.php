@@ -25,26 +25,10 @@ class Permalink extends Options implements ActionInterface
             unset($routingTable[0]);
         }
 
-        $defaults = [
-            'post' => [
-                'url' => '/archives/[cid:digital]/',
-            ],
-            'page' => [
-                'url' => '/[slug].html',
-            ],
-            'category' => [
-                'url' => '/category/[slug]/',
-            ],
-            'category_page' => [
-                'url' => '/category/[slug]/[page:digital]/',
-            ],
-            'archive' => [
-                'url' => '/blog/',
-            ],
-            'archive_page' => [
-                'url' => '/blog/page/[page:digital]/',
-            ],
-        ];
+        $defaults = array_intersect_key(
+            \Utils\Defaults::routingTable(),
+            array_flip(['post', 'page', 'category', 'category_page', 'archive', 'archive_page'])
+        );
 
         foreach ($defaults as $key => $value) {
             if (!isset($routingTable[$key]) || !is_array($routingTable[$key])) {
