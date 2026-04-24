@@ -19,32 +19,7 @@ if (!file_exists(dirname(__FILE__) . '/config.inc.php')) {
  */
 function install_get_lang(): string
 {
-    $serverLang = \Typecho\Request::getInstance()->getServer('TYPECHO_LANG');
-
-    if (!empty($serverLang)) {
-        return $serverLang;
-    } else {
-        $lang = 'zh_CN';
-        $request = \Typecho\Request::getInstance();
-
-        if ($request->is('lang')) {
-            $lang = $request->get('lang');
-            \Typecho\Cookie::set('lang', $lang);
-        }
-
-        return \Typecho\Cookie::get('lang', $lang);
-    }
-}
-
-/**
- * get site url
- *
- * @return string
- */
-function install_get_site_url(): string
-{
-    $request = \Typecho\Request::getInstance();
-    return install_is_cli() ? $request->getServer('TYPECHO_SITE_URL', 'http://localhost') : $request->getRequestRoot();
+    return \Utils\Defaults::language();
 }
 
 /**
@@ -68,16 +43,6 @@ function install_default_sqlite_file(): string
 }
 
 /**
- * get default router
- *
- * @return string[][]
- */
-function install_get_default_routers(): array
-{
-    return \Utils\Defaults::routingTable();
-}
-
-/**
  * list all default options
  *
  * @return array
@@ -87,89 +52,10 @@ function install_get_default_options(): array
     static $options;
 
     if (empty($options)) {
-        $options = [
-            'theme' => 'default',
-            'theme:default' => json_encode([
-                'logoUrl' => '',
-                'sidebarBlock' => [
-                    'ShowRecentPosts',
-                    'ShowRecentComments',
-                    'ShowCategory',
-                    'ShowArchive',
-                    'ShowOther'
-                ]
-            ]),
-            'timezone' => '28800',
+        $options = \Utils\Defaults::installSeedOptions([
             'lang' => install_get_lang(),
-            'charset' => 'UTF-8',
-            'contentType' => 'text/html',
-            'gzip' => 0,
-            'generator' => \Typecho\Common::generator(),
-            'title' => 'Hello World',
-            'description' => 'Your description here.',
-            'keywords' => 'typerenew,php,blog',
-            'rewrite' => 0,
-            'frontPage' => 'recent',
-            'frontArchive' => 0,
-            'commentsRequireMail' => 1,
-            'commentsWhitelist' => 0,
-            'commentsRequireUrl' => 0,
-            'commentsRequireModeration' => 0,
-            'plugins' => 'a:0:{}',
-            'commentDateFormat' => 'F jS, Y \a\t h:i a',
-            'siteUrl' => install_get_site_url(),
-            'defaultCategory' => 1,
-            'allowRegister' => 0,
-            'defaultAllowComment' => 1,
-            'defaultAllowPing' => 1,
-            'defaultAllowFeed' => 1,
-            'pageSize' => 5,
-            'postsListSize' => 10,
-            'commentsListSize' => 10,
-            'commentsHTMLTagAllowed' => null,
-            'postDateFormat' => 'Y-m-d',
-            'feedFullText' => 1,
-            'editorSize' => 350,
-            'autoSave' => 0,
-            'markdown' => 1,
-            'xmlrpcMarkdown' => 0,
-            'commentsMaxNestingLevels' => 5,
-            'commentsPostTimeout' => 24 * 3600 * 30,
-            'commentsUrlNofollow' => 1,
-            'commentsShowUrl' => 1,
-            'commentsMarkdown' => 0,
-            'commentsPageBreak' => 0,
-            'commentsThreaded' => 1,
-            'commentsPageSize' => 20,
-            'commentsPageDisplay' => 'last',
-            'commentsOrder' => 'ASC',
-            'commentsCheckReferer' => 1,
-            'commentsAutoClose' => 0,
-            'commentsPostIntervalEnable' => 1,
-            'commentsPostInterval' => 60,
-            'commentsShowCommentOnly' => 0,
-            'commentsAvatar' => 1,
-            'commentsAvatarRating' => 'G',
-            'commentsAntiSpam' => 1,
-            'routingTable' => json_encode(install_get_default_routers()),
-            'actionTable' => json_encode([]),
-            'panelTable' => json_encode([]),
-            'attachmentTypes' => '@image@',
-            'cacheStatus' => 0,
-            'cacheDriver' => 'redis',
-            'cacheTtl' => 300,
-            'cachePrefix' => 'typerenew:cache:',
-            'cacheCommentFlush' => 1,
-            'cacheRedisHost' => '127.0.0.1',
-            'cacheRedisPort' => 6379,
-            'cacheRedisPassword' => '',
-            'cacheRedisDatabase' => 0,
-            'mailCronKey' => \Typecho\Common::randString(32),
-            'secret' => \Typecho\Common::randString(32, true),
-            'installed' => 0,
-            'allowXmlRpc' => 1
-        ];
-        $options = array_merge($options, \Utils\Defaults::mailOptions());
+            'siteUrl' => \Utils\Defaults::siteUrl(),
+        ]);
     }
 
     return $options;
@@ -1419,7 +1305,10 @@ function install_dispatch()
         define('__TYPECHO_ROOT_URL__', 'http://localhost');
     }
 
-    $options = \Widget\Options::alloc(install_get_default_options());
+    $options = \Widget\Options::alloc(\Utils\Defaults::bootstrapOptions([
+        'lang' => install_get_lang(),
+        'siteUrl' => \Utils\Defaults::siteUrl(),
+    ]));
     \Widget\Init::alloc();
 
     if (install_is_cli()) {

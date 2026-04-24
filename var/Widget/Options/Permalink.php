@@ -205,11 +205,6 @@ RewriteRule . {$basePath}index.php [L]
             $routingTable['page']['url'] = '/' . ltrim($this->encodeRule($this->request->get('pagePattern')), '/');
             $routingTable['category']['url'] = '/' . ltrim($this->encodeRule($this->request->get('categoryPattern')), '/');
             $routingTable['category_page']['url'] = rtrim($routingTable['category']['url'], '/') . '/[page:digital]/';
-
-            if (isset($routingTable[0])) {
-                unset($routingTable[0]);
-            }
-
             $settings['routingTable'] = json_encode($routingTable);
         }
 

@@ -217,12 +217,16 @@ class SchemaManager
     private static function ensureMailInfrastructure(Db $db): void
     {
         Schema::ensureMailInfra($db);
+        $defaults = self::defaultMailOptions();
+        $existing = $db->fetchAll(
+            $db->select('name')
+                ->from('table.options')
+                ->where('user = ? AND name IN ?', 0, array_keys($defaults))
+        );
+        $existingNames = array_flip(array_map('strval', array_column($existing, 'name')));
 
-        foreach (self::defaultMailOptions() as $name => $value) {
-            $exists = $db->fetchRow(
-                $db->select('name')->from('table.options')->where('name = ? AND user = 0', $name)->limit(1)
-            );
-            if ($exists) {
+        foreach ($defaults as $name => $value) {
+            if (isset($existingNames[$name])) {
                 continue;
             }
 
@@ -232,10 +236,9 @@ class SchemaManager
 
     private static function defaultMailOptions(): array
     {
-        return array_merge(
-            Defaults::mailOptions(),
-            ['mailCronKey' => Common::randString(32)]
-        );
+        return Defaults::repairableOptions([
+            'mailCronKey' => Common::randString(32),
+        ]);
     }
 
     private static function updateGenerator(Db $db, string $version): void
