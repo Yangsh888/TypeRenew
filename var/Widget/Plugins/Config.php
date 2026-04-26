@@ -97,12 +97,10 @@ class Config extends Options
             $options = new TypechoConfig([]);
         }
 
-        if (!empty($options)) {
-            foreach ($options as $key => $val) {
-                $input = $form->getInput($key);
-                if ($input !== null) {
-                    $input->value($val);
-                }
+        foreach ($options as $key => $val) {
+            $input = $form->getInput($key);
+            if ($input !== null) {
+                $input->value($val);
             }
         }
 

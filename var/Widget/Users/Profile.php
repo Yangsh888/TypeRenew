@@ -148,12 +148,10 @@ class Profile extends Users implements ActionInterface
 
         $options = $this->options->personalPlugin($pluginName);
 
-        if (!empty($options)) {
-            foreach ($options as $key => $val) {
-                $input = $form->getInput($key);
-                if ($input !== null) {
-                    $input->value($val);
-                }
+        foreach ($options as $key => $val) {
+            $input = $form->getInput($key);
+            if ($input !== null) {
+                $input->value($val);
             }
         }
 
@@ -262,19 +260,16 @@ class Profile extends Users implements ActionInterface
         $settings['defaultAllowComment'] = in_array('comment', $defaultAllow) ? 1 : 0;
         $settings['defaultAllowPing'] = in_array('ping', $defaultAllow) ? 1 : 0;
         $settings['defaultAllowFeed'] = in_array('feed', $defaultAllow) ? 1 : 0;
+        $options = Options::alloc();
 
         foreach ($settings as $name => $value) {
-            if (
-                $this->db->fetchObject($this->db->select(['COUNT(*)' => 'num'])
-                    ->from('table.options')->where('name = ? AND user = ?', $name, $this->user->uid))->num > 0
-            ) {
-                Options::alloc()
-                    ->update(
-                        ['value' => $value],
-                        $this->db->sql()->where('name = ? AND user = ?', $name, $this->user->uid)
-                    );
-            } else {
-                Options::alloc()->insert([
+            $updated = $options->update(
+                ['value' => $value],
+                $this->db->sql()->where('name = ? AND user = ?', $name, $this->user->uid)
+            );
+
+            if ($updated === 0) {
+                $options->insert([
                     'name'  => $name,
                     'value' => $value,
                     'user'  => $this->user->uid
@@ -381,19 +376,17 @@ class Profile extends Users implements ActionInterface
         $name = '_plugin:' . $pluginName;
 
         if (!$this->personalConfigHandle($className, $settings)) {
-            if (
-                $this->db->fetchObject($this->db->select(['COUNT(*)' => 'num'])
-                    ->from('table.options')->where('name = ? AND user = ?', $name, $this->user->uid))->num > 0
-            ) {
-                Options::alloc()
-                    ->update(
-                        ['value' => Common::jsonEncode($settings, 0, '{}')],
-                        $this->db->sql()->where('name = ? AND user = ?', $name, $this->user->uid)
-                    );
-            } else {
-                Options::alloc()->insert([
+            $value = Common::jsonEncode($settings, 0, '{}');
+            $options = Options::alloc();
+            $updated = $options->update(
+                ['value' => $value],
+                $this->db->sql()->where('name = ? AND user = ?', $name, $this->user->uid)
+            );
+
+            if ($updated === 0) {
+                $options->insert([
                     'name'  => $name,
-                    'value' => Common::jsonEncode($settings, 0, '{}'),
+                    'value' => $value,
                     'user'  => $this->user->uid
                 ]);
             }

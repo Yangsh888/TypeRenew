@@ -217,16 +217,17 @@ class Edit extends Options implements ActionInterface
             $saved = json_decode((string) $this->options->__get($name), true);
             $saved = is_array($saved) ? $saved : [];
             $settings = array_merge($saved, $settings);
+            $value = Common::jsonEncode($settings, 0, '{}');
 
             if ($this->options->__get('theme:' . $theme)) {
                 $this->update(
-                    ['value' => Common::jsonEncode($settings, 0, '{}')],
+                    ['value' => $value],
                     $this->db->sql()->where('name = ?', $name)
                 );
             } else {
                 $this->insert([
                     'name'  => $name,
-                    'value' => Common::jsonEncode($settings, 0, '{}'),
+                    'value' => $value,
                     'user'  => 0
                 ]);
             }

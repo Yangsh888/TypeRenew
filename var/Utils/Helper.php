@@ -109,8 +109,7 @@ class Helper
 
     public static function setOption(string $name, $value): int
     {
-        $options = self::options();
-        $options->{$name} = $value;
+        self::options()->{$name} = $value;
 
         return BaseOptions::alloc()->update(
             ['value' => is_array($value) ? Common::jsonEncode($value, 0, '{}') : $value],
@@ -126,9 +125,7 @@ class Helper
         ?string $after = null
     ): int {
         $routingTable = self::options()->routingTable;
-        if (isset($routingTable[0])) {
-            unset($routingTable[0]);
-        }
+        unset($routingTable[0]);
 
         $pos = 0;
         foreach ($routingTable as $key => $val) {
@@ -156,10 +153,7 @@ class Helper
     public static function removeRoute(string $name): int
     {
         $routingTable = self::options()->routingTable;
-        if (isset($routingTable[0])) {
-            unset($routingTable[0]);
-        }
-
+        unset($routingTable[0]);
         unset($routingTable[$name]);
         return self::setOption('routingTable', $routingTable);
     }
@@ -177,12 +171,7 @@ class Helper
     {
         $actionTable = self::options()->actionTable;
         $actionTable = empty($actionTable) ? [] : $actionTable;
-
-        if (isset($actionTable[$actionName])) {
-            unset($actionTable[$actionName]);
-            reset($actionTable);
-        }
-
+        unset($actionTable[$actionName]);
         return self::setOption('actionTable', $actionTable);
     }
 
@@ -253,13 +242,11 @@ class Helper
         }
 
         $return = -1;
-        if (!empty($panelTable['child'][$index])) {
-            foreach ($panelTable['child'][$index] as $k => $val) {
-                if ($val[2] == 'extending.php?panel=' . $fileName) {
-                    unset($panelTable['child'][$index][$k]);
-                    $return = (int) $k;
-                    break;
-                }
+        foreach ($panelTable['child'][$index] as $k => $val) {
+            if ($val[2] == 'extending.php?panel=' . $fileName) {
+                unset($panelTable['child'][$index][$k]);
+                $return = (int) $k;
+                break;
             }
         }
 

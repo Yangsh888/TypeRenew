@@ -732,10 +732,9 @@ class Queue
     {
         try {
             $db = Db::get();
-            $exists = $db->fetchRow($db->select('name')->from('table.options')->where('name = ?', $name)->limit(1));
-            if ($exists) {
-                $db->query($db->update('table.options')->rows(['value' => $value])->where('name = ?', $name));
-            } else {
+            $affected = $db->query($db->update('table.options')->rows(['value' => $value])->where('name = ?', $name));
+
+            if ($affected === 0) {
                 $db->query($db->insert('table.options')->rows([
                     'name' => $name,
                     'user' => 0,

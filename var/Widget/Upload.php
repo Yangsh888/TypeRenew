@@ -53,10 +53,9 @@ class Upload extends Contents implements ActionInterface
             return $result;
         }
 
-        $options = Options::alloc();
         return Common::url(
             $attachment->path,
-            defined('__TYPECHO_UPLOAD_URL__') ? __TYPECHO_UPLOAD_URL__ : $options->siteUrl
+            defined('__TYPECHO_UPLOAD_URL__') ? __TYPECHO_UPLOAD_URL__ : Options::alloc()->siteUrl
         );
     }
 
@@ -470,8 +469,7 @@ class Upload extends Contents implements ActionInterface
         if (preg_match("/^(php|php3|php4|php5|php7|php8|phtml|pht|phar|cgi|shtml|asp|aspx|jsp|rb|py|pl|dll|exe|bat|cmd|com)$/i", $ext)) {
             return false;
         }
-        $options = Options::alloc();
-        return in_array($ext, $options->allowedAttachmentTypes);
+        return in_array($ext, Options::alloc()->allowedAttachmentTypes);
     }
 
     private function requireUploadFile(): array

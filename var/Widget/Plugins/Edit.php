@@ -199,16 +199,15 @@ class Edit extends Options implements ActionInterface
         $options = $db->fetchAll($select);
 
         if (empty($settings)) {
-            if (!empty($options)) {
-                $db->query($db->delete('table.options')->where('name = ?', $pluginName));
-            }
+            $db->query($db->delete('table.options')->where('name = ?', $pluginName));
         } else {
+            $encodedSettings = Common::jsonEncode($settings, 0, '{}');
             if (empty($options)) {
                 try {
                     $db->query($db->insert('table.options')
                         ->rows([
                             'name'  => $pluginName,
-                            'value' => Common::jsonEncode($settings, 0, '{}'),
+                            'value' => $encodedSettings,
                             'user'  => 0
                         ]));
                 } catch (SQLException $e) {
@@ -217,7 +216,7 @@ class Edit extends Options implements ActionInterface
                     }
 
                     $db->query($db->update('table.options')
-                        ->rows(['value' => Common::jsonEncode($settings, 0, '{}')])
+                        ->rows(['value' => $encodedSettings])
                         ->where('name = ?', $pluginName)
                         ->where('user = ?', 0));
                 }
@@ -226,9 +225,10 @@ class Edit extends Options implements ActionInterface
                     $value = json_decode($option['value'], true);
                     $value = is_array($value) ? $value : [];
                     $value = array_merge($value, $settings);
+                    $encodedValue = Common::jsonEncode($value, 0, '{}');
 
                     $db->query($db->update('table.options')
-                        ->rows(['value' => Common::jsonEncode($value, 0, '{}')])
+                        ->rows(['value' => $encodedValue])
                         ->where('name = ?', $pluginName)
                         ->where('user = ?', $option['user']));
                 }
