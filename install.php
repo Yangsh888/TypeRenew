@@ -643,6 +643,50 @@ function install_split_sql_statements(string $sql): array
     return $statements;
 }
 
+function install_transaction_supported(\Typecho\Db $db): bool
+{
+    $adapter = strtolower($db->getAdapterName());
+
+    return str_contains($adapter, 'mysql')
+        || str_contains($adapter, 'pgsql')
+        || str_contains($adapter, 'sqlite');
+}
+
+function install_transaction_begin(\Typecho\Db $db): bool
+{
+    if (!install_transaction_supported($db)) {
+        return false;
+    }
+
+    try {
+        $db->query('BEGIN');
+        return true;
+    } catch (\Throwable) {
+        return false;
+    }
+}
+
+function install_transaction_commit(\Typecho\Db $db, bool $started): void
+{
+    if (!$started) {
+        return;
+    }
+
+    $db->query('COMMIT');
+}
+
+function install_transaction_rollback(\Typecho\Db $db, bool $started): void
+{
+    if (!$started) {
+        return;
+    }
+
+    try {
+        $db->query('ROLLBACK');
+    } catch (\Throwable) {
+    }
+}
+
 /**
  * display step 2
  */
@@ -1165,15 +1209,20 @@ function install_step_3_perform()
         ]);
     }
 
+    if (empty($config['userPassword'])) {
+        $config['userPassword'] = $defaultPassword;
+    }
+
     $error = (new \Typecho\Validate())
         ->addRule('userUrl', 'required', _t('请填写站点地址'))
         ->addRule('userUrl', 'url', _t('请填写一个合法的URL地址'))
+        ->addRule('userUrl', 'maxLength', _t('个人主页地址长度超过限制, 请不要超过 150 个字符'), 150)
         ->addRule('userName', 'required', _t('必须填写用户名称'))
         ->addRule('userName', 'xssCheck', _t('请不要在用户名中使用特殊字符'))
         ->addRule('userName', 'maxLength', _t('用户名长度超过限制, 请不要超过 32 个字符'), 32)
         ->addRule('userMail', 'required', _t('必须填写电子邮箱'))
         ->addRule('userMail', 'email', _t('电子邮箱格式错误'))
-        ->addRule('userMail', 'maxLength', _t('邮箱长度超过限制, 请不要超过 200 个字符'), 200)
+        ->addRule('userMail', 'maxLength', _t('邮箱长度超过限制, 请不要超过 150 个字符'), 150)
         ->addRule(
             'userPassword',
             [\Utils\Password::class, 'validateLength'],
@@ -1185,11 +1234,9 @@ function install_step_3_perform()
         install_raise_error($error);
     }
 
-    if (empty($config['userPassword'])) {
-        $config['userPassword'] = $defaultPassword;
-    }
-
+    $transactionStarted = false;
     try {
+        $transactionStarted = install_transaction_begin($installDb);
         $installDb->query(
             $installDb->insert('table.users')->rows([
                 'name' => $config['userName'],
@@ -1275,7 +1322,9 @@ function install_step_3_perform()
                 $installDb->insert('table.options')->rows(['name' => $key, 'user' => 0, 'value' => $value])
             );
         }
-    } catch (\Typecho\Db\Exception $e) {
+        install_transaction_commit($installDb, $transactionStarted);
+    } catch (\Throwable $e) {
+        install_transaction_rollback($installDb, $transactionStarted);
         install_raise_error($e->getMessage());
     }
 

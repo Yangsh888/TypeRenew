@@ -212,8 +212,7 @@ class HyperDown
             $line = $lines[$i];
             $trimmedLine = trim($line);
 
-            if (preg_match("/^\s*\[((?:[^\]]|\\]|\\[)+?)\]:\s*$/", $trimmedLine, $matches)) {
-                $defKey = $matches[1];
+            if (preg_match("/^\s*\[((?:[^\]]|\\]|\\[)+?)\]:\s*$/", $trimmedLine)) {
                 $nextLineIndex = $i + 1;
 
                 while ($nextLineIndex < $count) {
@@ -503,10 +502,10 @@ class HyperDown
                 $escaped = htmlspecialchars($this->escapeBracket($matches[1]));
                 $url = $this->escapeBracket($matches[2]);
                 [$url, $title] = $this->cleanUrl($url, true);
-                $title = empty($title) ? $escaped : " title=\"{$title}\"";
+                $titleAttr = empty($title) ? '' : " title=\"{$title}\"";
 
                 return $this->makeHolder(
-                    "<img src=\"{$url}\" alt=\"{$title}\" title=\"{$title}\">"
+                    "<img src=\"{$url}\" alt=\"{$escaped}\"{$titleAttr}>"
                 );
             },
             $text
@@ -827,7 +826,7 @@ class HyperDown
     private function parseBlockShtml(?array $block, int $key, string $line, ?array &$state): bool
     {
         if ($this->_html) {
-            if (preg_match("/^(\s*)!!!(\s*)$/", $line, $matches)) {
+            if (preg_match("/^(\s*)!!!(\s*)$/", $line)) {
                 if ($this->isBlock('shtml')) {
                     $this->setBlock($key)->endBlock();
                 } else {
@@ -877,7 +876,7 @@ class HyperDown
             } elseif ($this->isBlock('ahtml')) {
                 $this->setBlock($key);
                 return false;
-            } elseif (preg_match("/^\s*<!\-\-(.*?)\-\->\s*$/", $line, $matches)) {
+            } elseif (preg_match("/^\s*<!\-\-(.*?)\-\->\s*$/", $line)) {
                 $this->startBlock('ahtml', $key)->endBlock();
                 return false;
             }
@@ -894,7 +893,7 @@ class HyperDown
      */
     private function parseBlockMath(?array $block, int $key, string $line): bool
     {
-        if (preg_match("/^(\s*)\\$\\$(\s*)$/", $line, $matches)) {
+        if (preg_match("/^(\s*)\\$\\$(\s*)$/", $line)) {
             if ($this->isBlock('math')) {
                 $this->setBlock($key)->endBlock();
             } else {
@@ -1058,10 +1057,10 @@ class HyperDown
                         $this->backBlock(1, 'table');
                     }
 
-                    if ($matches[1][0] == '|') {
+                    if ($matches[1] !== '' && $matches[1][0] == '|') {
                         $matches[1] = substr($matches[1], 1);
 
-                        if ($matches[1][strlen($matches[1]) - 1] == '|') {
+                        if ($matches[1] !== '' && $matches[1][strlen($matches[1]) - 1] == '|') {
                             $matches[1] = substr($matches[1], 0, -1);
                         }
                     }
@@ -1484,10 +1483,10 @@ class HyperDown
             $line = trim($line);
             $output = true;
 
-            if ($line[0] == '|') {
+            if ($line !== '' && $line[0] == '|') {
                 $line = substr($line, 1);
 
-                if ($line[strlen($line) - 1] == '|') {
+                if ($line !== '' && $line[strlen($line) - 1] == '|') {
                     $line = substr($line, 0, -1);
                 }
             }

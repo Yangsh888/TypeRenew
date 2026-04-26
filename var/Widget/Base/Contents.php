@@ -779,7 +779,7 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
     {
         $content = $this->content;
         $parts = preg_split("/(<\/\s*(?:p|blockquote|q|pre|table)\s*>)/i", $content, 2, PREG_SPLIT_DELIM_CAPTURE);
-        if (!empty($parts)) {
+        if (is_array($parts) && isset($parts[0], $parts[1])) {
             $content = $parts[0] . $parts[1];
         }
 

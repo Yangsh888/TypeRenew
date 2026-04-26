@@ -102,10 +102,7 @@ class Edit extends Contents implements ActionInterface
             $condition = $this->db->sql()->where('cid = ?', $page);
 
             if ($this->db->query($condition->update('table.contents')->rows(['status' => $status]))) {
-                $draft = $this->db->fetchRow($this->db->select('cid')
-                    ->from('table.contents')
-                    ->where('table.contents.parent = ? AND table.contents.type = ?', $page, 'revision')
-                    ->limit(1));
+                $draft = $this->db->fetchRow($this->revisionSelect((int) $page));
 
                 if (!empty($draft)) {
                     $this->db->query($this->db->update('table.contents')->rows(['status' => $status])
@@ -153,10 +150,7 @@ class Edit extends Contents implements ActionInterface
                         ->where('name = ?', 'frontPage'));
                 }
 
-                $draft = $this->db->fetchRow($this->db->select('cid')
-                    ->from('table.contents')
-                    ->where('table.contents.parent = ? AND table.contents.type = ?', $page, 'revision')
-                    ->limit(1));
+                $draft = $this->db->fetchRow($this->revisionSelect((int) $page));
 
                 $this->deleteFields($page);
 
@@ -200,10 +194,7 @@ class Edit extends Contents implements ActionInterface
                 continue;
             }
 
-            $draft = $this->db->fetchRow($this->db->select('cid')
-                ->from('table.contents')
-                ->where('table.contents.parent = ? AND table.contents.type = ?', $page, 'revision')
-                ->limit(1));
+            $draft = $this->db->fetchRow($this->revisionSelect((int) $page));
 
             if ($draft) {
                 $this->deleteContent($draft['cid'], false);

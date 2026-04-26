@@ -150,7 +150,10 @@ class Profile extends Users implements ActionInterface
 
         if (!empty($options)) {
             foreach ($options as $key => $val) {
-                $form->getInput($key)->value($val);
+                $input = $form->getInput($key);
+                if ($input !== null) {
+                    $input->value($val);
+                }
             }
         }
 
@@ -177,7 +180,17 @@ class Profile extends Users implements ActionInterface
         $user = $this->request->from('mail', 'screenName', 'url');
         $user['screenName'] = Common::strBy($user['screenName'] ?? null, $this->user->name);
 
-        $updateRows = $this->update($user, $this->db->sql()->where('uid = ?', $this->user->uid));
+        try {
+            $updateRows = $this->update($user, $this->db->sql()->where('uid = ?', $this->user->uid));
+        } catch (\Throwable $e) {
+            $conflict = $this->userWriteConflict($e);
+            if ($conflict !== null) {
+                Notice::alloc()->set($conflict);
+                $this->response->goBack();
+            }
+
+            throw $e;
+        }
         if ($updateRows > 0 && $currentScreenName !== $user['screenName']) {
             $this->syncCommentAuthor($this->user->uid, $user['screenName']);
         }
@@ -223,10 +236,13 @@ class Profile extends Users implements ActionInterface
         /** 给表单增加规则 */
         $screenName->addRule([$this, 'screenNameExists'], _t('昵称已经存在'));
         $screenName->addRule('xssCheck', _t('请不要在昵称中使用特殊字符'));
+        $screenName->addRule('maxLength', _t('昵称最多包含32个字符'), 32);
         $url->addRule('url', _t('个人主页地址格式错误'));
+        $url->addRule('maxLength', _t('个人主页地址最多包含150个字符'), 150);
         $mail->addRule('required', _t('必须填写电子邮箱'));
         $mail->addRule([$this, 'mailExists'], _t('电子邮箱地址已经存在'));
         $mail->addRule('email', _t('电子邮箱格式错误'));
+        $mail->addRule('maxLength', _t('电子邮箱最多包含150个字符'), 150);
 
         return $form;
     }

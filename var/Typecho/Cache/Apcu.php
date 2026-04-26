@@ -57,7 +57,9 @@ class Apcu implements Driver
 
         $ok = false;
         if (!apcu_exists($key)) {
-            apcu_add($key, $initial, 0);
+            if (apcu_add($key, $initial, 0)) {
+                return $initial;
+            }
         }
 
         $next = apcu_inc($key, max(1, $step), $ok);

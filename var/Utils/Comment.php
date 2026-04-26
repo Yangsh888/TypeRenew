@@ -65,18 +65,22 @@ class Comment
         if ($beforePurge !== null) {
             try {
                 $beforePurge();
-            } catch (\Throwable) {
+            } catch (\Throwable $e) {
+                error_log('Utils.Comment.beforePurge: ' . $e->getMessage());
             }
         }
 
         try {
             $cache = Cache::getInstance();
+            $cache->invalidate('comments');
             $cache->invalidate('contents');
             $cache->invalidate('metas');
-        } catch (\Throwable) {
+        } catch (\Throwable $e) {
+            error_log('Utils.Comment.invalidate: ' . $e->getMessage());
             try {
                 Cache::getInstance()->flush();
-            } catch (\Throwable) {
+            } catch (\Throwable $flushError) {
+                error_log('Utils.Comment.flush: ' . $flushError->getMessage());
             }
         }
     }

@@ -144,10 +144,7 @@ class Edit extends Contents implements ActionInterface
                     }
                 }
 
-                $draft = $this->db->fetchRow($this->db->select('cid')
-                    ->from('table.contents')
-                    ->where('table.contents.parent = ? AND table.contents.type = ?', $post, 'revision')
-                    ->limit(1));
+                $draft = $this->db->fetchRow($this->revisionSelect((int) $post));
 
                 if (!empty($draft)) {
                     $this->db->query($this->db->update('table.contents')->rows(['status' => $status])
@@ -193,10 +190,7 @@ class Edit extends Contents implements ActionInterface
 
                 $this->unAttach($post);
 
-                $draft = $this->db->fetchRow($this->db->select('cid')
-                    ->from('table.contents')
-                    ->where('table.contents.parent = ? AND table.contents.type = ?', $post, 'revision')
-                    ->limit(1));
+                $draft = $this->db->fetchRow($this->revisionSelect((int) $post));
 
                 $this->deleteFields($post);
 
@@ -237,10 +231,7 @@ class Edit extends Contents implements ActionInterface
                 continue;
             }
 
-            $draft = $this->db->fetchRow($this->db->select('cid')
-                ->from('table.contents')
-                ->where('table.contents.parent = ? AND table.contents.type = ?', $post, 'revision')
-                ->limit(1));
+            $draft = $this->db->fetchRow($this->revisionSelect((int) $post));
 
             if ($draft) {
                 $this->deleteContent($draft['cid']);

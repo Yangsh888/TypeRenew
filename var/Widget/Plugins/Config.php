@@ -99,7 +99,10 @@ class Config extends Options
 
         if (!empty($options)) {
             foreach ($options as $key => $val) {
-                $form->getInput($key)->value($val);
+                $input = $form->getInput($key);
+                if ($input !== null) {
+                    $input->value($val);
+                }
             }
         }
 

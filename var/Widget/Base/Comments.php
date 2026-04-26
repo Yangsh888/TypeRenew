@@ -64,11 +64,7 @@ class Comments extends Base implements QueryInterface, RowFilterInterface, Prima
 
         $insertId = $this->db->query($this->db->insert('table.comments')->rows($insertStruct));
 
-        $num = $this->db->fetchObject($this->db->select(['COUNT(coid)' => 'num'])->from('table.comments')
-            ->where('status = ? AND cid = ?', 'approved', $rows['cid']))->num;
-
-        $this->db->query($this->db->update('table.contents')->rows(['commentsNum' => $num])
-            ->where('cid = ?', $rows['cid']));
+        $this->refreshCommentsNum((int) $rows['cid']);
 
         return $insertId;
     }
@@ -105,11 +101,7 @@ class Comments extends Base implements QueryInterface, RowFilterInterface, Prima
 
         $updateRows = $this->db->query($updateCondition->update('table.comments')->rows($updateStruct));
 
-        $num = $this->db->fetchObject($this->db->select(['COUNT(coid)' => 'num'])->from('table.comments')
-            ->where('status = ? AND cid = ?', 'approved', $cid))->num;
-
-        $this->db->query($this->db->update('table.contents')->rows(['commentsNum' => $num])
-            ->where('cid = ?', $cid));
+        $this->refreshCommentsNum((int) $cid);
 
         return $updateRows;
     }
@@ -127,13 +119,18 @@ class Comments extends Base implements QueryInterface, RowFilterInterface, Prima
 
         $deleteRows = $this->db->query($deleteCondition->delete('table.comments'));
 
+        $this->refreshCommentsNum((int) $cid);
+
+        return $deleteRows;
+    }
+
+    private function refreshCommentsNum(int $cid): void
+    {
         $num = $this->db->fetchObject($this->db->select(['COUNT(coid)' => 'num'])->from('table.comments')
             ->where('status = ? AND cid = ?', 'approved', $cid))->num;
 
         $this->db->query($this->db->update('table.contents')->rows(['commentsNum' => $num])
             ->where('cid = ?', $cid));
-
-        return $deleteRows;
     }
 
     public function size(Query $condition): int

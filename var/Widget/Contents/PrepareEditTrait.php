@@ -40,9 +40,10 @@ trait PrepareEditTrait
             }
 
             if ($hasDraft) {
-                $draft = $this->type === $type . '_draft' ? $this->row : $this->db->fetchRow($this->select()
-                    ->where('table.contents.parent = ? AND table.contents.type = ?', $this->cid, 'revision')
-                    ->limit(1), [$this, 'filter']);
+                $draft = $this->type === $type . '_draft' ? $this->row : $this->db->fetchRow(
+                    $this->revisionSelect((int) $this->cid, true),
+                    [$this, 'filter']
+                );
 
                 if (isset($draft)) {
                     $draft['parent'] = $this->row['parent'];    // keep parent

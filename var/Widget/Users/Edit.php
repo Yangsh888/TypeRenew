@@ -84,7 +84,17 @@ class Edit extends Users implements ActionInterface
         $user['password'] = Password::hash($user['password']);
         $user['created'] = $this->options->time;
 
-        $user['uid'] = $this->insert($user);
+        try {
+            $user['uid'] = $this->insert($user);
+        } catch (\Throwable $e) {
+            $conflict = $this->userWriteConflict($e);
+            if ($conflict !== null) {
+                Notice::alloc()->set($conflict);
+                $this->response->goBack();
+            }
+
+            throw $e;
+        }
 
         Notice::alloc()->highlight('user-' . $user['uid']);
 
@@ -171,10 +181,13 @@ class Edit extends Users implements ActionInterface
         if ('insert' == $action || 'update' == $action) {
             $screenName->addRule([$this, 'screenNameExists'], _t('昵称已经存在'));
             $screenName->addRule('xssCheck', _t('请不要在昵称中使用特殊字符'));
+            $screenName->addRule('maxLength', _t('昵称最多包含32个字符'), 32);
             $url->addRule('url', _t('个人主页地址格式错误'));
+            $url->addRule('maxLength', _t('个人主页地址最多包含150个字符'), 150);
             $mail->addRule('required', _t('必须填写电子邮箱'));
             $mail->addRule([$this, 'mailExists'], _t('电子邮箱地址已经存在'));
             $mail->addRule('email', _t('电子邮箱格式错误'));
+            $mail->addRule('maxLength', _t('电子邮箱最多包含150个字符'), 150);
             $password->addRule(
                 [Password::class, 'validateLength'],
                 _t('密码长度需在 %d-%d 位之间', Password::minLength(), Password::maxLength())
@@ -220,7 +233,17 @@ class Edit extends Users implements ActionInterface
             $user['password'] = Password::hash($user['password']);
         }
 
-        $updateRows = $this->update($user, $this->db->sql()->where('uid = ?', $this->request->get('uid')));
+        try {
+            $updateRows = $this->update($user, $this->db->sql()->where('uid = ?', $this->request->get('uid')));
+        } catch (\Throwable $e) {
+            $conflict = $this->userWriteConflict($e);
+            if ($conflict !== null) {
+                Notice::alloc()->set($conflict);
+                $this->response->goBack();
+            }
+
+            throw $e;
+        }
         if ($updateRows > 0 && $currentScreenName !== $user['screenName']) {
             $this->syncCommentAuthor((int) $this->request->get('uid'), $user['screenName']);
         }

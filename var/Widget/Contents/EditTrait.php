@@ -273,6 +273,15 @@ trait EditTrait
         }
     }
 
+    protected function revisionSelect(int $cid, bool $full = false)
+    {
+        $select = $full ? $this->select() : $this->db->select('cid')->from('table.contents');
+
+        return $select
+            ->where('table.contents.parent = ? AND table.contents.type = ?', $cid, 'revision')
+            ->limit(1);
+    }
+
     protected function getCreated(): int
     {
         $created = $this->options->time;

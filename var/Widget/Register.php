@@ -37,7 +37,7 @@ class Register extends Users implements ActionInterface
         $validator->addRule('mail', 'required', _t('必须填写电子邮箱'));
         $validator->addRule('mail', [$this, 'mailExists'], _t('电子邮箱地址已经存在'));
         $validator->addRule('mail', 'email', _t('电子邮箱格式错误'));
-        $validator->addRule('mail', 'maxLength', _t('电子邮箱最多包含64个字符'), 64);
+        $validator->addRule('mail', 'maxLength', _t('电子邮箱最多包含150个字符'), 150);
 
         $validator->addRule('password', 'required', _t('必须填写密码'));
         $validator->addRule(
@@ -68,7 +68,19 @@ class Register extends Users implements ActionInterface
 
         $dataStruct = self::pluginHandle()->filter('register', $dataStruct);
 
-        $insertId = $this->insert($dataStruct);
+        try {
+            $insertId = $this->insert($dataStruct);
+        } catch (\Throwable $e) {
+            $conflict = $this->userWriteConflict($e);
+            if ($conflict !== null) {
+                Cookie::set('__typecho_remember_name', $this->request->get('name'));
+                Cookie::set('__typecho_remember_mail', $this->request->get('mail'));
+                Notice::alloc()->set($conflict);
+                $this->response->goBack();
+            }
+
+            throw $e;
+        }
         $this->db->fetchRow($this->select()->where('uid = ?', $insertId)
             ->limit(1), [$this, 'push']);
 
