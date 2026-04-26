@@ -3,6 +3,7 @@
 namespace Typecho\Widget\Helper;
 
 use Typecho\Cookie;
+use Typecho\Common;
 use Typecho\Request;
 use Typecho\Validate;
 use Typecho\Widget\Helper\Form\Element;
@@ -154,9 +155,9 @@ class Form extends Layout
         $error = $validator->run($formData, $rules);
 
         if ($error) {
-            Cookie::set('__typecho_form_message_' . $id, json_encode($error));
+            Cookie::set('__typecho_form_message_' . $id, Common::jsonEncode($error, 0, '{}'));
 
-            Cookie::set('__typecho_form_record_' . $id, json_encode($formData));
+            Cookie::set('__typecho_form_record_' . $id, Common::jsonEncode($formData, 0, '{}'));
         }
 
         return $error;

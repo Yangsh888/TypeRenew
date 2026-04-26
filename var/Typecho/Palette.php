@@ -497,6 +497,10 @@ class Palette
             'commands' => self::getFilteredCommands()
         ];
 
-        echo '<script>window.__trPaletteConfig = ' . json_encode($config, JSON_UNESCAPED_UNICODE) . ';</script>';
+        echo '<script>window.__trPaletteConfig = ' . Common::jsonEncode(
+            $config,
+            JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT,
+            '{}'
+        ) . ';</script>';
     }
 }

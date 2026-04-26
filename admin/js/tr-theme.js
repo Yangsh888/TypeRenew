@@ -15,7 +15,6 @@
     const store = window.TypechoStore || null;
 
     let pref = 'system';
-    let media = null;
 
     const getPref = () => {
         const saved = store ? store.get(STORAGE_KEY, 'system') : 'system';
@@ -118,7 +117,7 @@
 
     if (window.matchMedia) {
         try {
-            media = window.matchMedia('(prefers-color-scheme: dark)');
+            const media = window.matchMedia('(prefers-color-scheme: dark)');
             if (media.addEventListener) {
                 media.addEventListener('change', () => {
                     if (pref === 'system') {

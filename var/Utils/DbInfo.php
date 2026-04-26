@@ -25,7 +25,7 @@ class DbInfo
 
     public static function minimumMysqlVersion(string $rawVersion): string
     {
-        return self::isMariaDb($rawVersion) ? '10.3.0' : '5.7.0';
+        return self::isMariaDb($rawVersion) ? '10.3.0' : '5.7.7';
     }
 
     public static function mysqlLabel(string $rawVersion): string

@@ -13,10 +13,15 @@
     
     <?php
         $defaultSchema = $this->options->colorSchema ?? 'auto';
+        $defaultSchemaJson = \Typecho\Common::jsonEncode(
+            (string) $defaultSchema,
+            JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP,
+            '"auto"'
+        );
         echo "<script>
             (function() {
                 var stored = localStorage.getItem('theme');
-                var def = '{$defaultSchema}';
+                var def = {$defaultSchemaJson};
                 var isDark = false;
                 if (stored === 'dark' || stored === 'light') {
                     isDark = (stored === 'dark');

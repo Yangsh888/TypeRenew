@@ -45,7 +45,6 @@ class Discussion extends Options implements ActionInterface
             'commentsWhitelist',
             'commentsRequireMail',
             'commentsAvatarRating',
-            'commentsPostTimeout',
             'commentsPostInterval',
             'commentsRequireModeration',
             'commentsRequireUrl',

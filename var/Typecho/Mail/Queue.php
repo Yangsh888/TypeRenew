@@ -54,7 +54,7 @@ class Queue
                     'updated' => $now,
                     'lastError' => '',
                     'dedupeKey' => $dedupeKey,
-                    'payload' => json_encode($payload, JSON_UNESCAPED_UNICODE)
+                    'payload' => \Typecho\Common::jsonEncode($payload, JSON_UNESCAPED_UNICODE, '{}')
                 ];
 
                 self::insertQueueRow($db, $rows);
@@ -102,7 +102,7 @@ class Queue
             'updated' => $now,
             'lastError' => '',
             'dedupeKey' => $dedupeKey,
-            'payload' => json_encode($payload, JSON_UNESCAPED_UNICODE)
+            'payload' => \Typecho\Common::jsonEncode($payload, JSON_UNESCAPED_UNICODE, '{}')
         ];
 
         try {

@@ -146,7 +146,7 @@ class Upload extends Contents implements ActionInterface
             self::pluginHandle()->call('beforeModify', $result);
 
             $this->update([
-                'text' => json_encode($result)
+                'text' => Common::jsonEncode($result, 0, '{}')
             ], $this->db->sql()->where('cid = ?', $this->cid));
 
             $this->db->fetchRow($this->select()->where('table.contents.cid = ?', $this->cid)
@@ -358,7 +358,7 @@ class Upload extends Contents implements ActionInterface
                 'slug' => $result['name'],
                 'type' => 'attachment',
                 'status' => 'publish',
-                'text' => json_encode($result),
+                'text' => Common::jsonEncode($result, 0, '{}'),
                 'allowComment' => 1,
                 'allowPing' => 0,
                 'allowFeed' => 1

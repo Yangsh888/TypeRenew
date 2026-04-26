@@ -168,8 +168,12 @@ class Request
             return $this->jsonBody;
         }
 
-        $decoded = json_decode($this->getRawBody(), true, 16);
-        $this->jsonBody = is_array($decoded) ? $decoded : [];
+        try {
+            $decoded = json_decode($this->getRawBody(), true, 16, JSON_THROW_ON_ERROR);
+            $this->jsonBody = is_array($decoded) ? $decoded : [];
+        } catch (\JsonException $e) {
+            $this->jsonBody = [];
+        }
 
         return $this->jsonBody;
     }

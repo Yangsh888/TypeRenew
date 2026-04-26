@@ -125,6 +125,12 @@ namespace Typecho {
                 . str_replace('//', '/', ltrim($path, '/'));
         }
 
+        public static function jsonEncode($value, int $flags = 0, string $fallback = 'null'): string
+        {
+            $json = json_encode($value, $flags);
+            return is_string($json) ? $json : $fallback;
+        }
+
         public static function uploadErrorMessage(int $error, string $prefix, ?string $noFile = null): string
         {
             switch ($error) {

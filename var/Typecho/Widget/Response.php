@@ -73,7 +73,7 @@ class Response
     public function throwJson($message)
     {
         $this->throwCallback(function () use ($message) {
-            echo json_encode($message);
+            echo Common::jsonEncode($message);
         }, 'application/json');
     }
 

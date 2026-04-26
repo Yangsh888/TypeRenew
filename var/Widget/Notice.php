@@ -2,6 +2,7 @@
 
 namespace Widget;
 
+use Typecho\Common;
 use Typecho\Cookie;
 use Typecho\Widget;
 
@@ -42,7 +43,7 @@ class Notice extends Widget
 
         Cookie::set(
             '__typecho_notice',
-            json_encode($notice)
+            Common::jsonEncode($notice, 0, '[]')
         );
         Cookie::set(
             '__typecho_notice_type',

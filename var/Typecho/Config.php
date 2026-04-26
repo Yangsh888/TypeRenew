@@ -85,7 +85,7 @@ class Config extends \stdClass implements \Iterator, \ArrayAccess
 
     public function __toString(): string
     {
-        return json_encode($this->currentConfig);
+        return Common::jsonEncode($this->currentConfig, 0, '{}');
     }
 
     public function toArray(): array

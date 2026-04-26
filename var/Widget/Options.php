@@ -717,7 +717,7 @@ class Options extends Base
 
         try {
             $this->saveOption($name, $value);
-            $encoded = json_encode($value);
+            $encoded = Common::jsonEncode($value, 0, '');
             if (is_string($encoded)) {
                 $this->row[$name] = $encoded;
             }
@@ -756,6 +756,7 @@ class Options extends Base
             return $result;
         }
 
-        return json_decode($value, true);
+        $decoded = json_decode($value, true);
+        return is_array($decoded) ? $decoded : null;
     }
 }

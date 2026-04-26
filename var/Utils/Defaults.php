@@ -215,9 +215,9 @@ class Defaults
     private static function routingOptions(): array
     {
         return [
-            'routingTable' => json_encode(self::routingTable()),
-            'actionTable' => json_encode([]),
-            'panelTable' => json_encode([]),
+            'routingTable' => \Typecho\Common::jsonEncode(self::routingTable(), 0, '{}'),
+            'actionTable' => \Typecho\Common::jsonEncode([], 0, '[]'),
+            'panelTable' => \Typecho\Common::jsonEncode([], 0, '[]'),
         ];
     }
 

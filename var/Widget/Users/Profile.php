@@ -387,13 +387,13 @@ class Profile extends Users implements ActionInterface
             ) {
                 Options::alloc()
                     ->update(
-                        ['value' => json_encode($settings)],
+                        ['value' => Common::jsonEncode($settings, 0, '{}')],
                         $this->db->sql()->where('name = ? AND user = ?', $name, $this->user->uid)
                     );
             } else {
                 Options::alloc()->insert([
                     'name'  => $name,
-                    'value' => json_encode($settings),
+                    'value' => Common::jsonEncode($settings, 0, '{}'),
                     'user'  => $this->user->uid
                 ]);
             }

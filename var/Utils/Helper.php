@@ -113,7 +113,7 @@ class Helper
         $options->{$name} = $value;
 
         return BaseOptions::alloc()->update(
-            ['value' => is_array($value) ? json_encode($value) : $value],
+            ['value' => is_array($value) ? Common::jsonEncode($value, 0, '{}') : $value],
             Db::get()->sql()->where('name = ?', $name)
         );
     }

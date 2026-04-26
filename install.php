@@ -276,7 +276,7 @@ function install_throw_json($data)
 {
     \Typecho\Response::getInstance()->setContentType('application/json')
         ->addResponder(function () use ($data) {
-            echo json_encode($data);
+            echo \Typecho\Common::jsonEncode($data);
         })
         ->respond();
 }
@@ -804,7 +804,11 @@ function install_step_2()
             }
         }
 
-        fillInput(<?php echo json_encode($config); ?>);
+        fillInput(<?php echo \Typecho\Common::jsonEncode(
+            $config,
+            JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT,
+            '{}'
+        ); ?>);
         <?php endif; ?>
     </script>
     <?php

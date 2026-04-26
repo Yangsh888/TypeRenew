@@ -70,7 +70,7 @@ trait EditTrait
         }
 
         if ($type === 'json') {
-            $value = json_encode($value);
+            $value = Common::jsonEncode($value, 0, '{}');
         }
 
         $exist = $this->db->fetchRow($this->db->select('cid')->from('table.fields')

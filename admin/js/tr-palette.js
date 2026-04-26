@@ -157,10 +157,14 @@
     }
 
     function toggleSidebar() {
-        const key = 'trSidebarCollapsed';
+        const trigger = document.querySelector('[data-tr-nav]');
+        if (trigger) {
+            trigger.click();
+            return;
+        }
+
         const next = !body.classList.contains('tr-sidebar-collapsed');
         body.classList.toggle('tr-sidebar-collapsed', next);
-        storageSet(key, next ? '1' : '0');
         window.dispatchEvent(new Event('resize'));
     }
 

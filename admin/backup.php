@@ -68,7 +68,7 @@ $reportLines = \Widget\Backup::consumeReport();
                                         <span class="tr-subtitle"><?php _e('备份说明'); ?></span>
                                     </div>
                                     <div class="tr-help">
-                                        <?php _e('本备份功能 <strong>仅备份内容数据</strong>，不包含程序相关的 <strong>设置信息</strong>'); ?>
+                                        <?php _e('本功能定位为 <strong>内容数据迁移/备份</strong>，仅处理核心内容表，不包含程序设置、主题文件与插件自建表'); ?>
                                     </div>
                                     <div class="tr-help">
                                         <?php _e('如果您的数据量较大，直接使用面板备份可能会因执行时间过长而导致 <strong>操作超时</strong>'); ?>
@@ -130,6 +130,13 @@ $reportLines = \Widget\Backup::consumeReport();
                                                     <option value="0"><?php _e('不创建快照'); ?></option>
                                                 </select>
                                             </div>
+                                            <div class="tr-stack tr-gap-4">
+                                                <label class="tr-label" for="upload-plugin-strict"><?php _e('插件扩展导入'); ?></label>
+                                                <select id="upload-plugin-strict" name="pluginStrict" class="tr-select">
+                                                    <option value="1"><?php _e('严格模式，失败即中止'); ?></option>
+                                                    <option value="0"><?php _e('宽松模式，仅记录预警'); ?></option>
+                                                </select>
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="tr-grid cols-2 tr-mt-12">
@@ -173,6 +180,13 @@ $reportLines = \Widget\Backup::consumeReport();
                                                 <select id="server-snapshot" name="snapshot" class="tr-select">
                                                     <option value="1"><?php _e('自动创建快照'); ?></option>
                                                     <option value="0"><?php _e('不创建快照'); ?></option>
+                                                </select>
+                                            </div>
+                                            <div class="tr-stack tr-gap-4">
+                                                <label class="tr-label" for="server-plugin-strict"><?php _e('插件扩展导入'); ?></label>
+                                                <select id="server-plugin-strict" name="pluginStrict" class="tr-select">
+                                                    <option value="1"><?php _e('严格模式，失败即中止'); ?></option>
+                                                    <option value="0"><?php _e('宽松模式，仅记录预警'); ?></option>
                                                 </select>
                                             </div>
                                         </div>

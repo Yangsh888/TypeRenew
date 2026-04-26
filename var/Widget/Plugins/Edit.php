@@ -84,7 +84,7 @@ class Edit extends Options implements ActionInterface
                 Plugin::activate($pluginName);
                 $persisted = true;
                 $this->update(
-                    ['value' => json_encode(Plugin::export())],
+                    ['value' => Common::jsonEncode(Plugin::export(), 0, '{}')],
                     $this->db->sql()->where('name = ?', 'plugins')
                 );
             } catch (\Throwable $e) {
@@ -120,7 +120,7 @@ class Edit extends Options implements ActionInterface
                         function () use ($pluginName): void {
                             Plugin::deactivate($pluginName);
                             $this->update(
-                                ['value' => json_encode(Plugin::export())],
+                                ['value' => Common::jsonEncode(Plugin::export(), 0, '{}')],
                                 $this->db->sql()->where('name = ?', 'plugins')
                             );
                         },
@@ -208,7 +208,7 @@ class Edit extends Options implements ActionInterface
                     $db->query($db->insert('table.options')
                         ->rows([
                             'name'  => $pluginName,
-                            'value' => json_encode($settings),
+                            'value' => Common::jsonEncode($settings, 0, '{}'),
                             'user'  => 0
                         ]));
                 } catch (SQLException $e) {
@@ -217,7 +217,7 @@ class Edit extends Options implements ActionInterface
                     }
 
                     $db->query($db->update('table.options')
-                        ->rows(['value' => json_encode($settings)])
+                        ->rows(['value' => Common::jsonEncode($settings, 0, '{}')])
                         ->where('name = ?', $pluginName)
                         ->where('user = ?', 0));
                 }
@@ -228,7 +228,7 @@ class Edit extends Options implements ActionInterface
                     $value = array_merge($value, $settings);
 
                     $db->query($db->update('table.options')
-                        ->rows(['value' => json_encode($value)])
+                        ->rows(['value' => Common::jsonEncode($value, 0, '{}')])
                         ->where('name = ?', $pluginName)
                         ->where('user = ?', $option['user']));
                 }
@@ -329,7 +329,7 @@ class Edit extends Options implements ActionInterface
         }
 
         Plugin::deactivate($pluginName);
-        $this->update(['value' => json_encode(Plugin::export())], $this->db->sql()->where('name = ?', 'plugins'));
+        $this->update(['value' => Common::jsonEncode(Plugin::export(), 0, '{}')], $this->db->sql()->where('name = ?', 'plugins'));
 
         $this->delete($this->db->sql()->where('name = ?', 'plugin:' . $pluginName));
         $this->delete($this->db->sql()->where('name = ?', '_plugin:' . $pluginName));

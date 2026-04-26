@@ -96,7 +96,7 @@ class Edit extends Contents implements ActionInterface
         $content = $this->attachment->toArray();
         $content['description'] = $input['description'];
 
-        $attachment['text'] = json_encode($content);
+        $attachment['text'] = Common::jsonEncode($content, 0, '{}');
         $cid = $this->request->filter('int')->get('cid');
 
         $updateRows = $this->update($attachment, $this->db->sql()->where('cid = ?', $cid));

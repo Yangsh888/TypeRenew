@@ -168,7 +168,7 @@ RewriteRule . {$basePath}index.php [L]
 
         $before = [
             'rewrite' => (string) ($this->options->rewrite ?? ''),
-            'routingTable' => json_encode($this->options->routingTable),
+            'routingTable' => Common::jsonEncode($this->options->routingTable, 0, '{}'),
         ];
 
         if ($this->form()->validate()) {
@@ -189,7 +189,7 @@ RewriteRule . {$basePath}index.php [L]
             $routingTable['page']['url'] = '/' . ltrim($this->encodeRule($this->request->get('pagePattern')), '/');
             $routingTable['category']['url'] = '/' . ltrim($this->encodeRule($this->request->get('categoryPattern')), '/');
             $routingTable['category_page']['url'] = rtrim($routingTable['category']['url'], '/') . '/[page:digital]/';
-            $settings['routingTable'] = json_encode($routingTable);
+            $settings['routingTable'] = Common::jsonEncode($routingTable, 0, '{}');
         }
 
         $this->persistOptions($settings);

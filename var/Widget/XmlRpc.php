@@ -518,7 +518,7 @@ class XmlRpc extends Contents implements ActionInterface, Hook
             $text = $this->attachmentPayload((string) $post->text);
             $text['description'] = $this->arrayString($content, 'description', (string) ($text['description'] ?? ''));
 
-            $attachment['text'] = json_encode($text);
+            $attachment['text'] = Common::jsonEncode($text, 0, '{}');
 
             $updateRows = $this->update($attachment, $this->db->sql()->where('cid = ?', $postId));
             return $updateRows > 0;
@@ -1321,7 +1321,7 @@ class XmlRpc extends Contents implements ActionInterface, Hook
                 'slug'         => $result['name'],
                 'type'         => 'attachment',
                 'status'       => 'publish',
-                'text'         => json_encode($result),
+                'text'         => Common::jsonEncode($result, 0, '{}'),
                 'allowComment' => 1,
                 'allowPing'    => 0,
                 'allowFeed'    => 1

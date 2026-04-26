@@ -2,6 +2,7 @@
 
 namespace Widget\Base;
 
+use Typecho\Common;
 use Typecho\Db\Exception;
 use Typecho\Db\Query;
 use Typecho\Widget\Helper\Form;
@@ -68,7 +69,7 @@ class Options extends Base implements QueryInterface
                 ->where('name = ?', $name)
                 ->where('user = ?', $user)
         );
-        $value = is_array($value) ? json_encode($value) : (string) $value;
+        $value = is_array($value) ? Common::jsonEncode($value, 0, '{}') : (string) $value;
 
         if ($exists) {
             $this->update(

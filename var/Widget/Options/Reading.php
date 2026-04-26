@@ -64,7 +64,7 @@ class Reading extends Permalink
                 $routingTable['archive']['url'] = '/' . ltrim($this->encodeRule($this->request->get('archivePattern')), '/');
                 $routingTable['archive_page']['url'] = rtrim($routingTable['archive']['url'], '/')
                     . '/page/[page:digital]/';
-                $settings['routingTable'] = json_encode($routingTable);
+                $settings['routingTable'] = Common::jsonEncode($routingTable, 0, '{}');
             }
         } else {
             $settings['frontArchive'] = 0;
