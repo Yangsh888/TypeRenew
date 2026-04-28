@@ -21,7 +21,7 @@ $reportLines = \Widget\Backup::consumeReport();
                 <?php if (!empty($reportLines['blocking']) || !empty($reportLines['warning']) || !empty($reportLines['info'])): ?>
                 <div class="tr-card tr-tone-muted tr-mt-16">
                     <div class="tr-card-b">
-                        <div class="tr-subtitle"><?php _e('恢复报告'); ?></div>
+                        <div class="tr-subtitle"><?php _e('恢复结果'); ?></div>
                         <?php if (!empty($reportLines['blocking'])): ?>
                             <div class="tr-help tr-tone-warning tr-mt-8"><strong><?php _e('阻断项'); ?></strong></div>
                             <ul class="tr-help">
@@ -39,7 +39,7 @@ $reportLines = \Widget\Backup::consumeReport();
                             </ul>
                         <?php endif; ?>
                         <?php if (!empty($reportLines['info'])): ?>
-                            <div class="tr-help tr-mt-8"><strong><?php _e('报告摘要'); ?></strong></div>
+                            <div class="tr-help tr-mt-8"><strong><?php _e('处理摘要'); ?></strong></div>
                             <ul class="tr-help">
                                 <?php foreach ($reportLines['info'] as $line): ?>
                                     <li><?php echo htmlspecialchars($line, ENT_QUOTES, 'UTF-8'); ?></li>
@@ -68,16 +68,19 @@ $reportLines = \Widget\Backup::consumeReport();
                                         <span class="tr-subtitle"><?php _e('备份说明'); ?></span>
                                     </div>
                                     <div class="tr-help">
-                                        <?php _e('本功能定位为 <strong>内容数据迁移/备份</strong>，仅处理核心内容表，不包含程序设置、主题文件与插件自建表'); ?>
+                                        <?php _e('本备份功能 <strong>仅处理核心内容数据</strong>，包括文章、评论、分类标签、关系、用户与字段数据。'); ?>
                                     </div>
                                     <div class="tr-help">
-                                        <?php _e('如果您的数据量较大，直接使用面板备份可能会因执行时间过长而导致 <strong>操作超时</strong>'); ?>
+                                        <?php _e('本功能 <strong>不包含程序设置、主题文件与插件自建数据</strong>。'); ?>
                                     </div>
                                     <div class="tr-help">
-                                        <?php _e('这种情况下 <strong>建议您使用数据库自带的官方备份工具</strong> 进行数据导出与备份'); ?>
+                                        <?php _e('如果数据量较大，直接通过面板备份可能因执行时间过长而导致 <strong>操作超时</strong>。'); ?>
+                                    </div>
+                                    <div class="tr-help">
+                                        <?php _e('这种情况下，<strong>建议使用数据库工具</strong> 完成更完整的数据导出与备份。'); ?>
                                     </div>
                                     <div class="tr-help tr-tone-warning">
-                                        <strong><?php _e('另外，为了减小备份文件体积、提升备份速度，您可以在执行备份前，清理并删除不必要的数据'); ?></strong>
+                                        <strong><?php _e('如需减小备份文件体积并提升备份速度，建议在备份前先清理不再需要的数据。'); ?></strong>
                                     </div>
                                 </div>
                                 
@@ -106,7 +109,7 @@ $reportLines = \Widget\Backup::consumeReport();
                             
                             <div id="from-upload" class="tab-content" role="tabpanel">
                                 <form action="<?php echo $actionUrl; ?>" method="post" enctype="multipart/form-data">
-                                    <input type="hidden" name="do" value="import" data-do-field="1">
+                                    <input type="hidden" name="do" value="import">
                                     <div class="tr-dropzone">
                                         <input id="backup-upload-file" name="file" type="file" class="file tr-dropzone-input">
                                         <div class="tr-dropzone-inner">
@@ -130,21 +133,11 @@ $reportLines = \Widget\Backup::consumeReport();
                                                     <option value="0"><?php _e('不创建快照'); ?></option>
                                                 </select>
                                             </div>
-                                            <div class="tr-stack tr-gap-4">
-                                                <label class="tr-label" for="upload-plugin-strict"><?php _e('插件扩展导入'); ?></label>
-                                                <select id="upload-plugin-strict" name="pluginStrict" class="tr-select">
-                                                    <option value="1"><?php _e('严格模式，失败即中止'); ?></option>
-                                                    <option value="0"><?php _e('宽松模式，仅记录预警'); ?></option>
-                                                </select>
-                                            </div>
                                         </div>
                                     </div>
-                                    <div class="tr-grid cols-2 tr-mt-12">
-                                        <button type="submit" class="tr-btn primary tr-block" data-submit="import">
-                                            <span><?php _e('上传恢复'); ?></span>
-                                        </button>
-                                        <button type="submit" class="tr-btn primary tr-block" data-submit="check">
-                                            <span><?php _e('仅预检'); ?></span>
+                                    <div class="tr-mt-12">
+                                        <button type="submit" class="tr-btn primary tr-block">
+                                            <span><?php _e('立即恢复'); ?></span>
                                         </button>
                                     </div>
                                 </form>
@@ -152,7 +145,7 @@ $reportLines = \Widget\Backup::consumeReport();
                             
                             <div id="from-server" class="tab-content" role="tabpanel" hidden>
                                 <form action="<?php echo $actionUrl; ?>" method="post">
-                                    <input type="hidden" name="do" value="import" data-do-field="1">
+                                    <input type="hidden" name="do" value="import">
                                     <?php if (empty($backupFiles)): ?>
                                     <div class="tr-empty tr-mt-12">
                                         <p><?php _e('将备份文件手动上传至服务器的 %s 目录后, 本页面会自动显示该备份文件选项', __TYPECHO_BACKUP_DIR__); ?></p>
@@ -182,24 +175,14 @@ $reportLines = \Widget\Backup::consumeReport();
                                                     <option value="0"><?php _e('不创建快照'); ?></option>
                                                 </select>
                                             </div>
-                                            <div class="tr-stack tr-gap-4">
-                                                <label class="tr-label" for="server-plugin-strict"><?php _e('插件扩展导入'); ?></label>
-                                                <select id="server-plugin-strict" name="pluginStrict" class="tr-select">
-                                                    <option value="1"><?php _e('严格模式，失败即中止'); ?></option>
-                                                    <option value="0"><?php _e('宽松模式，仅记录预警'); ?></option>
-                                                </select>
-                                            </div>
                                         </div>
                                     </div>
-                                    <?php endif; ?>
-                                    <div class="tr-grid cols-2 tr-mt-12">
-                                        <button type="submit" class="tr-btn primary tr-block" data-submit="import">
-                                            <span><?php _e('选择恢复'); ?></span>
-                                        </button>
-                                        <button type="submit" class="tr-btn primary tr-block" data-submit="check">
-                                            <span><?php _e('仅预检'); ?></span>
+                                    <div class="tr-mt-12">
+                                        <button type="submit" class="tr-btn primary tr-block">
+                                            <span><?php _e('立即恢复'); ?></span>
                                         </button>
                                     </div>
+                                    <?php endif; ?>
                                 </form>
                             </div>
                         </div>
@@ -214,7 +197,6 @@ $reportLines = \Widget\Backup::consumeReport();
 include 'copyright.php';
 include 'dropzone-js.php';
 include 'common-js.php';
-include 'form-js.php';
 ?>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -253,26 +235,7 @@ include 'form-js.php';
 
         const forms = document.querySelectorAll('#backup-secondary form');
         forms.forEach(form => {
-            const hiddenDo = form.querySelector('input[data-do-field]');
-            const submitButtons = form.querySelectorAll('button[data-submit]');
-            submitButtons.forEach((button) => {
-                button.addEventListener('click', function () {
-                    if (hiddenDo) {
-                        hiddenDo.value = this.getAttribute('data-submit') || 'import';
-                    }
-                });
-            });
-
             form.addEventListener('submit', function(e) {
-                const submitter = e.submitter;
-                const action = submitter ? submitter.getAttribute('data-submit') : 'import';
-                if (hiddenDo) {
-                    hiddenDo.value = action || 'import';
-                }
-                if (action !== 'import') {
-                    return;
-                }
-
                 if (!confirm('<?php _e('恢复操作将清除所有现有数据, 是否继续?'); ?>')) {
                     e.preventDefault();
                     return false;

@@ -1645,11 +1645,6 @@ html.tr-theme-dark body.tr-admin #custom-field ul.fields .field {
     background: var(--tr-surface);
 }
 
-html.tr-theme-dark body.tr-admin.tr-page-write #edit-secondary .typecho-post-option {
-    border-color: var(--tr-border);
-    background: rgba(2, 6, 23, 0.34);
-}
-
 html.tr-theme-dark body.tr-admin .typecho-attachment-photo {
     border-color: var(--tr-border);
     background: var(--tr-surface);
@@ -1810,11 +1805,6 @@ html.tr-theme-dark body.tr-admin .typecho-pager li a:hover {
 html.tr-theme-dark body.tr-admin .typecho-page-main > [class*="col-"]::before {
     background: var(--tr-col-pseudo-bg);
     border-color: var(--tr-col-pseudo-border);
-}
-
-html.tr-theme-dark body.tr-admin.tr-page-write #edit-secondary .typecho-post-option {
-    background: var(--tr-post-option-bg);
-    border-color: var(--tr-border);
 }
 
 html.tr-theme-dark body.tr-admin.tr-page-write .tr-editor-card {
@@ -3237,6 +3227,25 @@ body.tr-admin.tr-page-write #edit-secondary .tr-side-stack {
     padding: var(--tr-panel-pad);
 }
 
+body.tr-admin.tr-page-write #edit-secondary .tr-write-side-head {
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin: 0 0 10px;
+}
+
+body.tr-admin.tr-page-write #edit-secondary .tr-write-side-title {
+    font-size: 13px;
+    font-weight: 750;
+    color: rgba(15, 23, 42, 0.82);
+}
+
+body.tr-admin.tr-page-write #edit-secondary .tr-write-side-close,
+body.tr-admin.tr-page-write .tr-write-panel-btn {
+    display: none;
+}
+
 body.tr-admin.tr-page-write #edit-secondary .typecho-option-tabs {
     margin: 0 0 var(--tr-gap-sm);
     border: 1px solid rgba(15, 23, 42, 0.10);
@@ -3275,6 +3284,110 @@ body.tr-admin.tr-page-write #edit-secondary details#advance-panel > summary.btn 
 body.tr-admin.tr-page-write #edit-secondary .allow-option .typecho-label {
     display: block;
     margin-bottom: 8px;
+}
+
+body.tr-admin.tr-page-write .tr-write-shell.tr-write-fullscreen {
+    --tr-write-action-h: 72px;
+}
+
+body.tr-admin.tr-page-write .tr-write-shell.tr-write-fullscreen > .tr-write-main {
+    flex: 1 1 auto;
+    max-width: none;
+}
+
+body.tr-admin.tr-page-write .tr-write-shell.tr-write-fullscreen > #edit-secondary.col-tb-3 {
+    flex: 0 0 0;
+    min-width: 0;
+    padding: 0;
+}
+
+body.tr-admin.tr-page-write .tr-write-shell.tr-write-fullscreen p.submit {
+    position: fixed;
+    left: calc(var(--tr-sidebar-w) + 24px);
+    right: 24px;
+    bottom: 20px;
+    z-index: 1250;
+    margin: 0;
+    padding: 12px 14px;
+    border: 1px solid rgba(15, 23, 42, 0.10);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: var(--tr-shadow);
+    backdrop-filter: blur(12px);
+}
+
+body.tr-admin.tr-sidebar-collapsed.tr-page-write .tr-write-shell.tr-write-fullscreen p.submit {
+    left: calc(var(--tr-sidebar-w-collapsed) + 24px);
+}
+
+body.tr-admin.tr-page-write .tr-write-shell.tr-write-fullscreen .tr-write-panel-btn {
+    display: inline-flex;
+}
+
+body.tr-admin.tr-page-write .tr-write-shell.tr-write-fullscreen #edit-secondary {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    bottom: calc(var(--tr-write-action-h) + 32px);
+    width: min(360px, calc(100vw - 32px));
+    max-width: none;
+    z-index: 1240;
+    transform: translateX(calc(100% + 24px));
+    opacity: 0;
+    pointer-events: none;
+    transition: transform .18s ease, opacity .18s ease;
+}
+
+body.tr-admin.tr-page-write .tr-write-shell.tr-write-fullscreen.tr-write-panel-open #edit-secondary {
+    transform: translateX(0);
+    opacity: 1;
+    pointer-events: auto;
+}
+
+body.tr-admin.tr-page-write .tr-write-shell.tr-write-fullscreen #edit-secondary .tr-side-stack {
+    height: 100%;
+    overflow: auto;
+    box-shadow: var(--tr-shadow);
+}
+
+body.tr-admin.tr-page-write .tr-write-shell.tr-write-fullscreen #edit-secondary .tr-write-side-head {
+    display: flex;
+}
+
+body.tr-admin.tr-page-write .tr-write-shell.tr-write-fullscreen #edit-secondary .tr-write-side-close {
+    display: inline-flex;
+}
+
+body.tr-admin.tr-page-write .tr-write-shell.tr-write-fullscreen .tr-editor-card {
+    padding-bottom: calc(var(--tr-write-action-h) + 24px);
+}
+
+body.tr-admin.tr-page-write .editor .tr-fullscreen-active {
+    color: var(--tr-primary, #2563eb);
+}
+
+body.tr-admin.tr-page-write .tr-write-shell.tr-write-fullscreen .preview-frame {
+    z-index: 1260;
+}
+
+body.tr-admin.tr-page-write .tr-write-shell.tr-write-fullscreen .preview-frame.preview-loading {
+    opacity: 0;
+}
+
+@media (max-width: 768px) {
+    body.tr-admin.tr-page-write .tr-write-shell.tr-write-fullscreen p.submit,
+    body.tr-admin.tr-sidebar-collapsed.tr-page-write .tr-write-shell.tr-write-fullscreen p.submit {
+        left: 12px;
+        right: 12px;
+        bottom: 12px;
+    }
+
+    body.tr-admin.tr-page-write .tr-write-shell.tr-write-fullscreen #edit-secondary {
+        top: 12px;
+        right: 12px;
+        left: 12px;
+        width: auto;
+    }
 }
 
 body.tr-admin.tr-page-write #edit-secondary .allow-option ul {

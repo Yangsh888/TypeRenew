@@ -513,7 +513,7 @@ class Mail extends Options implements ActionInterface
     private function normalizeIpList(string $value): string
     {
         $ips = [];
-        foreach (preg_split('/[\s,]+/', trim($value)) as $item) {
+        foreach (preg_split('/[\s,]+/', trim($value)) ?: [] as $item) {
             $item = trim((string) $item);
             if ($item === '' || !filter_var($item, FILTER_VALIDATE_IP)) {
                 continue;

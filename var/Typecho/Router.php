@@ -35,7 +35,7 @@ class Router
             [$route, $params] = $result;
             try {
                 return Widget::widget($route['widget'], $parameter, $params);
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 if (404 == $e->getCode()) {
                     Widget::destroy($route['widget']);
                     continue;
@@ -68,7 +68,7 @@ class Router
                 }
 
                 return;
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 if (404 == $e->getCode()) {
                     Widget::destroy($route['widget']);
                     continue;

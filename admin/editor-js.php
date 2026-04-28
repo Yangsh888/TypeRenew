@@ -35,7 +35,7 @@ $(document).ready(function () {
     const textarea = $('#text'),
         toolbar = $('<div class="editor" id="wmd-button-bar" />').insertBefore(textarea.parent()),
         preview = $('<div id="wmd-preview" class="wmd-hidetab" />').insertAfter('.editor');
-    let isFullScreen = false;
+    const form = textarea.closest('form');
 
     const options = {}, isMarkdown = <?php echo json_encode(!$content->have() || $content->isMarkdown); ?>;
 
@@ -72,8 +72,8 @@ $(document).ready(function () {
         redo: '<?php _e('重做'); ?> - Ctrl+Y',
         redomac: '<?php _e('重做'); ?> - Ctrl+Shift+Z',
 
-        fullscreen: '<?php _e('全屏'); ?> - Ctrl+J',
-        exitFullscreen: '<?php _e('退出全屏'); ?> - Ctrl+E',
+        fullscreen: '<?php _e('全屏'); ?>',
+        exitFullscreen: '<?php _e('退出全屏'); ?>',
         fullscreenUnsupport: '<?php _e('此浏览器不支持全屏操作'); ?>',
 
         imagedialog: '<p><b><?php _e('插入图片'); ?></b></p><p><?php _e('请在下方的输入框内输入要插入的远程图片地址'); ?></p><p><?php _e('您也可以使用附件功能插入上传的本地图片'); ?></p>',
@@ -136,44 +136,126 @@ $(document).ready(function () {
     <?php \Typecho\Plugin::factory('admin/editor-js.php')->call('markdownEditor', $content); ?>
 
     let th = textarea.height(), ph = preview.height();
-    const uploadBtn = $('<button type="button" id="btn-fullscreen-upload" class="btn btn-link">'
+    const workspace = window.Typecho && window.Typecho.writeWorkspace ? window.Typecho.writeWorkspace : null;
+    const fullscreenHeight = function () {
+        const actionHeight = workspace && typeof workspace.actionHeight === 'function'
+            ? workspace.actionHeight()
+            : 72;
+        return Math.max(320, $(window).height() - toolbar.outerHeight() - actionHeight - 32);
+    };
+    const applyFullscreenHeight = function () {
+        const h = fullscreenHeight();
+        textarea.css('height', h);
+        preview.css('height', h);
+    };
+    const syncShellFullscreen = function (on) {
+        if (on) {
+            th = textarea.height();
+            ph = preview.height();
+            applyFullscreenHeight();
+            return;
+        }
+
+        textarea.height(th);
+        preview.height(ph);
+    };
+    const enterShellFullscreen = function () {
+        workspace && workspace.setFullscreen(true);
+        return false;
+    };
+    const findNativeFullscreenControls = function () {
+        const labels = ['<?php _e('全屏'); ?>', '<?php _e('退出全屏'); ?>'];
+        return toolbar.find('li, button, a, span').filter(function () {
+            const node = $(this);
+            const title = String(node.attr('title') || node.attr('aria-label') || '').trim();
+            const text = String(node.text() || '').trim();
+            return labels.includes(title) || labels.includes(text) || node.is('#wmd-fullscreen-button') || node.hasClass('wmd-fullscreen-button');
+        });
+    };
+    const bindNativeFullscreenControl = function () {
+        if (!workspace) {
+            return;
+        }
+
+        findNativeFullscreenControls().each(function () {
+            const node = $(this);
+            const el = node.get(0);
+            if (!el || el.dataset.trShellBound === '1') {
+                return;
+            }
+
+            el.dataset.trShellBound = '1';
+            el.addEventListener('click', function (event) {
+                event.preventDefault();
+                event.stopPropagation();
+                if (typeof event.stopImmediatePropagation === 'function') {
+                    event.stopImmediatePropagation();
+                }
+                workspace.toggleFullscreen();
+            }, true);
+        });
+    };
+    const syncNativeFullscreenControl = function (on) {
+        const label = on ? '<?php _e('退出全屏'); ?>' : '<?php _e('全屏'); ?>';
+        findNativeFullscreenControls()
+            .toggleClass('tr-fullscreen-active', !!on)
+            .attr('aria-pressed', on ? 'true' : 'false')
+            .attr('title', label)
+            .attr('aria-label', label);
+    };
+    const handleShellShortcut = function (event) {
+        if (!workspace) {
+            return;
+        }
+
+        const key = String(event.key || '').toLowerCase();
+        if (!(event.ctrlKey || event.metaKey) || (key !== 'j' && key !== 'e')) {
+            return;
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
+        if (typeof event.stopImmediatePropagation === 'function') {
+            event.stopImmediatePropagation();
+        }
+
+        if (key === 'j') {
+            workspace.toggleFullscreen();
+        } else if (workspace.isFullscreen()) {
+            workspace.setFullscreen(false);
+        }
+    };
+    $('<button type="button" class="btn btn-link">'
             + '<i class="i-upload"><?php _e('附件'); ?></i></button>')
             .prependTo('.submit .right')
             .click(function() {
-                $('a', $('.typecho-option-tabs li').not('.active')).trigger('click');
+                if (workspace && typeof workspace.showPanel === 'function') {
+                    workspace.showPanel('#tab-files');
+                } else {
+                    $('#tab-files-btn').trigger('click');
+                }
                 return false;
             });
 
-    $('.typecho-option-tabs li').click(function () {
-        uploadBtn.find('i').toggleClass('i-upload-active',
-            $('#tab-files-btn', this).length > 0);
-    });
-
     editor.hooks.chain('enterFakeFullScreen', function () {
-        th = textarea.height();
-        ph = preview.height();
-        $(document.body).addClass('fullscreen');
-        const h = $(window).height() - toolbar.outerHeight();
-        
-        textarea.css('height', h);
-        preview.css('height', h);
-        isFullScreen = true;
+        return enterShellFullscreen();
     });
 
     editor.hooks.chain('enterFullScreen', function () {
-        $(document.body).addClass('fullscreen');
-        
-        const h = window.screen.height - toolbar.outerHeight();
-        textarea.css('height', h);
-        preview.css('height', h);
-        isFullScreen = true;
+        return enterShellFullscreen();
     });
 
     editor.hooks.chain('exitFullScreen', function () {
-        $(document.body).removeClass('fullscreen');
-        textarea.height(th);
-        preview.height(ph);
-        isFullScreen = false;
+        workspace && workspace.setFullscreen(false);
+        return false;
+    });
+
+    $(window).on('resize', function () {
+        if (!(workspace && typeof workspace.isFullscreen === 'function' && workspace.isFullscreen())) {
+            return;
+        }
+
+        applyFullscreenHeight();
     });
 
     editor.hooks.chain('commandExecuted', function () {
@@ -186,6 +268,8 @@ $(document).ready(function () {
 
     function initMarkdown() {
         editor.run();
+        bindNativeFullscreenControl();
+        syncNativeFullscreenControl(workspace && typeof workspace.isFullscreen === 'function' && workspace.isFullscreen());
 
         const imageButton = $('#wmd-image-button'),
             linkButton = $('#wmd-link-button');
@@ -200,7 +284,6 @@ $(document).ready(function () {
                 if ($('.wmd-prompt-dialog').length > 0) {
                     $('.wmd-prompt-dialog input').val(url).select();
                     clearInterval(checkDialog);
-                    checkDialog = null;
                 }
             }, 10);
         };
@@ -217,8 +300,8 @@ $(document).ready(function () {
             $(this).addClass("active");
             $("#wmd-editarea, #wmd-preview").addClass("wmd-hidetab");
         
-            const selected_tab = $(this).attr("href"),
-                selected_el = $(selected_tab).removeClass("wmd-hidetab");
+            const selected_tab = $(this).attr("href");
+            $(selected_tab).removeClass("wmd-hidetab");
 
             if (selected_tab === "#wmd-preview") {
                 $("#wmd-button-row").addClass("wmd-visualhide");
@@ -249,6 +332,19 @@ $(document).ready(function () {
                 }
             }
         });
+    }
+
+    if (workspace && typeof workspace.isFullscreen === 'function') {
+        syncShellFullscreen(workspace.isFullscreen());
+        const formNode = form.get(0);
+        if (formNode) {
+            formNode.addEventListener('tr:fullscreen-change', function (event) {
+                const active = !!(event.detail && event.detail.active);
+                syncShellFullscreen(active);
+                syncNativeFullscreenControl(active);
+            });
+        }
+        document.addEventListener('keydown', handleShellShortcut, true);
     }
 
     if (isMarkdown) {

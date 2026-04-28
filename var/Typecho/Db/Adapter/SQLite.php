@@ -27,7 +27,7 @@ class SQLite implements Adapter
         try {
             $dbHandle = new \SQLite3($config->file);
             $this->isSQLite2 = version_compare(\SQLite3::version()['versionString'], '3.0.0', '<');
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             throw new ConnectionException($e->getMessage(), $e->getCode());
         }
 

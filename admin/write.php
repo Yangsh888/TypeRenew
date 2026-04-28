@@ -16,7 +16,7 @@ if (class_exists('VditorRenew_Plugin')) {
     $vditorForceMarkdown = $vditorEnabled && (!$content->have() || $content->isMarkdown || $vditorLegacy === 'convert');
 }
 ?>
-<div class="col-mb-12 col-tb-9" role="main">
+<div class="col-mb-12 col-tb-9 tr-write-main" role="main">
     <?php if ($content->draft): ?>
         <?php if ($content->draft['cid'] != $content->cid): ?>
             <?php $contentModifyDate = new \Typecho\Date($content->draft['modified']); ?>
@@ -68,9 +68,11 @@ if (class_exists('VditorRenew_Plugin')) {
         <?php include 'custom-fields.php'; ?>
     </div>
 
-    <p class="submit">
+    <p class="submit tr-write-actions">
         <span class="left">
             <button type="button" id="btn-cancel-preview" class="btn"><i class="i-caret-left"></i> <?php _e('取消预览'); ?></button>
+            <button type="button" id="btn-panel-options" class="btn btn-s tr-write-panel-btn" data-panel-target="#tab-advance"><?php _e('选项'); ?></button>
+            <button type="button" id="btn-panel-files" class="btn btn-s tr-write-panel-btn" data-panel-target="#tab-files"><?php _e('附件'); ?></button>
         </span>
         <span class="right">
             <input type="hidden" name="do" value="publish" />

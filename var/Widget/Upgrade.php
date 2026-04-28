@@ -3,7 +3,6 @@
 namespace Widget;
 
 use Typecho\Common;
-use Exception;
 use Typecho\Upgrade\Runner as UpgradeRunner;
 use Typecho\Upgrade\Store as UpgradeStore;
 use Utils\Migration\SchemaManager;
@@ -22,7 +21,7 @@ class Upgrade extends BaseOptions implements ActionInterface
                 ? array_keys($this->options->plugins['activated'])
                 : [];
             $result = SchemaManager::syncCurrentRelease($this->db, $activated);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Notice::alloc()->set($e->getMessage(), 'error');
             return;
         }
@@ -42,7 +41,7 @@ class Upgrade extends BaseOptions implements ActionInterface
     {
         try {
             $result = SchemaManager::repairCriticalSchema($this->db);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Notice::alloc()->set($e->getMessage(), 'error');
             return;
         }

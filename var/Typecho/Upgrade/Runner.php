@@ -19,8 +19,6 @@ class Runner
         'usr/plugins/RenewShield/',
         'usr/plugins/VditorRenew/',
         'usr/themes/default/',
-        'usr/themes/LanternTown/',
-        'usr/themes/TypeShow/',
     ];
 
     public function __construct(?Store $store = null)

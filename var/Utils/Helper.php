@@ -74,8 +74,8 @@ class Helper
             }
 
             call_user_func([$className, 'deactivate']);
-        } catch (\Exception $e) {
-            self::reportException('removePlugin.deactivate', $e);
+        } catch (\Throwable $e) {
+            error_log('[Helper] removePlugin.deactivate: ' . $e->getMessage());
         }
 
         $db = Db::get();
@@ -84,7 +84,7 @@ class Helper
             Plugin::deactivate($pluginName);
             self::setOption('plugins', Plugin::export());
         } catch (Plugin\Exception $e) {
-            self::reportException('removePlugin.state', $e);
+            error_log('[Helper] removePlugin.state: ' . $e->getMessage());
         }
 
         $db->query($db->delete('table.options')->where('name = ?', 'plugin:' . $pluginName));
@@ -343,10 +343,5 @@ var typechoCancelCommentReply = function (cfid) {
 </script>
 EOF;
         }
-    }
-
-    private static function reportException(string $scope, \Throwable $e): void
-    {
-        error_log('[Helper] ' . $scope . ': ' . $e->getMessage());
     }
 }

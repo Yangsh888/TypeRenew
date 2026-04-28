@@ -798,45 +798,72 @@ EOF;
 
         public static function checkSafeHost(string $host): bool
         {
-            if ('localhost' == $host) {
+            $host = trim(strtolower($host));
+            if ($host === '' || $host === 'localhost' || $host === 'localhost.localdomain') {
                 return false;
             }
 
-            $address = gethostbyname($host);
-            $inet = inet_pton($address);
-
-            if (false === $inet) {
-                if (!function_exists('dns_get_record')) {
-                    return false;
-                }
-
-                $records = dns_get_record($host, DNS_AAAA);
-
-                if (empty($records)) {
-                    return false;
-                }
-
-                $address = '';
-                foreach ($records as $record) {
-                    $ipv6 = (string) ($record['ipv6'] ?? '');
-                    if ($ipv6 !== '') {
-                        $address = $ipv6;
-                        break;
-                    }
-                }
-
-                if ($address === '') {
-                    return false;
-                }
-
-                $inet = inet_pton($address);
+            $addresses = self::resolveHostAddresses($host);
+            if (empty($addresses)) {
+                return false;
             }
 
-            return filter_var(
-                $address,
-                FILTER_VALIDATE_IP,
-                FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE
-            ) !== false;
+            foreach ($addresses as $address) {
+                if (
+                    filter_var(
+                        $address,
+                        FILTER_VALIDATE_IP,
+                        FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE
+                    ) === false
+                ) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static function resolveHostAddresses(string $host): array
+        {
+            $directIp = filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_IPV6);
+            if ($directIp !== false) {
+                return [$directIp];
+            }
+
+            $addresses = [];
+
+            if (function_exists('gethostbynamel')) {
+                $ipv4s = gethostbynamel($host);
+                if (is_array($ipv4s)) {
+                    foreach ($ipv4s as $ip) {
+                        $validated = filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4);
+                        if ($validated !== false) {
+                            $addresses[] = $validated;
+                        }
+                    }
+                }
+            } else {
+                $ipv4 = gethostbyname($host);
+                $validated = filter_var($ipv4, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4);
+                if ($validated !== false) {
+                    $addresses[] = $validated;
+                }
+            }
+
+            if (function_exists('dns_get_record')) {
+                $records = dns_get_record($host, DNS_AAAA);
+                if (is_array($records)) {
+                    foreach ($records as $record) {
+                        $ipv6 = (string) ($record['ipv6'] ?? '');
+                        $validated = filter_var($ipv6, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6);
+                        if ($validated !== false) {
+                            $addresses[] = $validated;
+                        }
+                    }
+                }
+            }
+
+            return array_values(array_unique($addresses));
         }
 
         public static function mimeContentType(string $fileName): string

@@ -129,7 +129,7 @@ $(document).ready(function() {
             justifySlug.text(val.length > 0 ? val : '     ');
         }
 
-        slug.bind('input propertychange', justifySlugWidth);
+        slug.on('input', justifySlugWidth);
         justifySlugWidth();
     }
 
@@ -137,13 +137,98 @@ $(document).ready(function() {
         idInput = $('input[name=cid]'),
         draft = $('input[name=draft]'),
         btnPreview = $('#btn-preview'),
-        autoSave = $('<span id="auto-save-message"></span>').prependTo('.left');
+        autoSave = $('<span id="auto-save-message"></span>').prependTo('.left'),
+        actionBar = form.find('.tr-write-actions');
+
+    const sidePanel = $('#edit-secondary'),
+        sideTabs = sidePanel.find('.typecho-option-tabs a'),
+        sidePanes = sidePanel.find('.tab-content'),
+        panelButtons = $('.tr-write-panel-btn'),
+        sideCloseButton = $('#btn-side-close');
 
     let cid = idInput.val(),
         draftId = draft.length > 0 ? draft.val() : 0,
         changed = false,
         written = false,
         lastSaveTime = null;
+
+    function refreshActionHeight() {
+        const height = actionBar.length > 0 ? Math.ceil(actionBar.outerHeight(true)) : 72;
+        form.css('--tr-write-action-h', Math.max(64, height) + 'px');
+    }
+
+    function setSideTab(target) {
+        let targetId = String(target || '#tab-advance');
+        if (!targetId || targetId.charAt(0) !== '#') {
+            targetId = '#tab-advance';
+        }
+
+        sideTabs.each(function () {
+            const tab = $(this);
+            const active = tab.attr('href') === targetId;
+            tab.parent().toggleClass('active', active);
+            tab.attr('aria-selected', active ? 'true' : 'false');
+            tab.attr('tabindex', active ? '0' : '-1');
+        });
+
+        sidePanes.each(function () {
+            const pane = $(this);
+            const active = '#' + pane.attr('id') === targetId;
+            pane.prop('hidden', !active);
+        });
+    }
+
+    const writeWorkspace = Typecho.writeWorkspace = {
+        setFullscreen: function (on) {
+            const active = !!on;
+            form.toggleClass('tr-write-fullscreen', active);
+            if (!active) {
+                form.removeClass('tr-write-panel-open');
+            }
+            refreshActionHeight();
+            const node = form.get(0);
+            if (node) {
+                node.dispatchEvent(new CustomEvent('tr:fullscreen-change', {
+                    detail: { active: active }
+                }));
+            }
+        },
+        isFullscreen: function () {
+            return form.hasClass('tr-write-fullscreen');
+        },
+        toggleFullscreen: function () {
+            this.setFullscreen(!this.isFullscreen());
+        },
+        showPanel: function (target) {
+            setSideTab(target);
+            form.toggleClass('tr-write-panel-open', this.isFullscreen());
+            refreshActionHeight();
+        },
+        hidePanel: function () {
+            form.removeClass('tr-write-panel-open');
+        },
+        actionHeight: function () {
+            const value = parseInt(form.css('--tr-write-action-h') || '0', 10) || 72;
+            return value;
+        }
+    };
+
+    sideTabs.attr('role', 'tab');
+    sidePanes.attr('role', 'tabpanel');
+    refreshActionHeight();
+    setSideTab(sidePanel.find('.typecho-option-tabs li.active a').attr('href') || '#tab-advance');
+
+    panelButtons.click(function () {
+        writeWorkspace.showPanel($(this).data('panelTarget'));
+        return false;
+    });
+
+    sideCloseButton.click(function () {
+        writeWorkspace.hidePanel();
+        return false;
+    });
+
+    $(window).on('resize', refreshActionHeight);
 
     form.on('write', function () {
         written = true;
@@ -309,8 +394,6 @@ $(document).ready(function() {
 
     $('<input name="timezone" type="hidden" />').appendTo(form).val(- (new Date).getTimezoneOffset() * 60);
 
-    let isFullScreen = false;
-
     function getPreviewFrame() {
         return $('.preview-frame').get(0) || null;
     }
@@ -320,8 +403,7 @@ $(document).ready(function() {
             return;
         }
 
-        isFullScreen = $(document.body).hasClass('fullscreen');
-        $(document.body).addClass('fullscreen preview');
+        $(document.body).addClass('preview');
 
         const frame = $('<iframe frameborder="0" class="preview-frame preview-loading"></iframe>')
             .attr('src', './preview.php?cid=' + cid)
@@ -334,12 +416,9 @@ $(document).ready(function() {
     }
 
     function cancelPreview() {
-        if (!isFullScreen) {
-            $(document.body).removeClass('fullscreen');
-        }
-
         $(document.body).removeClass('preview');
         $('.preview-frame').remove();
+        writeWorkspace.hidePanel();
     }
 
     $('#btn-cancel-preview').click(cancelPreview);
@@ -347,6 +426,16 @@ $(document).ready(function() {
     $(document).on('keydown', function (e) {
         if (e.key === 'Escape' && getPreviewFrame()) {
             cancelPreview();
+            return;
+        }
+
+        if (e.key === 'Escape' && writeWorkspace.isFullscreen()) {
+            if (form.hasClass('tr-write-panel-open')) {
+                writeWorkspace.hidePanel();
+            } else {
+                writeWorkspace.setFullscreen(false);
+            }
+            return;
         }
     });
 
@@ -377,13 +466,8 @@ $(document).ready(function() {
         }
     });
 
-    $('#edit-secondary .typecho-option-tabs li').click(function() {
-        $('#edit-secondary .typecho-option-tabs li.active').removeClass('active');
-        $('#edit-secondary .tab-content').addClass('hidden');
-
-        const activeTab = $(this).addClass('active').find('a').attr('href');
-        $(activeTab).removeClass('hidden');
-
+    sideTabs.click(function() {
+        writeWorkspace.showPanel($(this).attr('href'));
         return false;
     });
 

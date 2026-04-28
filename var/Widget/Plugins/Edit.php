@@ -257,7 +257,6 @@ class Edit extends Options implements ActionInterface
             $callback();
         } catch (\Throwable $e) {
             $errors[] = _t('%s失败: %s', $label, $e->getMessage());
-            error_log('Widget.Plugins.Edit.activateRollback ' . $label . ': ' . $e->getMessage());
         }
     }
 
@@ -323,6 +322,7 @@ class Edit extends Options implements ActionInterface
             } catch (Plugin\Exception $e) {
                 Notice::alloc()->set($e->getMessage(), 'error');
                 $this->response->goBack();
+                return;
             }
 
             Notice::alloc()->highlight('plugin-' . $pluginName);

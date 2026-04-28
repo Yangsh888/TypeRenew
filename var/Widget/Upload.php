@@ -474,7 +474,9 @@ class Upload extends Contents implements ActionInterface
 
     private function requireUploadFile(): array
     {
-        $file = $_FILES['file'] ?? reset($_FILES);
+        $file = $_FILES['file'] ?? null;
+        $file = is_array($file) ? $file : (count($_FILES) === 1 ? reset($_FILES) : null);
+
         if (!is_array($file)) {
             throw new \RuntimeException(_t('没有选择任何附件文件'));
         }

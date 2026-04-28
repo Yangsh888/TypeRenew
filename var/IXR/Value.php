@@ -46,7 +46,7 @@ class Value
             case 'double':
                 return '<double>' . $this->data . '</double>';
             case 'string':
-                return '<string>' . htmlspecialchars($this->data) . '</string>';
+                return '<string>' . $this->escapeString($this->data) . '</string>';
             case 'array':
                 $return = '<array><data>' . "\n";
                 foreach ($this->data as $item) {
@@ -57,7 +57,7 @@ class Value
             case 'struct':
                 $return = '<struct>' . "\n";
                 foreach ($this->data as $name => $value) {
-                    $return .= "  <member><name>$name</name><value>";
+                    $return .= '  <member><name>' . $this->escapeString($name) . '</name><value>';
                     $return .= $value->getXml() . "</value></member>\n";
                 }
                 $return .= '</struct>';
@@ -67,7 +67,7 @@ class Value
                 return $this->data->getXml();
         }
 
-        return '<string>' . htmlspecialchars((string) $this->data, ENT_QUOTES, 'UTF-8') . '</string>';
+        return '<string>' . $this->escapeString($this->data) . '</string>';
     }
 
     /**
@@ -114,5 +114,10 @@ class Value
             $expected++;
         }
         return false;
+    }
+
+    private function escapeString($value): string
+    {
+        return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
     }
 }

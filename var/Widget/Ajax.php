@@ -172,7 +172,7 @@ class Ajax extends BaseOptions implements ActionInterface
 
             try {
                 $pluginName = Plugin::normalizeName($pluginName);
-            } catch (\Exception) {
+            } catch (\Throwable) {
                 continue;
             }
 
@@ -364,7 +364,7 @@ class Ajax extends BaseOptions implements ActionInterface
                 'cached'    => false,
                 'message'   => '',
             ];
-        } catch (\Exception) {
+        } catch (\Throwable) {
             $message = _t('当前服务器可能无法访问 GitHub Raw 地址，或网络 / SSL 临时异常。');
             $this->writeOfficialPluginVersionCache(false, [], $now, $message, self::OFFICIAL_PLUGIN_VERSION_FAILURE_TTL);
             return [
@@ -526,7 +526,7 @@ class Ajax extends BaseOptions implements ActionInterface
 
                 $response = $client->getResponseBody();
                 $items = array_merge($items, $this->parseOfficialFeedEntries($response));
-            } catch (\Exception) {
+            } catch (\Throwable) {
                 $failed++;
             }
         }

@@ -74,8 +74,6 @@ class Backup extends BaseOptions implements ActionInterface
         'commentAuthorsSynced' => 0
     ];
 
-    private array $pluginWarnings = [];
-
     private array $runtimeWarnings = [];
 
     private bool $inTransaction = false;
@@ -125,11 +123,6 @@ class Backup extends BaseOptions implements ActionInterface
             return;
         }
 
-        if ('check' === $action) {
-            $this->check();
-            return;
-        }
-
         if ('import' === $action) {
             $this->import();
             return;
@@ -147,37 +140,69 @@ class Backup extends BaseOptions implements ActionInterface
     private function export()
     {
         $backupFile = tempnam(sys_get_temp_dir(), 'backup_');
+        if ($backupFile === false) {
+            throw new Exception(_t('无法创建临时备份文件'));
+        }
+
         $fp = fopen($backupFile, 'wb');
+        if (!$fp) {
+            @unlink($backupFile);
+            throw new Exception(_t('无法写入临时备份文件'));
+        }
+
         $host = (string) (parse_url($this->options->siteUrl, PHP_URL_HOST) ?: 'site');
         $this->response->setContentType('application/octet-stream');
         $this->response->setHeader('Content-Disposition', 'attachment; filename="'
             . date('Ymd') . '_' . $host . '_' . uniqid() . '.dat"');
-        $this->writeBackupFile($fp);
 
-        $this->response->throwFile($backupFile, 'application/octet-stream');
+        try {
+            $this->writeBackupFile($fp);
+            $size = filesize($backupFile);
+            if ($size !== false) {
+                $this->response->setHeader('Content-Length', $size);
+            }
+        } catch (Throwable $e) {
+            @unlink($backupFile);
+            throw $e;
+        }
+
+        $this->response->throwCallback(function () use ($backupFile) {
+            try {
+                readfile($backupFile);
+            } finally {
+                if (is_file($backupFile)) {
+                    @unlink($backupFile);
+                }
+            }
+        }, 'application/octet-stream');
     }
 
     private function writeBackupFile($fp): void
     {
-        $header = str_replace('XXXX', self::HEADER_VERSION, self::HEADER);
-        fwrite($fp, $header);
-        $db = $this->db;
+        try {
+            $header = str_replace('XXXX', self::HEADER_VERSION, self::HEADER);
+            fwrite($fp, $header);
+            $db = $this->db;
 
-        foreach ($this->types as $type => $val) {
-            $page = 1;
-            do {
-                $rows = $db->fetchAll($db->select()->from('table.' . $type)->page($page, 20));
-                $page++;
+            foreach ($this->types as $type => $val) {
+                $page = 1;
+                do {
+                    $rows = $db->fetchAll($db->select()->from('table.' . $type)->page($page, 20));
+                    $page++;
 
-                foreach ($rows as $row) {
-                    fwrite($fp, $this->buildBuffer($val, $this->applyFields($type, $row, false)));
-                }
-            } while (count($rows) == 20);
+                    foreach ($rows as $row) {
+                        fwrite($fp, $this->buildBuffer($val, $this->applyFields($type, $row, false)));
+                    }
+                } while (count($rows) == 20);
+            }
+
+            self::pluginHandle()->call('export', $fp);
+            fwrite($fp, $header);
+        } finally {
+            if (is_resource($fp)) {
+                fclose($fp);
+            }
         }
-
-        self::pluginHandle()->call('export', $fp);
-        fwrite($fp, $header);
-        fclose($fp);
     }
 
     private function buildBuffer($type, $data): string
@@ -215,30 +240,6 @@ class Backup extends BaseOptions implements ActionInterface
         return $result;
     }
 
-    private function check(): void
-    {
-        $path = $this->resolveImportPath();
-        if (null === $path) {
-            return;
-        }
-
-        try {
-            $payload = $this->readBackup($path, false);
-            $preflight = $this->buildPreflight($payload);
-            $report = $this->buildReport($payload, $preflight, true, true);
-            $messages = $this->reportMessages($report);
-            $this->stashReport($report);
-            $type = empty($preflight['blocking']) ? 'success' : 'error';
-            Notice::alloc()->set($messages, $type);
-        } catch (Throwable $e) {
-            $messages = [_t('预检失败: %s', $e->getMessage())];
-            $this->stashReport($this->reportFromMessages($messages));
-            Notice::alloc()->set($messages, 'error');
-        }
-
-        $this->finish();
-    }
-
     private function import(): void
     {
         $path = $this->resolveImportPath();
@@ -250,11 +251,11 @@ class Backup extends BaseOptions implements ActionInterface
         $doSnapshot = !$this->request->is('snapshot=0');
 
         try {
-            $payload = $this->readBackup($path, true);
+            $payload = $this->readBackup($path);
             $preflight = $this->buildPreflight($payload);
 
             if (!empty($preflight['blocking'])) {
-                $report = $this->buildReport($payload, $preflight, true, true);
+                $report = $this->buildReport($payload, $preflight, true, true, null, true, false, _t('恢复未开始：请先处理下列阻断项'));
                 $messages = $this->reportMessages($report);
                 $this->stashReport($report);
                 Notice::alloc()->set($messages, 'error');
@@ -263,19 +264,40 @@ class Backup extends BaseOptions implements ActionInterface
             }
 
             $this->resetImportState();
+            $transactionSafe = $this->supportsTransaction();
+            if (!$transactionSafe && !$doSnapshot) {
+                $messages = [
+                    _t('当前数据库恢复将以非事务方式执行，为避免清表后中断导致数据损坏，必须先创建恢复前快照')
+                ];
+                $this->stashReport(self::reportFromMessages($messages));
+                Notice::alloc()->set($messages, 'error');
+                $this->finish();
+                return;
+            }
+
             $this->captureCurrentOperator();
 
             $snapshotName = null;
             if ($doSnapshot) {
                 $snapshotName = $this->makeSnapshot();
                 if (null === $snapshotName) {
-                    $this->runtimeWarnings[] = _t('恢复前快照创建失败，已继续执行恢复');
+                    if ($transactionSafe) {
+                        $this->runtimeWarnings[] = _t('恢复前快照创建失败，已继续执行恢复');
+                    } else {
+                        $messages = [
+                            _t('恢复前快照创建失败，当前数据库又不支持事务回滚，已中止恢复以避免数据损坏')
+                        ];
+                        $this->stashReport(self::reportFromMessages($messages));
+                        Notice::alloc()->set($messages, 'error');
+                        $this->finish();
+                        return;
+                    }
                 }
             }
 
             $this->beginImportTransaction();
             $this->clearAllCoreTables();
-            $this->importPayload($payload, $this->shouldStrictImportPlugins());
+            $this->importPayload($payload);
 
             if ($doRepair) {
                 $this->repairResult = $this->repairData();
@@ -311,7 +333,7 @@ class Backup extends BaseOptions implements ActionInterface
                     $messages[] = _t('恢复在清表后中断，数据库可能处于部分恢复状态，请使用快照或备份回滚');
                 }
             }
-            $this->stashReport($this->reportFromMessages($messages));
+            $this->stashReport(self::reportFromMessages($messages));
             Notice::alloc()->set($messages, 'error');
         }
 
@@ -321,7 +343,9 @@ class Backup extends BaseOptions implements ActionInterface
     private function resolveImportPath(): ?string
     {
         if (!empty($_FILES)) {
-            $file = $_FILES['file'] ?? reset($_FILES);
+            $file = $_FILES['file'] ?? null;
+            $file = is_array($file) ? $file : (count($_FILES) === 1 ? reset($_FILES) : null);
+
             if (!is_array($file)) {
                 return $this->failAndFinish(_t('没有选择任何备份文件'));
             }
@@ -357,7 +381,7 @@ class Backup extends BaseOptions implements ActionInterface
         return $real;
     }
 
-    private function readBackup(string $file, bool $collectRows): array
+    private function readBackup(string $file): array
     {
         if (!is_file($file) || !is_readable($file)) {
             throw new Exception(_t('无法读取备份文件'));
@@ -442,9 +466,7 @@ class Backup extends BaseOptions implements ActionInterface
                 $record = $this->applyFields($table, $record, false);
                 $payload['counts'][$table]++;
 
-                if ($collectRows) {
-                    $payload['rows'][$table][] = $record;
-                }
+                $payload['rows'][$table][] = $record;
 
                 if ('contents' === $table && isset($record['cid'])) {
                     $contentCids[(int) $record['cid']] = true;
@@ -471,9 +493,7 @@ class Backup extends BaseOptions implements ActionInterface
                     $payload['summary']['adminUsers']++;
                 }
             } else {
-                if ($collectRows) {
-                    $payload['plugins'][] = [$type, $header, $body];
-                }
+                $payload['plugins'][] = [$type, $header, $body];
             }
         }
 
@@ -621,8 +641,15 @@ class Backup extends BaseOptions implements ActionInterface
             return null;
         }
 
-        $this->writeBackupFile($fp);
-        return $fileName;
+        try {
+            $this->writeBackupFile($fp);
+            return $fileName;
+        } catch (Throwable) {
+            if (is_file($path)) {
+                @unlink($path);
+            }
+            return null;
+        }
     }
 
     private function resetImportState(): void
@@ -640,7 +667,6 @@ class Backup extends BaseOptions implements ActionInterface
             'commentsRecounted' => 0,
             'commentAuthorsSynced' => 0
         ];
-        $this->pluginWarnings = [];
         $this->runtimeWarnings = [];
     }
 
@@ -742,7 +768,7 @@ class Backup extends BaseOptions implements ActionInterface
         return true;
     }
 
-    private function importPayload(array $payload, bool $strictPlugins = true): void
+    private function importPayload(array $payload): void
     {
         foreach (array_keys($this->types) as $table) {
             foreach ($payload['rows'][$table] ?? [] as $row) {
@@ -750,15 +776,21 @@ class Backup extends BaseOptions implements ActionInterface
             }
         }
 
-        foreach ($payload['plugins'] as $record) {
-            [$type, $header, $body] = $record;
+        $pluginRecords = $payload['plugins'] ?? [];
+        if (!is_array($pluginRecords)) {
+            $pluginRecords = [];
+        }
+
+        foreach ($pluginRecords as $record) {
+            if (!is_array($record) || count($record) < 3) {
+                throw new Exception(_t('插件扩展导入数据格式无效'));
+            }
+
+            [$type, $header, $body] = array_values($record);
             try {
                 self::pluginHandle()->import($type, $header, $body);
             } catch (Throwable $e) {
-                if ($strictPlugins) {
-                    throw new Exception(_t('插件扩展导入失败(type=%s): %s', (string) $type, $e->getMessage()));
-                }
-                $this->pluginWarnings[] = _t('插件扩展导入失败(type=%s): %s', (string) $type, $e->getMessage());
+                throw new Exception(_t('插件扩展导入失败(type=%s): %s', (string) $type, $e->getMessage()));
             }
         }
 
@@ -768,11 +800,6 @@ class Backup extends BaseOptions implements ActionInterface
                 $this->db->query('ALTER SEQUENCE ' . $this->quoteIdentifier($seq) . ' RESTART WITH ' . ((int) $id + 1));
             }
         }
-    }
-
-    private function shouldStrictImportPlugins(): bool
-    {
-        return !$this->request->is('pluginStrict=0');
     }
 
     private function insertData(string $table, array $data): void
@@ -893,7 +920,8 @@ class Backup extends BaseOptions implements ActionInterface
         bool $withBlocking,
         ?string $snapshotName = null,
         bool $didRepair = true,
-        bool $snapshotRequested = false
+        bool $snapshotRequested = false,
+        ?string $statusMessage = null
     ): array {
         $counts = $payload['counts'];
         $report = [
@@ -918,8 +946,8 @@ class Backup extends BaseOptions implements ActionInterface
             }
         }
 
-        if ($isCheck) {
-            $report['info'][] = _t('当前为预检模式，不会写入任何数据');
+        if ($statusMessage !== null && $statusMessage !== '') {
+            $report['info'][] = $statusMessage;
         } else {
             $report['info'][] = _t('恢复已完成：核心数据已导入');
         }
@@ -957,9 +985,6 @@ class Backup extends BaseOptions implements ActionInterface
         foreach ($this->runtimeWarnings as $line) {
             $report['warning'][] = (string) $line;
         }
-        foreach ($this->pluginWarnings as $line) {
-            $report['warning'][] = (string) $line;
-        }
 
         return $report;
     }
@@ -982,14 +1007,14 @@ class Backup extends BaseOptions implements ActionInterface
     public static function consumeReport(): array
     {
         if (session_status() !== PHP_SESSION_ACTIVE) {
-            return self::reportFromNoticeCookie();
+            return ['blocking' => [], 'warning' => [], 'info' => []];
         }
 
         $report = $_SESSION[self::REPORT_SESSION_KEY] ?? null;
         unset($_SESSION[self::REPORT_SESSION_KEY]);
 
         if (!is_array($report)) {
-            return self::reportFromNoticeCookie();
+            return ['blocking' => [], 'warning' => [], 'info' => []];
         }
 
         return [
@@ -1032,18 +1057,6 @@ class Backup extends BaseOptions implements ActionInterface
         }
 
         return $report;
-    }
-
-    private static function reportFromNoticeCookie(): array
-    {
-        $noticeMessages = json_decode((string) \Typecho\Cookie::get('__typecho_notice', '[]'), true);
-        $noticeType = (string) \Typecho\Cookie::get('__typecho_notice_type', '');
-
-        if (is_array($noticeMessages) && !empty($noticeMessages) && in_array($noticeType, ['success', 'error', 'notice'], true)) {
-            return self::reportFromMessages($noticeMessages);
-        }
-
-        return ['blocking' => [], 'warning' => [], 'info' => []];
     }
 
     private function finish(): void

@@ -1,7 +1,7 @@
 <?php if (!defined('__TYPECHO_ADMIN__')) exit; ?>
 <script>
     (function () {
-        $(document).ready(function () {
+        function bindDropzones() {
             function formatSize(bytes) {
                 if (!bytes || bytes <= 0) return '';
                 var units = ['B', 'KB', 'MB', 'GB'];
@@ -45,6 +45,12 @@
             }
 
             document.querySelectorAll('.tr-dropzone-input[type="file"]').forEach(bindInput);
-        });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', bindDropzones, {once: true});
+        } else {
+            bindDropzones();
+        }
     })();
 </script>

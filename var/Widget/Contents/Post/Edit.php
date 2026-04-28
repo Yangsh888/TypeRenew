@@ -52,7 +52,7 @@ class Edit extends Contents implements ActionInterface
             self::pluginHandle()->call('finishPublish', $contents, $this);
 
             $trackback = array_filter(
-                array_unique(preg_split("/(\r|\n|\r\n)/", trim($this->request->get('trackback', ''))))
+                array_unique(preg_split("/(\r|\n|\r\n)/", trim($this->request->get('trackback', ''))) ?: [])
             );
             Service::alloc()->sendPing($this, $trackback);
 

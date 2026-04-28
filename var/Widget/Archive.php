@@ -1113,6 +1113,11 @@ EOF;
         }
     }
 
+    private function normalizeDirectorySegments(string $directory): array
+    {
+        return preg_split('#/+#', trim($directory, '/'), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+    }
+
     private function indexHandle(Query $select, bool &$hasPushed)
     {
         $select->where('table.contents.type = ?', 'post');
@@ -1157,8 +1162,8 @@ EOF;
         }
 
         if ($this->request->is('directory') && 'page' == $this->parameter->type) {
-            $directory = explode('/', (string) $this->request->get('directory', ''));
-            $select->where('slug = ?', $directory[count($directory) - 1]);
+            $directory = $this->normalizeDirectorySegments((string) $this->request->get('directory', ''));
+            $select->where('slug = ?', $directory === [] ? '' : end($directory));
         }
 
         if ($this->request->is('year')) {
@@ -1312,8 +1317,8 @@ EOF;
         }
 
         if ($this->request->is('directory')) {
-            $directory = explode('/', (string) $this->request->get('directory', ''));
-            $slug = $directory[count($directory) - 1];
+            $directory = $this->normalizeDirectorySegments((string) $this->request->get('directory', ''));
+            $slug = $directory === [] ? '' : end($directory);
             $categorySelect->where('slug = ?', $slug);
             $alias .= ':' . $slug;
         }

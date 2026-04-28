@@ -122,7 +122,6 @@ class Queue
         if ($mode === 'sync') {
             self::deliverBatch($db, $options, 20);
         } elseif ($mode === 'async') {
-            self::deliverBatch($db, $options, min(20, (int) ($options->mailBatchSize ?? 20)));
             self::requestAsync($options);
         }
     }
@@ -137,20 +136,15 @@ class Queue
 
         $called = true;
         Response::getInstance()->addBackgroundResponder(function () use ($options) {
-            $fallback = static function () use ($options): void {
-                self::deliverBatch(Db::get(), $options, min(20, (int) ($options->mailBatchSize ?? 20)));
-            };
             $client = Client::get();
             if (!$client) {
                 self::recordRuntimeError('async', 'http client unavailable');
-                $fallback();
                 return;
             }
 
             $serverIp = self::getServerIp();
             if (!self::isAsyncRequesterAllowed($options, $serverIp)) {
                 self::recordRuntimeError('async', 'server ip not allowed: ' . $serverIp);
-                $fallback();
                 return;
             }
 
@@ -160,7 +154,7 @@ class Queue
 
             try {
                 $client->setHeader('User-Agent', (string) ($options->generator ?? 'TypeRenew'))
-                    ->setTimeout(2)
+                    ->setTimeout(1)
                     ->setJson([
                         'token' => $token,
                         'ts' => $ts
@@ -173,7 +167,6 @@ class Queue
                 }
             } catch (\Throwable $e) {
                 self::recordRuntimeError('async', $e->getMessage());
-                $fallback();
             }
         });
         return true;
@@ -228,7 +221,7 @@ class Queue
             return [];
         }
         $ips = [];
-        foreach (preg_split('/[\s,]+/', $config) as $item) {
+        foreach (preg_split('/[\s,]+/', $config) ?: [] as $item) {
             $item = trim($item);
             if ($item === '') {
                 continue;

@@ -70,17 +70,12 @@ class Comment
             }
         }
 
-        try {
-            $cache = Cache::getInstance();
-            $cache->invalidate('comments');
-            $cache->invalidate('contents');
-            $cache->invalidate('metas');
-        } catch (\Throwable $e) {
-            error_log('Utils.Comment.invalidate: ' . $e->getMessage());
+        $cache = Cache::getInstance();
+        foreach (['comments', 'contents', 'metas'] as $scope) {
             try {
-                Cache::getInstance()->flush();
-            } catch (\Throwable $flushError) {
-                error_log('Utils.Comment.flush: ' . $flushError->getMessage());
+                $cache->invalidate($scope);
+            } catch (\Throwable $e) {
+                error_log(sprintf('Utils.Comment.invalidate[%s]: %s', $scope, $e->getMessage()));
             }
         }
     }

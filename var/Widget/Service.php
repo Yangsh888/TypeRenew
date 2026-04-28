@@ -334,6 +334,10 @@ class Service extends BaseOptions implements ActionInterface
             return false;
         }
 
+        if (!empty($parts['user']) || !empty($parts['pass'])) {
+            return false;
+        }
+
         $host = strtolower((string) $parts['host']);
         if ($permalinkHost !== '' && $host === strtolower($permalinkHost)) {
             return false;
@@ -343,7 +347,7 @@ class Service extends BaseOptions implements ActionInterface
             return false;
         }
 
-        return true;
+        return Common::checkSafeHost($host);
     }
 
     private function isReservedHost(string $host): bool

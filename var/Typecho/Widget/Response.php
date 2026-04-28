@@ -103,8 +103,7 @@ class Response
     {
         $referer = $this->request->getReferer();
 
-        if (!empty($referer)) {
-            // ~ fix Issue 38
+        if (!empty($referer) && $this->isSafeReferer($referer)) {
             if (!empty($suffix)) {
                 $parts = Common::parseUrl($referer);
                 $myParts = Common::parseUrl($suffix);
@@ -133,6 +132,40 @@ class Response
         } else {
             $this->redirect($default ?: '/');
         }
+    }
+
+    private function isSafeReferer(string $referer): bool
+    {
+        $parts = Common::parseUrl($referer);
+        if ($parts === []) {
+            return false;
+        }
+
+        if (!isset($parts['host']) && !isset($parts['scheme'])) {
+            return isset($parts['path']) && str_starts_with((string) $parts['path'], '/');
+        }
+
+        $current = Common::parseUrl($this->request->getRequestUrl());
+        if ($current === [] || empty($current['host']) || empty($current['scheme'])) {
+            return false;
+        }
+
+        $currentHost = strtolower((string) ($current['host'] ?? ''));
+        $refererHost = strtolower((string) ($parts['host'] ?? ''));
+        if ($currentHost === '' || $refererHost === '' || $currentHost !== $refererHost) {
+            return false;
+        }
+
+        $currentScheme = strtolower((string) ($current['scheme'] ?? ''));
+        $refererScheme = strtolower((string) ($parts['scheme'] ?? ''));
+        if ($currentScheme !== $refererScheme) {
+            return false;
+        }
+
+        $currentPort = (int) ($current['port'] ?? ($currentScheme === 'https' ? 443 : 80));
+        $refererPort = (int) ($parts['port'] ?? ($refererScheme === 'https' ? 443 : 80));
+
+        return $currentPort === $refererPort;
     }
 
     private function parseXml($message): string
