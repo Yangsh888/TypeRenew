@@ -352,15 +352,47 @@ EOF;
                     $allowed = $allowableAttributes[$tag] ?? [];
 
                     foreach ($attrs as $key => $val) {
-                        if (in_array($key, $allowed, true)) {
-                            $parsedAttrs[] = " {$key}" . (empty($val) ? '' : "={$val}");
+                        $key = strtolower($key);
+
+                        if (!in_array($key, $allowed, true)) {
+                            continue;
                         }
+
+                        $sanitized = self::sanitizeHtmlAttribute($key, (string) $val);
+                        if ($sanitized === null) {
+                            continue;
+                        }
+
+                        $parsedAttrs[] = $sanitized;
                     }
 
                     return '<' . $tag . implode('', $parsedAttrs) . '>';
                 },
                 $html
             );
+        }
+
+        private static function sanitizeHtmlAttribute(string $key, string $value): ?string
+        {
+            if (str_starts_with($key, 'on') || in_array($key, ['style', 'srcdoc'], true)) {
+                return null;
+            }
+
+            if (in_array($key, ['action', 'cite', 'formaction', 'href', 'longdesc', 'poster', 'src'], true)) {
+                $value = trim(trim($value), "\"'");
+                if ($value === '') {
+                    return ' ' . $key . '=""';
+                }
+
+                $parts = self::parseUrl($value);
+                if ($parts === [] || (isset($parts['scheme']) && !in_array(strtolower((string) $parts['scheme']), ['http', 'https'], true))) {
+                    return null;
+                }
+
+                return ' ' . $key . '="' . htmlspecialchars(self::safeUrl($value), ENT_QUOTES, 'UTF-8') . '"';
+            }
+
+            return " {$key}" . (empty($value) ? '' : "={$value}");
         }
 
         public static function filterSearchQuery(?string $query): string

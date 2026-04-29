@@ -265,7 +265,7 @@ class Feedback extends Comments implements ActionInterface
 
         $trackback['author'] = $this->request->filter('trim')->get('blog_name');
         $trackback['url'] = $this->request->filter('trim', 'url')->get('url');
-        $trackback['text'] = $this->request->get('excerpt');
+        $trackback['text'] = trim(strip_tags((string) $this->request->get('excerpt')));
 
         $validator = new Validate();
         $validator->addRule('url', 'required', 'We require all Trackbacks to provide an url.')
@@ -282,7 +282,7 @@ class Feedback extends Comments implements ActionInterface
             $this->response->throwXml($message);
         }
 
-        $trackback['text'] = Common::subStr($trackback['text'], 0, 100, '[...]');
+        $trackback['text'] = Common::subStr(Common::removeXSS($trackback['text']), 0, 100, '[...]');
 
         if (
             $this->size($this->select()
