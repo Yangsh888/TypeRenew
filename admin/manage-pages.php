@@ -151,8 +151,8 @@ include 'table-js.php';
                             ids.push($(this).val());
                         });
 
-                        $.post('<?php echo $pageAction; ?>?do=sort',
-                            $.param({cid: ids, _: '<?php echo $pageToken; ?>'}));
+                        $.post('<?php echo $pageAction; ?>',
+                            $.param({do: 'sort', cid: ids, _: '<?php echo $pageToken; ?>'}));
                     }
                 });
             });

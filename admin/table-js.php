@@ -10,8 +10,55 @@
         $('.typecho-list-table').tableSelectable({
             checkEl     :   'input[type=checkbox]',
             rowEl       :   'tr',
-            selectAllEl :   '.typecho-table-select-all',
-            actionEl    :   '.dropdown-menu a,button.btn-operate'
+            selectAllEl :   '.typecho-table-select-all'
+        });
+
+        $('.typecho-list-operate').on('click', '.dropdown-menu a, button.btn-operate', function (e) {
+            var trigger = $(this);
+            var form = trigger.closest('.typecho-list-operate').siblings('form.operate-form').first();
+            var href = trigger.attr('href');
+            var confirmText = trigger.attr('lang');
+            var parts;
+
+            if (!href || !form.length) {
+                return;
+            }
+
+            e.preventDefault();
+
+            if (confirmText && !confirm(confirmText)) {
+                return;
+            }
+
+            parts = href.split('?');
+
+            form.find('input.tr-operate-param').remove();
+            form.attr('action', parts[0]);
+
+            $.each((parts[1] || '').split('&'), function (_, pair) {
+                var index;
+                var name;
+                var value;
+
+                if (!pair) {
+                    return;
+                }
+
+                index = pair.indexOf('=');
+                name = decodeURIComponent((index >= 0 ? pair.slice(0, index) : pair).replace(/\+/g, ' '));
+                value = decodeURIComponent((index >= 0 ? pair.slice(index + 1) : '').replace(/\+/g, ' '));
+
+                if (!name) {
+                    return;
+                }
+
+                $('<input type="hidden" class="tr-operate-param">')
+                    .attr('name', name)
+                    .val(value)
+                    .appendTo(form);
+            });
+
+            form.trigger('submit');
         });
 
         $('.btn-drop').dropdownMenu({
