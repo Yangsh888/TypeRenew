@@ -1238,6 +1238,8 @@ function install_step_3_perform()
         install_raise_error($error);
     }
 
+    $config['userUrl'] = rtrim((string) $config['userUrl'], '/');
+
     $transactionStarted = false;
     try {
         $transactionStarted = install_transaction_begin($installDb);
@@ -1320,6 +1322,8 @@ function install_step_3_perform()
         foreach (install_get_default_options() as $key => $value) {
             if ($key == 'installed') {
                 $value = 1;
+            } elseif ($key == 'siteUrl') {
+                $value = $config['userUrl'];
             }
 
             $installDb->query(

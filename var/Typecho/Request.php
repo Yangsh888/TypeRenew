@@ -456,6 +456,11 @@ class Request
         $remote = $this->filterIp($this->getServer('REMOTE_ADDR', ''));
         $trusted = $remote !== '' && $this->isTrustedProxy($remote);
         $candidates = [];
+        $fallbackPort = $this->resolvePort(
+            $trusted ? $this->getHeader('X-Forwarded-Port') : null,
+            $this->getServer('SERVER_PORT')
+        );
+        $defaultPort = $this->isSecure() ? 443 : 80;
 
         if ($trusted) {
             $forwardedHost = (string) $this->getHeader('X-Forwarded-Host', '');
@@ -475,12 +480,46 @@ class Request
 
         foreach ($candidates as $candidate) {
             $host = $this->sanitizeHost($candidate);
+            if (
+                $host !== ''
+                && $fallbackPort !== null
+                && $fallbackPort !== $defaultPort
+                && !preg_match('/(?:\]:|:)\d{1,5}$/', $host)
+            ) {
+                $host .= ':' . $fallbackPort;
+            }
+
             if ($host !== '') {
                 return $this->host = $host;
             }
         }
 
         return $this->host = 'localhost';
+    }
+
+    private function resolvePort(?string ...$candidates): ?int
+    {
+        foreach ($candidates as $candidate) {
+            $value = trim((string) $candidate);
+            if ($value === '') {
+                continue;
+            }
+
+            if (str_contains($value, ',')) {
+                [$value] = array_map('trim', explode(',', $value, 2));
+            }
+
+            if (!ctype_digit($value)) {
+                continue;
+            }
+
+            $port = (int) $value;
+            if ($port > 0 && $port <= 65535) {
+                return $port;
+            }
+        }
+
+        return null;
     }
 
     private function sanitizeHost(?string $host): string
