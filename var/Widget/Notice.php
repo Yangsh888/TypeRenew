@@ -41,9 +41,16 @@ class Notice extends Widget
             $type = $typeFix;
         }
 
+        if (method_exists(Common::class, 'jsonEncode')) {
+            $payload = Common::jsonEncode($notice, 0, '[]');
+        } else {
+            $payload = json_encode($notice);
+            $payload = is_string($payload) ? $payload : '[]';
+        }
+
         Cookie::set(
             '__typecho_notice',
-            Common::jsonEncode($notice, 0, '[]')
+            $payload
         );
         Cookie::set(
             '__typecho_notice_type',
