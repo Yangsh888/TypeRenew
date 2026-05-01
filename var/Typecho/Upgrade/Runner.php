@@ -599,19 +599,21 @@ class Runner
     {
         foreach ($files as $relative) {
             $target = $this->targetPath((string) $relative);
+
             if (is_file($target)) {
-                if (!is_writable($target)) {
-                    throw new RuntimeException('文件不可写: ' . $relative);
+                if (!is_readable($target)) {
+                    throw new RuntimeException('文件不可读: ' . $relative);
                 }
+
+                if (!is_writable(dirname($target))) {
+                    throw new RuntimeException('目录不可写: ' . $relative);
+                }
+
                 continue;
             }
 
-            $dir = dirname($target);
-            while (!is_dir($dir) && $dir !== dirname($dir)) {
-                $dir = dirname($dir);
-            }
-
-            if (!is_dir($dir) || !is_writable($dir)) {
+            $parent = $this->findExistingParent(dirname($target));
+            if ($parent === null || !is_writable($parent)) {
                 throw new RuntimeException('目录不可写: ' . $relative);
             }
         }
@@ -747,8 +749,7 @@ class Runner
         }
 
         $parent = $this->findExistingParent(dirname($dir));
-
-        if ($parent === null || !is_dir($parent) || !is_writable($parent)) {
+        if ($parent === null || !is_writable($parent)) {
             throw new RuntimeException('目录不可写: ' . $dir);
         }
 
