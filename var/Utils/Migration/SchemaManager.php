@@ -5,6 +5,7 @@ namespace Utils\Migration;
 use Typecho\Common;
 use Typecho\Db;
 use Utils\Comment;
+use Utils\Defaults;
 use Utils\Schema;
 use Widget\Options;
 
