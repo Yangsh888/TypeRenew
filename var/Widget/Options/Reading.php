@@ -2,8 +2,10 @@
 
 namespace Widget\Options;
 
+use Typecho\Common;
 use Typecho\Db\Exception;
 use Typecho\Plugin;
+use Typecho\Router\Parser;
 use Typecho\Widget\Helper\Form;
 
 if (!defined('__TYPECHO_ROOT_DIR__')) {
@@ -57,19 +59,36 @@ class Reading extends Permalink
             $settings['frontPage'] = 'recent';
         }
 
+        $routingTable = $this->routingTable();
+
         if ('recent' != $settings['frontPage']) {
             $settings['frontArchive'] = empty($settings['frontArchive']) ? 0 : 1;
+
             if ($settings['frontArchive']) {
-                $routingTable = $this->routingTable();
-                $routingTable['archive']['url'] = '/' . ltrim($this->encodeRule($this->request->get('archivePattern')), '/');
-                $routingTable['archive_page']['url'] = rtrim($routingTable['archive']['url'], '/')
-                    . '/page/[page:digital]/';
-                $settings['routingTable'] = Common::jsonEncode($routingTable, 0, '{}');
+                $archivePattern = $this->normalizeArchivePattern((string) $this->request->get('archivePattern', ''));
+                if (null === $archivePattern) {
+                    $this->noticeAndGoBack(_t('文章列表页路径格式不正确'), 'error');
+                    return;
+                }
+
+                if ($this->archivePatternConflicts($routingTable, $archivePattern)) {
+                    $this->noticeAndGoBack(_t('文章列表页路径与现有规则冲突，请更换一个路径'), 'error');
+                    return;
+                }
+
+                $routingTable = \Utils\Helper::syncArchiveRoutes(
+                    $routingTable,
+                    '/' . ltrim($this->encodeRule($archivePattern), '/')
+                );
+            } else {
+                $routingTable = \Utils\Helper::syncArchiveRoutes($routingTable);
             }
         } else {
             $settings['frontArchive'] = 0;
+            $routingTable = \Utils\Helper::syncArchiveRoutes($routingTable);
         }
 
+        $settings['routingTable'] = Common::jsonEncode($routingTable, 0, '{}');
         $this->persistOptions($settings);
 
         $this->saveSuccessAndGoBack();
@@ -218,6 +237,43 @@ class Reading extends Permalink
         $this->security->protect();
         $this->on($this->request->isPost())->updateReadingSettings();
         $this->response->redirect($this->options->adminUrl);
+    }
+
+    private function normalizeArchivePattern(string $pattern): ?string
+    {
+        $pattern = trim(str_replace('\\', '/', $pattern));
+        if ($pattern === '' || str_contains($pattern, "\0")) {
+            return null;
+        }
+
+        if (preg_match('/[\[\]\{\}\?#\s]/u', $pattern)) {
+            return null;
+        }
+
+        $pattern = '/' . ltrim($pattern, '/');
+        $pattern = preg_replace('#/+#', '/', $pattern) ?? $pattern;
+        $pattern = rtrim($pattern, '/') . '/';
+
+        return $pattern === '/' ? null : $pattern;
+    }
+
+    private function archivePatternConflicts(array $routingTable, string $pattern): bool
+    {
+        $archivePath = rtrim($pattern, '/');
+        $archivePagePath = $archivePath . '/page/1';
+        $parser = new Parser($routingTable);
+
+        foreach ($parser->parse() as $name => $route) {
+            if (in_array($name, ['archive', 'archive_page'], true)) {
+                continue;
+            }
+
+            if (preg_match($route['regx'], $archivePath) || preg_match($route['regx'], $archivePagePath)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function resolveFrontPageFile(string $file): ?string

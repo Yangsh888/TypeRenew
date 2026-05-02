@@ -3,6 +3,7 @@
 namespace Widget\Themes;
 
 use Typecho\Widget;
+use Utils\Helper;
 use Widget\Base;
 use Widget\Options;
 
@@ -64,25 +65,7 @@ class Files extends Base
 
     public static function resolveFilePath(string $themeRoot, string $file): ?string
     {
-        $relative = ltrim(str_replace('\\', '/', $file), '/');
-        if (
-            $relative === ''
-            || str_contains($relative, "\0")
-            || str_contains($relative, '../')
-            || str_contains($relative, '..\\')
-        ) {
-            return null;
-        }
-
-        $path = realpath($themeRoot . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $relative));
-        $normalizedRoot = rtrim(str_replace('\\', '/', $themeRoot), '/') . '/';
-        $normalizedPath = $path === false ? false : str_replace('\\', '/', $path);
-
-        if ($normalizedPath === false || !str_starts_with($normalizedPath, $normalizedRoot) || !is_file($path)) {
-            return null;
-        }
-
-        return $path;
+        return Helper::resolvePathInRoot($themeRoot, $file);
     }
 
     /**

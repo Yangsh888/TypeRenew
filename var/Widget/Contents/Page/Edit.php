@@ -145,9 +145,9 @@ class Edit extends Contents implements ActionInterface
                 $this->unAttach($page);
 
                 if ($this->options->frontPage == 'page:' . $page) {
-                    $this->db->query($this->db->update('table.options')
-                        ->rows(['value' => 'recent'])
-                        ->where('name = ?', 'frontPage'));
+                    \Utils\Helper::setOption('frontPage', 'recent');
+                    \Utils\Helper::setOption('frontArchive', 0);
+                    \Utils\Helper::setOption('routingTable', \Utils\Helper::syncArchiveRoutes($this->options->routingTable));
                 }
 
                 $draft = $this->db->fetchRow($this->revisionSelect((int) $page));

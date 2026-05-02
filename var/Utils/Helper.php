@@ -117,6 +117,70 @@ class Helper
         );
     }
 
+    public static function syncArchiveRoutes(array $routingTable, ?string $url = null): array
+    {
+        unset($routingTable[0]);
+
+        $defaults = Defaults::routingTable();
+        $archiveUrl = $url ?? $defaults['archive']['url'];
+        $routingTable['archive']['url'] = $archiveUrl;
+        $routingTable['archive_page']['url'] = rtrim($archiveUrl, '/') . '/page/[page:digital]/';
+
+        return $routingTable;
+    }
+
+    public static function resolvePathInRoot(string $root, string $relative, bool $mustBeFile = true): ?string
+    {
+        $rootPath = realpath($root);
+        if ($rootPath === false) {
+            return null;
+        }
+
+        $relative = ltrim(str_replace('\\', '/', $relative), '/');
+        if (
+            $relative === ''
+            || str_contains($relative, "\0")
+            || str_contains($relative, '../')
+            || str_contains($relative, '..\\')
+        ) {
+            return null;
+        }
+
+        $path = realpath($rootPath . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $relative));
+        if ($path === false) {
+            return null;
+        }
+
+        return self::isPathInsideRoots($path, [$rootPath], $mustBeFile) ? $path : null;
+    }
+
+    public static function isPathInsideRoots(string $path, array $roots, bool $mustBeFile = true): bool
+    {
+        $realPath = realpath($path);
+        if ($realPath === false) {
+            return false;
+        }
+
+        if ($mustBeFile && !is_file($realPath)) {
+            return false;
+        }
+
+        $normalizedPath = str_replace('\\', '/', $realPath);
+        foreach ($roots as $root) {
+            $rootPath = realpath($root);
+            if ($rootPath === false) {
+                continue;
+            }
+
+            $normalizedRoot = rtrim(str_replace('\\', '/', $rootPath), '/') . '/';
+            if (str_starts_with($normalizedPath, $normalizedRoot)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public static function addRoute(
         string $name,
         string $url,

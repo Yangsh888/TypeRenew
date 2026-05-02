@@ -2,6 +2,7 @@
 
 namespace Typecho\Mail;
 
+use Utils\Helper;
 use Widget\Options;
 
 class Template
@@ -27,24 +28,10 @@ class Template
 
     private static function validatePath(string $path): bool
     {
-        $realPath = realpath($path);
-        if ($realPath === false) {
-            return false;
-        }
-
-        $baseDirs = [
-            rtrim(str_replace(['\\', '//'], ['/', '/'], __TYPECHO_ROOT_DIR__ . '/usr/mail'), '/'),
-            rtrim(str_replace(['\\', '//'], ['/', '/'], __TYPECHO_ROOT_DIR__ . '/var/Typecho/Mail/tpl'), '/'),
-        ];
-
-        foreach ($baseDirs as $base) {
-            $baseReal = realpath($base);
-            if ($baseReal !== false && str_starts_with($realPath, $baseReal)) {
-                return true;
-            }
-        }
-
-        return false;
+        return Helper::isPathInsideRoots($path, [
+            __TYPECHO_ROOT_DIR__ . '/usr/mail',
+            __TYPECHO_ROOT_DIR__ . '/var/Typecho/Mail/tpl',
+        ]);
     }
 
     public static function resolve(string $name, Options $options): string

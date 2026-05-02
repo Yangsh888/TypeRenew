@@ -2,19 +2,23 @@
 
 include 'common.php';
 
-$panel = $request->get('panel');
+$panel = trim((string) $request->get('panel'), '/');
 $panelTable = $options->panelTable;
 
-if (!isset($panelTable['file']) || !in_array(urlencode($panel), $panelTable['file'])) {
+if ($panel === '' || !isset($panelTable['file']) || !in_array(urlencode($panel), $panelTable['file'], true)) {
     throw new \Typecho\Plugin\Exception(_t('页面不存在'), 404);
 }
 
-[$pluginName, $file] = array_pad(explode('/', trim($panel, '/'), 2), 2, '');
+[$pluginName, $file] = array_pad(explode('/', $panel, 2), 2, '');
 if ($pluginName === '' || $file === '') {
     throw new \Typecho\Plugin\Exception(_t('页面不存在'), 404);
 }
 
-$panelFile = $options->pluginDir($pluginName) . '/' . $file;
+$pluginName = \Typecho\Plugin::normalizeName($pluginName);
+$panelFile = \Utils\Helper::resolvePathInRoot($options->pluginDir($pluginName), $file);
+if ($panelFile === null) {
+    throw new \Typecho\Plugin\Exception(_t('页面不存在'), 404);
+}
 
 ob_start();
 require_once $panelFile;

@@ -123,7 +123,11 @@ class Edit extends Options implements ActionInterface
         $this->update(['value' => $theme], $this->db->sql()->where('name = ?', 'theme'));
 
         if (0 === strpos((string) $this->options->frontPage, 'file:')) {
-            $this->update(['value' => 'recent'], $this->db->sql()->where('name = ?', 'frontPage'));
+            $this->persistOptions([
+                'frontPage' => 'recent',
+                'frontArchive' => 0,
+                'routingTable' => \Utils\Helper::syncArchiveRoutes($this->options->routingTable),
+            ]);
         }
 
         $this->options->themeUrl = $this->options->themeUrl(null, $theme);

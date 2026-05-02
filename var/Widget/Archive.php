@@ -11,6 +11,7 @@ use Typecho\Router;
 use Typecho\Widget\Exception as WidgetException;
 use Typecho\Widget\Helper\PageNavigator\Classic;
 use Typecho\Widget\Helper\PageNavigator\Box;
+use Utils\Helper;
 use Widget\Base\Contents;
 use Widget\Comments\Ping;
 use Widget\Contents\Attachment\Related as AttachmentRelated;
@@ -263,28 +264,11 @@ class Archive extends Contents
 
     private function resolveThemeFilePath(?string $themeFile): ?string
     {
-        if ($themeFile === null || $themeFile === '' || str_contains($themeFile, "\0")) {
+        if ($themeFile === null || $themeFile === '') {
             return null;
         }
 
-        $relativePath = ltrim(str_replace('\\', '/', $themeFile), '/');
-        if ($relativePath === '') {
-            return null;
-        }
-
-        $path = realpath($this->themeDir . str_replace('/', DIRECTORY_SEPARATOR, $relativePath));
-        if ($path === false || !is_file($path)) {
-            return null;
-        }
-
-        $themeRoot = realpath($this->themeDir);
-        if ($themeRoot === false) {
-            return null;
-        }
-
-        $normalizedRoot = rtrim(str_replace('\\', '/', $themeRoot), '/') . '/';
-        $normalizedPath = str_replace('\\', '/', $path);
-        return str_starts_with($normalizedPath, $normalizedRoot) ? $path : null;
+        return Helper::resolvePathInRoot($this->themeDir, $themeFile);
     }
 
     private function requireThemeFile(string $themeFile, bool $once = false): void
@@ -960,7 +944,7 @@ EOF;
                 }
             }
 
-            if (!$valid && 'index' != $this->archiveType && 'front' != $this->archiveType) {
+            if (!$valid && 'index' != $this->archiveType) {
                 $themeFile = $this->archiveSingle ? 'single.php' : 'archive.php';
                 if (file_exists($this->themeDir . $themeFile)) {
                     $this->themeFile = $themeFile;
