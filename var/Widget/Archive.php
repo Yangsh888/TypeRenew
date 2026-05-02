@@ -383,38 +383,10 @@ class Archive extends Contents
         if (!$selectPlugged) {
             $select = $this->select('table.contents.*');
 
-            if (!$this->parameter->preview) {
-                if ('post' == $this->parameter->type || 'page' == $this->parameter->type) {
-                    if ($this->user->hasLogin()) {
-                        $select->where(
-                            'table.contents.status = ? OR table.contents.status = ? 
-                                OR (table.contents.status = ? AND table.contents.authorId = ?)',
-                            'publish',
-                            'hidden',
-                            'private',
-                            $this->user->uid
-                        );
-                    } else {
-                        $select->where(
-                            'table.contents.status = ? OR table.contents.status = ?',
-                            'publish',
-                            'hidden'
-                        );
-                    }
-                } else {
-                    if ($this->user->hasLogin()) {
-                        $select->where(
-                            'table.contents.status = ? OR (table.contents.status = ? AND table.contents.authorId = ?)',
-                            'publish',
-                            'private',
-                            $this->user->uid
-                        );
-                    } else {
-                        $select->where('table.contents.status = ?', 'publish');
-                    }
-                }
-                $select->where('table.contents.created < ?', $this->options->time);
-            }
+            $this->applyContentVisibilityScope(
+                $select,
+                'post' == $this->parameter->type || 'page' == $this->parameter->type
+            );
         }
 
         self::pluginHandle()->call('handleInit', $this, $select);
@@ -1118,6 +1090,172 @@ EOF;
         return preg_split('#/+#', trim($directory, '/'), -1, PREG_SPLIT_NO_EMPTY) ?: [];
     }
 
+    private function applyContentVisibilityScope(Query $select, bool $includeHidden): void
+    {
+        if ($this->parameter->preview) {
+            return;
+        }
+
+        if ($this->user->hasLogin()) {
+            if ($includeHidden) {
+                $select->where(
+                    'table.contents.status = ? OR table.contents.status = ? 
+                        OR (table.contents.status = ? AND table.contents.authorId = ?)',
+                    'publish',
+                    'hidden',
+                    'private',
+                    $this->user->uid
+                );
+            } else {
+                $select->where(
+                    'table.contents.status = ? OR (table.contents.status = ? AND table.contents.authorId = ?)',
+                    'publish',
+                    'private',
+                    $this->user->uid
+                );
+            }
+        } elseif ($includeHidden) {
+            $select->where(
+                'table.contents.status = ? OR table.contents.status = ?',
+                'publish',
+                'hidden'
+            );
+        } else {
+            $select->where('table.contents.status = ?', 'publish');
+        }
+
+        $select->where('table.contents.created < ?', $this->options->time);
+    }
+
+    private function applySingleIdentityFilters(Query $select, string $contentType): void
+    {
+        if ('single' != $contentType) {
+            $select->where('table.contents.type = ?', $contentType);
+        }
+
+        if ($this->request->is('cid')) {
+            $select->where('table.contents.cid = ?', $this->request->filter('int')->get('cid'));
+        }
+
+        if ($this->request->is('slug')) {
+            $select->where('table.contents.slug = ?', $this->request->get('slug'));
+        }
+
+        if ($this->request->is('directory') && 'page' == $contentType) {
+            $directory = $this->normalizeDirectorySegments((string) $this->request->get('directory', ''));
+            $select->where('slug = ?', $directory === [] ? '' : end($directory));
+        }
+
+        $this->applySingleDateFilter($select);
+    }
+
+    private function applySingleDateFilter(Query $select): void
+    {
+        if (!$this->request->is('year')) {
+            return;
+        }
+
+        $year = $this->request->filter('int')->get('year');
+
+        $fromMonth = 1;
+        $toMonth = 12;
+
+        $fromDay = 1;
+        $toDay = 31;
+
+        if ($this->request->is('month')) {
+            $fromMonth = $this->request->filter('int')->get('month');
+            $toMonth = $fromMonth;
+
+            $toDay = date('t', mktime(0, 0, 0, $toMonth, 1, $year));
+
+            if ($this->request->is('day')) {
+                $fromDay = $this->request->filter('int')->get('day');
+                $toDay = $fromDay;
+            }
+        }
+
+        $from = mktime(0, 0, 0, $fromMonth, $fromDay, $year)
+            - $this->options->timezone + $this->options->serverTimezone;
+        $to = mktime(23, 59, 59, $toMonth, $toDay, $year)
+            - $this->options->timezone + $this->options->serverTimezone;
+        $select->where('table.contents.created >= ? AND table.contents.created < ?', $from, $to);
+    }
+
+    private function captureSingleProtectPassword(): bool
+    {
+        if (
+            !$this->request->isPost()
+            || !$this->request->is('protectPassword')
+            || $this->parameter->preview
+        ) {
+            return false;
+        }
+
+        $this->security->protect();
+        Cookie::set(
+            'protectPassword_' . $this->request->filter('int')->get('protectCID'),
+            $this->request->get('protectPassword')
+        );
+
+        return true;
+    }
+
+    private function resolveSingleContent(Query $select): ?string
+    {
+        $requestedType = $this->parameter->type;
+
+        $select->limit(1);
+        $this->query($select);
+        if ($this->have()) {
+            return $requestedType;
+        }
+
+        if ('page' != $requestedType || !$this->request->is('slug')) {
+            return null;
+        }
+
+        $fallbackSelect = $this->select('table.contents.*');
+        $fallbackSelect->where('table.contents.type = ?', 'post');
+        $fallbackSelect->where('table.contents.slug = ?', $this->request->get('slug'));
+        $this->applyContentVisibilityScope($fallbackSelect, true);
+        $fallbackSelect->limit(1);
+        $this->query($fallbackSelect);
+
+        return $this->have() ? 'post' : null;
+    }
+
+    private function applySingleArchiveContext(): void
+    {
+        if ($this->template) {
+            $this->themeFile = $this->template;
+        }
+
+        if (!$this->makeSinglePageAsFrontPage) {
+            $this->archiveFeedUrl = $this->feedUrl;
+            $this->archiveFeedRssUrl = $this->feedRssUrl;
+            $this->archiveFeedAtomUrl = $this->feedAtomUrl;
+            $this->archiveTitle = $this->title;
+            $this->archiveKeywords = implode(',', array_column($this->tags, 'name'));
+            $this->archiveDescription = $this->plainExcerpt;
+        }
+
+        if ($this->parameter->preview && $this->type === 'revision') {
+            $parent = ContentsFrom::allocWithAlias($this->parent, ['cid' => $this->parent]);
+            $this->archiveType = $parent->type;
+        } else {
+            [$this->archiveType] = explode('_', $this->type);
+        }
+
+        $this->archiveSlug = ('post' == $this->archiveType || 'attachment' == $this->archiveType)
+            ? $this->cid : $this->slug;
+        $this->archiveUrl = $this->permalink;
+
+        if ($this->hidden) {
+            $this->response->setStatus(403);
+        }
+    }
+
     private function indexHandle(Query $select, bool &$hasPushed)
     {
         $select->where('table.contents.type = ?', 'post');
@@ -1149,146 +1287,25 @@ EOF;
         $this->archiveSingle = true;
         $this->archiveType = 'single';
 
-        if ('single' != $this->parameter->type) {
-            $select->where('table.contents.type = ?', $this->parameter->type);
-        }
+        $this->applySingleIdentityFilters($select, $this->parameter->type);
+        $isPasswordPosted = $this->captureSingleProtectPassword();
+        $resolvedType = $this->resolveSingleContent($select);
 
-        if ($this->request->is('cid')) {
-            $select->where('table.contents.cid = ?', $this->request->filter('int')->get('cid'));
-        }
-
-        if ($this->request->is('slug')) {
-            $select->where('table.contents.slug = ?', $this->request->get('slug'));
-        }
-
-        if ($this->request->is('directory') && 'page' == $this->parameter->type) {
-            $directory = $this->normalizeDirectorySegments((string) $this->request->get('directory', ''));
-            $select->where('slug = ?', $directory === [] ? '' : end($directory));
-        }
-
-        if ($this->request->is('year')) {
-            $year = $this->request->filter('int')->get('year');
-
-            $fromMonth = 1;
-            $toMonth = 12;
-
-            $fromDay = 1;
-            $toDay = 31;
-
-            if ($this->request->is('month')) {
-                $fromMonth = $this->request->filter('int')->get('month');
-                $toMonth = $fromMonth;
-
-                $toDay = date('t', mktime(0, 0, 0, $toMonth, 1, $year));
-
-                if ($this->request->is('day')) {
-                    $fromDay = $this->request->filter('int')->get('day');
-                    $toDay = $fromDay;
-                }
+        if (null === $resolvedType) {
+            if (!$this->invokeFromOutside) {
+                throw new WidgetException(_t('请求的地址不存在'), 404);
             }
 
-            $from = mktime(0, 0, 0, $fromMonth, $fromDay, $year)
-                - $this->options->timezone + $this->options->serverTimezone;
-            $to = mktime(23, 59, 59, $toMonth, $toDay, $year)
-                - $this->options->timezone + $this->options->serverTimezone;
-            $select->where('table.contents.created >= ? AND table.contents.created < ?', $from, $to);
+            $hasPushed = true;
+            return;
         }
 
-        $isPasswordPosted = false;
-
-        if (
-            $this->request->isPost()
-            && $this->request->is('protectPassword')
-            && !$this->parameter->preview
-        ) {
-            $this->security->protect();
-            Cookie::set(
-                'protectPassword_' . $this->request->filter('int')->get('protectCID'),
-                $this->request->get('protectPassword')
-            );
-
-            $isPasswordPosted = true;
-        }
-
-        $select->limit(1);
-        $this->query($select);
-
-        if (!$this->have()) {
-            if ('page' == $this->parameter->type && $this->request->is('slug')) {
-                $fallbackSelect = $this->select('table.contents.*');
-                $fallbackSelect->where('table.contents.type = ?', 'post');
-                $fallbackSelect->where('table.contents.slug = ?', $this->request->get('slug'));
-                
-                if (!$this->parameter->preview) {
-                    if ($this->user->hasLogin()) {
-                        $fallbackSelect->where(
-                            'table.contents.status = ? OR table.contents.status = ? 
-                                OR (table.contents.status = ? AND table.contents.authorId = ?)',
-                            'publish',
-                            'hidden',
-                            'private',
-                            $this->user->uid
-                        );
-                    } else {
-                        $fallbackSelect->where(
-                            'table.contents.status = ? OR table.contents.status = ?',
-                            'publish',
-                            'hidden'
-                        );
-                    }
-                    $fallbackSelect->where('table.contents.created < ?', $this->options->time);
-                }
-                
-                $fallbackSelect->limit(1);
-                $this->query($fallbackSelect);
-                
-                if ($this->have()) {
-                    $this->parameter->type = 'post';
-                }
-            }
-            
-            if (!$this->have()) {
-                if (!$this->invokeFromOutside) {
-                    throw new WidgetException(_t('请求的地址不存在'), 404);
-                } else {
-                    $hasPushed = true;
-                    return;
-                }
-            }
-        }
+        $this->parameter->type = $resolvedType;
 
         if ($isPasswordPosted && $this->hidden) {
             throw new WidgetException(_t('对不起,您输入的密码错误'), 403);
         }
-
-        if ($this->template) {
-            $this->themeFile = $this->template;
-        }
-
-        if (!$this->makeSinglePageAsFrontPage) {
-            $this->archiveFeedUrl = $this->feedUrl;
-            $this->archiveFeedRssUrl = $this->feedRssUrl;
-            $this->archiveFeedAtomUrl = $this->feedAtomUrl;
-            $this->archiveTitle = $this->title;
-            $this->archiveKeywords = implode(',', array_column($this->tags, 'name'));
-            $this->archiveDescription = $this->plainExcerpt;
-        }
-
-        if ($this->parameter->preview && $this->type === 'revision') {
-            $parent = ContentsFrom::allocWithAlias($this->parent, ['cid' => $this->parent]);
-            $this->archiveType = $parent->type;
-        } else {
-            [$this->archiveType] = explode('_', $this->type);
-        }
-
-        $this->archiveSlug = ('post' == $this->archiveType || 'attachment' == $this->archiveType)
-            ? $this->cid : $this->slug;
-
-        $this->archiveUrl = $this->permalink;
-
-        if ($this->hidden) {
-            $this->response->setStatus(403);
-        }
+        $this->applySingleArchiveContext();
 
         $hasPushed = true;
 
