@@ -64,6 +64,7 @@ $mysqlRiskItems = array_values(array_filter(
     static fn(array $item): bool => (string) ($item['status'] ?? 'ok') !== 'ok'
 ));
 $mysqlRiskCount = count($mysqlRiskItems);
+$dbActionBlocked = $showDbDiagnostics && $mysqlRiskCount > 0;
 $dbDiagnosticsUrl = $options->adminUrl('upgrade.php?dbdiag=1', true);
 $dbOverviewUrl = $options->adminUrl('upgrade.php', true);
 ?>
@@ -250,8 +251,13 @@ $dbOverviewUrl = $options->adminUrl('upgrade.php', true);
                                                 <?php _e('另有 %d 项关键结构异常待处理。', $schemaIssueCount); ?>
                                             <?php endif; ?>
                                         </div>
+                                        <?php if ($dbActionBlocked): ?>
+                                            <div class="tr-help tr-tone-warning tr-mt-12">
+                                                <?php _e('检测到 %d 项 MySQL 风险，处理前已暂时禁用数据库升级。', $mysqlRiskCount); ?>
+                                            </div>
+                                        <?php endif; ?>
                                         <form action="<?php echo $dbUpgradeUrl; ?>" method="post" class="tr-mt-12">
-                                            <button class="tr-btn primary tr-block" type="submit"><?php _e('完成数据库升级'); ?></button>
+                                            <button class="tr-btn primary tr-block" type="submit"<?php echo $dbActionBlocked ? ' disabled aria-disabled="true"' : ''; ?>><?php _e('完成数据库升级'); ?></button>
                                         </form>
                                         <div class="tr-help tr-mt-12">
                                             <?php _e('数据库升级会执行结构迁移，建议在低峰期操作并保持页面不刷新，直到完成。'); ?>
@@ -263,9 +269,14 @@ $dbOverviewUrl = $options->adminUrl('upgrade.php', true);
                                         <div class="tr-help tr-mt-12">
                                             <?php _e('当前发现 %d 项关键结构异常。', $schemaIssueCount); ?>
                                         </div>
+                                        <?php if ($dbActionBlocked): ?>
+                                            <div class="tr-help tr-tone-warning tr-mt-12">
+                                                <?php _e('检测到 %d 项 MySQL 风险，处理前已暂时禁用结构修复。', $mysqlRiskCount); ?>
+                                            </div>
+                                        <?php endif; ?>
                                         <form action="<?php echo $dbUpgradeUrl; ?>" method="post" class="tr-mt-12">
                                             <input type="hidden" name="do" value="repairCriticalSchema">
-                                            <button class="tr-btn primary tr-block" type="submit"><?php _e('修复关键数据库结构'); ?></button>
+                                            <button class="tr-btn primary tr-block" type="submit"<?php echo $dbActionBlocked ? ' disabled aria-disabled="true"' : ''; ?>><?php _e('修复关键数据库结构'); ?></button>
                                         </form>
                                         <div class="tr-help tr-mt-12">
                                             <?php _e('该操作会补齐邮件通知与密码找回依赖的关键表、索引、字段类型和排序规则，并同步历史评论作者昵称，不会覆盖已有业务数据。'); ?>

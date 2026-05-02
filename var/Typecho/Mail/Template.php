@@ -18,20 +18,15 @@ class Template
     public static function load(string $name, Options $options): string
     {
         $file = self::resolve($name, $options);
-        if (!self::validatePath($file) || !is_readable($file)) {
+        if (!Helper::isPathInsideRoots($file, [
+            __TYPECHO_ROOT_DIR__ . '/usr/mail',
+            __TYPECHO_ROOT_DIR__ . '/var/Typecho/Mail/tpl',
+        ]) || !is_readable($file)) {
             return '';
         }
 
         $content = file_get_contents($file);
         return is_string($content) ? $content : '';
-    }
-
-    private static function validatePath(string $path): bool
-    {
-        return Helper::isPathInsideRoots($path, [
-            __TYPECHO_ROOT_DIR__ . '/usr/mail',
-            __TYPECHO_ROOT_DIR__ . '/var/Typecho/Mail/tpl',
-        ]);
     }
 
     public static function resolve(string $name, Options $options): string

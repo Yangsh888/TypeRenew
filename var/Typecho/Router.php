@@ -64,7 +64,12 @@ class Router
                 $widget = Widget::widget($route['widget'], null, $params);
 
                 if (isset($route['action'])) {
-                    $widget->{$route['action']}();
+                    $action = $route['action'];
+                    if (!is_string($action) || $action === '' || !is_callable([$widget, $action])) {
+                        throw new RouterException("Path '{$pathInfo}' not found", 404);
+                    }
+
+                    $widget->{$action}();
                 }
 
                 return;

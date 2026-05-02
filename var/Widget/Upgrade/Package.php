@@ -39,8 +39,6 @@ class Package extends BaseOptions implements ActionInterface
             } else {
                 Notice::alloc()->set(_t('未知升级操作'), 'error');
             }
-        } catch (Exception $e) {
-            Notice::alloc()->set($e->getMessage(), 'error');
         } catch (\Throwable $e) {
             Notice::alloc()->set($e->getMessage(), 'error');
         }

@@ -22,13 +22,14 @@ class Reset extends Users implements ActionInterface
             $this->response->redirect($this->options->adminUrl);
         }
 
+        $forgotUrl = Common::url('forgot.php', $this->options->adminUrl);
         $token = trim((string) $this->request->get('token'));
         $password = (string) $this->request->get('password');
         $confirm = (string) $this->request->get('confirm');
 
         if (!PasswordReset::isValidRawToken($token)) {
             Notice::alloc()->set(_t('重置链接无效或已过期，请重新获取'), 'error');
-            $this->response->redirect(Common::url('forgot.php', $this->options->adminUrl));
+            $this->response->redirect($forgotUrl);
         }
 
         if (!Password::validateLength($password)) {
@@ -44,13 +45,13 @@ class Reset extends Users implements ActionInterface
             $this->response->goBack();
         }
 
-        $this->cleanupExpired();
+        PasswordReset::cleanupExpired($this->db);
 
         $record = PasswordReset::findActiveRecordByToken($this->db, $token);
 
         if (!$record) {
             Notice::alloc()->set(_t('重置链接无效或已过期，请重新获取'), 'error');
-            $this->response->redirect(Common::url('forgot.php', $this->options->adminUrl));
+            $this->response->redirect($forgotUrl);
         }
 
         $recordId = (int) ($record['id'] ?? 0);
@@ -64,7 +65,7 @@ class Reset extends Users implements ActionInterface
 
         if (!$locked) {
             Notice::alloc()->set(_t('重置链接已被使用，请重新获取'), 'error');
-            $this->response->redirect(Common::url('forgot.php', $this->options->adminUrl));
+            $this->response->redirect($forgotUrl);
         }
 
         $hashedPassword = Password::hash($password);
@@ -89,13 +90,5 @@ class Reset extends Users implements ActionInterface
 
         Notice::alloc()->set(_t('密码已重置，请使用新密码登录'), 'success');
         $this->response->redirect(Common::url('login.php', $this->options->adminUrl));
-    }
-
-    private function cleanupExpired(): void
-    {
-        $this->db->query(
-            $this->db->delete('table.password_resets')
-                ->where('expires < ?', time())
-        );
     }
 }

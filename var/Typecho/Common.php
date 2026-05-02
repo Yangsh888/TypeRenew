@@ -162,10 +162,15 @@ namespace Typecho {
             });
 
             set_exception_handler(function (\Throwable $exception) {
-                echo '<pre><code>';
-                echo '<h1>' . htmlspecialchars($exception->getMessage()) . '</h1>';
-                echo htmlspecialchars($exception->__toString());
-                echo '</code></pre>';
+                if (defined('__TYPECHO_DEBUG__') && __TYPECHO_DEBUG__) {
+                    echo '<pre><code>';
+                    echo '<h1>' . htmlspecialchars($exception->getMessage()) . '</h1>';
+                    echo htmlspecialchars($exception->__toString());
+                    echo '</code></pre>';
+                } else {
+                    self::error($exception);
+                }
+
                 exit;
             });
         }

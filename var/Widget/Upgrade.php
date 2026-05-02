@@ -14,8 +14,30 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
 
 class Upgrade extends BaseOptions implements ActionInterface
 {
+    private function guardMysqlUpgradeRisks(): bool
+    {
+        $status = SchemaManager::inspectMysqlUpgradeRisks($this->db);
+        if (!(bool) ($status['supported'] ?? false) || (bool) ($status['healthy'] ?? true)) {
+            return true;
+        }
+
+        $count = count(array_filter(
+            (array) ($status['items'] ?? []),
+            static fn(array $item): bool => (string) ($item['status'] ?? 'ok') !== 'ok'
+        ));
+        Notice::alloc()->set(
+            _t('检测到 %d 项 MySQL 风险，请先在升级页查看数据库诊断并处理后再继续。', $count),
+            'error'
+        );
+        return false;
+    }
+
     public function upgrade()
     {
+        if (!$this->guardMysqlUpgradeRisks()) {
+            return;
+        }
+
         try {
             $activated = is_array($this->options->plugins['activated'] ?? null)
                 ? array_keys($this->options->plugins['activated'])
@@ -39,6 +61,10 @@ class Upgrade extends BaseOptions implements ActionInterface
 
     public function repairCriticalSchema(): void
     {
+        if (!$this->guardMysqlUpgradeRisks()) {
+            return;
+        }
+
         try {
             $result = SchemaManager::repairCriticalSchema($this->db);
         } catch (\Throwable $e) {

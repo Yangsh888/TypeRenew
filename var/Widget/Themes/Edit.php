@@ -191,7 +191,7 @@ class Edit extends Options implements ActionInterface
             try {
                 $this->writeThemeFile($path, (string) $this->request->get('content'), $file);
                 Notice::alloc()->set(_t("文件 %s 的更改已经保存", $file), 'success');
-            } catch (Exception $e) {
+            } catch (Exception) {
                 Notice::alloc()->set(_t("文件 %s 无法被写入", $file), 'error');
             }
             $this->response->goBack();
