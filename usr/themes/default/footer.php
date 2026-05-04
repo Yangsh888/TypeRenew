@@ -3,7 +3,7 @@
 
 <footer class="site-footer" role="contentinfo">
     <div class="container">
-        <p>&copy; <?php echo date('Y'); ?> <a href="<?php $this->options->siteUrl(); ?>"><?php $this->options->title(); ?></a>.</p>
+        <p>&copy; <?php echo \Typecho\Timezone::format(time(), 'Y'); ?> <a href="<?php $this->options->siteUrl(); ?>"><?php $this->options->title(); ?></a>.</p>
         <p>Powered by <a href="https://www.typerenew.com">TypeRenew</a>.</p>
     </div>
 </footer>

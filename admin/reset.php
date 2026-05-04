@@ -37,8 +37,7 @@ include 'auth.php';
 <?php tr_auth_open([
     'label' => _t('重置密码'),
     'description' => _t('设置新的登录密码'),
-    'heroSubtitle' => _t('轻量化后台管理'),
-    'heroFoot' => '&copy; ' . date('Y') . ' TypeRenew Team'
+    'heroSubtitle' => _t('轻量化后台管理')
 ]); ?>
 <?php if (!$tokenValid): ?>
 <div class="tr-auth-notice" role="status">

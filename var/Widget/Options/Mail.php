@@ -4,6 +4,7 @@ namespace Widget\Options;
 
 use Typecho\Common;
 use Typecho\Db;
+use Typecho\Timezone;
 use Typecho\Widget\Helper\Form;
 use Typecho\Mail\Queue;
 use Typecho\Mail\Notify;
@@ -542,7 +543,7 @@ class Mail extends Options implements ActionInterface
             'permalink' => Common::url('/archives/mail-template-preview/', $index),
             'manageUrl' => Common::url('manage-comments.php', (string) ($this->options->adminUrl ?? '')),
             'resetUrl' => Common::url('reset.php?token=demo', (string) ($this->options->adminUrl ?? '')),
-            'expiresAt' => date('Y-m-d H:i:s', $now + 1800),
+            'expiresAt' => Timezone::format($now + 1800, 'Y-m-d H:i:s'),
         ];
     }
 

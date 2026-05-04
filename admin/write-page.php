@@ -64,7 +64,9 @@ while ($parents->next()) {
                     <section class="typecho-post-option" role="application">
                         <label for="date" class="typecho-label"><?php _e('发布日期'); ?></label>
                         <p><input class="typecho-date w-100" type="text" name="date" id="date" autocomplete="off"
-                                  value="<?php $page->have() && $page->created > 0 ? $page->date('Y-m-d H:i') : ''; ?>"/>
+                                  value="<?php echo $page->have() && $page->created > 0
+                                      ? $page->date('Y-m-d H:i')
+                                      : \Typecho\Timezone::format((int) $options->time, 'Y-m-d H:i'); ?>"/>
                         </p>
                     </section>
 

@@ -175,7 +175,7 @@ $tplContent = \Typecho\Mail\Template::load($tplName, $options);
                             <div class="tr-section-title"><?php _e('运行告警'); ?></div>
                             <div class="tr-help"><?php echo htmlspecialchars($runtimeError, ENT_QUOTES, 'UTF-8'); ?></div>
                             <?php if ($runtimeErrorAt > 0): ?>
-                                <div class="tr-help"><?php echo date('Y-m-d H:i:s', $runtimeErrorAt); ?></div>
+                                <div class="tr-help"><?php echo \Typecho\Timezone::format((int) $runtimeErrorAt, 'Y-m-d H:i:s'); ?></div>
                             <?php endif; ?>
                         </div>
                     </div>

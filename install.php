@@ -142,6 +142,11 @@ function install_get_current_db_driver(): string
     }
 }
 
+function install_default_sqlite_file(): string
+{
+    return __TYPECHO_ROOT_DIR__ . '/usr/' . uniqid('sqlite_', true) . '.db';
+}
+
 /**
  * generate config file
  *

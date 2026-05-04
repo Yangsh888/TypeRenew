@@ -6,6 +6,7 @@ use Typecho\Common;
 use Typecho\Db;
 use Typecho\Mail\Queue;
 use Typecho\Mail\Template;
+use Typecho\Timezone;
 use Utils\PasswordReset;
 use Widget\Base\Users;
 
@@ -94,7 +95,7 @@ class Forgot extends Users implements ActionInterface
     {
         $siteTitle = (string) ($this->options->title ?? 'TypeRenew');
         $siteUrl = (string) ($this->options->siteUrl ?? '');
-        $expiresAt = date('Y-m-d H:i:s', $expires);
+        $expiresAt = Timezone::format($expires, 'Y-m-d H:i:s');
 
         $vars = [
             'subject' => _t('密码重置请求'),

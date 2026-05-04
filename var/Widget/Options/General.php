@@ -4,6 +4,7 @@ namespace Widget\Options;
 
 use Typecho\Db\Exception;
 use Typecho\I18n\GetText;
+use Typecho\Timezone;
 use Typecho\Widget\Helper\Form;
 use Widget\ActionInterface;
 use Widget\Base\Options;
@@ -87,9 +88,12 @@ class General extends Options implements ActionInterface
             'keywords',
             'allowRegister',
             'allowXmlRpc',
-            'lang',
-            'timezone'
+            'lang'
         );
+        $timezoneName = trim((string) $this->request->get('timezoneName', ''));
+        $resolvedTimezoneName = Timezone::resolve($timezoneName, $this->options->timezone);
+        $settings['timezoneName'] = $resolvedTimezoneName;
+        $settings['timezone'] = (string) Timezone::offsetFromName($resolvedTimezoneName);
         $settings['attachmentTypes'] = $this->request->getArray('attachmentTypes');
 
         if (!defined('__TYPECHO_SITE_URL__')) {
@@ -199,36 +203,14 @@ class General extends Options implements ActionInterface
             $form->addInput($lang->addRule([$this, 'checkLang'], _t('所选择的语言包不存在')));
         }
 
-        $timezoneList = [
-            "0"      => _t('格林威治(子午线)标准时间 (GMT)'),
-            "3600"   => _t('中欧标准时间 阿姆斯特丹,荷兰,法国 (GMT +1)'),
-            "7200"   => _t('东欧标准时间 布加勒斯特,塞浦路斯,希腊 (GMT +2)'),
-            "10800"  => _t('莫斯科时间 伊拉克,埃塞俄比亚,马达加斯加 (GMT +3)'),
-            "14400"  => _t('第比利斯时间 阿曼,毛里塔尼亚,留尼汪岛 (GMT +4)'),
-            "18000"  => _t('新德里时间 巴基斯坦,马尔代夫 (GMT +5)'),
-            "21600"  => _t('科伦坡时间 孟加拉 (GMT +6)'),
-            "25200"  => _t('曼谷雅加达 柬埔寨,苏门答腊,老挝 (GMT +7)'),
-            "28800"  => _t('北京时间 香港,新加坡,越南 (GMT +8)'),
-            "32400"  => _t('东京平壤时间 西伊里安,摩鹿加群岛 (GMT +9)'),
-            "36000"  => _t('悉尼关岛时间 塔斯马尼亚岛,新几内亚 (GMT +10)'),
-            "39600"  => _t('所罗门群岛 库页岛 (GMT +11)'),
-            "43200"  => _t('惠灵顿时间 新西兰,斐济群岛 (GMT +12)'),
-            "-3600"  => _t('佛德尔群岛 亚速尔群岛,葡属几内亚 (GMT -1)'),
-            "-7200"  => _t('大西洋中部时间 格陵兰 (GMT -2)'),
-            "-10800" => _t('布宜诺斯艾利斯 乌拉圭,法属圭亚那 (GMT -3)'),
-            "-14400" => _t('智利巴西 委内瑞拉,玻利维亚 (GMT -4)'),
-            "-18000" => _t('纽约渥太华 古巴,哥伦比亚,牙买加 (GMT -5)'),
-            "-21600" => _t('墨西哥城时间 洪都拉斯,危地马拉,哥斯达黎加 (GMT -6)'),
-            "-25200" => _t('美国丹佛时间 (GMT -7)'),
-            "-28800" => _t('美国旧金山时间 (GMT -8)'),
-            "-32400" => _t('阿拉斯加时间 (GMT -9)'),
-            "-36000" => _t('夏威夷群岛 (GMT -10)'),
-            "-39600" => _t('东萨摩亚群岛 (GMT -11)'),
-            "-43200" => _t('艾尼威托克岛 (GMT -12)')
-        ];
-
-        $timezone = new Form\Element\Select('timezone', $timezoneList, $this->options->timezone, _t('时区'));
-        $form->addInput($timezone);
+        $timezoneName = new Form\Element\Select(
+            'timezoneName',
+            Timezone::selectOptions(),
+            $this->options->timezoneName,
+            _t('时区'),
+            _t('请使用地区时区标识，例如 Asia/Shanghai 或 Europe/London。')
+        );
+        $form->addInput($timezoneName->addRule([Timezone::class, 'isValidName'], _t('所选择的时区无效')));
 
         $attachmentTypesOptionsResult = (null != trim((string) $this->options->attachmentTypes)) ?
             array_map('trim', explode(',', $this->options->attachmentTypes)) : [];

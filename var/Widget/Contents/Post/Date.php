@@ -5,6 +5,7 @@ namespace Widget\Contents\Post;
 use Typecho\Config;
 use Typecho\Db;
 use Typecho\Router;
+use Typecho\Timezone;
 use Widget\Base;
 
 if (!defined('__TYPECHO_ROOT_DIR__')) {
@@ -38,18 +39,18 @@ class Date extends Base
             ->where('table.contents.created < ?', $this->options->time)
             ->order('table.contents.created', Db::SORT_DESC));
 
-        $offset = $this->options->timezone - $this->options->serverTimezone;
         $result = [];
         while ($post = $this->db->fetchRow($resource)) {
-            $timeStamp = $post['created'] + $offset;
-            $date = date($this->parameter->format, $timeStamp);
+            $timeStamp = (int) $post['created'];
+            $date = Timezone::format($timeStamp, $this->parameter->format);
+            $parts = Timezone::formatDateParts($timeStamp);
 
             if (isset($result[$date])) {
                 $result[$date]['count'] ++;
             } else {
-                $result[$date]['year'] = date('Y', $timeStamp);
-                $result[$date]['month'] = date('m', $timeStamp);
-                $result[$date]['day'] = date('d', $timeStamp);
+                $result[$date]['year'] = $parts['year'];
+                $result[$date]['month'] = $parts['month'];
+                $result[$date]['day'] = $parts['day'];
                 $result[$date]['date'] = $date;
                 $result[$date]['count'] = 1;
             }

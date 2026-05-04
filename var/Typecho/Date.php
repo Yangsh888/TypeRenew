@@ -2,66 +2,42 @@
 
 namespace Typecho;
 
+use DateTimeImmutable;
+
 class Date
 {
-    public static int $timezoneOffset = 0;
-    public static int $serverTimezoneOffset = 0;
     public static int $serverTimeStamp = 0;
     public int $timeStamp = 0;
     public string $year;
     public string $month;
     public string $day;
+    private DateTimeImmutable $dateTime;
 
-    /**
-     * 初始化参数
-     *
-     * @param integer|null $time 时间戳
-     */
     public function __construct(?int $time = null)
     {
-        $this->timeStamp = (null === $time ? self::time() : $time)
-            + (self::$timezoneOffset - self::$serverTimezoneOffset);
+        $this->timeStamp = null === $time ? self::time() : $time;
+        $this->dateTime = Timezone::at($this->timeStamp);
 
-        $this->year = date('Y', $this->timeStamp);
-        $this->month = date('m', $this->timeStamp);
-        $this->day = date('d', $this->timeStamp);
+        $this->year = $this->dateTime->format('Y');
+        $this->month = $this->dateTime->format('m');
+        $this->day = $this->dateTime->format('d');
     }
 
-    /**
-     * 设置当前期望的时区偏移
-     *
-     * @param integer $offset
-     */
-    public static function setTimezoneOffset(int $offset)
+    public static function setTimezone(?string $name = null, ?int $legacyOffset = null): void
     {
-        self::$timezoneOffset = $offset;
-        self::$serverTimezoneOffset = idate('Z');
+        Timezone::boot($name, $legacyOffset);
     }
 
-    /**
-     * 获取格式化时间
-     *
-     * @param string $format 时间格式
-     * @return string
-     */
     public function format(string $format): string
     {
-        return date($format, $this->timeStamp);
+        return $this->dateTime->format($format);
     }
 
-    /**
-     * 获取国际化偏移时间
-     * @return string
-     */
     public function word(): string
     {
-        return I18n::dateWord($this->timeStamp, self::time() + (self::$timezoneOffset - self::$serverTimezoneOffset));
+        return I18n::dateWord($this->timeStamp, self::time());
     }
 
-    /**
-     * 获取服务器时间
-     * @return int
-     */
     public static function time(): int
     {
         return self::$serverTimeStamp ?: (self::$serverTimeStamp = time());

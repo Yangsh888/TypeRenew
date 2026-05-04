@@ -3,6 +3,8 @@ if (!defined('__TYPECHO_ADMIN__')) {
     exit;
 }
 
+use Typecho\Timezone;
+
 function tr_auth_open(array $config): void
 {
     global $options;
@@ -12,7 +14,7 @@ function tr_auth_open(array $config): void
     $description = (string) ($config['description'] ?? $label);
     $heroTitle = (string) ($config['heroTitle'] ?? (string) $options->title);
     $heroSubtitle = (string) ($config['heroSubtitle'] ?? _t('轻量化管理后台，由 TypeRenew 焕新呈现'));
-    $heroFoot = (string) ($config['heroFoot'] ?? ('&copy; ' . date('Y') . ' TypeRenew Team'));
+    $heroFoot = (string) ($config['heroFoot'] ?? ('&copy; ' . Timezone::format(time(), 'Y') . ' TypeRenew Team'));
     ?>
     <div class="tr-auth" role="main" aria-label="<?php echo htmlspecialchars($label, ENT_QUOTES, 'UTF-8'); ?>">
         <div class="tr-auth-switch" aria-label="<?php _e('主题切换'); ?>">

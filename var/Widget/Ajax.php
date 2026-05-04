@@ -4,6 +4,7 @@ namespace Widget;
 
 use Typecho\Http\Client;
 use Typecho\Plugin;
+use Typecho\Timezone;
 use Typecho\Widget\Exception;
 use Widget\Base\Options as BaseOptions;
 
@@ -82,7 +83,7 @@ class Ajax extends BaseOptions implements ActionInterface
             $items[] = [
                 'title' => $title,
                 'link'  => $link,
-                'date'  => date('n.j', $timestamp),
+                'date'  => Timezone::format($timestamp, 'n.j'),
                 'ts'    => $timestamp,
             ];
         }

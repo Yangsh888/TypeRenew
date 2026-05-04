@@ -201,7 +201,7 @@ xmlns:dc="http://purl.org/dc/elements/1.1/">' . self::EOL;
             foreach ($this->items as $item) {
                 $title = $this->itemValue($item, 'title');
                 $link = $this->itemValue($item, 'link');
-                $date = (int) ($item['date'] ?? 0);
+                $date = $this->itemTimestamp($item, 'modified', 'date', 'created');
                 $body = $this->itemValue($item, 'content');
 
                 $content .= '<item rdf:about="' . $this->xmlText($link) . '">' . self::EOL;
@@ -219,6 +219,10 @@ xmlns:dc="http://purl.org/dc/elements/1.1/">' . self::EOL;
                 if ($date > $lastUpdate) {
                     $lastUpdate = $date;
                 }
+            }
+
+            if ($lastUpdate <= 0) {
+                $lastUpdate = Date::time();
             }
 
             $result .= '<channel rdf:about="' . $this->xmlText($this->feedUrl) . '">
@@ -252,7 +256,8 @@ xmlns:wfw="http://wellformedweb.org/CommentAPI/">
             foreach ($this->items as $item) {
                 $title = $this->itemValue($item, 'title');
                 $link = $this->itemValue($item, 'link');
-                $date = (int) ($item['date'] ?? 0);
+                $date = $this->itemTimestamp($item, 'created', 'date', 'modified');
+                $updated = $this->itemTimestamp($item, 'modified', 'created', 'date');
                 $authorName = $this->itemAuthorValue($item, 'screenName');
                 $excerpt = $this->itemValue($item, 'excerpt');
                 $body = $this->itemValue($item, 'content');
@@ -302,9 +307,13 @@ xmlns:wfw="http://wellformedweb.org/CommentAPI/">
 
                 $content .= '</item>' . self::EOL;
 
-                if ($date > $lastUpdate) {
-                    $lastUpdate = $date;
+                if ($updated > $lastUpdate) {
+                    $lastUpdate = $updated;
                 }
+            }
+
+            if ($lastUpdate <= 0) {
+                $lastUpdate = Date::time();
             }
 
             $result .= '<title>' . $this->xmlText($this->title) . '</title>
@@ -330,7 +339,8 @@ xml:base="' . $this->xmlText($this->baseUrl) . '"
             foreach ($this->items as $item) {
                 $title = $this->itemValue($item, 'title');
                 $link = $this->itemValue($item, 'link');
-                $date = (int) ($item['date'] ?? 0);
+                $created = $this->itemTimestamp($item, 'created', 'date', 'modified');
+                $updated = $this->itemTimestamp($item, 'modified', 'created', 'date');
                 $authorName = $this->itemAuthorValue($item, 'screenName');
                 $authorUrl = $this->itemAuthorValue($item, 'url');
                 $excerpt = $this->itemValue($item, 'excerpt');
@@ -342,8 +352,8 @@ xml:base="' . $this->xmlText($this->baseUrl) . '"
                 $content .= '<title type="html"><![CDATA[' . $this->xmlCdata($title) . ']]></title>' . self::EOL;
                 $content .= '<link rel="alternate" type="text/html" href="' . $this->xmlText($link) . '" />' . self::EOL;
                 $content .= '<id>' . $this->xmlText($link) . '</id>' . self::EOL;
-                $content .= '<updated>' . $this->dateFormat($date) . '</updated>' . self::EOL;
-                $content .= '<published>' . $this->dateFormat($date) . '</published>' . self::EOL;
+                $content .= '<updated>' . $this->dateFormat($updated) . '</updated>' . self::EOL;
+                $content .= '<published>' . $this->dateFormat($created) . '</published>' . self::EOL;
                 $content .= '<author>
     <name>' . $this->xmlText($authorName) . '</name>
     <uri>' . $this->xmlText($authorUrl) . '</uri>
@@ -385,9 +395,13 @@ xml:base="' . $this->xmlText($this->baseUrl) . '"
 
                 $content .= '</entry>' . self::EOL;
 
-                if ($date > $lastUpdate) {
-                    $lastUpdate = $date;
+                if ($updated > $lastUpdate) {
+                    $lastUpdate = $updated;
                 }
+            }
+
+            if ($lastUpdate <= 0) {
+                $lastUpdate = Date::time();
             }
 
             $result .= '<title type="text">' . $this->xmlText($this->title) . '</title>
@@ -413,9 +427,9 @@ xml:base="' . $this->xmlText($this->baseUrl) . '"
     public function dateFormat(int $stamp): string
     {
         if (self::RSS2 == $this->type) {
-            return date(self::DATE_RFC822, $stamp);
+            return Timezone::formatRfc822($stamp);
         } elseif (self::RSS1 == $this->type || self::ATOM1 == $this->type) {
-            return date(self::DATE_W3CDTF, $stamp);
+            return Timezone::formatAtom($stamp);
         }
 
         return '';
@@ -426,6 +440,18 @@ xml:base="' . $this->xmlText($this->baseUrl) . '"
         $value = $item[$key] ?? '';
 
         return is_scalar($value) ? (string) $value : '';
+    }
+
+    private function itemTimestamp(array $item, string ...$keys): int
+    {
+        foreach ($keys as $key) {
+            $value = $item[$key] ?? null;
+            if (is_numeric($value) && (int) $value > 0) {
+                return (int) $value;
+            }
+        }
+
+        return Date::time();
     }
 
     private function itemAuthorValue(array $item, string $field): string

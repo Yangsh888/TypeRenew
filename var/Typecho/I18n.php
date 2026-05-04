@@ -31,8 +31,14 @@ class I18n
     public static function dateWord(int $from, int $now): string
     {
         $between = $now - $from;
+        $fromDay = Timezone::format($from, 'd');
+        $nowDay = Timezone::format($now, 'd');
+        $fromYearDay = Timezone::format($from, 'z');
+        $nowYearDay = Timezone::format($now, 'z');
+        $fromYear = Timezone::format($from, 'Y');
+        $nowYear = Timezone::format($now, 'Y');
 
-        if ($between >= 0 && $between < 86400 && date('d', $from) == date('d', $now)) {
+        if ($between >= 0 && $between < 86400 && $fromDay === $nowDay && $fromYear === $nowYear) {
             if ($between < 3600) {
                 if ($between < 60) {
                     if (0 == $between) {
@@ -53,10 +59,10 @@ class I18n
         if (
             $between > 0
             && $between < 172800
-            && (date('z', $from) + 1 == date('z', $now)
-                || date('z', $from) + 1 == date('L') + 365 + date('z', $now))
+            && (((int) $fromYearDay + 1 === (int) $nowYearDay && $fromYear === $nowYear)
+                || ((int) $fromYearDay + 1 === ((int) Timezone::format($from, 'L') + 365 + (int) $nowYearDay)))
         ) {
-            return _t('昨天 %s', date('H:i', $from));
+            return _t('昨天 %s', Timezone::format($from, 'H:i'));
         }
 
         if ($between > 0 && $between < 604800) {
@@ -64,11 +70,11 @@ class I18n
             return str_replace('%d', $day, _n('一天前', '%d天前', $day));
         }
 
-        if (date('Y', $from) == date('Y', $now)) {
-            return date(_t('n月j日'), $from);
+        if ($fromYear === $nowYear) {
+            return Timezone::format($from, _t('n月j日'));
         }
 
-        return date(_t('Y年m月d日'), $from);
+        return Timezone::format($from, _t('Y年m月d日'));
     }
 
     public static function addLang(string $lang)

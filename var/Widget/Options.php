@@ -7,6 +7,7 @@ use Typecho\Config;
 use Typecho\Db;
 use Typecho\Plugin\Exception as PluginException;
 use Typecho\Date;
+use Typecho\Timezone;
 use Typecho\Router;
 use Typecho\Router\Parser;
 use Typecho\Widget;
@@ -50,6 +51,7 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
  * @property int $pageSize
  * @property int $serverTimezone
  * @property int $timezone
+ * @property string $timezoneName
  * @property string $charset
  * @property string $contentType
  * @property string $generator
@@ -635,9 +637,30 @@ class Options extends Base
 
     protected function ___serverTimezone(): int
     {
-        return Date::$serverTimezoneOffset;
+        return Timezone::serverOffset();
     }
 
+    private function resolveTimezoneOption(): string
+    {
+        $raw = $this->row['timezone'] ?? null;
+
+        return Timezone::resolve(
+            is_string($this->row['timezoneName'] ?? null) ? $this->row['timezoneName'] : '',
+            is_numeric($raw) ? (int) $raw : null
+        );
+    }
+
+    protected function ___timezone(): int
+    {
+        $name = $this->resolveTimezoneOption();
+
+        return Timezone::offsetFromName($name, Date::time());
+    }
+
+    protected function ___timezoneName(): string
+    {
+        return $this->resolveTimezoneOption();
+    }
     protected function ___time(): int
     {
         return Date::time();

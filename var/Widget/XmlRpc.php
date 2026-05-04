@@ -2,40 +2,115 @@
 
 namespace Widget;
 
+use DateTimeImmutable;
+use DateTimeZone;
 use IXR\Date;
 use IXR\Exception;
-use IXR\Hook;
-use IXR\Pingback;
 use IXR\Server;
-use ReflectionMethod;
 use Typecho\Common;
-use Typecho\Router;
-use Typecho\Widget;
-use Typecho\Widget\Exception as WidgetException;
-use Widget\Base\Comments;
+use Typecho\Timezone as SiteTimezone;
 use Widget\Base\Contents;
 use Widget\Contents\Attachment\Unattached;
 use Widget\Contents\Page\Admin as PageAdmin;
 use Widget\Contents\Post\Admin as PostAdmin;
-use Widget\Contents\Attachment\Admin as AttachmentAdmin;
 use Widget\Contents\Post\Edit as PostEdit;
 use Widget\Contents\Page\Edit as PageEdit;
-use Widget\Contents\Attachment\Edit as AttachmentEdit;
 use Widget\Metas\Category\Edit as CategoryEdit;
 use Widget\Metas\Category\Rows as CategoryRows;
 use Widget\Metas\From as MetasFrom;
 use Widget\Metas\Tag\Cloud;
-use Widget\Comments\Edit as CommentsEdit;
-use Widget\Comments\Admin as CommentsAdmin;
+use Widget\XmlRpc\HookHandler as XmlRpcHookHandler;
+use Widget\XmlRpc\MethodRegistry as XmlRpcMethodRegistry;
 
 if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-class XmlRpc extends Contents implements ActionInterface, Hook
+class XmlRpc extends Contents implements ActionInterface
 {
-    /** WordPress 风格的系统选项。 */
-    private array $wpOptions;
+    public function toSiteRpcDate(int $timestamp): Date
+    {
+        return new Date($timestamp + SiteTimezone::offsetAt($timestamp));
+    }
+
+    public function toGmtRpcDate(int $timestamp): Date
+    {
+        return new Date($timestamp);
+    }
+
+    public function fromSiteRpcDate(Date $date): int
+    {
+        return $this->parseRpcDate($date, false);
+    }
+
+    public function fromUtcRpcDate(Date $date): int
+    {
+        return $this->parseRpcDate($date, true);
+    }
+
+    private function parseRpcDate(Date $date, bool $utc): int
+    {
+        $iso = trim($date->getIso());
+        if ($iso === '') {
+            return 0;
+        }
+
+        $normalized = $iso;
+        if (preg_match('/^[0-9]{8}T[0-9]{2}:[0-9]{2}:[0-9]{2}[+-][0-9]{2}[0-9]{2}$/', $normalized) === 1) {
+            $normalized = substr($normalized, 0, -5) . substr($normalized, -5, 3) . ':' . substr($normalized, -2);
+        }
+
+        if (preg_match('/^[0-9]{8}T[0-9]{2}:[0-9]{2}:[0-9]{2}(Z|[+-][0-9]{2}:[0-9]{2})$/', $normalized) === 1) {
+            $dateTime = $this->createStrictDateTime('!Ymd\TH:i:sP', $normalized);
+            if ($dateTime instanceof DateTimeImmutable) {
+                return $dateTime->getTimestamp();
+            }
+        }
+
+        if (preg_match('/^([0-9]{4})([0-9]{2})([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})$/', $normalized, $matches) !== 1) {
+            return 0;
+        }
+
+        $year = (int) $matches[1];
+        $month = (int) $matches[2];
+        $day = (int) $matches[3];
+        $hour = (int) $matches[4];
+        $minute = (int) $matches[5];
+        $second = (int) $matches[6];
+
+        if ($utc) {
+            $dateTime = $this->createStrictDateTime(
+                '!Y-m-d H:i:s',
+                sprintf('%04d-%02d-%02d %02d:%02d:%02d', $year, $month, $day, $hour, $minute, $second),
+                new DateTimeZone('UTC')
+            );
+
+            return $dateTime instanceof DateTimeImmutable ? $dateTime->getTimestamp() : 0;
+        }
+
+        return SiteTimezone::fromLocalParts($year, $month, $day, $hour, $minute, $second) ?? 0;
+    }
+
+    private function createStrictDateTime(
+        string $format,
+        string $value,
+        ?DateTimeZone $zone = null
+    ): ?DateTimeImmutable {
+        $dateTime = DateTimeImmutable::createFromFormat($format, $value, $zone);
+        if (!$dateTime instanceof DateTimeImmutable) {
+            return null;
+        }
+
+        $errors = DateTimeImmutable::getLastErrors();
+        if (
+            is_array($errors)
+            && (($errors['warning_count'] ?? 0) > 0 || ($errors['error_count'] ?? 0) > 0)
+        ) {
+            return null;
+        }
+
+        return $dateTime;
+    }
 
     /**
      * 如果这里没有重载, 每次都会被默认执行
@@ -50,78 +125,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
         // XML-RPC 请求不会走常规表单令牌校验。
         $this->security->enable(false);
-
-        $this->wpOptions = [
-            // Read only options
-            'software_name'    => [
-                'desc'     => _t('软件名称'),
-                'readonly' => true,
-                'value'    => $this->options->software
-            ],
-            'software_version' => [
-                'desc'     => _t('软件版本'),
-                'readonly' => true,
-                'value'    => $this->options->version
-            ],
-            'blog_url'         => [
-                'desc'     => _t('博客地址'),
-                'readonly' => true,
-                'option'   => 'siteUrl'
-            ],
-            'home_url'         => [
-                'desc'     => _t('博客首页地址'),
-                'readonly' => true,
-                'option'   => 'siteUrl'
-            ],
-            'login_url'        => [
-                'desc'     => _t('登录地址'),
-                'readonly' => true,
-                'value'    => $this->options->loginUrl
-            ],
-            'admin_url'        => [
-                'desc'     => _t('管理区域的地址'),
-                'readonly' => true,
-                'value'    => $this->options->adminUrl
-            ],
-
-            'post_thumbnail'     => [
-                'desc'     => _t('文章缩略图'),
-                'readonly' => true,
-                'value'    => false
-            ],
-
-            // Updatable options
-            'time_zone'          => [
-                'desc'     => _t('时区'),
-                'readonly' => false,
-                'option'   => 'timezone'
-            ],
-            'blog_title'         => [
-                'desc'     => _t('博客标题'),
-                'readonly' => false,
-                'option'   => 'title'
-            ],
-            'blog_tagline'       => [
-                'desc'     => _t('博客关键字'),
-                'readonly' => false,
-                'option'   => 'description'
-            ],
-            'date_format'        => [
-                'desc'     => _t('日期格式'),
-                'readonly' => false,
-                'option'   => 'postDateFormat'
-            ],
-            'time_format'        => [
-                'desc'     => _t('时间格式'),
-                'readonly' => false,
-                'option'   => 'postDateFormat'
-            ],
-            'users_can_register' => [
-                'desc'     => _t('是否允许注册'),
-                'readonly' => false,
-                'option'   => 'allowRegister'
-            ]
-        ];
     }
 
     /**
@@ -137,88 +140,7 @@ class XmlRpc extends Contents implements ActionInterface, Hook
     public function wpGetPage(int $blogId, int $pageId, string $userName, string $password): array
     {
         $page = PageEdit::alloc(null, ['cid' => $pageId], false);
-
-        [$excerpt, $more] = $this->getPostExtended($page);
-
-        return [
-            'dateCreated'            => new Date($this->options->timezone + $page->created),
-            'userid'                 => $page->authorId,
-            'page_id'                => $page->cid,
-            'page_status'            => $this->typechoToWordpressStatus($page->status, 'page'),
-            'description'            => $excerpt,
-            'title'                  => $page->title,
-            'link'                   => $page->permalink,
-            'permaLink'              => $page->permalink,
-            'categories'             => $page->categories,
-            'excerpt'                => $page->plainExcerpt,
-            'text_more'              => $more,
-            'mt_allow_comments'      => intval($page->allowComment),
-            'mt_allow_pings'         => intval($page->allowPing),
-            'wp_slug'                => $page->slug,
-            'wp_password'            => $page->password,
-            'wp_author'              => $page->author->name,
-            'wp_page_parent_id'      => '0',
-            'wp_page_parent_title'   => '',
-            'wp_page_order'          => $page->order,     //meta是描述字段, 在page时表示顺序
-            'wp_author_id'           => $page->authorId,
-            'wp_author_display_name' => $page->author->screenName,
-            'date_created_gmt'       => new Date($page->created),
-            'custom_fields'          => [],
-            'wp_page_template'       => $page->template
-        ];
-    }
-
-    /**
-     * @param string $methodName
-     * @param ReflectionMethod $reflectionMethod
-     * @param array $parameters
-     */
-    public function beforeRpcCall(string $methodName, ReflectionMethod $reflectionMethod, array $parameters)
-    {
-        $valid = 2;
-        $auth = [];
-
-        $accesses = [
-            'wp.newPage'           => 'editor',
-            'wp.deletePage'        => 'editor',
-            'wp.getPageList'       => 'editor',
-            'wp.getAuthors'        => 'editor',
-            'wp.deleteCategory'    => 'editor',
-            'wp.getPageStatusList' => 'editor',
-            'wp.getPageTemplates'  => 'editor',
-            'wp.getOptions'        => 'administrator',
-            'wp.setOptions'        => 'administrator',
-            'mt.setPostCategories' => 'editor',
-        ];
-
-        foreach ($reflectionMethod->getParameters() as $key => $parameter) {
-            $name = $parameter->getName();
-            if (($name == 'userName' || $name == 'password') && array_key_exists($key, $parameters)) {
-                $auth[$name] = (string) $parameters[$key];
-                $valid--;
-            }
-        }
-
-        if ($valid == 0) {
-            if ($this->user->login($auth['userName'], $auth['password'], true)) {
-                if ($this->user->pass($accesses[$methodName] ?? 'contributor', true)) {
-                    $this->user->execute();
-                } else {
-                    throw new Exception(_t('权限不足'), 403);
-                }
-            } else {
-                throw new Exception(_t('无法登录, 密码错误'), 403);
-            }
-        }
-    }
-
-    /**
-     * @param string $methodName
-     * @param mixed $result
-     */
-    public function afterRpcCall(string $methodName, &$result): void
-    {
-        Widget::destroy();
+        return $this->buildPageStruct($page, $this->typechoToWordpressStatus($page->status, 'page'));
     }
 
     /**
@@ -236,36 +158,7 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         $pageStructs = [];
 
         while ($pages->next()) {
-            [$excerpt, $more] = $this->getPostExtended($pages);
-            $pageStructs[] = [
-                'dateCreated'            => new Date($this->options->timezone + $pages->created),
-                'userid'                 => $pages->authorId,
-                'page_id'                => intval($pages->cid),
-                'page_status'            => $this->typechoToWordpressStatus(
-                    ($pages->hasSaved || 'page_draft' == $pages->type) ? 'draft' : $pages->status,
-                    'page'
-                ),
-                'description'            => $excerpt,
-                'title'                  => $pages->title,
-                'link'                   => $pages->permalink,
-                'permaLink'              => $pages->permalink,
-                'categories'             => $pages->categories,
-                'excerpt'                => $pages->plainExcerpt,
-                'text_more'              => $more,
-                'mt_allow_comments'      => intval($pages->allowComment),
-                'mt_allow_pings'         => intval($pages->allowPing),
-                'wp_slug'                => $pages->slug,
-                'wp_password'            => $pages->password,
-                'wp_author'              => $pages->author->name,
-                'wp_page_parent_id'      => 0,
-                'wp_page_parent_title'   => '',
-                'wp_page_order'          => intval($pages->order),     //meta是描述字段, 在page时表示顺序
-                'wp_author_id'           => $pages->authorId,
-                'wp_author_display_name' => $pages->author->screenName,
-                'date_created_gmt'       => new Date($pages->created),
-                'custom_fields'          => [],
-                'wp_page_template'       => $pages->template
-            ];
+            $pageStructs[] = $this->buildPageStruct($pages, $this->pageStatus($pages), true);
         }
 
         return $pageStructs;
@@ -301,7 +194,7 @@ class XmlRpc extends Contents implements ActionInterface, Hook
     public function mwNewPost(int $blogId, string $userName, string $password, array $content, bool $publish): int
     {
         $input = [];
-        $type = isset($content['post_type']) && 'page' == $content['post_type'] ? 'page' : 'post';
+        $type = $this->resolveContentType($content);
         $title = $this->arrayString($content, 'title');
         $description = $this->arrayString($content, 'description');
         $more = $this->arrayString($content, 'mt_text_more');
@@ -321,7 +214,7 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         $input['order'] = $content["wp_page_order"] ?? null;
 
         $input['tags'] = $content['mt_keywords'] ?? null;
-        $input['category'] = [];
+        $input['category'] = $this->resolveCategoryIds($blogId, $userName, $password, $content['categories'] ?? []);
 
         if (isset($content['postId'])) {
             $input['cid'] = $content['postId'];
@@ -332,54 +225,23 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         }
 
         if (isset($content['dateCreated'])) {
-            $input['created'] = $content['dateCreated']->getTimestamp()
-                - $this->options->timezone + $this->options->serverTimezone;
+            $input['created'] = $this->fromSiteRpcDate($content['dateCreated']);
         }
 
-        if (!empty($content['categories']) && is_array($content['categories'])) {
-            foreach ($content['categories'] as $category) {
-                if (
-                    !$this->db->fetchRow($this->db->select('mid')
-                        ->from('table.metas')->where('type = ? AND name = ?', 'category', $category))
-                ) {
-                    $this->wpNewCategory($blogId, $userName, $password, ['name' => $category]);
-                }
-
-                $input['category'][] = $this->db->fetchObject($this->db->select('mid')
-                    ->from('table.metas')->where('type = ? AND name = ?', 'category', $category)
-                    ->limit(1))->mid;
-            }
-        }
-
-        $input['allowComment'] = (isset($content['mt_allow_comments']) && (1 == $content['mt_allow_comments']
-                || 'open' == $content['mt_allow_comments']))
-            ? 1 : ((isset($content['mt_allow_comments']) && (0 == $content['mt_allow_comments']
-                    || 'closed' == $content['mt_allow_comments']))
-                ? 0 : $this->options->defaultAllowComment);
-
-        $input['allowPing'] = (isset($content['mt_allow_pings']) && (1 == $content['mt_allow_pings']
-                || 'open' == $content['mt_allow_pings']))
-            ? 1 : ((isset($content['mt_allow_pings']) && (0 == $content['mt_allow_pings']
-                    || 'closed' == $content['mt_allow_pings'])) ? 0 : $this->options->defaultAllowPing);
+        $input['allowComment'] = $this->resolveDiscussionSetting(
+            $content,
+            'mt_allow_comments',
+            $this->options->defaultAllowComment
+        );
+        $input['allowPing'] = $this->resolveDiscussionSetting(
+            $content,
+            'mt_allow_pings',
+            $this->options->defaultAllowPing
+        );
 
         $input['allowFeed'] = $this->options->defaultAllowFeed;
-        $input['do'] = $publish ? 'publish' : 'save';
         $input['markdown'] = $this->options->xmlrpcMarkdown;
-
-        /** 调整状态 */
-        if (isset($content["{$type}_status"])) {
-            $status = $this->wordpressToTypechoStatus($content["{$type}_status"], $type);
-            $input['visibility'] = $content["visibility"] ?? $status;
-            if ('publish' == $status || 'waiting' == $status || 'private' == $status) {
-                $input['do'] = 'publish';
-
-                if ('private' == $status) {
-                    $input['private'] = 1;
-                }
-            } else {
-                $input['do'] = 'save';
-            }
-        }
+        $this->applyContentStatus($input, $content, $type, $publish);
 
         /** 对未归档附件进行归档 */
         $unattached = Unattached::alloc();
@@ -396,16 +258,7 @@ class XmlRpc extends Contents implements ActionInterface, Hook
             }
         }
 
-        if ('page' == $type) {
-            $widget = PageEdit::alloc(null, $input, function (PageEdit $page) {
-                $page->writePage();
-            });
-        } else {
-            $widget = PostEdit::alloc(null, $input, function (PostEdit $post) {
-                $post->writePost();
-            });
-        }
-
+        $widget = $this->writeContentWidget($type, $input);
         return $widget->cid;
     }
 
@@ -542,8 +395,8 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
         while ($pages->next()) {
             $pageStructs[] = [
-                'dateCreated'      => new Date($this->options->timezone + $pages->created),
-                'date_created_gmt' => new Date($pages->created),
+                'dateCreated'      => $this->toSiteRpcDate((int) $pages->created),
+                'date_created_gmt' => $this->toGmtRpcDate((int) $pages->created),
                 'page_id'          => $pages->cid,
                 'page_title'       => $pages->title,
                 'page_parent_id'   => '0',
@@ -660,7 +513,7 @@ class XmlRpc extends Contents implements ActionInterface, Hook
             'username'     => $this->user->name,
             'first_name'   => '',
             'last_name'    => '',
-            'registered'   => new Date($this->options->timezone + $this->user->created),
+            'registered'   => $this->toSiteRpcDate((int) $this->user->created),
             'bio'          => '',
             'email'        => $this->user->mail,
             'nickname'     => $this->user->screenName,
@@ -716,27 +569,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
     }
 
     /**
-     * 获取评论数目
-     *
-     * @param integer $blogId
-     * @param string $userName
-     * @param string $password
-     * @param integer $postId
-     * @return array
-     */
-    public function wpGetCommentCount(int $blogId, string $userName, string $password, int $postId): array
-    {
-        $stat = Stat::alloc(null, ['cid' => $postId]);
-
-        return [
-            'approved'            => $stat->currentPublishedCommentsNum,
-            'awaiting_moderation' => $stat->currentWaitingCommentsNum,
-            'spam'                => $stat->currentSpamCommentsNum,
-            'total_comments'      => $stat->currentCommentsNum
-        ];
-    }
-
-    /**
      * 获取文章类型列表
      *
      * @param integer $blogId
@@ -785,23 +617,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
     }
 
     /**
-     * 获取评论状态列表
-     *
-     * @param integer $blogId
-     * @param string $userName
-     * @param string $password
-     * @return array
-     */
-    public function wpGetCommentStatusList(int $blogId, string $userName, string $password): array
-    {
-        return [
-            'hold'    => _t('待审核'),
-            'approve' => _t('显示'),
-            'spam'    => _t('垃圾')
-        ];
-    }
-
-    /**
      * 获取页面模板
      *
      * @param integer $blogId
@@ -818,363 +633,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
     }
 
     /**
-     * 获取系统选项
-     *
-     * @param integer $blogId
-     * @param string $userName
-     * @param string $password
-     * @param array $options
-     * @return array
-     */
-    public function wpGetOptions(int $blogId, string $userName, string $password, array $options = []): array
-    {
-        $struct = [];
-        if (empty($options)) {
-            $options = array_keys($this->wpOptions);
-        }
-
-        foreach ($options as $option) {
-            if (isset($this->wpOptions[$option])) {
-                $struct[$option] = $this->wpOptions[$option];
-                if (isset($struct[$option]['option'])) {
-                    $struct[$option]['value'] = $this->options->{$struct[$option]['option']};
-                    unset($struct[$option]['option']);
-                }
-            }
-        }
-
-        return $struct;
-    }
-
-    /**
-     * 设置系统选项
-     *
-     * @param integer $blogId
-     * @param string $userName
-     * @param string $password
-     * @param array $options
-     * @return array
-     */
-    public function wpSetOptions(int $blogId, string $userName, string $password, array $options = []): array
-    {
-        $struct = [];
-        foreach ($options as $option => $value) {
-            if (isset($this->wpOptions[$option])) {
-                $struct[$option] = $this->wpOptions[$option];
-                if (isset($struct[$option]['option'])) {
-                    $struct[$option]['value'] = $this->options->{$struct[$option]['option']};
-                    unset($struct[$option]['option']);
-                }
-
-                if (!$this->wpOptions[$option]['readonly'] && isset($this->wpOptions[$option]['option'])) {
-                    if (
-                        $this->db->query($this->db->update('table.options')
-                            ->rows(['value' => $value])
-                            ->where('name = ?', $this->wpOptions[$option]['option'])) > 0
-                    ) {
-                        $struct[$option]['value'] = $value;
-                    }
-                }
-            }
-        }
-
-        return $struct;
-    }
-
-    /**
-     * 删除评论
-     *
-     * @param integer $blogId
-     * @param string $userName
-     * @param string $password
-     * @param integer $commentId
-     * @return array
-     */
-    public function wpGetComment(int $blogId, string $userName, string $password, int $commentId): array
-    {
-        $comment = CommentsEdit::alloc(null, ['coid' => $commentId], function (CommentsEdit $comment) {
-            $comment->getComment();
-        });
-
-        if (!$comment->have()) {
-            throw new Exception(_t('评论不存在'), 404);
-        }
-
-        if (!$comment->commentIsWriteable()) {
-            throw new Exception(_t('没有获取评论的权限'), 403);
-        }
-
-        return [
-            'date_created_gmt' => new Date($comment->created),
-            'user_id'          => $comment->authorId,
-            'comment_id'       => $comment->coid,
-            'parent'           => $comment->parent,
-            'status'           => $this->typechoToWordpressStatus($comment->status, 'comment'),
-            'content'          => $comment->text,
-            'link'             => $comment->permalink,
-            'post_id'          => $comment->cid,
-            'post_title'       => $comment->title,
-            'author'           => $comment->author,
-            'author_url'       => $comment->url,
-            'author_email'     => $comment->mail,
-            'author_ip'        => $comment->ip,
-            'type'             => $comment->type
-        ];
-    }
-
-    /**
-     * 获取评论列表
-     *
-     * @param integer $blogId
-     * @param string $userName
-     * @param string $password
-     * @param array $struct
-     * @return array
-     */
-    public function wpGetComments(int $blogId, string $userName, string $password, array $struct): array
-    {
-        $input = [];
-        if (!empty($struct['status'])) {
-            $input['status'] = $this->wordpressToTypechoStatus($struct['status'], 'comment');
-        } else {
-            $input['__typecho_all_comments'] = 'on';
-        }
-
-        if (!empty($struct['post_id'])) {
-            $input['cid'] = $struct['post_id'];
-        }
-
-        $pageSize = 10;
-        if (!empty($struct['number'])) {
-            $pageSize = abs(intval($struct['number']));
-        }
-
-        if (!empty($struct['offset'])) {
-            $offset = abs(intval($struct['offset']));
-            $input['page'] = ceil($offset / $pageSize);
-        }
-
-        $comments = CommentsAdmin::alloc('pageSize=' . $pageSize, $input, false);
-        $commentsStruct = [];
-
-        while ($comments->next()) {
-            $commentsStruct[] = [
-                'date_created_gmt' => new Date($comments->created),
-                'user_id'          => $comments->authorId,
-                'comment_id'       => $comments->coid,
-                'parent'           => $comments->parent,
-                'status'           => $this->typechoToWordpressStatus($comments->status, 'comment'),
-                'content'          => $comments->text,
-                'link'             => $comments->permalink,
-                'post_id'          => $comments->cid,
-                'post_title'       => $comments->title,
-                'author'           => $comments->author,
-                'author_url'       => $comments->url,
-                'author_email'     => $comments->mail,
-                'author_ip'        => $comments->ip,
-                'type'             => $comments->type
-            ];
-        }
-
-        return $commentsStruct;
-    }
-
-    /**
-     * 获取评论
-     *
-     * @param integer $blogId
-     * @param string $userName
-     * @param string $password
-     * @param integer $commentId
-     * @throws \Typecho\Db\Exception
-     */
-    public function wpDeleteComment(int $blogId, string $userName, string $password, int $commentId): bool
-    {
-        CommentsEdit::alloc(null, ['coid' => $commentId], function (CommentsEdit $comment) {
-            $comment->deleteComment();
-        });
-        return true;
-    }
-
-    /**
-     * 编辑评论
-     *
-     * @param integer $blogId
-     * @param string $userName
-     * @param string $password
-     * @param integer $commentId
-     * @param array $struct
-     */
-    public function wpEditComment(int $blogId, string $userName, string $password, int $commentId, array $struct): bool
-    {
-        $input = [];
-
-        if (isset($struct['date_created_gmt']) && $struct['date_created_gmt'] instanceof Date) {
-            $input['created'] = $struct['date_created_gmt']->getTimestamp()
-                - $this->options->timezone + $this->options->serverTimezone;
-        }
-
-        if (isset($struct['status'])) {
-            $input['status'] = $this->wordpressToTypechoStatus($struct['status'], 'comment');
-        }
-
-        if (isset($struct['content'])) {
-            $input['text'] = $struct['content'];
-        }
-
-        if (isset($struct['author'])) {
-            $input['author'] = $struct['author'];
-        }
-
-        if (isset($struct['author_url'])) {
-            $input['url'] = $struct['author_url'];
-        }
-
-        if (isset($struct['author_email'])) {
-            $input['mail'] = $struct['author_email'];
-        }
-
-        $comment = CommentsEdit::alloc(null, $input, function (CommentsEdit $comment) {
-            $comment->editComment();
-        });
-        return $comment->have();
-    }
-
-    /**
-     * 更新评论
-     *
-     * @param integer $blogId
-     * @param string $userName
-     * @param string $password
-     * @param mixed $path
-     * @param array $struct
-     * @return int
-     */
-    public function wpNewComment(int $blogId, string $userName, string $password, $path, array $struct): int
-    {
-        if (is_numeric($path)) {
-            $post = Archive::alloc('type=single', ['cid' => $path], false);
-
-            if ($post->have()) {
-                $path = $post->permalink;
-            }
-        } else {
-            $path = Common::url(substr($path, strlen((string) $this->options->index)), '/');
-        }
-
-        $input = [
-            'permalink' => $path,
-            'type'      => 'comment'
-        ];
-
-        if (isset($struct['comment_author'])) {
-            $input['author'] = $this->arrayString($struct, 'comment_author');
-        }
-
-        if (isset($struct['comment_author_email'])) {
-            $input['mail'] = $this->arrayString($struct, 'comment_author_email');
-        }
-
-        if (isset($struct['comment_author_url'])) {
-            $input['url'] = $this->arrayString($struct, 'comment_author_url');
-        }
-
-        if (isset($struct['comment_parent'])) {
-            $input['parent'] = $struct['comment_parent'];
-        }
-
-        if (isset($struct['content'])) {
-            $input['text'] = $struct['content'];
-        }
-
-        $comment = Feedback::alloc(['checkReferer' => false], $input, function (Feedback $comment) {
-            $comment->action();
-        });
-        return $comment->have() ? $comment->coid : 0;
-    }
-
-    /**
-     * 获取媒体文件
-     *
-     * @param integer $blogId
-     * @param string $userName
-     * @param string $password
-     * @param array $struct
-     * @return array
-     */
-    public function wpGetMediaLibrary(int $blogId, string $userName, string $password, array $struct): array
-    {
-        $input = [];
-
-        if (!empty($struct['parent_id'])) {
-            $input['parent'] = $struct['parent_id'];
-        }
-
-        if (!empty($struct['mime_type'])) {
-            $input['mime'] = $struct['mime_type'];
-        }
-
-        $pageSize = 10;
-        if (!empty($struct['number'])) {
-            $pageSize = abs(intval($struct['number']));
-        }
-
-        if (!empty($struct['offset'])) {
-            $input['page'] = abs(intval($struct['offset'])) + 1;
-        }
-
-        $attachments = AttachmentAdmin::alloc('pageSize=' . $pageSize, $input, false);
-        $attachmentsStruct = [];
-
-        while ($attachments->next()) {
-            $attachmentsStruct[] = [
-                'attachment_id'    => $attachments->cid,
-                'date_created_gmt' => new Date($attachments->created),
-                'parent'           => $attachments->parent,
-                'link'             => $attachments->attachment->url,
-                'title'            => $attachments->title,
-                'caption'          => $attachments->slug,
-                'description'      => $attachments->attachment->description,
-                'metadata'         => [
-                    'file' => $attachments->attachment->path,
-                    'size' => $attachments->attachment->size,
-                ],
-                'thumbnail'        => $attachments->attachment->url,
-            ];
-        }
-        return $attachmentsStruct;
-    }
-
-    /**
-     * 获取媒体文件
-     *
-     * @param integer $blogId
-     * @param string $userName
-     * @param string $password
-     * @param int $attachmentId
-     * @return array
-     */
-    public function wpGetMediaItem(int $blogId, string $userName, string $password, int $attachmentId): array
-    {
-        $attachment = AttachmentEdit::alloc(null, ['cid' => $attachmentId]);
-
-        return [
-            'attachment_id'    => $attachment->cid,
-            'date_created_gmt' => new Date($attachment->created),
-            'parent'           => $attachment->parent,
-            'link'             => $attachment->attachment->url,
-            'title'            => $attachment->title,
-            'caption'          => $attachment->slug,
-            'description'      => $attachment->attachment->description,
-            'metadata'         => [
-                'file' => $attachment->attachment->path,
-                'size' => $attachment->attachment->size,
-            ],
-            'thumbnail'        => $attachment->attachment->url,
-        ];
-    }
-
-    /**
      * 获取指定id的post
      *
      * @param int $postId
@@ -1185,35 +643,7 @@ class XmlRpc extends Contents implements ActionInterface, Hook
     public function mwGetPost(int $postId, string $userName, string $password): array
     {
         $post = PostEdit::alloc(null, ['cid' => $postId], false);
-
-        [$excerpt, $more] = $this->getPostExtended($post);
-        $categories = array_column($post->categories, 'name');
-        $tags = array_column($post->tags, 'name');
-
-        return [
-            'dateCreated'            => new Date($this->options->timezone + $post->created),
-            'userid'                 => $post->authorId,
-            'postid'                 => $post->cid,
-            'description'            => $excerpt,
-            'title'                  => $post->title,
-            'link'                   => $post->permalink,
-            'permaLink'              => $post->permalink,
-            'categories'             => $categories,
-            'mt_excerpt'             => $post->plainExcerpt,
-            'mt_text_more'           => $more,
-            'mt_allow_comments'      => intval($post->allowComment),
-            'mt_allow_pings'         => intval($post->allowPing),
-            'mt_keywords'            => implode(', ', $tags),
-            'wp_slug'                => $post->slug,
-            'wp_password'            => $post->password,
-            'wp_author'              => $post->author->name,
-            'wp_author_id'           => $post->authorId,
-            'wp_author_display_name' => $post->author->screenName,
-            'date_created_gmt'       => new Date($post->created),
-            'post_status'            => $this->typechoToWordpressStatus($post->status, 'post'),
-            'custom_fields'          => [],
-            'sticky'                 => 0
-        ];
+        return $this->buildPostStruct($post, $this->typechoToWordpressStatus($post->status, 'post'));
     }
 
     /**
@@ -1231,42 +661,7 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
         $postStructs = [];
         while ($posts->next()) {
-            [$excerpt, $more] = $this->getPostExtended($posts);
-            $categories = array_column($posts->categories, 'name');
-            $tags = array_column($posts->tags, 'name');
-
-            $postStructs[] = [
-                'dateCreated'            => new Date($this->options->timezone + $posts->created),
-                'userid'                 => $posts->authorId,
-                'postid'                 => $posts->cid,
-                'description'            => $excerpt,
-                'title'                  => $posts->title,
-                'link'                   => $posts->permalink,
-                'permaLink'              => $posts->permalink,
-                'categories'             => $categories,
-                'mt_excerpt'             => $posts->plainExcerpt,
-                'mt_text_more'           => $more,
-                'wp_more_text'           => $more,
-                'mt_allow_comments'      => intval($posts->allowComment),
-                'mt_allow_pings'         => intval($posts->allowPing),
-                'mt_keywords'            => implode(', ', $tags),
-                'wp_slug'                => $posts->slug,
-                'wp_password'            => $posts->password,
-                'wp_author'              => $posts->author->name,
-                'wp_author_id'           => $posts->authorId,
-                'wp_author_display_name' => $posts->author->screenName,
-                'date_created_gmt'       => new Date($posts->created),
-                'post_status'            => $this->typechoToWordpressStatus(
-                    ($posts->hasSaved || 'post_draft' == $posts->type) ? 'draft' : $posts->status,
-                    'post'
-                ),
-                'custom_fields'          => [],
-                'wp_post_format'         => 'standard',
-                'date_modified'          => new Date($this->options->timezone + $posts->modified),
-                'date_modified_gmt'      => new Date($posts->modified),
-                'wp_post_thumbnail'      => '',
-                'sticky'                 => 0
-            ];
+            $postStructs[] = $this->buildPostStruct($posts, $this->postStatus($posts), true);
         }
 
         return $postStructs;
@@ -1301,46 +696,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
     }
 
     /**
-     * mwNewMediaObject
-     *
-     * @param int $blogId
-     * @param string $userName
-     * @param string $password
-     * @param array $data
-     * @return array
-     */
-    public function mwNewMediaObject(int $blogId, string $userName, string $password, array $data): array
-    {
-        $result = Upload::uploadHandle($data);
-
-        if (false === $result) {
-            throw new Exception('upload failed', -32001);
-        } else {
-            $insertId = $this->insert([
-                'title'        => $result['name'],
-                'slug'         => $result['name'],
-                'type'         => 'attachment',
-                'status'       => 'publish',
-                'text'         => Common::jsonEncode($result, 0, '{}'),
-                'allowComment' => 1,
-                'allowPing'    => 0,
-                'allowFeed'    => 1
-            ]);
-
-            $this->db->fetchRow($this->select()->where('table.contents.cid = ?', $insertId)
-                ->where('table.contents.type = ?', 'attachment'), [$this, 'push']);
-
-            /** 增加插件接口 */
-            self::pluginHandle()->call('upload', $this);
-
-            return [
-                'file' => $this->attachment->name,
-                'url'  => $this->attachment->url
-            ];
-        }
-    }
-
-    /**
      * 获取 $postNum个post title
      *
      * @param int $blogId
@@ -1355,11 +710,11 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         $postTitleStructs = [];
         while ($posts->next()) {
             $postTitleStructs[] = [
-                'dateCreated'      => new Date($this->options->timezone + $posts->created),
+                'dateCreated'      => $this->toSiteRpcDate((int) $posts->created),
                 'userid'           => $posts->authorId,
                 'postid'           => $posts->cid,
                 'title'            => $posts->title,
-                'date_created_gmt' => new Date($posts->created)
+                'date_created_gmt' => $this->toGmtRpcDate((int) $posts->created)
             ];
         }
 
@@ -1510,7 +865,7 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
         return [
             'userid'      => $post->authorId,
-            'dateCreated' => new Date($this->options->timezone + $post->created),
+            'dateCreated' => $this->toSiteRpcDate((int) $post->created),
             'content'     => $content,
             'postid'      => $post->cid
         ];
@@ -1558,7 +913,7 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
             $struct = [
                 'userid'      => $posts->authorId,
-                'dateCreated' => new Date($this->options->timezone + $posts->created),
+                'dateCreated' => $this->toSiteRpcDate((int) $posts->created),
                 'content'     => $content,
                 'postid'      => $posts->cid,
             ];
@@ -1597,115 +952,7 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         return true;
     }
 
-    /**
-     * pingbackPing
-     *
-     * @param string $source
-     * @param string $target
-     * @return int
-     * @throws \Exception
-     */
-    public function pingbackPing(string $source, string $target): int
-    {
-        if ((int) $this->options->allowXmlRpc !== 2) {
-            throw new Exception(_t('Pingback 接口已关闭'), 49);
-        }
-
-        $pathInfo = Common::url(substr($target, strlen((string) $this->options->index)), '/');
-        $post = Router::match($pathInfo);
-
-        $params = Common::parseUrl($source);
-        if (!isset($params['host']) || !isset($params['scheme']) || !in_array($params['scheme'], ['http', 'https'])) {
-            throw new Exception(_t('源地址服务器错误'), 16);
-        }
-
-        if (!$this->isSafePingbackHost((string) $params['host'])) {
-            throw new Exception(_t('源地址服务器错误'), 16);
-        }
-
-        /** 这样可以得到cid或者slug*/
-        if (!($post instanceof Archive) || !$post->have() || !$post->is('single')) {
-            throw new Exception(_t('这个目标地址不存在'), 33);
-        }
-
-        if (!$post->allowPing) {
-            throw new Exception(_t('目标地址禁止Ping'), 49);
-        }
-
-        $pingNum = $this->db->fetchObject($this->db->select(['COUNT(coid)' => 'num'])
-            ->from('table.comments')
-            ->where(
-                'table.comments.cid = ? AND table.comments.url = ? AND table.comments.type <> ?',
-                $post->cid,
-                $source,
-                'comment'
-            ))->num;
-
-        if ($pingNum > 0) {
-            throw new Exception(_t('PingBack已经存在'), 48);
-        }
-
-        try {
-            $pingbackRequest = new Pingback($source, $target);
-
-            $pingback = [
-                'cid'     => $post->cid,
-                'created' => $this->options->time,
-                'agent'   => $this->request->getAgent(),
-                'ip'      => $this->request->getIp(),
-                'author'  => $pingbackRequest->getTitle(),
-                'url'     => Common::safeUrl($source),
-                'text'    => $pingbackRequest->getContent(),
-                'ownerId' => $post->author->uid,
-                'type'    => 'pingback',
-                'status'  => $this->options->commentsRequireModeration ? 'waiting' : 'approved'
-            ];
-
-            $pingback = self::pluginHandle()->filter('pingback', $pingback, $post);
-            $insertId = Comments::alloc()->insert($pingback);
-            self::pluginHandle()->call('finishPingback', $this);
-
-            return $insertId;
-        } catch (WidgetException $e) {
-            throw new Exception(_t('源地址服务器错误'), 16);
-        }
-    }
-
-    private function isSafePingbackHost(string $host): bool
-    {
-        if (!Common::checkSafeHost($host)) {
-            return false;
-        }
-
-        $ipv4s = gethostbynamel($host);
-        if (is_array($ipv4s) && !empty($ipv4s)) {
-            foreach ($ipv4s as $ip) {
-                if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false) {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        $records = @dns_get_record($host, DNS_AAAA);
-        if (!is_array($records) || empty($records)) {
-            return false;
-        }
-
-        foreach ($records as $record) {
-            $ipv6 = (string) ($record['ipv6'] ?? '');
-            if (
-                $ipv6 === ''
-                || filter_var($ipv6, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false
-            ) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    private function arrayString(array $data, string $key, string $default = ''): string
+    public function arrayString(array $data, string $key, string $default = ''): string
     {
         if (!array_key_exists($key, $data) || $data[$key] === null) {
             return $default;
@@ -1727,6 +974,201 @@ class XmlRpc extends Contents implements ActionInterface, Hook
     {
         $decoded = json_decode($text, true);
         return is_array($decoded) ? $decoded : [];
+    }
+
+    private function resolveContentType(array $content): string
+    {
+        return isset($content['post_type']) && $content['post_type'] == 'page' ? 'page' : 'post';
+    }
+
+    private function resolveCategoryIds(int $blogId, string $userName, string $password, $categories): array
+    {
+        if (empty($categories) || !is_array($categories)) {
+            return [];
+        }
+
+        $categoryIds = [];
+        foreach ($categories as $category) {
+            $categoryId = $this->resolveCategoryIdByName((string) $category);
+            if ($categoryId === null) {
+                $this->wpNewCategory($blogId, $userName, $password, ['name' => $category]);
+                $categoryId = $this->resolveCategoryIdByName((string) $category);
+            }
+
+            if ($categoryId !== null) {
+                $categoryIds[] = $categoryId;
+            }
+        }
+
+        return $categoryIds;
+    }
+
+    private function resolveCategoryIdByName(string $name): ?int
+    {
+        $category = $this->db->fetchObject(
+            $this->db->select('mid')
+                ->from('table.metas')
+                ->where('type = ? AND name = ?', 'category', $name)
+                ->limit(1)
+        );
+
+        return isset($category->mid) ? (int) $category->mid : null;
+    }
+
+    private function resolveDiscussionSetting(array $content, string $key, int $default): int
+    {
+        if (!isset($content[$key])) {
+            return $default;
+        }
+
+        if ($content[$key] == 1 || $content[$key] == 'open') {
+            return 1;
+        }
+
+        if ($content[$key] == 0 || $content[$key] == 'closed') {
+            return 0;
+        }
+
+        return $default;
+    }
+
+    private function applyContentStatus(array &$input, array $content, string $type, bool $publish): void
+    {
+        $input['do'] = $publish ? 'publish' : 'save';
+
+        if (!isset($content["{$type}_status"])) {
+            return;
+        }
+
+        $status = $this->wordpressToTypechoStatus($content["{$type}_status"], $type);
+        $input['visibility'] = $content['visibility'] ?? $status;
+        $input['do'] = in_array($status, ['publish', 'waiting', 'private'], true) ? 'publish' : 'save';
+
+        if ($status == 'private') {
+            $input['private'] = 1;
+        }
+    }
+
+    private function writeContentWidget(string $type, array $input): Contents
+    {
+        if ($type == 'page') {
+            return PageEdit::alloc(null, $input, function (PageEdit $page) {
+                $page->writePage();
+            });
+        }
+
+        return PostEdit::alloc(null, $input, function (PostEdit $post) {
+            $post->writePost();
+        });
+    }
+
+    private function buildPageStruct(Contents $page, string $status, bool $list = false): array
+    {
+        [$excerpt, $more] = $this->getPostExtended($page);
+
+        return [
+            'dateCreated' => $this->toSiteRpcDate((int) $page->created),
+            'date_modified' => $this->toSiteRpcDate((int) $page->modified),
+            'userid' => $page->authorId,
+            'page_id' => $list ? intval($page->cid) : $page->cid,
+            'page_status' => $status,
+            'description' => $excerpt,
+            'title' => $page->title,
+            'link' => $page->permalink,
+            'permaLink' => $page->permalink,
+            'categories' => $page->categories,
+            'excerpt' => $page->plainExcerpt,
+            'text_more' => $more,
+            'mt_allow_comments' => intval($page->allowComment),
+            'mt_allow_pings' => intval($page->allowPing),
+            'wp_slug' => $page->slug,
+            'wp_password' => $page->password,
+            'wp_author' => $page->author->name,
+            'wp_page_parent_id' => $list ? 0 : '0',
+            'wp_page_parent_title' => '',
+            'wp_page_order' => $list ? intval($page->order) : $page->order,
+            'wp_author_id' => $page->authorId,
+            'wp_author_display_name' => $page->author->screenName,
+            'date_created_gmt' => $this->toGmtRpcDate((int) $page->created),
+            'date_modified_gmt' => $this->toGmtRpcDate((int) $page->modified),
+            'custom_fields' => [],
+            'wp_page_template' => $page->template
+        ];
+    }
+
+    private function buildPostStruct(Contents $post, string $status, bool $recent = false): array
+    {
+        [$excerpt, $more] = $this->getPostExtended($post);
+        $struct = [
+            'dateCreated' => $this->toSiteRpcDate((int) $post->created),
+            'userid' => $post->authorId,
+            'postid' => $post->cid,
+            'description' => $excerpt,
+            'title' => $post->title,
+            'link' => $post->permalink,
+            'permaLink' => $post->permalink,
+            'categories' => array_column($post->categories, 'name'),
+            'mt_excerpt' => $post->plainExcerpt,
+            'mt_text_more' => $more,
+            'mt_allow_comments' => intval($post->allowComment),
+            'mt_allow_pings' => intval($post->allowPing),
+            'mt_keywords' => implode(', ', array_column($post->tags, 'name')),
+            'wp_slug' => $post->slug,
+            'wp_password' => $post->password,
+            'wp_author' => $post->author->name,
+            'wp_author_id' => $post->authorId,
+            'wp_author_display_name' => $post->author->screenName,
+            'date_created_gmt' => $this->toGmtRpcDate((int) $post->created),
+            'date_modified' => $this->toSiteRpcDate((int) $post->modified),
+            'date_modified_gmt' => $this->toGmtRpcDate((int) $post->modified),
+            'post_status' => $status,
+            'custom_fields' => [],
+            'sticky' => 0
+        ];
+
+        if ($recent) {
+            $struct['wp_more_text'] = $more;
+            $struct['wp_post_format'] = 'standard';
+            $struct['wp_post_thumbnail'] = '';
+        }
+
+        return $struct;
+    }
+
+    private function pageStatus(Contents $page): string
+    {
+        return $this->typechoToWordpressStatus(
+            ($page->hasSaved || $page->type == 'page_draft') ? 'draft' : $page->status,
+            'page'
+        );
+    }
+
+    private function postStatus(Contents $post): string
+    {
+        return $this->typechoToWordpressStatus(
+            ($post->hasSaved || $post->type == 'post_draft') ? 'draft' : $post->status,
+            'post'
+        );
+    }
+
+    public function db(): \Typecho\Db
+    {
+        return $this->db;
+    }
+
+    public function optionsWidget(): \Widget\Options
+    {
+        return $this->options;
+    }
+
+    public function userWidget(): \Widget\User
+    {
+        return $this->user;
+    }
+
+    public function requestWidget(): \Typecho\Widget\Request
+    {
+        return $this->request;
     }
 
     /**
@@ -1802,81 +1244,9 @@ EOF;
                 echo $xml;
             }, 'text/xml');
         } else {
-            $api = [
-                /** WordPress API */
-                'wp.getPage'                => [$this, 'wpGetPage'],
-                'wp.getPages'               => [$this, 'wpGetPages'],
-                'wp.newPage'                => [$this, 'wpNewPage'],
-                'wp.deletePage'             => [$this, 'wpDeletePage'],
-                'wp.editPage'               => [$this, 'wpEditPage'],
-                'wp.getPageList'            => [$this, 'wpGetPageList'],
-                'wp.getAuthors'             => [$this, 'wpGetAuthors'],
-                'wp.getCategories'          => [$this, 'mwGetCategories'],
-                'wp.newCategory'            => [$this, 'wpNewCategory'],
-                'wp.suggestCategories'      => [$this, 'wpSuggestCategories'],
-                'wp.uploadFile'             => [$this, 'mwNewMediaObject'],
-
-                /** New WordPress API since 2.9.2 */
-                'wp.getUsersBlogs'          => [$this, 'wpGetUsersBlogs'],
-                'wp.getTags'                => [$this, 'wpGetTags'],
-                'wp.deleteCategory'         => [$this, 'wpDeleteCategory'],
-                'wp.getCommentCount'        => [$this, 'wpGetCommentCount'],
-                'wp.getPostStatusList'      => [$this, 'wpGetPostStatusList'],
-                'wp.getPageStatusList'      => [$this, 'wpGetPageStatusList'],
-                'wp.getPageTemplates'       => [$this, 'wpGetPageTemplates'],
-                'wp.getOptions'             => [$this, 'wpGetOptions'],
-                'wp.setOptions'             => [$this, 'wpSetOptions'],
-                'wp.getComment'             => [$this, 'wpGetComment'],
-                'wp.getComments'            => [$this, 'wpGetComments'],
-                'wp.deleteComment'          => [$this, 'wpDeleteComment'],
-                'wp.editComment'            => [$this, 'wpEditComment'],
-                'wp.newComment'             => [$this, 'wpNewComment'],
-                'wp.getCommentStatusList'   => [$this, 'wpGetCommentStatusList'],
-
-                /** New Wordpress API after 2.9.2 */
-                'wp.getProfile'             => [$this, 'wpGetProfile'],
-                'wp.getPostFormats'         => [$this, 'wpGetPostFormats'],
-                'wp.getMediaLibrary'        => [$this, 'wpGetMediaLibrary'],
-                'wp.getMediaItem'           => [$this, 'wpGetMediaItem'],
-                'wp.editPost'               => [$this, 'wpEditPost'],
-
-                /** Blogger API */
-                'blogger.getUsersBlogs'     => [$this, 'bloggerGetUsersBlogs'],
-                'blogger.getUserInfo'       => [$this, 'bloggerGetUserInfo'],
-                'blogger.getPost'           => [$this, 'bloggerGetPost'],
-                'blogger.getRecentPosts'    => [$this, 'bloggerGetRecentPosts'],
-                'blogger.getTemplate'       => [$this, 'bloggerGetTemplate'],
-                'blogger.setTemplate'       => [$this, 'bloggerSetTemplate'],
-                'blogger.deletePost'        => [$this, 'bloggerDeletePost'],
-
-                'metaWeblog.newPost'        => [$this, 'mwNewPost'],
-                'metaWeblog.editPost'       => [$this, 'mwEditPost'],
-                'metaWeblog.getPost'        => [$this, 'mwGetPost'],
-                'metaWeblog.getRecentPosts' => [$this, 'mwGetRecentPosts'],
-                'metaWeblog.getCategories'  => [$this, 'mwGetCategories'],
-                'metaWeblog.newMediaObject' => [$this, 'mwNewMediaObject'],
-
-                'metaWeblog.deletePost'     => [$this, 'bloggerDeletePost'],
-                'metaWeblog.getTemplate'    => [$this, 'bloggerGetTemplate'],
-                'metaWeblog.setTemplate'    => [$this, 'bloggerSetTemplate'],
-                'metaWeblog.getUsersBlogs'  => [$this, 'bloggerGetUsersBlogs'],
-
-                'mt.getCategoryList'        => [$this, 'mtGetCategoryList'],
-                'mt.getRecentPostTitles'    => [$this, 'mtGetRecentPostTitles'],
-                'mt.getPostCategories'      => [$this, 'mtGetPostCategories'],
-                'mt.setPostCategories'      => [$this, 'mtSetPostCategories'],
-                'mt.publishPost'            => [$this, 'mtPublishPost'],
-
-                /** PingBack */
-                'pingback.ping'             => [$this, 'pingbackPing'],
-            ];
-
-            if (1 == $this->options->allowXmlRpc) {
-                unset($api['pingback.ping']);
-            }
-
-            $server = new Server($api);
-            $server->setHook($this);
+            $registry = new XmlRpcMethodRegistry($this);
+            $server = new Server($registry->callbacks(1 != $this->options->allowXmlRpc));
+            $server->setHook(new XmlRpcHookHandler($this, $registry));
             $server->serve();
         }
     }
@@ -1887,7 +1257,7 @@ EOF;
      * @param Contents $content
      * @return array
      */
-    private function getPostExtended(Contents $content): array
+    public function getPostExtended(Contents $content): array
     {
         //根据客户端显示来判断是否显示html代码
         $agent = $this->request->getAgent();
@@ -1919,7 +1289,7 @@ EOF;
      * @param string $type 内容类型
      * @return string
      */
-    private function typechoToWordpressStatus(string $status, string $type = 'post'): string
+    public function typechoToWordpressStatus(string $status, string $type = 'post'): string
     {
         if ('post' == $type) {
             /** 文章状态 */
@@ -1964,7 +1334,7 @@ EOF;
      * @param string $type 内容类型
      * @return string
      */
-    private function wordpressToTypechoStatus(string $status, string $type = 'post'): string
+    public function wordpressToTypechoStatus(string $status, string $type = 'post'): string
     {
         if ('post' == $type) {
             /** 文章状态 */

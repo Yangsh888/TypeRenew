@@ -8,6 +8,7 @@ use Typecho\Cookie;
 use Typecho\Db;
 use Typecho\Db\Query;
 use Typecho\Router;
+use Typecho\Timezone;
 use Typecho\Widget\Exception as WidgetException;
 use Typecho\Widget\Helper\PageNavigator\Classic;
 use Typecho\Widget\Helper\PageNavigator\Box;
@@ -1151,18 +1152,32 @@ EOF;
             $fromMonth = $this->request->filter('int')->get('month');
             $toMonth = $fromMonth;
 
-            $toDay = date('t', mktime(0, 0, 0, $toMonth, 1, $year));
-
             if ($this->request->is('day')) {
                 $fromDay = $this->request->filter('int')->get('day');
                 $toDay = $fromDay;
             }
         }
 
-        $from = mktime(0, 0, 0, $fromMonth, $fromDay, $year)
-            - $this->options->timezone + $this->options->serverTimezone;
-        $to = mktime(23, 59, 59, $toMonth, $toDay, $year)
-            - $this->options->timezone + $this->options->serverTimezone;
+        if (
+            ($this->request->is('day') && !Timezone::isValidLocalDate($year, $fromMonth, $fromDay))
+            || ($this->request->is('month') && !$this->request->is('day') && !Timezone::isValidLocalDate($year, $fromMonth, 1))
+            || (!$this->request->is('month') && !Timezone::isValidLocalDate($year))
+        ) {
+            throw new WidgetException(_t('请求的地址不存在'), 404);
+        }
+
+        if ($this->request->is('day')) {
+            [$from, $to] = Timezone::dayRange($year, $fromMonth, $fromDay);
+        } elseif ($this->request->is('month')) {
+            [$from, $to] = Timezone::monthRange($year, $fromMonth);
+        } else {
+            [$from, $to] = Timezone::yearRange($year);
+        }
+
+        if (null === $from || null === $to) {
+            throw new WidgetException(_t('请求的地址不存在'), 404);
+        }
+
         $select->where('table.contents.created >= ? AND table.contents.created < ?', $from, $to);
     }
 
@@ -1439,24 +1454,37 @@ EOF;
         $day = $this->request->filter('int')->get('day');
 
         if (!empty($year) && !empty($month) && !empty($day)) {
-            $from = mktime(0, 0, 0, $month, $day, $year);
-            $to = mktime(23, 59, 59, $month, $day, $year);
+            if (!Timezone::isValidLocalDate($year, $month, $day)) {
+                throw new WidgetException(_t('请求的地址不存在'), 404);
+            }
+
+            [$from, $to] = Timezone::dayRange($year, $month, $day);
             $this->archiveSlug = 'day';
             $this->archiveTitle = _t('%d年%d月%d日', $year, $month, $day);
         } elseif (!empty($year) && !empty($month)) {
-            $from = mktime(0, 0, 0, $month, 1, $year);
-            $to = mktime(23, 59, 59, $month, date('t', $from), $year);
+            if (!Timezone::isValidLocalDate($year, $month, 1)) {
+                throw new WidgetException(_t('请求的地址不存在'), 404);
+            }
+
+            [$from, $to] = Timezone::monthRange($year, $month);
             $this->archiveSlug = 'month';
             $this->archiveTitle = _t('%d年%d月', $year, $month);
         } elseif (!empty($year)) {
-            $from = mktime(0, 0, 0, 1, 1, $year);
-            $to = mktime(23, 59, 59, 12, 31, $year);
+            if (!Timezone::isValidLocalDate($year)) {
+                throw new WidgetException(_t('请求的地址不存在'), 404);
+            }
+
+            [$from, $to] = Timezone::yearRange($year);
             $this->archiveSlug = 'year';
             $this->archiveTitle = _t('%d年', $year);
         }
 
-        $select->where('table.contents.created >= ?', $from - $this->options->timezone + $this->options->serverTimezone)
-            ->where('table.contents.created <= ?', $to - $this->options->timezone + $this->options->serverTimezone)
+        if (!isset($from, $to)) {
+            throw new WidgetException(_t('请求的地址不存在'), 404);
+        }
+
+        $select->where('table.contents.created >= ?', $from)
+            ->where('table.contents.created < ?', $to)
             ->where('table.contents.type = ?', 'post');
 
         $this->archiveType = 'date';

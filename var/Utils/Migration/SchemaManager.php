@@ -4,6 +4,7 @@ namespace Utils\Migration;
 
 use Typecho\Common;
 use Typecho\Db;
+use Typecho\Timezone;
 use Utils\Comment;
 use Utils\Defaults;
 use Utils\Schema;
@@ -19,9 +20,13 @@ class SchemaManager
     {
         $messages = [_t('当前版本所需的数据库结构已同步')];
         self::ensureMailInfrastructure($db);
+        $timezoneMigrated = self::ensureTimezoneOptions($db);
         Schema::ensureCoreIndexes($db);
         Schema::ensureUserPasswordStorage($db);
         $syncedComments = self::syncCommentAuthors($db);
+        if ($timezoneMigrated) {
+            $messages[] = _t('已完成时区配置兼容迁移');
+        }
         if ($syncedComments > 0) {
             $messages[] = _t('已同步 %d 条历史评论的作者昵称', $syncedComments);
         }
@@ -236,6 +241,59 @@ class SchemaManager
         return Defaults::repairableOptions([
             'mailCronKey' => Common::randString(32),
         ]);
+    }
+
+    private static function ensureTimezoneOptions(Db $db): bool
+    {
+        $rows = $db->fetchAll(
+            $db->select('name', 'value')
+                ->from('table.options')
+                ->where('user = ? AND name IN ?', 0, ['timezone', 'timezoneName'])
+        );
+        $options = [];
+        foreach ($rows as $row) {
+            $options[(string) ($row['name'] ?? '')] = $row['value'] ?? null;
+        }
+
+        $legacyOffset = is_numeric($options['timezone'] ?? null) ? (int) $options['timezone'] : 28800;
+        $hasTimezoneName = is_string($options['timezoneName'] ?? null) && trim((string) $options['timezoneName']) !== '';
+
+        $timezoneName = Timezone::resolve(
+            $hasTimezoneName ? (string) $options['timezoneName'] : '',
+            $legacyOffset
+        );
+        $timezoneOffset = (string) Timezone::offsetFromName($timezoneName);
+
+        $changed = false;
+        $changed = self::upsertOption($db, 'timezoneName', $timezoneName, $options) || $changed;
+        $changed = self::upsertOption($db, 'timezone', $timezoneOffset, $options) || $changed;
+
+        return $changed || !$hasTimezoneName;
+    }
+
+    private static function upsertOption(Db $db, string $name, string $value, array $existing): bool
+    {
+        if (array_key_exists($name, $existing)) {
+            if ((string) $existing[$name] === $value) {
+                return false;
+            }
+
+            $db->query(
+                $db->update('table.options')
+                    ->rows(['value' => $value])
+                    ->where('name = ? AND user = ?', $name, 0)
+            );
+
+            return true;
+        }
+
+        $db->query($db->insert('table.options')->rows([
+            'name' => $name,
+            'user' => 0,
+            'value' => $value,
+        ]));
+
+        return true;
     }
 
     private static function updateGenerator(Db $db, string $version): void
