@@ -161,6 +161,10 @@ class Router
 
                 if (!empty($route['params'])) {
                     unset($matches[0]);
+                    if (count($route['params']) !== count($matches)) {
+                        continue;
+                    }
+
                     $params = array_combine($route['params'], $matches);
                 }
 

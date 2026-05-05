@@ -5,6 +5,7 @@ namespace Utils;
 use Typecho\Common;
 use Typecho\Cookie;
 use Typecho\Request;
+use Utils\Rewrite\Manager;
 
 class Defaults
 {
@@ -211,7 +212,7 @@ class Defaults
             'cacheRedisPassword' => '',
             'cacheRedisDatabase' => 0,
             'allowXmlRpc' => 1,
-        ];
+        ] + Manager::metadata(false, 'nginx', 'manual');
     }
 
     private static function routingOptions(): array

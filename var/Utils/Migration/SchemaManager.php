@@ -7,6 +7,7 @@ use Typecho\Db;
 use Typecho\Timezone;
 use Utils\Comment;
 use Utils\Defaults;
+use Utils\Rewrite\Manager;
 use Utils\Schema;
 use Widget\Options;
 
@@ -20,6 +21,7 @@ class SchemaManager
     {
         $messages = [_t('当前版本所需的数据库结构已同步')];
         self::ensureMailInfrastructure($db);
+        self::ensureRewriteOptions($db);
         $timezoneMigrated = self::ensureTimezoneOptions($db);
         Schema::ensureCoreIndexes($db);
         Schema::ensureUserPasswordStorage($db);
@@ -101,6 +103,12 @@ class SchemaManager
             }
         }
 
+        $rewriteItem = self::inspectRewriteOptions($db);
+        $items[] = $rewriteItem;
+        if (($rewriteItem['status'] ?? 'ok') !== 'ok') {
+            $missing[] = $rewriteItem;
+        }
+
         return [
             'healthy' => empty($missing),
             'items' => $items,
@@ -111,6 +119,7 @@ class SchemaManager
     public static function repairCriticalSchema(Db $db): array
     {
         self::ensureMailInfrastructure($db);
+        self::ensureRewriteOptions($db);
         Schema::repairMailInfra($db);
         $after = self::inspectCriticalSchema($db);
         $syncedComments = self::syncCommentAuthors($db);
@@ -241,6 +250,85 @@ class SchemaManager
         return Defaults::repairableOptions([
             'mailCronKey' => Common::randString(32),
         ]);
+    }
+
+    private static function ensureRewriteOptions(Db $db): void
+    {
+        [$existing, $rewriteEnabled, $state] = self::rewriteOptionState($db);
+        if ($rewriteEnabled && !array_key_exists('rewriteMessage', $existing)) {
+            $state['rewriteMessage'] = _t('已沿用旧站地址重写设置，请确认服务器已部署对应规则。');
+        }
+
+        foreach ($state as $name => $value) {
+            self::upsertOption($db, $name, $value, $existing);
+        }
+    }
+
+    private static function inspectRewriteOptions(Db $db): array
+    {
+        [$existing, , $normalized] = self::rewriteOptionState($db);
+        $missingColumns = [];
+        $typeMismatches = [];
+        foreach ($normalized as $name => $value) {
+            if (!array_key_exists($name, $existing)) {
+                $missingColumns[] = $name;
+                continue;
+            }
+
+            if ((string) $existing[$name] !== (string) $value) {
+                $typeMismatches[] = $name;
+            }
+        }
+
+        $healthy = $missingColumns === [] && $typeMismatches === [];
+
+        return [
+            'key' => 'rewrite_options',
+            'label' => _t('地址重写配置'),
+            'table' => $db->getPrefix() . 'options',
+            'exists' => true,
+            'missingColumns' => $missingColumns,
+            'missingIndexes' => [],
+            'typeMismatches' => $typeMismatches,
+            'tableCollation' => '',
+            'expectedCollation' => '',
+            'collationOk' => true,
+            'status' => $healthy
+                ? 'ok'
+                : ($missingColumns === [] ? 'schema_mismatch' : 'missing_columns'),
+        ];
+    }
+
+    private static function rewriteOptionState(Db $db): array
+    {
+        $rows = $db->fetchAll(
+            $db->select('name', 'value')
+                ->from('table.options')
+                ->where('user = ? AND name IN ?', 0, [
+                    'rewrite',
+                    'rewriteServer',
+                    'rewriteMode',
+                    'rewriteStatus',
+                    'rewriteVerifiedAt',
+                    'rewriteMessage',
+                ])
+        );
+        $existing = [];
+        foreach ($rows as $row) {
+            $name = (string) ($row['name'] ?? '');
+            if ($name === '') {
+                continue;
+            }
+            $existing[$name] = (string) ($row['value'] ?? '');
+        }
+
+        $rewriteEnabled = (string) ($existing['rewrite'] ?? '0') === '1';
+        $stateInput = $existing;
+        if (!array_key_exists('rewriteServer', $stateInput)) {
+            $stateInput['rewriteServer'] = Manager::inferLegacyServer($rewriteEnabled);
+        }
+
+        return [$existing, $rewriteEnabled, Manager::normalizeStoredState($stateInput, $rewriteEnabled)];
     }
 
     private static function ensureTimezoneOptions(Db $db): bool

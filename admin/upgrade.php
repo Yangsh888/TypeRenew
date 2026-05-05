@@ -50,12 +50,6 @@ $statusMap = [
 ];
 $statusLabel = $statusMap[$status] ?? ($status !== '' ? $status : _t('无'));
 $packageActionLocked = !$upgradeAvailable;
-$upgradeBlockedCount = 0;
-foreach ($upgradeItems as $item) {
-    if (strtolower((string) ($item['status'] ?? '')) === 'blocked') {
-        $upgradeBlockedCount++;
-    }
-}
 $upgradeWarningCount = count($upgradeWarning);
 $schemaIssues = array_values($schemaStatus['missing'] ?? []);
 $schemaIssueCount = count($schemaIssues);
@@ -81,15 +75,9 @@ $dbOverviewUrl = $options->adminUrl('upgrade.php', true);
                     <div class="tr-card tr-tone-muted">
                         <div class="tr-card-b">
                             <div class="tr-subtitle"><?php _e('环境预检'); ?></div>
-                            <?php if ($upgradeBlockedCount > 0): ?>
-                                <div class="tr-help tr-tone-warning tr-mt-8">
-                                    <strong><?php _e('环境预检未通过：%d 项阻塞，%d 项提醒。', $upgradeBlockedCount, $upgradeWarningCount); ?></strong>
-                                </div>
-                            <?php else: ?>
-                                <div class="tr-help tr-mt-8"><?php _e('环境预检通过，共检查 %d 项。', count($upgradeItems)); ?></div>
-                                <?php if ($upgradeWarningCount > 0): ?>
-                                    <div class="tr-help tr-tone-warning tr-mt-8"><?php _e('另有 %d 项环境提醒。', $upgradeWarningCount); ?></div>
-                                <?php endif; ?>
+                            <div class="tr-help tr-mt-8"><?php _e('环境预检通过，共检查 %d 项。', count($upgradeItems)); ?></div>
+                            <?php if ($upgradeWarningCount > 0): ?>
+                                <div class="tr-help tr-tone-warning tr-mt-8"><?php _e('另有 %d 项环境提醒。', $upgradeWarningCount); ?></div>
                             <?php endif; ?>
 
                             <?php if (!empty($upgradeBlocking)): ?>

@@ -136,6 +136,11 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
  * @property string $secret
  * @property bool $installed
  * @property bool $rewrite
+ * @property string $rewriteServer
+ * @property string $rewriteMode
+ * @property string $rewriteStatus
+ * @property int $rewriteVerifiedAt
+ * @property string $rewriteMessage
  * @property string $postDateFormat
  */
 class Options extends Base
@@ -523,7 +528,7 @@ class Options extends Base
      */
     protected function ___index(): string
     {
-        return ($this->rewrite || (defined('__TYPECHO_REWRITE__') && __TYPECHO_REWRITE__))
+        return (defined('__TYPECHO_REWRITE__') ? (bool) __TYPECHO_REWRITE__ : (bool) $this->rewrite)
             ? $this->rootUrl : Common::url('index.php', $this->rootUrl);
     }
 

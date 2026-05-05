@@ -27,16 +27,7 @@ class Fake extends Element
      */
     public function __construct(string $name, $value)
     {
-        $this->name = $name;
-        self::$uniqueId++;
-
-        $this->init();
-
-        $this->input = $this->input($name);
-
-        if (null !== $value) {
-            $this->value($value);
-        }
+        parent::__construct($name, null, $value);
     }
 
     /**

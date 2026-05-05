@@ -22,10 +22,11 @@
             $(this).removeClass('submitting');
         });
 
-        $('label input[type=text]').click(function (e) {
-            const check = $('#' + $(this).parents('label').attr('for'));
-            check.prop('checked', true);
-            return false;
+        $('label input[type=text]').on('focus click', function () {
+            const id = $(this).closest('label').attr('for');
+            if (id) {
+                $('#' + id).prop('checked', true);
+            }
         });
 
         $('.main form input[type="url"]').each(function () {

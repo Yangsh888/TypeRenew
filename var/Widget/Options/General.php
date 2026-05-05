@@ -6,6 +6,7 @@ use Typecho\Db\Exception;
 use Typecho\I18n\GetText;
 use Typecho\Timezone;
 use Typecho\Widget\Helper\Form;
+use Utils\Rewrite\Manager as RewriteManager;
 use Widget\ActionInterface;
 use Widget\Base\Options;
 
@@ -126,7 +127,33 @@ class General extends Options implements ActionInterface
         }
 
         $settings['attachmentTypes'] = implode(',', $attachmentTypes);
-        $this->persistOptions($settings);
+        $siteUrlChanged = array_key_exists('siteUrl', $settings) && (string) $settings['siteUrl'] !== $before['siteUrl'];
+        $apacheSnapshot = null;
+        if ($siteUrlChanged) {
+            $rewriteEnabled = RewriteManager::enabled($this->options);
+            $rewriteServer = (string) ($this->options->rewriteServer ?? 'nginx');
+            $rewriteMode = (string) ($this->options->rewriteMode ?? 'manual');
+            $settings += RewriteManager::metadata($rewriteEnabled, $rewriteServer, $rewriteMode);
+            if ($rewriteEnabled && RewriteManager::canManageApache($rewriteServer, $rewriteMode)) {
+                if (!RewriteManager::canWriteApacheConfig()) {
+                    $this->noticeAndGoBack(_t('站点地址已改变，但当前无法同步更新 .htaccess，请先调整权限后再保存。'), 'error');
+                }
+
+                $apacheSnapshot = RewriteManager::snapshotApacheConfig();
+                if (!RewriteManager::writeManagedApache(RewriteManager::basePathFromUrl((string) $settings['siteUrl']))) {
+                    $this->noticeAndGoBack(_t('站点地址已改变，但同步更新 Apache 重写规则失败，请检查 .htaccess 后重试。'), 'error');
+                }
+            }
+        }
+
+        try {
+            $this->persistOptions($settings);
+        } catch (\Throwable $throwable) {
+            if (is_array($apacheSnapshot)) {
+                RewriteManager::restoreApacheConfig($apacheSnapshot);
+            }
+            throw $throwable;
+        }
         self::pluginHandle()->call('finishUpdate', $before, array_merge($before, $settings), $this);
 
         $this->saveSuccessAndGoBack();
@@ -150,7 +177,7 @@ class General extends Options implements ActionInterface
                 null,
                 $this->options->originalSiteUrl,
                 _t('站点地址'),
-                _t('站点地址主要用于生成内容的永久链接') . ($this->options->originalSiteUrl == $this->options->rootUrl ?
+                _t('站点地址主要用于生成内容的永久链接') . (RewriteManager::sameSiteLocation((string) $this->options->originalSiteUrl, (string) $this->options->rootUrl) ?
                     '' : '</p><p class="message notice mono">'
                     . _t('当前地址 <strong>%s</strong> 与上述设定值不一致', $this->options->rootUrl))
             );
