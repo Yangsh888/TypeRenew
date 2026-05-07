@@ -31,12 +31,10 @@ class Cloud extends Metas
         $select = $this->select()->where('type = ?', 'tag')
             ->order($this->parameter->sort, $this->parameter->desc ? Db::SORT_DESC : Db::SORT_ASC);
 
-        /** 忽略零数量 */
         if ($this->parameter->ignoreZeroCount) {
             $select->where('count > 0');
         }
 
-        /** 总数限制 */
         if ($this->parameter->limit) {
             $select->limit($this->parameter->limit);
         }

@@ -23,7 +23,6 @@ class Edit extends Metas implements ActionInterface
      */
     public function execute()
     {
-        /** 编辑以上权限 */
         $this->user->pass('editor');
     }
 
@@ -74,8 +73,7 @@ class Edit extends Metas implements ActionInterface
     public function nameToSlug(string $name): bool
     {
         if (empty($this->request->slug)) {
-            $slug = Common::slugName($name);
-            if (empty($slug) || !$this->slugExists($name)) {
+            if (empty(Common::slugName($name)) || !$this->slugExists($name)) {
                 return false;
             }
         }
@@ -116,12 +114,10 @@ class Edit extends Metas implements ActionInterface
             $this->response->goBack();
         }
 
-        /** 取出数据 */
         $tag = $this->request->from('name', 'slug');
         $tag['type'] = 'tag';
         $tag['slug'] = Common::slugName(Common::strBy($tag['slug'] ?? null, $tag['name']));
 
-        /** 插入数据 */
         $tag['mid'] = $this->insert($tag);
         $this->push($tag);
         self::pluginHandle()->call('finishInsert', $tag, $this);
@@ -200,7 +196,6 @@ class Edit extends Metas implements ActionInterface
             $action = $_action;
         }
 
-        /** 给表单增加规则 */
         if ('insert' == $action || 'update' == $action) {
             $name->addRule('required', _t('必须填写标签名称'));
             $name->addRule([$this, 'nameExists'], _t('标签名称已经存在'));
@@ -229,7 +224,6 @@ class Edit extends Metas implements ActionInterface
             $this->response->goBack();
         }
 
-        /** 取出数据 */
         $tag = $this->request->from('name', 'slug', 'mid');
         $tag['type'] = 'tag';
         $tag['slug'] = Common::slugName(Common::strBy($tag['slug'] ?? null, $tag['name']));
@@ -324,7 +318,6 @@ class Edit extends Metas implements ActionInterface
                 $this->refreshCountByTypeAndStatus($tag, 'post');
             }
 
-            // 自动清理标签
             $this->clearTags();
             self::pluginHandle()->call('finishRefresh', $tags, $this);
 
@@ -343,12 +336,10 @@ class Edit extends Metas implements ActionInterface
      */
     public function clearTags()
     {
-        // 取出count为0的标签
         $tags = array_column($this->db->fetchAll($this->select('mid')
             ->where('type = ? AND count = ?', 'tag', 0)), 'mid');
 
         foreach ($tags as $tag) {
-            // 确认是否已经没有关联了
             $content = $this->db->fetchRow($this->db->select('cid')
                 ->from('table.relationships')->where('mid = ?', $tag)
                 ->limit(1));

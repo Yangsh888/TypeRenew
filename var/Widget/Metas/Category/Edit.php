@@ -32,7 +32,6 @@ class Edit extends Metas implements ActionInterface
      */
     public function execute()
     {
-        /** 编辑以上权限 */
         $this->user->pass('editor');
     }
 
@@ -85,8 +84,7 @@ class Edit extends Metas implements ActionInterface
     public function nameToSlug(string $name): bool
     {
         if (empty($this->request->slug)) {
-            $slug = Common::slugName($name);
-            if (empty($slug) || !$this->slugExists($name)) {
+            if (empty(Common::slugName($name)) || !$this->slugExists($name)) {
                 return false;
             }
         }
@@ -127,7 +125,6 @@ class Edit extends Metas implements ActionInterface
             $this->response->goBack();
         }
 
-        /** 取出数据 */
         $category = $this->request->from('name', 'slug', 'description', 'parent');
 
         $category['slug'] = Common::slugName(Common::strBy($category['slug'] ?? null, $category['name']));

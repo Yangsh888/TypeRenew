@@ -8,9 +8,9 @@ namespace {
     {
         if (empty($args)) {
             return I18n::translate($string);
-        } else {
-            return vsprintf(I18n::translate($string), $args);
         }
+
+        return vsprintf(I18n::translate($string), $args);
     }
 
     function _e(string $string, ...$args)
