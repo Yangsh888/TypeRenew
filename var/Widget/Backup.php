@@ -1017,11 +1017,7 @@ class Backup extends BaseOptions implements ActionInterface
             return ['blocking' => [], 'warning' => [], 'info' => []];
         }
 
-        return [
-            'blocking' => array_values(array_filter((array) ($report['blocking'] ?? []), 'is_string')),
-            'warning' => array_values(array_filter((array) ($report['warning'] ?? []), 'is_string')),
-            'info' => array_values(array_filter((array) ($report['info'] ?? []), 'is_string')),
-        ];
+        return self::normalizeReport($report);
     }
 
     private function stashReport(array $report): void
@@ -1030,7 +1026,12 @@ class Backup extends BaseOptions implements ActionInterface
             return;
         }
 
-        $_SESSION[self::REPORT_SESSION_KEY] = [
+        $_SESSION[self::REPORT_SESSION_KEY] = self::normalizeReport($report);
+    }
+
+    private static function normalizeReport(array $report): array
+    {
+        return [
             'blocking' => array_values(array_filter((array) ($report['blocking'] ?? []), 'is_string')),
             'warning' => array_values(array_filter((array) ($report['warning'] ?? []), 'is_string')),
             'info' => array_values(array_filter((array) ($report['info'] ?? []), 'is_string')),

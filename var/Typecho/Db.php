@@ -223,19 +223,14 @@ class Db
                 case self::INSERT:
                     Cache::getInstance()->invalidate($table);
                     return $this->adapter->lastInsertId($resource, $handle);
-                case self::SELECT:
-                default:
-                    if ($isWriteSql) {
-                        Cache::getInstance()->invalidate($table);
-                    }
-                    return $resource;
             }
-        } else {
-            if ($isWriteSql) {
-                Cache::getInstance()->invalidate($table);
-            }
-            return $resource;
         }
+
+        if ($isWriteSql) {
+            Cache::getInstance()->invalidate($table);
+        }
+
+        return $resource;
     }
 
     private function parseWriteTable(string $sql): ?string

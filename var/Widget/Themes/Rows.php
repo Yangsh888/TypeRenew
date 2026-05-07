@@ -25,44 +25,42 @@ class Rows extends Widget
     {
         $themes = $this->getThemes();
 
-        if ($themes) {
-            $options = Options::alloc();
-            $activated = 0;
-            $result = [];
+        $options = Options::alloc();
+        $activated = 0;
+        $result = [];
 
-            foreach ($themes as $key => $theme) {
-                $themeFile = $theme . '/index.php';
-                if (file_exists($themeFile)) {
-                    $info = Plugin::parseInfo($themeFile);
-                    $info['name'] = $this->getTheme($theme);
+        foreach ($themes as $key => $theme) {
+            $themeFile = $theme . '/index.php';
+            if (file_exists($themeFile)) {
+                $info = Plugin::parseInfo($themeFile);
+                $info['name'] = $this->getTheme($theme);
 
-                    if ($info['activated'] = ($options->theme == $info['name'])) {
-                        $activated = $key;
-                    }
-
-                    $screen = array_filter(glob($theme . '/*') ?: [], function ($path) {
-                        return preg_match("/screenshot\.(jpg|png|gif|bmp|jpeg|webp|avif|svg)$/i", $path);
-                    });
-
-                    if ($screen) {
-                        $info['screen'] = $options->themeUrl(basename(current($screen)), $info['name']);
-                    } else {
-                        $info['screen'] = Common::url('noscreen.png', $options->adminStaticUrl('img'));
-                    }
-
-                    $result[$key] = $info;
+                if ($info['activated'] = ($options->theme == $info['name'])) {
+                    $activated = $key;
                 }
-            }
 
-            if (!empty($result) && isset($result[$activated])) {
-                $clone = $result[$activated];
-                unset($result[$activated]);
-                array_unshift($result, $clone);
-            }
+                $screen = array_filter(glob($theme . '/*') ?: [], function ($path) {
+                    return preg_match("/screenshot\.(jpg|png|gif|bmp|jpeg|webp|avif|svg)$/i", $path);
+                });
 
-            foreach ($result as $theme) {
-                $this->push($theme);
+                if ($screen) {
+                    $info['screen'] = $options->themeUrl(basename(current($screen)), $info['name']);
+                } else {
+                    $info['screen'] = Common::url('noscreen.png', $options->adminStaticUrl('img'));
+                }
+
+                $result[$key] = $info;
             }
+        }
+
+        if (!empty($result) && isset($result[$activated])) {
+            $clone = $result[$activated];
+            unset($result[$activated]);
+            array_unshift($result, $clone);
+        }
+
+        foreach ($result as $theme) {
+            $this->push($theme);
         }
     }
 
