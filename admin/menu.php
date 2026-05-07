@@ -1,36 +1,6 @@
 <?php if (!defined('__TYPECHO_ADMIN__')) exit; ?>
 <?php
 $iconsUrl = $options->adminStaticUrl('img', 'icons.svg', true);
-
-$trIconMap = [
-    'index.php' => 'i-home',
-    'write-post.php' => 'i-pencil',
-    'write-page.php' => 'i-file',
-    'manage-posts.php' => 'i-file-text',
-    'manage-pages.php' => 'i-files',
-    'manage-comments.php' => 'i-message',
-    'manage-medias.php' => 'i-image',
-    'manage-categories.php' => 'i-folder',
-    'manage-tags.php' => 'i-tag',
-    'manage-users.php' => 'i-users',
-    'plugins.php' => 'i-puzzle',
-    'themes.php' => 'i-palette',
-    'backup.php' => 'i-download',
-    'upgrade.php' => 'i-upload',
-    'options-general.php' => 'i-gear',
-    'options-discussion.php' => 'i-bell',
-    'options-reading.php' => 'i-book',
-    'options-permalink.php' => 'i-link',
-    'options-cache.php' => 'i-spark',
-    'options-mail.php' => 'i-mail',
-    'profile.php' => 'i-user',
-    'extending.php' => 'i-puzzle',
-];
-
-$trPanelIconMap = [
-    'RenewGo/Panel.php' => 'i-external',
-    'RenewSEO/Panel.php' => 'i-spark',
-];
 $menuAddLink = '';
 if (!empty($menu->addLink)) {
     $candidate = trim((string) $menu->addLink);
@@ -39,21 +9,10 @@ if (!empty($menu->addLink)) {
     }
 }
 
-$trIconOf = function (string $href) use ($trIconMap, $trPanelIconMap): ?string {
-    $parts = \Typecho\Common::parseUrl($href);
-    $path = $parts['path'] ?? '';
-    $base = $path !== '' ? basename($path) : basename($href);
-    if ($base === 'extending.php') {
-        $query = $parts['query'] ?? '';
-        if ($query !== '') {
-            parse_str($query, $params);
-            $panel = isset($params['panel']) ? (string) $params['panel'] : '';
-            if ($panel !== '' && isset($trPanelIconMap[$panel])) {
-                return $trPanelIconMap[$panel];
-            }
-        }
-    }
-    return $trIconMap[$base] ?? null;
+$trIconOf = function (array $item, string $default): string {
+    $meta = is_array($item['meta'] ?? null) ? $item['meta'] : [];
+    $icon = trim((string) ($meta['icon'] ?? ''));
+    return $icon === '' ? $default : $icon;
 };
 
 $trText = function ($value): string {
@@ -62,7 +21,7 @@ $trText = function ($value): string {
 };
 
 $trRenderMenu = function () use ($menu, $iconsUrl, $trIconOf, $trText): string {
-    $tree = method_exists($menu, 'getMenuTree') ? $menu->getMenuTree() : [];
+    $tree = $menu->getMenuTree();
     if (empty($tree)) {
         return '';
     }
@@ -72,7 +31,7 @@ $trRenderMenu = function () use ($menu, $iconsUrl, $trIconOf, $trText): string {
         $parentUrl = (string) ($parent['url'] ?? '#');
         $parentName = $trText($parent['name'] ?? '');
         $parentActive = !empty($parent['active']);
-        $parentIconId = $trIconOf($parentUrl) ?? 'i-layers';
+        $parentIconId = $trIconOf($parent, 'i-layers');
         $parentIcon = $parentIconId ? '<svg class="tr-ico" aria-hidden="true"><use href="' . htmlspecialchars($iconsUrl, ENT_QUOTES, 'UTF-8') . '#' . $parentIconId . '"></use></svg>' : '';
 
         $out .= '<li' . ($parentActive ? ' class="tr-parent-active"' : '') . '>';
@@ -85,7 +44,7 @@ $trRenderMenu = function () use ($menu, $iconsUrl, $trIconOf, $trText): string {
             $childUrl = (string) ($child['url'] ?? '#');
             $childName = $trText($child['name'] ?? '');
             $childActive = !empty($child['active']);
-            $childIconId = $trIconOf($childUrl) ?? 'i-file';
+            $childIconId = $trIconOf($child, 'i-file');
             $childIcon = $childIconId ? '<svg class="tr-ico" aria-hidden="true"><use href="' . htmlspecialchars($iconsUrl, ENT_QUOTES, 'UTF-8') . '#' . $childIconId . '"></use></svg>' : '';
 
             $out .= '<li' . ($childActive ? ' class="tr-child-active"' : '') . '>';
@@ -141,7 +100,7 @@ $userAvatarUrl = \Typecho\Common::gravatarUrl($user->mail, 38);
             <svg class="tr-ico" aria-hidden="true"><use href="<?php echo htmlspecialchars($iconsUrl, ENT_QUOTES, 'UTF-8'); ?>#i-grid"></use></svg>
         </button>
         <?php
-        $parentLabel = method_exists($menu, 'getCurrentParentLabel') ? $menu->getCurrentParentLabel() : null;
+        $parentLabel = $menu->getCurrentParentLabel();
         $currentTitle = $menu->title ?? _t('控制台');
         $rootTitle = _t('控制台');
         $subtitle = null;

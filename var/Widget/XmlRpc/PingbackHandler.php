@@ -26,8 +26,13 @@ class PingbackHandler extends AbstractHandler
             throw new Exception(_t('Pingback 接口已关闭'), 49);
         }
 
-        $pathInfo = Common::url(substr($target, strlen((string) $options->index)), '/');
-        $post = Router::match($pathInfo);
+        $targetParts = Common::parseUrl($target);
+        $siteParts = Common::parseUrl((string) $options->index);
+        if (!$this->isSameSiteTarget($targetParts, $siteParts)) {
+            throw new Exception(_t('这个目标地址不存在'), 33);
+        }
+
+        $post = Router::match($target);
 
         $params = Common::parseUrl($source);
         if (!isset($params['host']) || !isset($params['scheme']) || !in_array($params['scheme'], ['http', 'https'])) {
@@ -118,5 +123,31 @@ class PingbackHandler extends AbstractHandler
         }
 
         return true;
+    }
+
+    private function isSameSiteTarget(array $targetParts, array $siteParts): bool
+    {
+        $targetScheme = strtolower((string) ($targetParts['scheme'] ?? ''));
+        $siteScheme = strtolower((string) ($siteParts['scheme'] ?? ''));
+        $targetHost = strtolower((string) ($targetParts['host'] ?? ''));
+        $siteHost = strtolower((string) ($siteParts['host'] ?? ''));
+
+        if (
+            $targetScheme === ''
+            || $siteScheme === ''
+            || !in_array($targetScheme, ['http', 'https'], true)
+            || !in_array($siteScheme, ['http', 'https'], true)
+            || $targetScheme !== $siteScheme
+            || $targetHost === ''
+            || $siteHost === ''
+            || $targetHost !== $siteHost
+        ) {
+            return false;
+        }
+
+        $targetPort = (int) ($targetParts['port'] ?? ($targetScheme === 'https' ? 443 : 80));
+        $sitePort = (int) ($siteParts['port'] ?? ($siteScheme === 'https' ? 443 : 80));
+
+        return $targetPort === $sitePort;
     }
 }

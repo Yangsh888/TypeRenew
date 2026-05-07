@@ -68,7 +68,7 @@ class Admin extends Contents
 
                 if ($parent) {
                     echo '<a href="'
-                        . Common::url('manage-pages.php?parent=' . $parent['mid'], $this->options->adminUrl)
+                        . Common::url('manage-pages.php?parent=' . $parent['cid'], $this->options->adminUrl)
                         . '">';
                 } else {
                     echo '<a href="' . Common::url('manage-pages.php', $this->options->adminUrl) . '">';

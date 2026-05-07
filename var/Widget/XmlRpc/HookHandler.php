@@ -26,27 +26,23 @@ class HookHandler implements Hook
      */
     public function beforeRpcCall(string $methodName, ReflectionMethod $reflectionMethod, array $parameters)
     {
-        $valid = 2;
-        $auth = [];
-
-        foreach ($reflectionMethod->getParameters() as $key => $parameter) {
-            $name = $parameter->getName();
-            if (($name == 'userName' || $name == 'password') && array_key_exists($key, $parameters)) {
-                $auth[$name] = (string) $parameters[$key];
-                $valid--;
-            }
+        if (!$this->registry->requiresAuth($methodName)) {
+            return;
         }
 
-        if ($valid != 0) {
-            return;
+        $auth = $this->resolveAuth($reflectionMethod, $parameters);
+        if (!isset($auth['userName'], $auth['password'])) {
+            throw new Exception(_t('XML-RPC 认证参数不完整'), 403);
         }
 
         $user = $this->xmlRpc->userWidget();
         if (!$user->login($auth['userName'], $auth['password'], true)) {
+            sleep(2);
             throw new Exception(_t('无法登录, 密码错误'), 403);
         }
 
-        if (!$user->pass($this->registry->accessLevel($methodName), true)) {
+        $accessLevel = $this->registry->accessLevel($methodName);
+        if ($accessLevel !== null && !$user->pass($accessLevel, true)) {
             throw new Exception(_t('权限不足'), 403);
         }
 
@@ -60,5 +56,25 @@ class HookHandler implements Hook
     public function afterRpcCall(string $methodName, &$result): void
     {
         Widget::destroy();
+    }
+
+    /**
+     * @return array{userName?: string, password?: string}
+     */
+    private function resolveAuth(ReflectionMethod $reflectionMethod, array $parameters): array
+    {
+        $auth = [];
+        foreach ($reflectionMethod->getParameters() as $key => $parameter) {
+            if (!array_key_exists($key, $parameters)) {
+                continue;
+            }
+
+            $name = $parameter->getName();
+            if ($name === 'userName' || $name === 'password') {
+                $auth[$name] = (string) $parameters[$key];
+            }
+        }
+
+        return $auth;
     }
 }

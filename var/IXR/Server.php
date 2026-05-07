@@ -9,7 +9,6 @@ use Typecho\Widget\Exception as WidgetException;
  *
  * @package IXR
  */
-#[\AllowDynamicProperties]
 class Server
 {
     /**
@@ -36,11 +35,15 @@ class Server
      *
      * @param array $callbacks 回调函数
      */
-    public function __construct(array $callbacks = [])
+    public function __construct(
+        array $callbacks = [],
+        bool $allowListMethods = true,
+        bool $allowMulticall = true
+    )
     {
-        $this->setCapabilities();
+        $this->setCapabilities($allowMulticall);
         $this->callbacks = $callbacks;
-        $this->setCallbacks();
+        $this->setCallbacks($allowListMethods, $allowMulticall);
     }
 
     /**
@@ -321,7 +324,7 @@ class Server
      * 设置默认参数
      * @return void
      */
-    private function setCapabilities()
+    private function setCapabilities(bool $allowMulticall)
     {
         // Initialises capabilities array
         $this->capabilities = [
@@ -333,23 +336,32 @@ class Server
                 'specUrl'     => 'http://xmlrpc-epi.sourceforge.net/specs/rfc.fault_codes.php',
                 'specVersion' => 20010516
             ],
-            'system.multicall' => [
+        ];
+
+        if ($allowMulticall) {
+            $this->capabilities['system.multicall'] = [
                 'specUrl'     => 'http://www.xmlrpc.com/discuss/msgReader$1208',
                 'specVersion' => 1
-            ],
-        ];
+            ];
+        }
     }
 
     /**
      * 设置默认方法
      * @return void
      */
-    private function setCallbacks()
+    private function setCallbacks(bool $allowListMethods, bool $allowMulticall)
     {
         $this->callbacks['system.getCapabilities'] = [$this, 'getCapabilities'];
-        $this->callbacks['system.listMethods'] = [$this, 'listMethods'];
-        $this->callbacks['system.multicall'] = [$this, 'multiCall'];
         $this->callbacks['system.methodHelp'] = [$this, 'methodHelp'];
+
+        if ($allowListMethods) {
+            $this->callbacks['system.listMethods'] = [$this, 'listMethods'];
+        }
+
+        if ($allowMulticall) {
+            $this->callbacks['system.multicall'] = [$this, 'multiCall'];
+        }
     }
 
     /**

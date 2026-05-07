@@ -9,7 +9,6 @@ use Typecho\Http\Client\Exception as HttpException;
 /**
  * fetch pingback
  */
-#[\AllowDynamicProperties]
 class Pingback
 {
     /**

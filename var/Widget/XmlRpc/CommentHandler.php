@@ -66,12 +66,12 @@ class CommentHandler extends AbstractHandler
 
         $pageSize = 10;
         if (!empty($struct['number'])) {
-            $pageSize = abs(intval($struct['number']));
+            $pageSize = max(1, abs(intval($struct['number'])));
         }
 
         if (!empty($struct['offset'])) {
             $offset = abs(intval($struct['offset']));
-            $input['page'] = ceil($offset / $pageSize);
+            $input['page'] = intdiv($offset, $pageSize) + 1;
         }
 
         $comments = CommentsAdmin::alloc('pageSize=' . $pageSize, $input, false);
@@ -121,7 +121,7 @@ class CommentHandler extends AbstractHandler
             $input['mail'] = $struct['author_email'];
         }
 
-        $comment = CommentsEdit::alloc(null, $input, function (CommentsEdit $comment) {
+        $comment = CommentsEdit::alloc(null, ['coid' => $commentId] + $input, function (CommentsEdit $comment) {
             $comment->editComment();
         });
 

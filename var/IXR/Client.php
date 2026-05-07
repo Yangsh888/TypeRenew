@@ -10,7 +10,6 @@ use Typecho\Http\Client as HttpClient;
  *
  * @package IXR
  */
-#[\AllowDynamicProperties]
 class Client
 {
     /** 默认客户端 */
@@ -28,7 +27,7 @@ class Client
      *
      * @var Message
      */
-    private Message $message;
+    private ?Message $message = null;
 
     /**
      * 请求前缀
@@ -40,7 +39,7 @@ class Client
     /**
      * @var Error
      */
-    private Error $error;
+    private ?Error $error = null;
 
     /**
      * 客户端构造函数

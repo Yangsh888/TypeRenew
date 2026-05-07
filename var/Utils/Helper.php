@@ -273,7 +273,8 @@ class Helper
         string $subTitle,
         string $level,
         bool $hidden = false,
-        string $addLink = ''
+        string $addLink = '',
+        ?array $meta = null
     ): int {
         $panelTable = self::options()->panelTable;
         $panelTable['child'] = empty($panelTable['child']) ? [] : $panelTable['child'];
@@ -285,6 +286,8 @@ class Helper
         $panelTable['file'] = empty($panelTable['file']) ? [] : $panelTable['file'];
         $panelTable['file'][] = $fileName;
         $panelTable['file'] = array_unique($panelTable['file']);
+        $panelTable['meta'] = empty($panelTable['meta']) ? [] : $panelTable['meta'];
+        $panelTable['meta'][$fileName] = self::sanitizePanelMeta($meta);
 
         self::setOption('panelTable', $panelTable);
 
@@ -298,12 +301,14 @@ class Helper
         $panelTable['child'] = empty($panelTable['child']) ? [] : $panelTable['child'];
         $panelTable['child'][$index] = empty($panelTable['child'][$index]) ? [] : $panelTable['child'][$index];
         $panelTable['file'] = empty($panelTable['file']) ? [] : $panelTable['file'];
+        $panelTable['meta'] = empty($panelTable['meta']) ? [] : $panelTable['meta'];
         $fileName = urlencode(trim($fileName, '/'));
 
         $key = array_search($fileName, $panelTable['file']);
         if ($key !== false) {
             unset($panelTable['file'][$key]);
         }
+        unset($panelTable['meta'][$fileName]);
 
         $return = -1;
         foreach ($panelTable['child'][$index] as $k => $val) {
@@ -316,6 +321,12 @@ class Helper
 
         self::setOption('panelTable', $panelTable);
         return $return;
+    }
+
+    private static function sanitizePanelMeta(?array $meta): array
+    {
+        $icon = trim((string) ($meta['icon'] ?? ''));
+        return $icon === '' ? [] : ['icon' => $icon];
     }
 
     public static function url(string $fileName): string

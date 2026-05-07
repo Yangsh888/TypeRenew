@@ -1245,7 +1245,7 @@ EOF;
             }, 'text/xml');
         } else {
             $registry = new XmlRpcMethodRegistry($this);
-            $server = new Server($registry->callbacks(1 != $this->options->allowXmlRpc));
+            $server = new Server($registry->callbacks(1 != $this->options->allowXmlRpc), false, false);
             $server->setHook(new XmlRpcHookHandler($this, $registry));
             $server->serve();
         }

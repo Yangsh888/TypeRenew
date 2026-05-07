@@ -84,10 +84,10 @@ class Value
         if (is_double($this->data)) {
             return 'double';
         }
-        if (is_object($this->data) && is_a($this->data, 'IXR_Date')) {
+        if ($this->data instanceof Date) {
             return 'date';
         }
-        if (is_object($this->data) && is_a($this->data, 'IXR_Base64')) {
+        if ($this->data instanceof Base64) {
             return 'base64';
         }
         if (is_object($this->data)) {

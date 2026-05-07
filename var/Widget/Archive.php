@@ -34,6 +34,10 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
  */
 class Archive extends Contents
 {
+    private const XMLRPC_DISABLED = 0;
+    private const XMLRPC_ENABLED = 1;
+    private const XMLRPC_WITH_PINGBACK = 2;
+
     private string $themeFile;
 
     private string $themeDir;
@@ -639,19 +643,20 @@ class Archive extends Contents
 
         $allows = self::pluginHandle()->filter('headerOptions', $allows, $this);
         $title = (empty($this->archiveTitle) ? '' : $this->archiveTitle . ' &raquo; ') . $this->options->title;
+        $xmlRpcEnabled = $this->isXmlRpcEnabled();
 
         $header = ($this->is('single') && !$this->is('index')) ? '<link rel="canonical" href="' . $this->archiveUrl . '" />' . "\n" : '';
 
-        if (!empty($allows['pingback']) && 2 == $this->options->allowXmlRpc) {
+        if (!empty($allows['pingback']) && $this->isPingbackEnabled()) {
             $header .= '<link rel="pingback" href="' . $allows['pingback'] . '" />' . "\n";
         }
 
-        if (!empty($allows['xmlrpc']) && 0 < $this->options->allowXmlRpc) {
+        if (!empty($allows['xmlrpc']) && $xmlRpcEnabled) {
             $header .= '<link rel="EditURI" type="application/rsd+xml" title="RSD" href="'
                 . $allows['xmlrpc'] . '" />' . "\n";
         }
 
-        if (!empty($allows['wlw']) && 0 < $this->options->allowXmlRpc) {
+        if (!empty($allows['wlw']) && $xmlRpcEnabled) {
             $header .= '<link rel="wlwmanifest" type="application/wlwmanifest+xml" href="'
                 . $allows['wlw'] . '" />' . "\n";
         }
@@ -907,7 +912,7 @@ EOF;
     {
         $this->checkPermalink();
 
-        if (2 == $this->options->allowXmlRpc) {
+        if ($this->isPingbackEnabled()) {
             $this->response->setHeader('X-Pingback', $this->options->xmlRpcUrl);
         }
         $valid = false;
@@ -1073,6 +1078,16 @@ EOF;
     private function normalizeDirectorySegments(string $directory): array
     {
         return preg_split('#/+#', trim($directory, '/'), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+    }
+
+    private function isXmlRpcEnabled(): bool
+    {
+        return (int) $this->options->allowXmlRpc > self::XMLRPC_DISABLED;
+    }
+
+    private function isPingbackEnabled(): bool
+    {
+        return (int) $this->options->allowXmlRpc === self::XMLRPC_WITH_PINGBACK;
     }
 
     private function applyContentVisibilityScope(Query $select, bool $includeHidden): void

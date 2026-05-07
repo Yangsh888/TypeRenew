@@ -27,6 +27,36 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
  */
 class Menu extends Base
 {
+    private const TAB_SETTINGS = 'settings';
+    private const TAB_THEME = 'theme';
+
+    private const PAGE_META = [
+        'index.php' => ['icon' => 'i-home'],
+        'write-post.php' => ['icon' => 'i-pencil'],
+        'write-page.php' => ['icon' => 'i-file'],
+        'manage-posts.php' => ['icon' => 'i-file-text'],
+        'manage-pages.php' => ['icon' => 'i-files'],
+        'manage-comments.php' => ['icon' => 'i-message'],
+        'manage-medias.php' => ['icon' => 'i-image'],
+        'manage-categories.php' => ['icon' => 'i-folder'],
+        'manage-tags.php' => ['icon' => 'i-tag'],
+        'manage-users.php' => ['icon' => 'i-users'],
+        'plugins.php' => ['icon' => 'i-puzzle'],
+        'themes.php' => ['icon' => 'i-palette', 'tabGroup' => self::TAB_THEME],
+        'theme-editor.php' => ['icon' => 'i-palette', 'tabGroup' => self::TAB_THEME],
+        'options-theme.php' => ['icon' => 'i-palette', 'tabGroup' => self::TAB_THEME],
+        'backup.php' => ['icon' => 'i-download'],
+        'upgrade.php' => ['icon' => 'i-upload'],
+        'options-general.php' => ['icon' => 'i-gear', 'tabGroup' => self::TAB_SETTINGS],
+        'options-discussion.php' => ['icon' => 'i-bell', 'tabGroup' => self::TAB_SETTINGS],
+        'options-reading.php' => ['icon' => 'i-book', 'tabGroup' => self::TAB_SETTINGS],
+        'options-permalink.php' => ['icon' => 'i-link', 'tabGroup' => self::TAB_SETTINGS],
+        'options-cache.php' => ['icon' => 'i-spark', 'tabGroup' => self::TAB_SETTINGS],
+        'options-mail.php' => ['icon' => 'i-mail', 'tabGroup' => self::TAB_SETTINGS],
+        'profile.php' => ['icon' => 'i-user'],
+        'extending.php' => ['icon' => 'i-puzzle'],
+    ];
+
     /**
      * 当前菜单标题
      * @var string
@@ -85,6 +115,13 @@ class Menu extends Base
      * @var string
      */
     private string $currentMenuUrl = '';
+
+    /**
+     * 插件面板附加元数据
+     *
+     * @var array<string, array>
+     */
+    private array $panelMeta = [];
 
     public function execute()
     {
@@ -148,6 +185,7 @@ class Menu extends Base
         $panelTable = $this->options->panelTable;
         $extendingParentMenu = empty($panelTable['parent']) ? [] : $panelTable['parent'];
         $extendingChildMenu = empty($panelTable['child']) ? [] : $panelTable['child'];
+        $this->panelMeta = empty($panelTable['meta']) || !is_array($panelTable['meta']) ? [] : $panelTable['meta'];
         $currentUrl = $this->request->getRequestUrl();
         $adminUrl = $this->options->adminUrl;
         $menu = [];
@@ -271,7 +309,8 @@ class Menu extends Base
                     $access,
                     $hidden,
                     $addLink,
-                    $orgHidden
+                    $orgHidden,
+                    $this->resolveMenuMeta($menuUrl)
                 ];
             }
 
@@ -323,14 +362,6 @@ class Menu extends Base
         return $this->menu[$this->currentParent][0] ?? null;
     }
 
-    public function getCurrentParentUrl(): ?string
-    {
-        if ($this->currentParent <= 0 || !isset($this->menu[$this->currentParent])) {
-            return null;
-        }
-        return $this->menu[$this->currentParent][2] ?? null;
-    }
-
     public function getMenuTree(): array
     {
         $tree = [];
@@ -340,37 +371,37 @@ class Menu extends Base
             }
 
             $parentActive = $parentId == $this->currentParent;
-            $children = [];
-            foreach ($node[3] as $childId => $child) {
-                if ($child[4]) {
-                    continue;
-                }
-
-                $active = $parentActive && $childId == $this->currentChild;
-                if (!$active && $child[6]) {
-                    continue;
-                }
-
-                $children[] = [
-                    'id' => $childId,
-                    'name' => $child[0],
-                    'title' => $child[1],
-                    'url' => $active ? $this->currentUrl : $child[2],
-                    'active' => $active,
-                    'originalHidden' => (bool) $child[6],
-                ];
-            }
+            $children = $this->exportChildren($node, $parentActive);
 
             $tree[] = [
                 'id' => $parentId,
                 'name' => $node[0],
                 'url' => $node[2],
                 'active' => $parentActive,
+                'meta' => $this->resolveParentMeta($children),
                 'children' => $children,
             ];
         }
 
         return $tree;
+    }
+
+    public function getTabs(string $group, bool $includeOriginalHidden = false): array
+    {
+        $tabs = [];
+
+        foreach ($this->menu as $parentId => $node) {
+            if (!$node[1] || !$parentId) {
+                continue;
+            }
+
+            $tabs = array_merge(
+                $tabs,
+                $this->exportChildren($node, $parentId == $this->currentParent, $group, $includeOriginalHidden)
+            );
+        }
+
+        return $tabs;
     }
 
     /**
@@ -406,5 +437,83 @@ class Menu extends Base
 
             echo '</menu></li>';
         }
+    }
+
+    private function exportChildren(
+        array $node,
+        bool $parentActive,
+        ?string $group = null,
+        bool $includeOriginalHidden = false
+    ): array {
+        $children = [];
+
+        foreach ($node[3] as $childId => $child) {
+            if ($child[4] && !($includeOriginalHidden && !empty($child[6]))) {
+                continue;
+            }
+
+            $active = $parentActive && $childId == $this->currentChild;
+            if (!$active && $child[6] && !$includeOriginalHidden) {
+                continue;
+            }
+
+            $meta = (array) ($child[7] ?? []);
+            if ($group !== null && (($meta['tabGroup'] ?? null) !== $group)) {
+                continue;
+            }
+
+            $children[] = [
+                'id' => $childId,
+                'name' => $child[0],
+                'title' => $child[1],
+                'url' => $active ? $this->currentUrl : $child[2],
+                'active' => $active,
+                'meta' => $meta,
+            ];
+        }
+
+        return $children;
+    }
+
+    private function resolveParentMeta(array $children): array
+    {
+        foreach ($children as $child) {
+            if (!empty($child['active']) && !empty($child['meta'])) {
+                return (array) $child['meta'];
+            }
+        }
+
+        foreach ($children as $child) {
+            if (!empty($child['meta'])) {
+                return (array) $child['meta'];
+            }
+        }
+
+        return [];
+    }
+
+    private function resolveMenuMeta(string $menuUrl): array
+    {
+        $parts = Common::parseUrl($menuUrl);
+        $path = (string) ($parts['path'] ?? '');
+        $base = $path !== '' ? basename($path) : basename($menuUrl);
+        $meta = self::PAGE_META[$base] ?? [];
+
+        if ($base !== 'extending.php') {
+            return $meta;
+        }
+
+        $query = (string) ($parts['query'] ?? '');
+        if ($query === '') {
+            return $meta;
+        }
+
+        parse_str($query, $params);
+        $panel = trim((string) ($params['panel'] ?? ''));
+        if ($panel === '') {
+            return $meta;
+        }
+
+        return array_merge($meta, $this->panelMeta[$panel] ?? []);
     }
 }
