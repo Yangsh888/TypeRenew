@@ -944,26 +944,26 @@ EOF;
 
             [$type, $stream] = $parts;
 
-            if (in_array($type, ['image', 'video', 'audio', 'text', 'application'])) {
-                switch (true) {
-                    case in_array($stream, ['msword', 'msaccess', 'ms-powerpoint', 'ms-powerpoint']):
-                    case 0 === strpos($stream, 'vnd.'):
-                        return 'office';
-                    case false !== strpos($stream, 'html')
-                        || false !== strpos($stream, 'xml')
-                        || false !== strpos($stream, 'wml'):
-                        return 'html';
-                    case false !== strpos($stream, 'compressed')
-                        || false !== strpos($stream, 'zip')
-                        || in_array($stream, ['application/x-gtar', 'application/x-tar']):
-                        return 'archive';
-                    case 'text' == $type && 0 === strpos($stream, 'x-'):
-                        return 'script';
-                    default:
-                        return $type;
-                }
-            } else {
+            if (!in_array($type, ['image', 'video', 'audio', 'text', 'application'])) {
                 return 'unknown';
+            }
+
+            switch (true) {
+                case in_array($stream, ['msword', 'msaccess', 'ms-powerpoint']):
+                case 0 === strpos($stream, 'vnd.'):
+                    return 'office';
+                case false !== strpos($stream, 'html')
+                    || false !== strpos($stream, 'xml')
+                    || false !== strpos($stream, 'wml'):
+                    return 'html';
+                case false !== strpos($stream, 'compressed')
+                    || false !== strpos($stream, 'zip')
+                    || in_array($stream, ['x-gtar', 'x-tar']):
+                    return 'archive';
+                case 'text' == $type && 0 === strpos($stream, 'x-'):
+                    return 'script';
+                default:
+                    return $type;
             }
         }
 

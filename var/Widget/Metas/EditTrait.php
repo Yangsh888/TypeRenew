@@ -70,7 +70,6 @@ trait EditTrait
                 }
 
                 $this->update(['parent' => $mid], $this->db->sql()->where('parent = ?', $meta));
-                unset($existsContents);
             }
         }
 

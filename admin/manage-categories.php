@@ -157,10 +157,6 @@ include 'common-js.php';
                 var btn = $(this);
                 btn.parents('form').attr('action', btn.attr('rel')).submit();
             });
-
-            <?php if (isset($request->mid)): ?>
-            $('.typecho-mini-panel').effect('highlight', '#AACB36');
-            <?php endif; ?>
         });
     })();
 </script>

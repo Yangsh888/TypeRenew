@@ -34,12 +34,10 @@ class Notice extends Widget
     }
 
     /** @param string|array $value */
-    public function set($value, ?string $type = 'notice', string $typeFix = 'notice')
+    public function set($value, ?string $type = 'notice')
     {
         $notice = is_array($value) ? array_values($value) : [$value];
-        if (empty($type) && $typeFix) {
-            $type = $typeFix;
-        }
+        $type = $type ?: 'notice';
 
         $payload = Common::jsonEncode($notice, 0, '[]');
 
