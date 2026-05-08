@@ -41,25 +41,11 @@ class Users extends Base implements QueryInterface, RowFilterInterface, PrimaryK
     {
         return 'uid';
     }
-
-    /**
-     * 将每行的值压入堆栈
-     *
-     * @param array $value 每行的值
-     * @return array
-     */
     public function push(array $value): array
     {
         $value = $this->filter($value);
         return parent::push($value);
     }
-
-    /**
-     * 通用过滤器
-     *
-     * @param array $row 需要过滤的行数据
-     * @return array
-     */
     public function filter(array $row): array
     {
         return Users::pluginHandle()->filter('filter', $row, $this);
@@ -70,13 +56,6 @@ class Users extends Base implements QueryInterface, RowFilterInterface, PrimaryK
         return $key === 'uid' ? $this->uid : '{' . $key . '}';
     }
 
-    /**
-     * 查询方法
-     *
-     * @param mixed $fields
-     * @return Query
-     * @throws Exception
-     */
     public function select(...$fields): Query
     {
         return $this->db->select(...$fields)->from('table.users');

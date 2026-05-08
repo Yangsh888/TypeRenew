@@ -11,11 +11,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
 
 class Select extends Element
 {
-    /**
-     * 选择值
-     *
-     * @var array
-     */
     private array $options = [];
 
     public function input(?string $name = null, ?array $options = null): ?Layout

@@ -80,11 +80,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
     {
         return 'cid';
     }
-
-    /**
-     * @param string $key
-     * @return string
-     */
     public function getRouterParam(string $key): string
     {
         switch ($key) {
@@ -107,12 +102,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
         }
     }
 
-    /**
-     * 获取查询对象
-     *
-     * @param mixed $fields
-     * @return Query
-     */
     public function select(...$fields): Query
     {
         return $this->db->select(...$fields)->from('table.contents');

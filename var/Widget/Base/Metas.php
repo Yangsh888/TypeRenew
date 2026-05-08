@@ -39,11 +39,6 @@ class Metas extends Base implements QueryInterface, RowFilterInterface, PrimaryK
     {
         return 'mid';
     }
-
-    /**
-     * @param string $key
-     * @return string
-     */
     public function getRouterParam(string $key): string
     {
         switch ($key) {

@@ -118,10 +118,6 @@ trait TreeTrait
         return $result;
     }
 
-    /**
-     * @param int $id
-     * @return array|null
-     */
     public function getRow(int $id): ?array
     {
         return $this->map[$id] ?? null;
@@ -147,9 +143,6 @@ trait TreeTrait
         return false;
     }
 
-    /**
-     * @return array
-     */
     abstract protected function initTreeRows(): array;
 
     /**
@@ -197,9 +190,6 @@ trait TreeTrait
         $this->map = array_map([$this, 'filter'], $this->map);
     }
 
-    /**
-     * @return array
-     */
     protected function ___directory(): array
     {
         $directory = $this->getAllParentsSlug($this->{$this->getPrimaryKey()});

@@ -69,21 +69,10 @@ class Layout
         return $this;
     }
 
-    /**
-     * getItems
-     *
-     * @return array
-     */
     public function getItems(): array
     {
         return $this->items;
     }
-
-    /**
-     * getTagName
-     *
-     * @return string
-     */
     public function getTagName(): string
     {
         return $this->tagName;
@@ -131,11 +120,6 @@ class Layout
         return $this;
     }
 
-    /**
-     * 获取父节点
-     *
-     * @return Layout
-     */
     public function getParent(): Layout
     {
         return $this->parent;
