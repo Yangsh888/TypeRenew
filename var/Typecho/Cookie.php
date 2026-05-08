@@ -56,12 +56,9 @@ class Cookie
         return self::$domain;
     }
 
-    /**
-     * @return bool
-     */
     public static function getSecure(): bool
     {
-        return self::$secure ?: false;
+        return self::$secure ?? false;
     }
 
     /**

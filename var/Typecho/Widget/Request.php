@@ -232,7 +232,7 @@ class Request
         if ($this->filter) {
             foreach ($this->filter as $filter) {
                 $value = is_array($value) ? array_map($filter, $value) :
-                    call_user_func($filter, $value);
+                    $filter($value);
             }
 
             $this->filter = [];
@@ -251,8 +251,6 @@ class Request
      */
     private function wrapFilter(callable $filter): callable
     {
-        return function ($value) use ($filter) {
-            return call_user_func($filter, $value ?? '');
-        };
+        return fn($value) => $filter($value ?? '');
     }
 }

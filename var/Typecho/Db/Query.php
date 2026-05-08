@@ -69,7 +69,7 @@ class Query
 
     private function filterPrefix(string $string): string
     {
-        return (0 === strpos($string, 'table.')) ? substr_replace($string, $this->prefix, 0, 6) : $string;
+        return 0 === strpos($string, 'table.') ? substr_replace($string, $this->prefix, 0, 6) : $string;
     }
 
     private function filterColumn(string $str): string

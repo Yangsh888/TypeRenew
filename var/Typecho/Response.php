@@ -172,7 +172,7 @@ class Response
         }
 
         foreach ($this->responders as $responder) {
-            call_user_func($responder, $this);
+            $responder($this);
         }
 
         if (!empty($this->backgroundResponders)) {
@@ -180,7 +180,7 @@ class Response
 
             foreach ($this->backgroundResponders as $responder) {
                 try {
-                    call_user_func($responder, $this);
+                    $responder($this);
                 } catch (\Throwable $e) {
                     error_log('Response.background: ' . $e->getMessage());
                 }

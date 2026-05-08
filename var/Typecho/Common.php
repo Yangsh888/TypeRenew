@@ -574,7 +574,7 @@ EOF;
             $tLength = $length < $iLength ? ($length - self::strLen($trim)) : $length;
             $str = mb_substr($str, $start, $tLength, 'UTF-8');
 
-            return $length < $iLength ? ($str . $trim) : $str;
+            return $length < $iLength ? $str . $trim : $str;
         }
 
         public static function strBy(?string $a, ?string $b = null): ?string

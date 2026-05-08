@@ -9,14 +9,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-/**
- * 下拉选择框帮手类
- *
- * @category typecho
- * @package Widget
- * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
- * @license GNU General Public License 2.0
- */
 class Select extends Element
 {
     /**
@@ -26,13 +18,6 @@ class Select extends Element
      */
     private array $options = [];
 
-    /**
-     * 初始化当前输入项
-     *
-     * @param string|null $name 表单元素名称
-     * @param array|null $options 选择项
-     * @return Layout|null
-     */
     public function input(?string $name = null, ?array $options = null): ?Layout
     {
         $input = new Layout('select');
@@ -49,11 +34,6 @@ class Select extends Element
         return $input;
     }
 
-    /**
-     * 设置表单元素值
-     *
-     * @param mixed $value 表单元素值
-     */
     protected function inputValue($value)
     {
         foreach ($this->options as $option) {

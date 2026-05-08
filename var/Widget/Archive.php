@@ -418,9 +418,9 @@ class Archive extends Contents
         if ($this->invokeByFeed) {
             return parent::select(...$fields)->where('table.contents.allowFeed = ?', 1)
                 ->where("table.contents.password IS NULL OR table.contents.password = ''");
-        } else {
-            return parent::select(...$fields);
         }
+
+        return parent::select(...$fields);
     }
 
     public function content($more = null)

@@ -71,7 +71,7 @@ abstract class Widget
                 $widget->execute();
 
                 if ($sandbox && is_callable($disableSandboxOrCallback)) {
-                    call_user_func($disableSandboxOrCallback, $widget);
+                    $disableSandboxOrCallback($widget);
                 }
             } catch (Terminal $e) {
             } finally {

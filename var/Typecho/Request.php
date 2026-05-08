@@ -820,6 +820,6 @@ class Request
             $baseUrl = substr($requestUri, 0, $pos + strlen($baseUrl));
         }
 
-        return ($this->baseUrl = (null === $finalBaseUrl) ? rtrim($baseUrl, '/') : $finalBaseUrl);
+        return $this->baseUrl = $finalBaseUrl ?? rtrim($baseUrl, '/');
     }
 }

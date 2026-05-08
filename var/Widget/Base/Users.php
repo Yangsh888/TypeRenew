@@ -37,9 +37,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
  */
 class Users extends Base implements QueryInterface, RowFilterInterface, PrimaryKeyInterface, ParamsDelegateInterface
 {
-    /**
-     * @return string 获取主键
-     */
     public function getPrimaryKey(): string
     {
         return 'uid';
@@ -68,18 +65,9 @@ class Users extends Base implements QueryInterface, RowFilterInterface, PrimaryK
         return Users::pluginHandle()->filter('filter', $row, $this);
     }
 
-    /**
-     * @param string $key
-     * @return string
-     */
     public function getRouterParam(string $key): string
     {
-        switch ($key) {
-            case 'uid':
-                return $this->uid;
-            default:
-                return '{' . $key . '}';
-        }
+        return $key === 'uid' ? $this->uid : '{' . $key . '}';
     }
 
     /**
@@ -145,44 +133,26 @@ class Users extends Base implements QueryInterface, RowFilterInterface, PrimaryK
             htmlspecialchars($this->screenName, ENT_QUOTES, 'UTF-8') . '" width="' . $size . '" height="' . $size . '" />';
     }
 
-    /**
-     * @return string
-     */
     protected function ___permalink(): string
     {
         return Router::url('author', $this, $this->options->index);
     }
 
-    /**
-     * @return string
-     */
     protected function ___feedUrl(): string
     {
         return Router::url('author', $this, $this->options->feedUrl);
     }
 
-    /**
-     * @return string
-     */
     protected function ___feedRssUrl(): string
     {
         return Router::url('author', $this, $this->options->feedRssUrl);
     }
 
-    /**
-     * @return string
-     */
     protected function ___feedAtomUrl(): string
     {
         return Router::url('author', $this, $this->options->feedAtomUrl);
     }
 
-    /**
-     * personalOptions
-     *
-     * @return Config
-     * @throws Exception
-     */
     protected function ___personalOptions(): Config
     {
         $rows = $this->db->fetchAll($this->db->select()

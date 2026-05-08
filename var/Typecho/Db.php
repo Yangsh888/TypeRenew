@@ -51,7 +51,7 @@ class Db
 
         $adapterName = '\Typecho\Db\Adapter\\' . str_replace('_', '\\', $adapterName);
 
-        if (!call_user_func([$adapterName, 'isAvailable'])) {
+        if (!$adapterName::isAvailable()) {
             throw new DbException("Adapter {$adapterName} is not available");
         }
 
@@ -341,7 +341,7 @@ class Db
                     return null;
                 }
                 if (is_array($cached)) {
-                    return ($filter ? call_user_func($filter, $cached) : $cached);
+                    return $filter ? $filter($cached) : $cached;
                 }
             }
 
@@ -353,7 +353,7 @@ class Db
                         return null;
                     }
                     if (is_array($waited)) {
-                        return ($filter ? call_user_func($filter, $waited) : $waited);
+                        return $filter ? $filter($waited) : $waited;
                     }
                 }
             }
@@ -371,9 +371,7 @@ class Db
             }
         }
 
-        return ($rows) ?
-            ($filter ? call_user_func($filter, $rows) : $rows) :
-            null;
+        return $rows ? ($filter ? $filter($rows) : $rows) : null;
     }
 
     public function fetchObject($query, ?callable $filter = null): ?\stdClass
@@ -389,7 +387,7 @@ class Db
                     return null;
                 }
                 if ($cached instanceof \stdClass) {
-                    return ($filter ? call_user_func($filter, $cached) : $cached);
+                    return $filter ? $filter($cached) : $cached;
                 }
             }
 
@@ -401,7 +399,7 @@ class Db
                         return null;
                     }
                     if ($waited instanceof \stdClass) {
-                        return ($filter ? call_user_func($filter, $waited) : $waited);
+                        return $filter ? $filter($waited) : $waited;
                     }
                 }
             }
@@ -419,8 +417,6 @@ class Db
             }
         }
 
-        return ($rows) ?
-            ($filter ? call_user_func($filter, $rows) : $rows) :
-            null;
+        return $rows ? ($filter ? $filter($rows) : $rows) : null;
     }
 }
