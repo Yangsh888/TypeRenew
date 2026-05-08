@@ -110,7 +110,7 @@ class Request
 
     public function from(...$params): array
     {
-        return $this->applyFilter(call_user_func_array([$this->request->proxy($this->params), 'from'], $params));
+        return $this->applyFilter($this->request->proxy($this->params)->from(...$params));
     }
 
     public function is(string|array $query): bool

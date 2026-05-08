@@ -15,21 +15,10 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-/**
- * 编辑分类组件
- *
- * @package Widget
- * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
- * @license GNU General Public License 2.0
- */
 class Edit extends Metas implements ActionInterface
 {
     use EditTrait;
 
-    /**
-     * 入口函数
-     * @throws \Exception
-     */
     public function execute()
     {
         $this->user->pass('editor');
@@ -114,11 +103,6 @@ class Edit extends Metas implements ActionInterface
         return !$category;
     }
 
-    /**
-     * 增加分类
-     *
-     * @throws Exception
-     */
     public function insertCategory()
     {
         if ($this->form('insert')->validate()) {
@@ -234,7 +218,6 @@ class Edit extends Metas implements ActionInterface
             $action = $_action;
         }
 
-        /** 给表单增加规则 */
         if ('insert' == $action || 'update' == $action) {
             $name->addRule('required', _t('必须填写分类名称'));
             $name->addRule([$this, 'nameExists'], _t('分类名称已经存在'));
@@ -252,18 +235,12 @@ class Edit extends Metas implements ActionInterface
         return $form;
     }
 
-    /**
-     * 更新分类
-     *
-     * @throws Exception
-     */
     public function updateCategory()
     {
         if ($this->form('update')->validate()) {
             $this->response->goBack();
         }
 
-        /** 取出数据 */
         $category = $this->request->from('name', 'slug', 'description', 'parent');
         $category['mid'] = $this->request->get('mid');
         $category['parent'] = (int) ($category['parent'] ?? 0);
@@ -316,11 +293,6 @@ class Edit extends Metas implements ActionInterface
             . ($category['parent'] ? '?parent=' . $category['parent'] : ''), $this->options->adminUrl));
     }
 
-    /**
-     * 删除分类
-     * @return void
-     * @throws Exception
-     */
     public function deleteCategory()
     {
         $categories = $this->request->filter('int')->getArray('mid');
@@ -351,10 +323,6 @@ class Edit extends Metas implements ActionInterface
         $this->response->goBack();
     }
 
-    /**
-     * 合并分类
-     * @throws Exception
-     */
     public function mergeCategory()
     {
         $validator = new Validate();
@@ -381,10 +349,6 @@ class Edit extends Metas implements ActionInterface
         $this->response->goBack();
     }
 
-    /**
-     * 分类排序
-     * @throws Exception
-     */
     public function sortCategory()
     {
         $categories = $this->request->filter('int')->getArray('mid');
@@ -399,11 +363,6 @@ class Edit extends Metas implements ActionInterface
         }
     }
 
-    /**
-     * 刷新分类
-     *
-     * @throws Exception
-     */
     public function refreshCategory()
     {
         $categories = $this->request->filter('int')->getArray('mid');
@@ -422,11 +381,6 @@ class Edit extends Metas implements ActionInterface
         $this->response->goBack();
     }
 
-    /**
-     * 设置默认分类
-     *
-     * @throws Exception
-     */
     public function defaultCategory()
     {
         $validator = new Validate();
@@ -454,12 +408,6 @@ class Edit extends Metas implements ActionInterface
         $this->response->redirect(Common::url('manage-categories.php', $this->options->adminUrl));
     }
 
-    /**
-     * 获取菜单标题
-     *
-     * @return string|null
-     * @throws \Typecho\Widget\Exception|Exception
-     */
     public function getMenuTitle(): ?string
     {
         if ($this->request->is('mid')) {
@@ -485,11 +433,6 @@ class Edit extends Metas implements ActionInterface
         throw new \Typecho\Widget\Exception(_t('分类不存在'), 404);
     }
 
-    /**
-     * 入口函数
-     * @return void
-     * @throws Exception
-     */
     public function action()
     {
         $this->security->protect();

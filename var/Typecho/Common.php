@@ -15,8 +15,7 @@ namespace {
 
     function _e(string $string, ...$args)
     {
-        array_unshift($args, $string);
-        echo call_user_func_array('_t', $args);
+        echo _t($string, ...$args);
     }
 
     function _n(string $single, string $plural, int $number): string
@@ -402,7 +401,7 @@ EOF;
 
         public static function filterSearchQuery(?string $query): string
         {
-            return isset($query) ? str_replace('-', ' ', self::slugName($query) ?? '') : '';
+            return str_replace('-', ' ', self::slugName($query));
         }
 
         public static function slugName(?string $str, string $default = '', int $maxLength = 128): string
@@ -457,8 +456,7 @@ EOF;
                 return [];
             }
 
-            $parts = parse_url($url);
-            return is_array($parts) ? $parts : [];
+            return parse_url($url) ?: [];
         }
 
         public static function safeUrl(?string $url): string

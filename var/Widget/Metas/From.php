@@ -15,10 +15,6 @@ class From extends Metas
         initParameter as initTreeParameter;
     }
 
-    /**
-     * @param Config $parameter
-     * @return void
-     */
     protected function initParameter(Config $parameter)
     {
         $parameter->setDefault([
@@ -27,10 +23,6 @@ class From extends Metas
         ]);
     }
 
-    /**
-     * @return void
-     * @throws Exception
-     */
     public function execute()
     {
         $query = null;

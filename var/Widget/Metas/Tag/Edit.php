@@ -18,9 +18,6 @@ class Edit extends Metas implements ActionInterface
 {
     use EditTrait;
 
-    /**
-     * 入口函数
-     */
     public function execute()
     {
         $this->user->pass('editor');
@@ -103,11 +100,6 @@ class Edit extends Metas implements ActionInterface
         return !$tag;
     }
 
-    /**
-     * 插入标签
-     *
-     * @throws Exception
-     */
     public function insertTag()
     {
         if ($this->form('insert')->validate()) {
@@ -213,11 +205,6 @@ class Edit extends Metas implements ActionInterface
         return $form;
     }
 
-    /**
-     * 更新标签
-     *
-     * @throws Exception
-     */
     public function updateTag()
     {
         if ($this->form('update')->validate()) {
@@ -242,11 +229,6 @@ class Edit extends Metas implements ActionInterface
         $this->response->redirect(Common::url('manage-tags.php', $this->options->adminUrl));
     }
 
-    /**
-     * 删除标签
-     *
-     * @throws Exception
-     */
     public function deleteTag()
     {
         $tags = $this->request->filter('int')->getArray('mid');
@@ -273,11 +255,6 @@ class Edit extends Metas implements ActionInterface
         $this->response->redirect(Common::url('manage-tags.php', $this->options->adminUrl));
     }
 
-    /**
-     * 合并标签
-     *
-     * @throws Exception
-     */
     public function mergeTag()
     {
         if (empty($this->request->merge)) {
@@ -305,11 +282,6 @@ class Edit extends Metas implements ActionInterface
         $this->response->redirect(Common::url('manage-tags.php', $this->options->adminUrl));
     }
 
-    /**
-     * 刷新标签
-     * @return void
-     * @throws Exception
-     */
     public function refreshTag()
     {
         $tags = $this->request->filter('int')->getArray('mid');
@@ -329,11 +301,6 @@ class Edit extends Metas implements ActionInterface
         $this->response->goBack();
     }
 
-    /**
-     * 清理没有任何内容的标签
-     *
-     * @throws Exception
-     */
     public function clearTags()
     {
         $tags = array_column($this->db->fetchAll($this->select('mid')
@@ -351,11 +318,6 @@ class Edit extends Metas implements ActionInterface
         }
     }
 
-    /**
-     * 入口函数,绑定事件
-     * @return void
-     * @throws Exception
-     */
     public function action()
     {
         $this->security->protect();
