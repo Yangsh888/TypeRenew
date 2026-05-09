@@ -165,7 +165,7 @@ class Profile extends Users implements ActionInterface
         }
 
         $currentScreenName = (string) $this->user->screenName;
-        $user = $this->request->from('mail', 'screenName', 'url');
+        $user = $this->request->fromInput('mail', 'screenName', 'url');
         $user['screenName'] = Common::strBy($user['screenName'] ?? null, $this->user->name);
 
         try {
@@ -230,11 +230,6 @@ class Profile extends Users implements ActionInterface
         return $form;
     }
 
-    /**
-     * 执行更新动作
-     *
-     * @throws Exception
-     */
     public function updateOptions()
     {
         $settings['autoSave'] = $this->request->is('autoSave=1') ? 1 : 0;
@@ -277,7 +272,7 @@ class Profile extends Users implements ActionInterface
             $this->response->goBack();
         }
 
-        $password = Password::hash($this->request->password);
+        $password = Password::hash((string) $this->request->get('password'));
 
         $this->update(
             ['password' => $password],
@@ -291,11 +286,6 @@ class Profile extends Users implements ActionInterface
         $this->response->goBack();
     }
 
-    /**
-     * 生成表单
-     *
-     * @return Form
-     */
     public function passwordForm(): Form
     {
         $form = new Form($this->security->getIndex('/action/users-profile'), Form::POST_METHOD);
@@ -391,23 +381,18 @@ class Profile extends Users implements ActionInterface
     public function personalConfigHandle(string $className, array $settings): bool
     {
         if (method_exists($className, 'personalConfigHandle')) {
-            call_user_func([$className, 'personalConfigHandle'], $settings, false);
+            $className::personalConfigHandle($settings, false);
             return true;
         }
 
         return false;
     }
 
-    /**
-     * 入口函数
-     * @return void
-     */
     public function action()
     {
         $this->user->pass('subscriber');
         if (!$this->request->isPost()) {
-            $this->response->setStatus(405);
-            $this->response->goBack();
+            $this->response->setStatus(405)->throwContent(_t('Method Not Allowed'), 'text/plain');
             return;
         }
         $this->security->protect();

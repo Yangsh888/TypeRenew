@@ -10,20 +10,6 @@ $users = \Widget\Users\Admin::alloc();
         <div class="row typecho-page-main" role="main">
             <div class="col-mb-12 typecho-list">
                 <form method="get" class="typecho-list-operate">
-                    <div class="operate">
-                        <label><i class="sr-only"><?php _e('全选'); ?></i><input type="checkbox"
-                                                                               class="typecho-table-select-all"/></label>
-                        <div class="btn-group btn-drop">
-                            <button class="btn dropdown-toggle btn-s" type="button"><i
-                                    class="sr-only"><?php _e('操作'); ?></i><?php _e('选中项'); ?> <i
-                                    class="i-caret-down"></i></button>
-                            <ul class="dropdown-menu">
-                                <li><a lang="<?php _e('你确认要删除这些用户吗?'); ?>"
-                                       href="<?php $security->index('/action/users-edit?do=delete'); ?>"><?php _e('删除'); ?></a>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
                     <div class="search" role="search">
                         <?php if ('' != $request->keywords): ?>
                             <a href="<?php $options->adminUrl('manage-users.php'); ?>"><?php _e('&laquo; 取消筛选'); ?></a>
@@ -35,6 +21,22 @@ $users = \Widget\Users\Admin::alloc();
                 </form>
 
                 <form method="post" name="manage_users" class="operate-form">
+                    <div class="typecho-list-operate">
+                        <div class="operate">
+                            <label><i class="sr-only"><?php _e('全选'); ?></i><input type="checkbox"
+                                                                                   class="typecho-table-select-all"/></label>
+                            <div class="btn-group btn-drop">
+                                <button class="btn dropdown-toggle btn-s" type="button"><i
+                                        class="sr-only"><?php _e('操作'); ?></i><?php _e('选中项'); ?> <i
+                                            class="i-caret-down"></i></button>
+                                <ul class="dropdown-menu">
+                                    <li><a lang="<?php _e('你确认要删除这些用户吗?'); ?>"
+                                           href="<?php $security->index('/action/users-edit?do=delete'); ?>"><?php _e('删除'); ?></a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
                     <table class="typecho-list-table">
                         <colgroup>
                             <col width="3%" class="kit-hidden-mb"/>

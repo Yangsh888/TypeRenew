@@ -22,6 +22,11 @@ class Register extends Users implements ActionInterface
      */
     public function action()
     {
+        if (!$this->request->isPost()) {
+            $this->response->setStatus(405)->throwContent(_t('Method Not Allowed'), 'text/plain');
+            return;
+        }
+
         $this->security->protect();
 
         if ($this->user->hasLogin() || !$this->options->allowRegister) {
@@ -47,20 +52,28 @@ class Register extends Users implements ActionInterface
         );
         $validator->addRule('confirm', 'confirm', _t('两次输入的密码不一致'), 'password');
 
-        if ($error = $validator->run($this->request->from('name', 'password', 'mail', 'confirm'))) {
-            Cookie::set('__typecho_remember_name', $this->request->get('name'));
-            Cookie::set('__typecho_remember_mail', $this->request->get('mail'));
+        $name = $this->request->filter('trim')->getInput('name', '');
+        $mail = $this->request->filter('trim')->getInput('mail', '');
+        $password = $this->request->getInput('password', '');
+        $confirm = $this->request->getInput('confirm', '');
+
+        if ($error = $validator->run([
+            'name' => $name,
+            'password' => $password,
+            'mail' => $mail,
+            'confirm' => $confirm,
+        ])) {
+            Cookie::set('__typecho_remember_name', $name);
+            Cookie::set('__typecho_remember_mail', $mail);
 
             Notice::alloc()->set($error);
             $this->response->goBack();
         }
 
-        $password = (string) $this->request->get('password');
-
         $dataStruct = [
-            'name' => $this->request->get('name'),
-            'mail' => $this->request->get('mail'),
-            'screenName' => $this->request->get('name'),
+            'name' => $name,
+            'mail' => $mail,
+            'screenName' => $name,
             'password' => Password::hash($password),
             'created' => $this->options->time,
             'group' => 'subscriber'
@@ -73,8 +86,8 @@ class Register extends Users implements ActionInterface
         } catch (\Throwable $e) {
             $conflict = $this->userWriteConflict($e);
             if ($conflict !== null) {
-                Cookie::set('__typecho_remember_name', $this->request->get('name'));
-                Cookie::set('__typecho_remember_mail', $this->request->get('mail'));
+                Cookie::set('__typecho_remember_name', $name);
+                Cookie::set('__typecho_remember_mail', $mail);
                 Notice::alloc()->set($conflict);
                 $this->response->goBack();
             }
@@ -86,7 +99,7 @@ class Register extends Users implements ActionInterface
 
         self::pluginHandle()->call('finishRegister', $this);
 
-        $this->user->login($this->request->get('name'), $password);
+        $this->user->login($name, $password);
 
         Cookie::delete('__typecho_first_run');
         Cookie::delete('__typecho_remember_name');

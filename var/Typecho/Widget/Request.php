@@ -103,6 +103,11 @@ class Request
         return $this->applyFilter($this->request->proxy($this->params)->get($key, $default, $exists));
     }
 
+    public function getInput(string $key, $default = null, ?bool &$exists = true)
+    {
+        return $this->applyFilter($this->request->proxy($this->params)->getInput($key, $default, $exists));
+    }
+
     public function getArray(string $key): array
     {
         return $this->applyFilter($this->request->proxy($this->params)->getArray($key));
@@ -111,6 +116,11 @@ class Request
     public function from(...$params): array
     {
         return $this->applyFilter($this->request->proxy($this->params)->from(...$params));
+    }
+
+    public function fromInput(...$params): array
+    {
+        return $this->applyFilter($this->request->proxy($this->params)->fromInput(...$params));
     }
 
     public function is(string|array $query): bool

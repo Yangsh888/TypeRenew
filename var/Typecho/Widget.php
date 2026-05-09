@@ -70,7 +70,7 @@ abstract class Widget
                 $widget = new $className($requestObject, $responseObject, $params);
                 $widget->execute();
 
-                if ($sandbox && is_callable($disableSandboxOrCallback)) {
+                if (is_callable($disableSandboxOrCallback)) {
                     $disableSandboxOrCallback($widget);
                 }
             } catch (Terminal $e) {

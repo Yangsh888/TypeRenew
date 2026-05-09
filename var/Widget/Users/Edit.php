@@ -72,9 +72,14 @@ class Edit extends Users implements ActionInterface
             $this->response->goBack();
         }
 
-        $user = $this->request->from('name', 'mail', 'screenName', 'password', 'url', 'group');
+        $user = $this->request->fromInput('name', 'mail', 'screenName', 'password', 'url', 'group');
         $user['screenName'] = Common::strBy($user['screenName'] ?? null, $user['name']);
-        $user['password'] = Password::hash($user['password']);
+        $password = $user['password'] ?? null;
+        if (!is_string($password) || $password === '') {
+            Notice::alloc()->set(_t('必须填写密码'));
+            $this->response->goBack();
+        }
+        $user['password'] = Password::hash($password);
         $user['created'] = $this->options->time;
 
         try {
@@ -218,12 +223,13 @@ class Edit extends Users implements ActionInterface
         }
 
         $currentScreenName = (string) $this->screenName;
-        $user = $this->request->from('mail', 'screenName', 'password', 'url', 'group');
+        $user = $this->request->fromInput('mail', 'screenName', 'password', 'url', 'group');
         $user['screenName'] = Common::strBy($user['screenName'] ?? null, $this->name);
-        if (empty($user['password'])) {
+        $password = $user['password'] ?? null;
+        if (!is_string($password) || $password === '') {
             unset($user['password']);
         } else {
-            $user['password'] = Password::hash($user['password']);
+            $user['password'] = Password::hash($password);
         }
 
         try {
@@ -283,8 +289,7 @@ class Edit extends Users implements ActionInterface
     {
         $this->user->pass('administrator');
         if (!$this->request->isPost()) {
-            $this->response->setStatus(405);
-            $this->response->goBack();
+            $this->response->setStatus(405)->throwContent(_t('Method Not Allowed'), 'text/plain');
             return;
         }
         $this->security->protect();

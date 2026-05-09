@@ -64,7 +64,7 @@ class Form extends Layout
 
     public function getInput(string $name)
     {
-        return $this->inputs[$name];
+        return $this->inputs[$name] ?? null;
     }
 
     public function getAllRequest(): array
@@ -114,9 +114,11 @@ class Form extends Layout
     {
         $result = [];
         $request = Request::getInstance();
+        $getter = strtolower((string) $this->getAttribute('method')) === self::POST_METHOD ? 'getInput' : 'get';
 
         foreach ($params as $param) {
-            $result[$param] = $request->get($param, is_array($this->getInput($param)->value) ? [] : null);
+            $input = $this->getInput($param);
+            $result[$param] = $request->$getter($param, is_array($input?->value ?? null) ? [] : null);
         }
 
         return $result;

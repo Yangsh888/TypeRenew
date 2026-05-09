@@ -22,7 +22,7 @@ class Rows extends Widget
 
         if (!empty($pluginDirs)) {
             foreach ($pluginDirs as $key => $pluginDir) {
-                $parts = $this->getPlugin($pluginDir, $key);
+                $parts = $this->getPlugin($pluginDir);
                 if (empty($parts)) {
                     continue;
                 }

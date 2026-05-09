@@ -270,7 +270,7 @@ class Edit extends Options implements ActionInterface
     public function personalConfigHandle(string $className, array $settings): bool
     {
         if (method_exists($className, 'personalConfigHandle')) {
-            call_user_func([$className, 'personalConfigHandle'], $settings, true);
+            $className::personalConfigHandle($settings, true);
             return true;
         }
 
@@ -377,8 +377,8 @@ class Edit extends Options implements ActionInterface
     {
         $this->user->pass('administrator');
         if (!$this->request->isPost()) {
-            $this->response->setStatus(405);
-            $this->response->goBack();
+            $this->response->setStatus(405)->throwContent(_t('Method Not Allowed'), 'text/plain');
+            return;
         }
         $this->security->protect();
 

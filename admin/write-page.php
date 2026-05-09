@@ -21,7 +21,8 @@ while ($parents->next()) {
     <div class="body container">
         <form class="row typecho-page-main typecho-post-area tr-write-shell" action="<?php $security->index('/action/contents-page-edit'); ?>" method="post" name="write_page">
             <?php
-            $permalink = \Typecho\Common::url($options->routingTable['page']['url'], $options->index);
+            $pageRoute = (string) ($options->routingTable['page']['url'] ?? \Utils\Defaults::routingTable()['page']['url']);
+            $permalink = \Typecho\Common::url($pageRoute, $options->index);
             $permalinkParts = explode(':', $permalink, 2);
             $permalink = count($permalinkParts) === 2 ? $permalinkParts[1] : $permalinkParts[0];
             $permalink = ltrim($permalink, '/');

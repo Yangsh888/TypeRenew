@@ -12,14 +12,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-/**
- * 皮肤配置组件
- *
- * @author qining
- * @package Widget
- * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
- * @license GNU General Public License 2.0
- */
 class Config extends BaseOptions
 {
     /**
@@ -51,11 +43,6 @@ class Config extends BaseOptions
         return false;
     }
 
-    /**
-     * 配置外观
-     *
-     * @return Form
-     */
     public function config(): Form
     {
         $form = new Form(

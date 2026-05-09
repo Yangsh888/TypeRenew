@@ -7,19 +7,11 @@ use Typecho\Widget\Exception;
 use Widget\Base\Metas;
 use Widget\Metas\From as MetasFrom;
 
-/**
- * 编辑准备组件
- */
 trait PrepareEditTrait
 {
 
     /**
      * 准备编辑
-     *
-     * @param string $type
-     * @param bool $hasDraft
-     * @param string $notFoundMessage
-     * @return $this
      * @throws Exception|DbException
      */
     protected function prepareEdit(string $type, bool $hasDraft, string $notFoundMessage): self
@@ -69,22 +61,14 @@ trait PrepareEditTrait
         return $this;
     }
 
-    /**
-     * @return $this
-     */
     abstract public function prepare(): self;
 
-    /**
-     * @return string
-     */
     public function getMenuTitle(): string
     {
         return _t('编辑 %s', $this->prepare()->title);
     }
 
     /**
-     * @param mixed ...$permissions
-     * @return bool
      * @throws Exception|DbException
      */
     public function allow(...$permissions): bool
@@ -106,25 +90,16 @@ trait PrepareEditTrait
         return $allow;
     }
 
-    /**
-     * @return string
-     */
     protected function ___title(): string
     {
         return $this->have() ? $this->row['title'] : '';
     }
 
-    /**
-     * @return string
-     */
     protected function ___text(): string
     {
         return $this->have() ? ($this->isMarkdown ? substr($this->row['text'], 15) : $this->row['text']) : '';
     }
 
-    /**
-     * @return array
-     */
     protected function ___categories(): array
     {
         return $this->have() ? parent::___categories()

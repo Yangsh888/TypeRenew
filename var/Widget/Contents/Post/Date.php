@@ -12,18 +12,8 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-/**
- * 按日期归档列表组件
- *
- * @author qining
- * @category typecho
- * @package Widget
- */
 class Date extends Base
 {
-    /**
-     * @param Config $parameter
-     */
     protected function initParameter(Config $parameter)
     {
         $parameter->setDefault('format=Y-m&type=month&limit=0');

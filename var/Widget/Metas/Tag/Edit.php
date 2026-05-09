@@ -106,7 +106,7 @@ class Edit extends Metas implements ActionInterface
             $this->response->goBack();
         }
 
-        $tag = $this->request->from('name', 'slug');
+        $tag = $this->request->fromInput('name', 'slug');
         $tag['type'] = 'tag';
         $tag['slug'] = Common::slugName(Common::strBy($tag['slug'] ?? null, $tag['name']));
 
@@ -211,7 +211,7 @@ class Edit extends Metas implements ActionInterface
             $this->response->goBack();
         }
 
-        $tag = $this->request->from('name', 'slug', 'mid');
+        $tag = $this->request->fromInput('name', 'slug', 'mid');
         $tag['type'] = 'tag';
         $tag['slug'] = Common::slugName(Common::strBy($tag['slug'] ?? null, $tag['name']));
 
@@ -321,8 +321,7 @@ class Edit extends Metas implements ActionInterface
     public function action()
     {
         if (!$this->request->isPost()) {
-            $this->response->setStatus(405);
-            $this->response->goBack();
+            $this->response->setStatus(405)->throwContent(_t('Method Not Allowed'), 'text/plain');
             return;
         }
 

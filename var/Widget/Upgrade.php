@@ -96,8 +96,7 @@ class Upgrade extends BaseOptions implements ActionInterface
     {
         $this->user->pass('administrator');
         if (!$this->request->isPost()) {
-            $this->response->setStatus(405);
-            $this->response->goBack();
+            $this->response->setStatus(405)->throwContent(_t('Method Not Allowed'), 'text/plain');
             return;
         }
         $this->security->protect();

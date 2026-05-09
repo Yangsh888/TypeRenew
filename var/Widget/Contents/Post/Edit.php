@@ -27,7 +27,7 @@ class Edit extends Contents implements ActionInterface
 
     public function writePost()
     {
-        $contents = $this->request->from(
+        $contents = $this->request->fromInput(
             'password',
             'allowComment',
             'allowPing',
@@ -83,17 +83,18 @@ class Edit extends Contents implements ActionInterface
                 ),
                 $this->options->adminUrl
             ));
-        } else {
-            $contents['type'] = 'post_draft';
-            $draftId = $this->save($contents);
-
-            self::pluginHandle()->call('finishSave', $contents, $this);
-            $this->finishSaveResponse(
-                (string) $this->title,
-                $draftId,
-                Common::url('write-post.php?cid=' . $this->cid, $this->options->adminUrl)
-            );
+            return;
         }
+
+        $contents['type'] = 'post_draft';
+        $draftId = $this->save($contents);
+
+        self::pluginHandle()->call('finishSave', $contents, $this);
+        $this->finishSaveResponse(
+            (string) $this->title,
+            $draftId,
+            Common::url('write-post.php?cid=' . $this->cid, $this->options->adminUrl)
+        );
     }
 
     public function markPost()
@@ -257,8 +258,8 @@ class Edit extends Contents implements ActionInterface
     public function action()
     {
         if (!$this->request->isPost()) {
-            $this->response->setStatus(405);
-            $this->response->goBack();
+            $this->response->setStatus(405)->throwContent(_t('Method Not Allowed'), 'text/plain');
+            return;
         }
         $this->security->protect();
         $this->on($this->request->is('do=publish') || $this->request->is('do=save'))

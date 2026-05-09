@@ -24,7 +24,7 @@ class Discussion extends Options implements ActionInterface
     {
         $this->validateFormOrGoBack($this->form());
 
-        $settings = $this->request->from(
+        $settings = $this->request->fromInput(
             'commentDateFormat',
             'commentsListSize',
             'commentsPageSize',
@@ -42,8 +42,8 @@ class Discussion extends Options implements ActionInterface
             'commentsRequireUrl',
             'commentsHTMLTagAllowed'
         );
-        $settings['commentsShow'] = $this->request->getArray('commentsShow');
-        $settings['commentsPost'] = $this->request->getArray('commentsPost');
+        $settings['commentsShow'] = $this->request->getInput('commentsShow', []);
+        $settings['commentsPost'] = $this->request->getInput('commentsPost', []);
 
         $settings['commentsShowCommentOnly'] = $this->isEnableByCheckbox(
             $settings['commentsShow'],
@@ -220,8 +220,7 @@ class Discussion extends Options implements ActionInterface
     {
         $this->user->pass('administrator');
         if (!$this->request->isPost()) {
-            $this->response->setStatus(405);
-            $this->response->goBack();
+            $this->response->setStatus(405)->throwContent(_t('Method Not Allowed'), 'text/plain');
             return;
         }
         $this->security->protect();

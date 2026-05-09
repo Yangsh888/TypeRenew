@@ -10,8 +10,10 @@ $post = \Widget\Contents\Post\Edit::alloc()->prepare();
     <div class="body container">
         <form class="row typecho-page-main typecho-post-area tr-write-shell" action="<?php $security->index('/action/contents-post-edit'); ?>" method="post" name="write_post">
             <?php
-            $permalink = \Typecho\Common::url($options->routingTable['post']['url'], $options->index);
-            [, $permalink] = explode(':', $permalink, 2);
+            $postRoute = (string) ($options->routingTable['post']['url'] ?? \Utils\Defaults::routingTable()['post']['url']);
+            $permalink = \Typecho\Common::url($postRoute, $options->index);
+            $permalinkParts = explode(':', $permalink, 2);
+            $permalink = count($permalinkParts) === 2 ? $permalinkParts[1] : $permalinkParts[0];
             $permalink = ltrim($permalink, '/');
             $permalink = preg_replace("/\[([_a-z0-9-]+)[^\]]*\]/i", "{\\1}", $permalink);
             if ($post->have()) {

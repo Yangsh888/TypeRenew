@@ -27,7 +27,7 @@ class Edit extends Contents implements ActionInterface
 
     public function writePage()
     {
-        $contents = $this->request->from(
+        $contents = $this->request->fromInput(
             'text',
             'template',
             'allowComment',
@@ -69,17 +69,18 @@ class Edit extends Contents implements ActionInterface
 
             $this->response->redirect(Common::url('manage-pages.php'
                 . ($this->parent ? '?parent=' . $this->parent : ''), $this->options->adminUrl));
-        } else {
-            $contents['type'] = 'page_draft';
-            $draftId = $this->save($contents, false);
-
-            self::pluginHandle()->call('finishSave', $contents, $this);
-            $this->finishSaveResponse(
-                (string) $this->title,
-                $draftId,
-                Common::url('write-page.php?cid=' . $this->cid, $this->options->adminUrl)
-            );
+            return;
         }
+
+        $contents['type'] = 'page_draft';
+        $draftId = $this->save($contents, false);
+
+        self::pluginHandle()->call('finishSave', $contents, $this);
+        $this->finishSaveResponse(
+            (string) $this->title,
+            $draftId,
+            Common::url('write-page.php?cid=' . $this->cid, $this->options->adminUrl)
+        );
     }
 
     public function markPage()
@@ -225,9 +226,10 @@ class Edit extends Contents implements ActionInterface
 
         if (!$this->request->isAjax()) {
             $this->response->goBack();
-        } else {
-            $this->response->throwJson(['success' => 1, 'message' => _t('页面排序已经完成')]);
+            return;
         }
+
+        $this->response->throwJson(['success' => 1, 'message' => _t('页面排序已经完成')]);
     }
 
     public function prepare(): self
@@ -238,8 +240,8 @@ class Edit extends Contents implements ActionInterface
     public function action()
     {
         if (!$this->request->isPost()) {
-            $this->response->setStatus(405);
-            $this->response->goBack();
+            $this->response->setStatus(405)->throwContent(_t('Method Not Allowed'), 'text/plain');
+            return;
         }
         $this->security->protect();
         $this->on($this->request->is('do=publish') || $this->request->is('do=save'))

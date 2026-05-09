@@ -16,14 +16,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-/**
- * 编辑文章组件
- *
- * @author qining
- * @package Widget
- * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
- * @license GNU General Public License 2.0
- */
 class Edit extends Contents implements ActionInterface
 {
     use PrepareEditTrait;
@@ -38,8 +30,6 @@ class Edit extends Contents implements ActionInterface
 
     /**
      * 判断文件名转换到缩略名后是否合法
-     *
-     * @param string $name 文件名
      */
     public function nameToSlug(string $name): bool
     {
@@ -55,8 +45,6 @@ class Edit extends Contents implements ActionInterface
 
     /**
      * 判断文件缩略名是否可用
-     *
-     * @param string $slug 缩略名
      * @throws \Typecho\Db\Exception
      */
     public function slugExists(string $slug): bool
@@ -87,7 +75,7 @@ class Edit extends Contents implements ActionInterface
             $this->response->goBack();
         }
 
-        $input = $this->request->from('name', 'slug', 'description');
+        $input = $this->request->fromInput('name', 'slug', 'description');
         $input['slug'] = Common::slugName(Common::strBy($input['slug'] ?? null, $input['name']));
 
         $attachment['title'] = $input['name'];
@@ -118,11 +106,6 @@ class Edit extends Contents implements ActionInterface
             $this->getPageOffsetQuery($cid, $this->status), $this->options->adminUrl));
     }
 
-    /**
-     * 生成表单
-     *
-     * @return Form
-     */
     public function form(): Form
     {
         $form = new Form($this->security->getIndex('/action/contents-attachment-edit'), Form::POST_METHOD);
@@ -175,10 +158,6 @@ class Edit extends Contents implements ActionInterface
 
     /**
      * 获取页面偏移的URL Query
-     *
-     * @param integer $cid 文件id
-     * @param string|null $status 状态
-     * @return string
      * @throws \Typecho\Db\Exception|Exception
      */
     protected function getPageOffsetQuery(int $cid, ?string $status = null): string
@@ -236,24 +215,16 @@ class Edit extends Contents implements ActionInterface
         $this->response->redirect(Common::url('manage-medias.php', $this->options->adminUrl));
     }
 
-    /**
-     * @return $this
-     * @throws Exception
-     * @throws \Typecho\Db\Exception
-     */
     public function prepare(): self
     {
         return $this->prepareEdit('attachment', false, _t('文件不存在'));
     }
 
-    /**
-     * @return void
-     */
     public function action()
     {
         if (!$this->request->isPost()) {
-            $this->response->setStatus(405);
-            $this->response->goBack();
+            $this->response->setStatus(405)->throwContent(_t('Method Not Allowed'), 'text/plain');
+            return;
         }
         $this->security->protect();
         $this->on($this->request->is('do=delete'))->deleteAttachment();
@@ -263,11 +234,6 @@ class Edit extends Contents implements ActionInterface
         $this->response->redirect($this->options->adminUrl);
     }
 
-    /**
-     * @param array $posts
-     * @param int $deleteCount
-     * @return void
-     */
     protected function deleteByIds(array $posts, int &$deleteCount): void
     {
         foreach ($posts as $post) {

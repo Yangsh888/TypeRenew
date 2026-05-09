@@ -130,6 +130,44 @@ class Request
         return is_array($default) == is_array($value) ? $value : $default;
     }
 
+    public function getInput(string $key, $default = null, ?bool &$exists = true)
+    {
+        $value = null;
+
+        switch (true) {
+            case isset($this->params) && isset($this->params[$key]):
+                $value = $this->params[$key];
+                break;
+            case isset($this->sandbox):
+                if (isset($this->sandbox[$key])) {
+                    $value = $this->sandbox[$key];
+                }
+                break;
+            case $key === '@json':
+                if ($this->isJson()) {
+                    $value = $this->getJsonBody();
+                    $default = $default ?? $value;
+                }
+                break;
+            case isset($_POST[$key]):
+                $value = $_POST[$key];
+                break;
+            case isset($_GET[$key]):
+                $value = $_GET[$key];
+                break;
+            default:
+                break;
+        }
+
+        if (!isset($value) || $value === '') {
+            $exists = false;
+            return $default;
+        }
+
+        $exists = true;
+        return is_array($default) == is_array($value) ? $value : $default;
+    }
+
     public function __get(string $key)
     {
         return $this->get($key);
@@ -217,6 +255,18 @@ class Request
         return $result;
     }
 
+    public function fromInput(string|array $params): array
+    {
+        $result = [];
+        $args = is_array($params) ? $params : func_get_args();
+
+        foreach ($args as $arg) {
+            $result[$arg] = $this->getInput($arg);
+        }
+
+        return $result;
+    }
+
     /**
      * getRequestRoot
      *
@@ -270,6 +320,7 @@ class Request
         }
 
         if (isset($parts['query'])) {
+            $currentArgs = [];
             parse_str($parts['query'], $currentArgs);
             $args = array_merge($currentArgs, $args);
         }

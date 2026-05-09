@@ -27,7 +27,7 @@ class Mail extends Options implements ActionInterface
     {
         $this->validateFormOrGoBack($this->form());
 
-        $settings = $this->request->from(
+        $settings = $this->request->fromInput(
             'mailEnable',
             'mailTransport',
             'mailAdmin',
@@ -384,8 +384,7 @@ class Mail extends Options implements ActionInterface
     {
         $this->user->pass('administrator');
         if (!$this->request->isPost()) {
-            $this->response->setStatus(405);
-            $this->response->goBack();
+            $this->response->setStatus(405)->throwContent(_t('Method Not Allowed'), 'text/plain');
             return;
         }
         $this->security->protect();

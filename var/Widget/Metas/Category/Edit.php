@@ -109,7 +109,7 @@ class Edit extends Metas implements ActionInterface
             $this->response->goBack();
         }
 
-        $category = $this->request->from('name', 'slug', 'description', 'parent');
+        $category = $this->request->fromInput('name', 'slug', 'description', 'parent');
 
         $category['slug'] = Common::slugName(Common::strBy($category['slug'] ?? null, $category['name']));
         $category['type'] = 'category';
@@ -241,7 +241,7 @@ class Edit extends Metas implements ActionInterface
             $this->response->goBack();
         }
 
-        $category = $this->request->from('name', 'slug', 'description', 'parent');
+        $category = $this->request->fromInput('name', 'slug', 'description', 'parent');
         $category['mid'] = $this->request->get('mid');
         $category['parent'] = (int) ($category['parent'] ?? 0);
         $category['slug'] = Common::slugName(Common::strBy($category['slug'] ?? null, $category['name']));
@@ -325,16 +325,16 @@ class Edit extends Metas implements ActionInterface
 
     public function mergeCategory()
     {
+        $merge = $this->request->filter('int')->get('merge');
         $validator = new Validate();
         $validator->addRule('merge', 'required', _t('分类主键不存在'));
         $validator->addRule('merge', [$this, 'categoryExists'], _t('请选择需要合并的分类'));
 
-        if ($error = $validator->run($this->request->from('merge'))) {
+        if ($error = $validator->run(['merge' => $merge])) {
             Notice::alloc()->set($error, 'error');
             $this->response->goBack();
         }
 
-        $merge = $this->request->get('merge');
         $categories = $this->request->filter('int')->getArray('mid');
 
         if ($categories) {
@@ -383,18 +383,19 @@ class Edit extends Metas implements ActionInterface
 
     public function defaultCategory()
     {
+        $mid = $this->request->filter('int')->get('mid');
         $validator = new Validate();
         $validator->addRule('mid', 'required', _t('分类主键不存在'));
         $validator->addRule('mid', [$this, 'categoryExists'], _t('分类不存在'));
 
-        if ($error = $validator->run($this->request->from('mid'))) {
+        if ($error = $validator->run(['mid' => $mid])) {
             Notice::alloc()->set($error, 'error');
         } else {
             $this->db->query($this->db->update('table.options')
-                ->rows(['value' => $this->request->get('mid')])
+                ->rows(['value' => $mid])
                 ->where('name = ?', 'defaultCategory'));
 
-            $this->db->fetchRow($this->select()->where('mid = ?', $this->request->get('mid'))
+            $this->db->fetchRow($this->select()->where('mid = ?', $mid)
                 ->where('type = ?', 'category')->limit(1), [$this, 'push']);
 
             Notice::alloc()->highlight($this->theId);
@@ -436,8 +437,7 @@ class Edit extends Metas implements ActionInterface
     public function action()
     {
         if (!$this->request->isPost()) {
-            $this->response->setStatus(405);
-            $this->response->goBack();
+            $this->response->setStatus(405)->throwContent(_t('Method Not Allowed'), 'text/plain');
             return;
         }
 

@@ -43,9 +43,9 @@ class I18n
                 if ($between < 60) {
                     if (0 == $between) {
                         return _t('刚刚');
-                    } else {
-                        return str_replace('%d', $between, _n('一秒前', '%d秒前', $between));
                     }
+
+                    return str_replace('%d', $between, _n('一秒前', '%d秒前', $between));
                 }
 
                 $min = floor($between / 60);

@@ -132,6 +132,10 @@ class Server
      */
     private function call(string $methodName, array $args)
     {
+        if (!$this->isPositionalArgs($args)) {
+            return new Error(-32602, 'server error. requested class method "' . $methodName . '" params must be positional.');
+        }
+
         if (!$this->hasMethod($methodName)) {
             return new Error(-32601, 'server error. requested method ' . $methodName . ' does not exist.');
         }
@@ -211,6 +215,15 @@ class Server
                 'server error. requested class method "' . $methodName . '" failed.'
             );
         }
+    }
+
+    private function isPositionalArgs(array $args): bool
+    {
+        if ($args === []) {
+            return true;
+        }
+
+        return array_keys($args) === range(0, count($args) - 1);
     }
 
     /**

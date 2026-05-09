@@ -22,7 +22,7 @@ class Reading extends Permalink
     {
         $this->validateFormOrGoBack($this->form());
 
-        $settings = $this->request->from(
+        $settings = $this->request->fromInput(
             'postDateFormat',
             'frontPage',
             'frontArchive',
@@ -39,12 +39,12 @@ class Reading extends Permalink
             $this->db->fetchRow($this->db->select('cid')
                 ->from('table.contents')->where('type = ?', 'page')
                 ->where('status = ?', 'publish')->where('created < ?', $this->options->time)
-                ->where('cid = ?', $pageId = intval($this->request->get('frontPagePage'))))
+                ->where('cid = ?', $pageId = intval($this->request->getInput('frontPagePage', '0'))))
         ) {
             $settings['frontPage'] = 'page:' . $pageId;
         } elseif ('file' == $settings['frontPage']
             && $this->request->is('frontPageFile')
-            && null !== ($file = $this->resolveFrontPageFile((string) $this->request->get('frontPageFile', '')))) {
+            && null !== ($file = $this->resolveFrontPageFile((string) $this->request->getInput('frontPageFile', '')))) {
             $settings['frontPage'] = 'file:' . $file;
         } else {
             $settings['frontPage'] = 'recent';
@@ -56,7 +56,7 @@ class Reading extends Permalink
             $settings['frontArchive'] = empty($settings['frontArchive']) ? 0 : 1;
 
             if ($settings['frontArchive']) {
-                $archivePattern = $this->normalizeArchivePattern((string) $this->request->get('archivePattern', ''));
+                $archivePattern = $this->normalizeArchivePattern((string) $this->request->getInput('archivePattern', ''));
                 if (null === $archivePattern) {
                     $this->noticeAndGoBack(_t('文章列表页路径格式不正确'), 'error');
                     return;
@@ -223,8 +223,7 @@ class Reading extends Permalink
     {
         $this->user->pass('administrator');
         if (!$this->request->isPost()) {
-            $this->response->setStatus(405);
-            $this->response->goBack();
+            $this->response->setStatus(405)->throwContent(_t('Method Not Allowed'), 'text/plain');
             return;
         }
         $this->security->protect();

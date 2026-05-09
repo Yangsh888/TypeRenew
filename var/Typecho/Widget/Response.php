@@ -114,6 +114,7 @@ class Response
 
                 if ($parts !== [] && isset($myParts['query'])) {
                     $args = [];
+                    $currentArgs = [];
                     if (isset($parts['query'])) {
                         parse_str($parts['query'], $args);
                     }

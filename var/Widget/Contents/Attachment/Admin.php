@@ -12,22 +12,10 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-/**
- * 文件管理列表组件
- *
- * @category typecho
- * @package Widget
- * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
- * @license GNU General Public License 2.0
- */
 class Admin extends Contents
 {
     use AdminTrait;
 
-    /**
-     * @return void
-     * @throws Exception|\Typecho\Widget\Exception
-     */
     public function execute()
     {
         $this->initPage();
@@ -49,8 +37,6 @@ class Admin extends Contents
 
     /**
      * 所属文章
-     *
-     * @return Config
      * @throws Exception
      */
     protected function ___parentPost(): Config

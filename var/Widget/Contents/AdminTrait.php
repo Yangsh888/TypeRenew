@@ -15,33 +15,16 @@ use Typecho\Widget\Helper\PageNavigator\Box;
  */
 trait AdminTrait
 {
-    /**
-     * 所有文章个数
-     *
-     * @var integer|null
-     */
     private ?int $total;
 
-    /**
-     * 当前页
-     *
-     * @var integer
-     */
     private int $currentPage;
 
-    /**
-     * @return void
-     */
     protected function initPage()
     {
         $this->parameter->setDefault('pageSize=20');
         $this->currentPage = $this->request->filter('int')->get('page', 1);
     }
 
-    /**
-     * @param Query $select
-     * @return void
-     */
     protected function searchQuery(Query $select)
     {
         if ($this->request->is('keywords')) {
@@ -58,10 +41,6 @@ trait AdminTrait
         }
     }
 
-    /**
-     * @param Query $select
-     * @return void
-     */
     protected function countTotal(Query $select)
     {
         $countSql = clone $select;
@@ -89,7 +68,6 @@ trait AdminTrait
     }
 
     /**
-     * @return array|null
      * @throws DbException
      */
     protected function ___revision(): ?array

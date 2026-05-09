@@ -11,31 +11,15 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-/**
- * 独立页面列表组件
- *
- * @author qining
- * @package Widget
- * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
- * @license GNU General Public License 2.0
- */
 class Rows extends Contents
 {
     use TreeViewTrait;
 
-    /**
-     * @return void
-     * @throws Exception
-     */
     public function execute()
     {
         $this->pushAll($this->getRows($this->orders, $this->parameter->ignore));
     }
 
-    /**
-     * @return array
-     * @throws Exception
-     */
     protected function initTreeRows(): array
     {
         $select = $this->select(
@@ -70,8 +54,6 @@ class Rows extends Contents
 
     /**
      * treeViewPages
-     *
-     * @param mixed $pageOptions 输出选项
      */
     public function listPages($pageOptions = null)
     {

@@ -50,6 +50,11 @@ class Feedback extends Comments implements ActionInterface
         $callback = $this->request->get('type');
         $this->content = Router::match($this->request->get('permalink'));
 
+        if ($callback === 'comment' && !$this->request->isPost()) {
+            $this->response->setStatus(405)->throwContent(_t('Method Not Allowed'), 'text/plain');
+            return;
+        }
+
         if (
             $this->content instanceof Archive &&
             $this->content->have() && $this->content->is('single') &&
@@ -163,12 +168,12 @@ class Feedback extends Comments implements ActionInterface
 
         $validator->addRule('text', 'required', _t('必须填写评论内容'));
 
-        $comment['text'] = $this->request->get('text');
+        $comment['text'] = $this->request->getInput('text', '');
 
         if (!$this->user->hasLogin()) {
-            $comment['author'] = $this->request->filter('trim')->get('author');
-            $comment['mail'] = $this->request->filter('trim')->get('mail');
-            $comment['url'] = $this->request->filter('trim', 'url')->get('url');
+            $comment['author'] = $this->request->filter('trim')->getInput('author', '');
+            $comment['mail'] = $this->request->filter('trim')->getInput('mail', '');
+            $comment['url'] = $this->request->filter('trim', 'url')->getInput('url', '');
 
             if (!empty($comment['url'])) {
                 $urlParams = Common::parseUrl((string) $comment['url']);
@@ -207,8 +212,7 @@ class Feedback extends Comments implements ActionInterface
         }
 
         if ($error = $validator->run($comment)) {
-            $safeText = htmlspecialchars($comment['text'], ENT_QUOTES, 'UTF-8');
-            Cookie::set('__typecho_remember_text', $safeText);
+            Cookie::set('__typecho_remember_text', $comment['text']);
             throw new Exception(implode("\n", $error));
         }
 

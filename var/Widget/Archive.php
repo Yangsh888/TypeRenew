@@ -874,7 +874,7 @@ EOF;
     public function remember(string $cookieName, bool $return = false)
     {
         $cookieName = strtolower($cookieName);
-        if (!in_array($cookieName, ['author', 'mail', 'url'])) {
+        if (!in_array($cookieName, ['author', 'mail', 'url', 'text'])) {
             return '';
         }
 

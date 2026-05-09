@@ -18,6 +18,11 @@ class Forgot extends Users implements ActionInterface
 {
     public function action(): void
     {
+        if (!$this->request->isPost()) {
+            $this->response->setStatus(405)->throwContent(_t('Method Not Allowed'), 'text/plain');
+            return;
+        }
+
         $this->security->protect();
 
         if ($this->user->hasLogin()) {
@@ -30,7 +35,7 @@ class Forgot extends Users implements ActionInterface
             $this->response->goBack();
         }
 
-        $mail = trim((string) $this->request->get('mail'));
+        $mail = $this->request->filter('trim')->getInput('mail', '');
 
         if (!filter_var($mail, FILTER_VALIDATE_EMAIL)) {
             Notice::alloc()->set(_t('请输入有效的邮箱地址'), 'error');

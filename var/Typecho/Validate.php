@@ -22,7 +22,7 @@ class Validate
 
     public static function maxLength(string $str, int $length): bool
     {
-        return (Common::strLen($str) < $length);
+        return (Common::strLen($str) <= $length);
     }
 
     public static function email(string $str): bool
@@ -94,13 +94,13 @@ class Validate
 
         foreach ($rules as $key => $rule) {
             $this->key = $key;
-            $data[$key] = (is_array($data[$key]) ? 0 == count($data[$key])
-                : 0 == strlen($data[$key] ?? '')) ? null : $data[$key];
+            $value = $data[$key] ?? null;
+            $data[$key] = $this->normalizeValue($value);
 
             foreach ($rule as $params) {
                 $method = $params[0];
 
-                if ('required' != $method && 'confirm' != $method && 0 == strlen($data[$key] ?? '')) {
+                if ('required' != $method && 'confirm' != $method && $data[$key] === null) {
                     continue;
                 }
 
@@ -121,6 +121,19 @@ class Validate
         }
 
         return $result;
+    }
+
+    private function normalizeValue($value)
+    {
+        if (is_array($value)) {
+            return count($value) === 0 ? null : $value;
+        }
+
+        if ($value === null) {
+            return null;
+        }
+
+        return strlen((string) $value) === 0 ? null : $value;
     }
 
     public function confirm(?string $str, string $key): bool

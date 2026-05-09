@@ -71,7 +71,7 @@ class General extends Options implements ActionInterface
             'keywords' => (string) ($this->options->keywords ?? ''),
         ];
 
-        $settings = $this->request->from(
+        $settings = $this->request->fromInput(
             'title',
             'description',
             'keywords',
@@ -79,14 +79,14 @@ class General extends Options implements ActionInterface
             'allowXmlRpc',
             'lang'
         );
-        $timezoneName = trim((string) $this->request->get('timezoneName', ''));
+        $timezoneName = trim((string) $this->request->getInput('timezoneName', ''));
         $resolvedTimezoneName = Timezone::resolve($timezoneName, $this->options->timezone);
         $settings['timezoneName'] = $resolvedTimezoneName;
         $settings['timezone'] = (string) Timezone::offsetFromName($resolvedTimezoneName);
-        $settings['attachmentTypes'] = $this->request->getArray('attachmentTypes');
+        $settings['attachmentTypes'] = $this->request->getInput('attachmentTypes', []);
 
         if (!defined('__TYPECHO_SITE_URL__')) {
-            $settings['siteUrl'] = rtrim((string) $this->request->get('siteUrl', ''), '/');
+            $settings['siteUrl'] = rtrim((string) $this->request->getInput('siteUrl', ''), '/');
         }
 
         $attachmentTypes = [];
@@ -102,7 +102,7 @@ class General extends Options implements ActionInterface
             $attachmentTypes[] = '@doc@';
         }
 
-        $attachmentTypesOther = $this->request->filter('trim', 'strtolower')->get('attachmentTypesOther');
+        $attachmentTypesOther = $this->request->filter('trim', 'strtolower')->getInput('attachmentTypesOther', '');
         if ($this->isEnableByCheckbox($settings['attachmentTypes'], '@other@') && !empty($attachmentTypesOther)) {
             $types = implode(
                 ',',
@@ -283,8 +283,7 @@ class General extends Options implements ActionInterface
     {
         $this->user->pass('administrator');
         if (!$this->request->isPost()) {
-            $this->response->setStatus(405);
-            $this->response->goBack();
+            $this->response->setStatus(405)->throwContent(_t('Method Not Allowed'), 'text/plain');
             return;
         }
         $this->security->protect();

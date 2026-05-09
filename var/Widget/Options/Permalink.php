@@ -117,7 +117,7 @@ class Permalink extends Options implements ActionInterface
             $postPattern = '/' . ltrim($this->encodeRule($customPattern), '/');
         }
 
-        $settings = defined('__TYPECHO_REWRITE__') ? [] : $this->request->from('rewrite');
+        $settings = defined('__TYPECHO_REWRITE__') ? [] : $this->request->fromInput('rewrite');
         $rewrite = defined('__TYPECHO_REWRITE__')
             ? ((bool) __TYPECHO_REWRITE__ ? '1' : '0')
             : (string) ($settings['rewrite'] ?? '0');
@@ -662,8 +662,7 @@ HTML;
     {
         $this->user->pass('administrator');
         if (!$this->request->isPost()) {
-            $this->response->setStatus(405);
-            $this->response->goBack();
+            $this->response->setStatus(405)->throwContent(_t('Method Not Allowed'), 'text/plain');
             return;
         }
         $this->security->protect();

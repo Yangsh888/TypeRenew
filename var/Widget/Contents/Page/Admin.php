@@ -14,26 +14,14 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-/**
- * 独立页面管理列表组件
- *
- * @category typecho
- * @package Widget
- * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
- * @license GNU General Public License 2.0
- */
 class Admin extends Contents
 {
     use AdminTrait;
     use TreeTrait;
 
-    /**
-     * @var int 父级页面
-     */
     private int $parentId = 0;
 
     /**
-     * @return void
      * @throws Db\Exception
      */
     public function execute()
@@ -82,7 +70,6 @@ class Admin extends Contents
     }
 
     /**
-     * @return string|null
      * @throws Db\Exception|Exception
      */
     public function getMenuTitle(): ?string
@@ -100,16 +87,12 @@ class Admin extends Contents
         throw new Exception(_t('页面不存在'), 404);
     }
 
-    /**
-     * @return string
-     */
     public function getAddLink(): string
     {
         return 'write-page.php' . ($this->parentId ? '?parent=' . $this->parentId : '');
     }
 
     /**
-     * @return array
      * @throws Db\Exception
      */
     protected function initTreeRows(): array

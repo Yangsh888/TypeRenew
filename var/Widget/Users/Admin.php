@@ -13,35 +13,10 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-/**
- * 后台成员列表组件
- *
- * @author qining
- * @package Widget
- * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
- * @license GNU General Public License 2.0
- */
 class Admin extends Users
 {
-    /**
-     * 分页计算对象
-     *
-     * @var Query
-     */
     private Query $countSql;
-
-    /**
-     * 所有文章个数
-     *
-     * @var integer
-     */
     private int $total;
-
-    /**
-     * 当前页
-     *
-     * @var integer
-     */
     private int $currentPage;
 
     /**
