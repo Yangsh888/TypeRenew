@@ -596,7 +596,7 @@ HTML;
         );
     }
 
-    private function hasRouteConflict(array $routingTable, string $routeKey, array $ignoreKeys = []): bool
+    protected function hasRouteConflict(array $routingTable, string $routeKey, array $ignoreKeys = []): bool
     {
         if (!isset($routingTable[$routeKey]['url']) || !is_string($routingTable[$routeKey]['url'])) {
             return false;
@@ -629,7 +629,7 @@ HTML;
         return false;
     }
 
-    private function sampleRoutePath(string $url): string
+    protected function sampleRoutePath(string $url): string
     {
         $pathInfo = preg_replace("/\[([_a-z0-9-]+)[^\]]*\]/i", "{\\1}", $url);
         if (!is_string($pathInfo)) {

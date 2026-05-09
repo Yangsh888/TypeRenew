@@ -5,7 +5,6 @@ namespace Widget\Options;
 use Typecho\Common;
 use Typecho\Db\Exception;
 use Typecho\Plugin;
-use Typecho\Router\Parser;
 use Typecho\Widget\Helper\Form;
 
 if (!defined('__TYPECHO_ROOT_DIR__')) {
@@ -259,21 +258,12 @@ class Reading extends Permalink
 
     private function archivePatternConflicts(array $routingTable, string $pattern): bool
     {
-        $archivePath = rtrim($pattern, '/');
-        $archivePagePath = $archivePath . '/page/1';
-        $parser = new Parser($routingTable);
+        $candidateTable = $routingTable;
+        $candidateTable['archive']['url'] = $pattern;
+        $candidateTable['archive_page']['url'] = rtrim($pattern, '/') . '/page/[page:digital]/';
 
-        foreach ($parser->parse() as $name => $route) {
-            if (in_array($name, ['archive', 'archive_page'], true)) {
-                continue;
-            }
-
-            if (preg_match($route['regx'], $archivePath) || preg_match($route['regx'], $archivePagePath)) {
-                return true;
-            }
-        }
-
-        return false;
+        return $this->hasRouteConflict($candidateTable, 'archive', ['archive_page'])
+            || $this->hasRouteConflict($candidateTable, 'archive_page', ['archive']);
     }
 
     private function resolveFrontPageFile(string $file): ?string
