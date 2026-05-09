@@ -11,14 +11,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-/**
- * 风格列表组件
- *
- * @author qining
- * @package Widget
- * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
- * @license GNU General Public License 2.0
- */
 class Rows extends Widget
 {
     public function execute()
@@ -64,20 +56,10 @@ class Rows extends Widget
         }
     }
 
-    /**
-     * @return array
-     */
     protected function getThemes(): array
     {
         return glob(__TYPECHO_ROOT_DIR__ . __TYPECHO_THEME_DIR__ . '/*', GLOB_ONLYDIR) ?: [];
     }
-
-    /**
-     * get theme
-     *
-     * @param string $theme
-     * @return string
-     */
     protected function getTheme(string $theme): string
     {
         return basename($theme);

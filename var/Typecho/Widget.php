@@ -127,11 +127,7 @@ abstract class Widget
 
     public function on(bool $condition)
     {
-        if ($condition) {
-            return $this;
-        } else {
-            return new EmptyClass();
-        }
+        return $condition ? $this : new EmptyClass();
     }
 
     public function to(&$variable): Widget
@@ -165,9 +161,9 @@ abstract class Widget
                 $item[$key] = $this->{$key};
             }
             return $item;
-        } else {
-            return $this->{$column};
         }
+
+        return $this->{$column};
     }
 
     public function toArray(string|array $column): array

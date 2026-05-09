@@ -109,18 +109,18 @@ class GetText
             // Caching enabled, get translated string from cache
             if (array_key_exists($string, $this->cache_translations)) {
                 return $this->cache_translations[$string];
-            } else {
-                return $string;
             }
-        } else {
-            // Caching not enabled, try to find string
-            $num = $this->findString($string);
-            if ($num == -1) {
-                return $string;
-            } else {
-                return $this->getTranslationString($num);
-            }
+
+            return $string;
         }
+
+        // Caching not enabled, try to find string
+        $num = $this->findString($string);
+        if ($num == -1) {
+            return $string;
+        }
+
+        return $this->getTranslationString($num);
     }
 
     public function ngettext($single, $plural, $number, ?int &$num): string
@@ -128,11 +128,7 @@ class GetText
         $number = intval($number);
 
         if ($this->short_circuit) {
-            if ($number != 1) {
-                return $plural;
-            } else {
-                return $single;
-            }
+            return ($number != 1) ? $plural : $single;
         }
 
         // find out the appropriate form
@@ -144,21 +140,21 @@ class GetText
         if ($this->enable_cache) {
             if (!array_key_exists($key, $this->cache_translations)) {
                 return ($number != 1) ? $plural : $single;
-            } else {
-                $result = $this->cache_translations[$key];
-                $list = explode(chr(0), $result);
-                return $list[$select] ?? '';
             }
-        } else {
-            $num = $this->findString($key);
-            if ($num == -1) {
-                return ($number != 1) ? $plural : $single;
-            } else {
-                $result = $this->getTranslationString($num);
-                $list = explode(chr(0), $result);
-                return $list[$select] ?? '';
-            }
+
+            $result = $this->cache_translations[$key];
+            $list = explode(chr(0), $result);
+            return $list[$select] ?? '';
         }
+
+        $num = $this->findString($key);
+        if ($num == -1) {
+            return ($number != 1) ? $plural : $single;
+        }
+
+        $result = $this->getTranslationString($num);
+        $list = explode(chr(0), $result);
+        return $list[$select] ?? '';
     }
 
     public function __destruct()
@@ -237,22 +233,24 @@ class GetText
             $txt = $this->getOriginalString($start);
             if ($string == $txt) {
                 return $start;
-            } else {
-                return -1;
             }
-        } elseif ($start > $end) {
-            return $this->findString($string, $end, $start);
-        } else {
-            $half = (int)(($start + $end) / 2);
-            $cmp = strcmp($string, $this->getOriginalString($half));
-            if ($cmp == 0) {
-                return $half;
-            } elseif ($cmp < 0) {
-                return $this->findString($string, $start, $half);
-            } else {
-                return $this->findString($string, $half, $end);
-            }
+
+            return -1;
         }
+
+        if ($start > $end) {
+            return $this->findString($string, $end, $start);
+        }
+
+        $half = (int)(($start + $end) / 2);
+        $cmp = strcmp($string, $this->getOriginalString($half));
+        if ($cmp == 0) {
+            return $half;
+        }
+
+        return $cmp < 0
+            ? $this->findString($string, $start, $half)
+            : $this->findString($string, $half, $end);
     }
 
     private function getOriginalString(int $num): string

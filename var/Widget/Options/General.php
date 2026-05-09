@@ -14,14 +14,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-/**
- * 基本设置组件
- *
- * @author qining
- * @package Widget
- * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
- * @license GNU General Public License 2.0
- */
 class General extends Options implements ActionInterface
 {
     use EditTrait;
@@ -32,11 +24,6 @@ class General extends Options implements ActionInterface
         return isset($langs[$lang]);
     }
 
-    /**
-     * 获取语言列表
-     *
-     * @return array
-     */
     public static function getLangs(): array
     {
         $dir = defined('__TYPECHO_LANG_DIR__') ? __TYPECHO_LANG_DIR__ : __TYPECHO_ROOT_DIR__ . '/usr/langs';
@@ -47,6 +34,7 @@ class General extends Options implements ActionInterface
             foreach ($files as $file) {
                 $getText = new GetText($file, false);
                 [$name] = explode('.', basename($file));
+                $count = -1;
                 $title = $getText->translate('lang', $count);
                 $langs[$name] = $count > - 1 ? $title : $name;
             }
@@ -137,11 +125,13 @@ class General extends Options implements ActionInterface
             if ($rewriteEnabled && RewriteManager::canManageApache($rewriteServer, $rewriteMode)) {
                 if (!RewriteManager::canWriteApacheConfig()) {
                     $this->noticeAndGoBack(_t('站点地址已改变，但当前无法同步更新 .htaccess，请先调整权限后再保存。'), 'error');
+                    return;
                 }
 
                 $apacheSnapshot = RewriteManager::snapshotApacheConfig();
                 if (!RewriteManager::writeManagedApache(RewriteManager::basePathFromUrl((string) $settings['siteUrl']))) {
                     $this->noticeAndGoBack(_t('站点地址已改变，但同步更新 Apache 重写规则失败，请检查 .htaccess 后重试。'), 'error');
+                    return;
                 }
             }
         }
@@ -179,7 +169,7 @@ class General extends Options implements ActionInterface
                 _t('站点地址'),
                 _t('站点地址主要用于生成内容的永久链接') . (RewriteManager::sameSiteLocation((string) $this->options->originalSiteUrl, (string) $this->options->rootUrl) ?
                     '' : '</p><p class="message notice mono">'
-                    . _t('当前地址 <strong>%s</strong> 与上述设定值不一致', $this->options->rootUrl))
+                    . _t('当前地址 <strong>%s</strong> 与上述设定值不一致', htmlspecialchars((string) $this->options->rootUrl, ENT_QUOTES, 'UTF-8')))
             );
             $siteUrl->input->setAttribute('class', 'w-100 mono');
             $form->addInput($siteUrl->addRule('required', _t('请填写站点地址'))

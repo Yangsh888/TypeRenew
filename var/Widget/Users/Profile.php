@@ -17,13 +17,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-/**
- * 编辑用户组件
- *
- * @package Widget
- * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
- * @license GNU General Public License 2.0
- */
 class Profile extends Users implements ActionInterface
 {
     use EditTrait;
@@ -34,9 +27,6 @@ class Profile extends Users implements ActionInterface
         $this->request->setParam('uid', $this->user->uid);
     }
 
-    /**
-     * @return Form
-     */
     public function optionsForm(): Form
     {
         $form = new Form($this->security->getIndex('/action/users-profile'), Form::POST_METHOD);
@@ -200,11 +190,6 @@ class Profile extends Users implements ActionInterface
         $this->response->goBack();
     }
 
-    /**
-     * 生成表单
-     *
-     * @return Form
-     */
     public function profileForm(): Form
     {
         $form = new Form($this->security->getIndex('/action/users-profile'), Form::POST_METHOD);

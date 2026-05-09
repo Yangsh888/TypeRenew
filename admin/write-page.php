@@ -14,7 +14,7 @@ $parents = \Widget\Contents\Page\Admin::allocWithAlias(
 );
 
 while ($parents->next()) {
-    $parentPages[$parents->cid] = str_repeat('&nbsp;&nbsp;&nbsp;&nbsp;', $parents->levels) . $parents->title;
+    $parentPages[$parents->cid] = str_repeat('- ', (int) $parents->levels) . $parents->title;
 }
 ?>
 <main class="main">
@@ -22,7 +22,8 @@ while ($parents->next()) {
         <form class="row typecho-page-main typecho-post-area tr-write-shell" action="<?php $security->index('/action/contents-page-edit'); ?>" method="post" name="write_page">
             <?php
             $permalink = \Typecho\Common::url($options->routingTable['page']['url'], $options->index);
-            [, $permalink] = explode(':', $permalink, 2);
+            $permalinkParts = explode(':', $permalink, 2);
+            $permalink = count($permalinkParts) === 2 ? $permalinkParts[1] : $permalinkParts[0];
             $permalink = ltrim($permalink, '/');
             $permalink = preg_replace("/\[([_a-z0-9-]+)[^\]]*\]/i", "{\\1}", $permalink);
             if ($page->have()) {
@@ -74,7 +75,7 @@ while ($parents->next()) {
                         <?php $templates = $page->getTemplates();
                         foreach ($templates as $template => $name): ?>
                             <option
-                                value="<?php echo $template; ?>"<?php if ($template == $page->template): ?> selected="true"<?php endif; ?>><?php echo $name; ?></option>
+                                value="<?php echo htmlspecialchars((string) $template, ENT_QUOTES, 'UTF-8'); ?>"<?php if ($template == $page->template): ?> selected="true"<?php endif; ?>><?php echo htmlspecialchars((string) $name, ENT_QUOTES, 'UTF-8'); ?></option>
                         <?php endforeach; ?>
                     </select>
                 </p>
@@ -87,7 +88,7 @@ while ($parents->next()) {
                     <select name="parent" id="parent">
                         <?php foreach ($parentPages as $pageId => $pageTitle): ?>
                             <option
-                                value="<?php echo $pageId; ?>"<?php if ($pageId == ($page->parent ?? $parentPageId)): ?> selected="true"<?php endif; ?>><?php echo $pageTitle; ?></option>
+                                value="<?php echo $pageId; ?>"<?php if ($pageId == ($page->parent ?? $parentPageId)): ?> selected="true"<?php endif; ?>><?php echo htmlspecialchars((string) $pageTitle, ENT_QUOTES, 'UTF-8'); ?></option>
                         <?php endforeach; ?>
                     </select>
                 </p>
@@ -133,7 +134,7 @@ while ($parents->next()) {
                 <section class="typecho-post-option">
                     <p class="description">
                         <br>&mdash;<br>
-                        <?php _e('本页面由 %s 创建', $page->author->screenName); ?>
+                        <?php _e('本页面由 %s 创建', htmlspecialchars((string) $page->author->screenName, ENT_QUOTES, 'UTF-8')); ?>
                         <br>
                         <?php _e('最后更新于 %s', $modified->word()); ?>
                     </p>

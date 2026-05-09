@@ -13,10 +13,10 @@
 
             if (self.hasClass('submitting')) {
                 return false;
-            } else {
-                $('button[type=submit]', this).attr('disabled', 'disabled');
-                self.addClass('submitting');
             }
+
+            $('button[type=submit]', this).attr('disabled', 'disabled');
+            self.addClass('submitting');
         }).on('submitted', function () {
             $('button[type=submit]', this).removeAttr('disabled');
             $(this).removeClass('submitting');
@@ -40,12 +40,46 @@
                     const urlObj = new URL(url);
                     input.val(urlObj.toString());
                 } catch {
+                    input.val(url);
                 }
             }
 
-            self.removeAttr('name').after(input).on('input', setInput);
+            self.removeAttr('name')
+                .after(input)
+                .on('input change blur', setInput)
+                .closest('form')
+                .on('submit', setInput);
             setInput();
         });
+
+        function bindPlaceholderPassword(inputName, changedId) {
+            const passInput = document.querySelector('input[name="' + inputName + '"]');
+            const changedInput = document.getElementById(changedId);
+            if (!passInput || !changedInput) {
+                return;
+            }
+
+            function markChanged() {
+                changedInput.value = '1';
+            }
+
+            passInput.addEventListener('input', markChanged);
+            passInput.addEventListener('change', markChanged);
+            passInput.addEventListener('focus', function () {
+                if (this.value === '********') {
+                    this.value = '';
+                    markChanged();
+                }
+            });
+            passInput.form && passInput.form.addEventListener('submit', function () {
+                if (passInput.value !== '********') {
+                    markChanged();
+                }
+            });
+        }
+
+        bindPlaceholderPassword('mailSmtpPass', 'mailSmtpPassChanged');
+        bindPlaceholderPassword('cacheRedisPassword', 'cacheRedisPasswordChanged');
     });
 })();
 </script>

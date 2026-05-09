@@ -14,11 +14,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-/**
- * 备份工具
- *
- * @package Widget
- */
 class Backup extends BaseOptions implements ActionInterface
 {
     public const HEADER = '%TYPECHO_BACKUP_XXXX%';

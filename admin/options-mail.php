@@ -267,19 +267,3 @@ include 'common-js.php';
 include 'form-js.php';
 include 'footer.php';
 ?>
-<script>
-(function(){
-    var passInput = document.querySelector('input[name="mailSmtpPass"]');
-    var changedInput = document.getElementById('mailSmtpPassChanged');
-    if (passInput && changedInput) {
-        passInput.addEventListener('input', function(){
-            changedInput.value = '1';
-        });
-        passInput.addEventListener('focus', function(){
-            if (this.value === '********') {
-                this.value = '';
-            }
-        });
-    }
-})();
-</script>

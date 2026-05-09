@@ -129,9 +129,9 @@ class Response
             }
 
             $this->redirect($referer);
-        } else {
-            $this->redirect($default ?: '/');
         }
+
+        $this->redirect($default ?: '/');
     }
 
     private function isSafeReferer(string $referer): bool
@@ -179,8 +179,8 @@ class Response
             }
 
             return $result;
-        } else {
-            return preg_match("/^[^<>]+$/is", $message) ? $message : '<![CDATA[' . $message . ']]>';
         }
+
+        return preg_match("/^[^<>]+$/is", $message) ? $message : '<![CDATA[' . $message . ']]>';
     }
 }

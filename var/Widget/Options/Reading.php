@@ -11,14 +11,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-/**
- * 文章阅读设置组件
- *
- * @author qining
- * @package Widget
- * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
- * @license GNU General Public License 2.0
- */
 class Reading extends Permalink
 {
     /**
@@ -93,9 +85,6 @@ class Reading extends Permalink
         $this->saveSuccessAndGoBack();
     }
 
-    /**
-     * @return Form
-     */
     public function form(): Form
     {
         $form = new Form($this->security->getIndex('/action/options-reading'), Form::POST_METHOD);
@@ -143,7 +132,7 @@ class Reading extends Permalink
                 }
 
                 $pagesSelect .= '<option value="' . $page['cid'] . '"' . $selected
-                    . '>' . $page['title'] . '</option>';
+                    . '>' . htmlspecialchars((string) $page['title'], ENT_QUOTES, 'UTF-8') . '</option>';
             }
             $pagesSelect .= '</select>';
             $frontPageOptions['page'] = _t(
@@ -160,14 +149,14 @@ class Reading extends Permalink
             $info = Plugin::parseInfo($file);
             $file = basename($file);
 
-            if ('index.php' != $file && 'index' == $info['title']) {
+            if ('index.php' != $file && 'index' == ($info['title'] ?? '')) {
                 $selected = '';
                 if ('file' == $frontPageType && $file == $frontPageValue) {
                     $selected = ' selected="true"';
                 }
 
-                $filesSelect .= '<option value="' . $file . '"' . $selected
-                    . '>' . $file . '</option>';
+                $filesSelect .= '<option value="' . htmlspecialchars($file, ENT_QUOTES, 'UTF-8') . '"' . $selected
+                    . '>' . htmlspecialchars($file, ENT_QUOTES, 'UTF-8') . '</option>';
             }
         }
 

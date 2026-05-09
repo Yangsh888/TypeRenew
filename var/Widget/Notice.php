@@ -10,11 +10,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-/**
- * 提示框组件
- *
- * @package Widget
- */
 class Notice extends Widget
 {
     /**

@@ -121,17 +121,13 @@ class Request
                 break;
         }
 
-        if (isset($value) && $value !== '') {
-            $exists = true;
-            if (is_array($default) == is_array($value)) {
-                return $value;
-            } else {
-                return $default;
-            }
-        } else {
+        if (!isset($value) || $value === '') {
             $exists = false;
             return $default;
         }
+
+        $exists = true;
+        return is_array($default) == is_array($value) ? $value : $default;
     }
 
     public function __get(string $key)
@@ -267,7 +263,9 @@ class Request
             parse_str($parameter, $args);
         } elseif (is_array($parameter)) {
             $args = $parameter;
-        } else {
+        }
+
+        if (!isset($args)) {
             return $requestUri;
         }
 
