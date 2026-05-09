@@ -102,5 +102,23 @@ $cacheOn = $cachePanel['status'] === 'enabled';
 include 'copyright.php';
 include 'common-js.php';
 include 'form-js.php';
+?>
+<script>
+(function(){
+    var passInput = document.querySelector('input[name="cacheRedisPassword"]');
+    var changedInput = document.getElementById('cacheRedisPasswordChanged');
+    if (passInput && changedInput) {
+        passInput.addEventListener('input', function(){
+            changedInput.value = '1';
+        });
+        passInput.addEventListener('focus', function(){
+            if (this.value === '********') {
+                this.value = '';
+            }
+        });
+    }
+})();
+</script>
+<?php
 include 'footer.php';
 ?>

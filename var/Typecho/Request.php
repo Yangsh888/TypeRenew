@@ -341,7 +341,13 @@ class Request
      */
     public function getServer(string $name, ?string $default = null): ?string
     {
-        return $_SERVER[$name] ?? $default;
+        $value = $_SERVER[$name] ?? $default;
+
+        if ($value === null) {
+            return null;
+        }
+
+        return is_scalar($value) ? (string) $value : $default;
     }
 
     /**
@@ -724,13 +730,14 @@ class Request
             $requestUri = $_SERVER['REQUEST_URI'];
             $parts = parse_url($requestUri);
             $host = $this->getTrustedHost();
+            $query = is_array($parts) ? ($parts['query'] ?? null) : null;
 
             if ($host !== '' && str_contains($requestUri, $host)) {
                 if (false !== $parts) {
                     $requestUri = (empty($parts['path']) ? '' : $parts['path'])
                         . ((empty($parts['query'])) ? '' : '?' . $parts['query']);
                 }
-            } elseif (!empty($_SERVER['QUERY_STRING']) && empty($parts['query'])) {
+            } elseif (!empty($_SERVER['QUERY_STRING']) && empty($query)) {
                 $requestUri .= '?' . $_SERVER['QUERY_STRING'];
             }
         } elseif (isset($_SERVER['ORIG_PATH_INFO'])) { // IIS 5.0, PHP as CGI

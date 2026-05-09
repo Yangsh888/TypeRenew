@@ -18,8 +18,8 @@ include 'menu.php';
                               <?php if (!$files->currentIsWriteable()): ?>readonly<?php endif; ?>><?php echo $files->currentContent(); ?></textarea>
                     <p class="typecho-option typecho-option-submit">
                         <?php if ($files->currentIsWriteable()): ?>
-                            <input type="hidden" name="theme" value="<?php echo $files->currentTheme(); ?>"/>
-                            <input type="hidden" name="edit" value="<?php echo $files->currentFile(); ?>"/>
+                            <input type="hidden" name="theme" value="<?php echo htmlspecialchars($files->currentTheme(), ENT_QUOTES, 'UTF-8'); ?>"/>
+                            <input type="hidden" name="edit" value="<?php echo htmlspecialchars($files->currentFile(), ENT_QUOTES, 'UTF-8'); ?>"/>
                             <button type="submit" class="btn primary"><?php _e('保存文件'); ?></button>
                         <?php else: ?>
                             <em><?php _e('此文件无法写入'); ?></em>
@@ -31,7 +31,7 @@ include 'menu.php';
                 <li><strong>模板文件</strong></li>
                 <?php while ($files->next()): ?>
                     <li<?php if ($files->current): ?> class="current"<?php endif; ?>>
-                        <a href="<?php $options->adminUrl('theme-editor.php?theme=' . $files->currentTheme() . '&file=' . $files->file); ?>"><?php $files->file(); ?></a>
+                        <a href="<?php echo htmlspecialchars($options->adminUrl('theme-editor.php?theme=' . rawurlencode($files->currentTheme()) . '&file=' . rawurlencode($files->file), true), ENT_QUOTES, 'UTF-8'); ?>"><?php $files->file(); ?></a>
                     </li>
                 <?php endwhile; ?>
             </ul>

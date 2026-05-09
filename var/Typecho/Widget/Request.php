@@ -231,8 +231,7 @@ class Request
     {
         if ($this->filter) {
             foreach ($this->filter as $filter) {
-                $value = is_array($value) ? array_map($filter, $value) :
-                    $filter($value);
+                $value = $this->applyFilterValue($value, $filter);
             }
 
             $this->filter = [];
@@ -240,6 +239,19 @@ class Request
 
         $this->request->endProxy();
         return $value;
+    }
+
+    private function applyFilterValue($value, callable $filter)
+    {
+        if (is_array($value)) {
+            foreach ($value as $key => $item) {
+                $value[$key] = $this->applyFilterValue($item, $filter);
+            }
+
+            return $value;
+        }
+
+        return $filter(is_scalar($value) || $value === null ? (string) $value : '');
     }
 
     /**

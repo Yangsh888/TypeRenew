@@ -289,6 +289,11 @@ class Edit extends Users implements ActionInterface
     public function action()
     {
         $this->user->pass('administrator');
+        if (!$this->request->isPost()) {
+            $this->response->setStatus(405);
+            $this->response->goBack();
+            return;
+        }
         $this->security->protect();
         $this->on($this->request->is('do=insert'))->insertUser();
         $this->on($this->request->is('do=update'))->updateUser();

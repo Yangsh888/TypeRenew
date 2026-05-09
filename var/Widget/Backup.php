@@ -109,6 +109,11 @@ class Backup extends BaseOptions implements ActionInterface
     public function action()
     {
         $this->user->pass('administrator');
+        if (!$this->request->isPost()) {
+            $this->response->setStatus(405);
+            $this->finish();
+            return;
+        }
         $this->security->protect();
         $action = (string) $this->request->filter('trim')->get('do');
 

@@ -419,6 +419,12 @@ class Profile extends Users implements ActionInterface
      */
     public function action()
     {
+        $this->user->pass('subscriber');
+        if (!$this->request->isPost()) {
+            $this->response->setStatus(405);
+            $this->response->goBack();
+            return;
+        }
         $this->security->protect();
         $this->on($this->request->is('do=profile'))->updateProfile();
         $this->on($this->request->is('do=options'))->updateOptions();

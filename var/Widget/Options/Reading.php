@@ -233,8 +233,13 @@ class Reading extends Permalink
     public function action()
     {
         $this->user->pass('administrator');
+        if (!$this->request->isPost()) {
+            $this->response->setStatus(405);
+            $this->response->goBack();
+            return;
+        }
         $this->security->protect();
-        $this->on($this->request->isPost())->updateReadingSettings();
+        $this->updateReadingSettings();
         $this->response->redirect($this->options->adminUrl);
     }
 

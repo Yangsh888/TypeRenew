@@ -435,6 +435,12 @@ class Edit extends Metas implements ActionInterface
 
     public function action()
     {
+        if (!$this->request->isPost()) {
+            $this->response->setStatus(405);
+            $this->response->goBack();
+            return;
+        }
+
         $this->security->protect();
         $this->on($this->request->is('do=insert'))->insertCategory();
         $this->on($this->request->is('do=update'))->updateCategory();

@@ -189,10 +189,16 @@ class Edit extends Options implements ActionInterface
             && (!defined('__TYPECHO_THEME_WRITEABLE__') || __TYPECHO_THEME_WRITEABLE__)
         ) {
             try {
-                $this->writeThemeFile($path, (string) $this->request->get('content'), $file);
+                $content = $this->request->get('content');
+                if (!is_scalar($content) && $content !== null) {
+                    throw new Exception(_t('文件内容格式不合法'));
+                }
+
+                $this->writeThemeFile($path, (string) $content, $file);
                 Notice::alloc()->set(_t("文件 %s 的更改已经保存", $file), 'success');
-            } catch (Exception) {
-                Notice::alloc()->set(_t("文件 %s 无法被写入", $file), 'error');
+            } catch (Exception $e) {
+                $message = trim($e->getMessage());
+                Notice::alloc()->set($message !== '' ? $message : _t("文件 %s 无法被写入", $file), 'error');
             }
             $this->response->goBack();
         } else {
@@ -253,11 +259,12 @@ class Edit extends Options implements ActionInterface
         if (!$this->request->isPost()) {
             $this->response->setStatus(405);
             $this->response->goBack();
+            return;
         }
         $this->security->protect();
         $this->on($this->request->is('change'))->changeTheme($this->request->filter('slug')->get('change'));
         $this->on($this->request->is('edit&theme'))
-            ->editThemeFile($this->request->filter('slug')->get('theme'), $this->request->get('edit'));
+            ->editThemeFile($this->request->filter('slug')->get('theme'), (string) $this->request->get('edit', ''));
         $this->on($this->request->is('config'))->config($this->request->filter('slug')->get('config'));
         $this->response->redirect($this->options->adminUrl);
     }

@@ -69,8 +69,10 @@ class Mail extends Options implements ActionInterface
         $passChanged = !empty($settings['mailSmtpPassChanged']);
         $pass = trim((string) ($settings['mailSmtpPass'] ?? ''));
 
-        if ($passChanged && $pass !== '' && $pass !== self::PASS_PLACEHOLDER) {
-            $settings['mailSmtpPass'] = Cipher::encrypt($pass, (string) $this->options->secret);
+        if ($passChanged) {
+            $settings['mailSmtpPass'] = ($pass !== '' && $pass !== self::PASS_PLACEHOLDER)
+                ? Cipher::encrypt($pass, (string) $this->options->secret)
+                : '';
         } else {
             $settings['mailSmtpPass'] = (string) ($this->options->mailSmtpPass ?? '');
         }
@@ -381,51 +383,53 @@ class Mail extends Options implements ActionInterface
     public function action()
     {
         $this->user->pass('administrator');
-        if ($this->request->isPost()) {
-            $this->security->protect();
+        if (!$this->request->isPost()) {
+            $this->response->setStatus(405);
+            $this->response->goBack();
+            return;
+        }
+        $this->security->protect();
+
+        $do = (string) $this->request->get('do');
+        if ($do === 'deliver') {
+            $result = Queue::deliverBatch(Db::get(), $this->options, (int) ($this->options->mailBatchSize ?? 50));
+            $this->noticeAndGoBack(
+                _t('投递完成：成功 %d，失败 %d', (int) $result['sent'], (int) $result['failed']),
+                ((int) $result['failed'] > 0) ? 'notice' : 'success'
+            );
+            return;
         }
 
-        if ($this->request->isPost()) {
-            $do = (string) $this->request->get('do');
-            if ($do === 'deliver') {
-                $result = Queue::deliverBatch(Db::get(), $this->options, (int) ($this->options->mailBatchSize ?? 50));
-                $this->noticeAndGoBack(
-                    _t('投递完成：成功 %d，失败 %d', (int) $result['sent'], (int) $result['failed']),
-                    ((int) $result['failed'] > 0) ? 'notice' : 'success'
-                );
-                return;
-            }
-            if ($do === 'cleanup') {
-                $this->cleanupQueue();
-                return;
-            }
-            if ($do === 'retry_failed') {
-                $this->retryFailed();
-                return;
-            }
-            if ($do === 'regen_key') {
-                $this->regenerateCronKey();
-                return;
-            }
-            if ($do === 'test') {
-                $this->testSend();
-                return;
-            }
-            if ($do === 'tpl_preview') {
-                $this->previewTemplate();
-                return;
-            }
-            if ($do === 'tpl_save') {
-                $this->saveTemplate();
-                return;
-            }
-            if ($do === 'tpl_reset') {
-                $this->resetTemplate();
-                return;
-            }
+        if ($do === 'cleanup') {
+            $this->cleanupQueue();
+            return;
+        }
+        if ($do === 'retry_failed') {
+            $this->retryFailed();
+            return;
+        }
+        if ($do === 'regen_key') {
+            $this->regenerateCronKey();
+            return;
+        }
+        if ($do === 'test') {
+            $this->testSend();
+            return;
+        }
+        if ($do === 'tpl_preview') {
+            $this->previewTemplate();
+            return;
+        }
+        if ($do === 'tpl_save') {
+            $this->saveTemplate();
+            return;
+        }
+        if ($do === 'tpl_reset') {
+            $this->resetTemplate();
+            return;
         }
 
-        $this->on($this->request->isPost())->updateMailSettings();
+        $this->updateMailSettings();
         $this->response->redirect($this->options->adminUrl);
     }
 
