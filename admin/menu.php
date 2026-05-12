@@ -4,8 +4,10 @@ $iconsUrl = $options->adminStaticUrl('img', 'icons.svg', true);
 $menuAddLink = '';
 if (!empty($menu->addLink)) {
     $candidate = trim((string) $menu->addLink);
-    if ($candidate !== '' && ($candidate[0] === '/' || preg_match('#^https?://#i', $candidate))) {
-        $menuAddLink = $candidate;
+    if ($candidate !== '') {
+        $menuAddLink = ($candidate[0] === '/' || preg_match('#^https?://#i', $candidate))
+            ? $candidate
+            : $options->adminUrl($candidate, true);
     }
 }
 

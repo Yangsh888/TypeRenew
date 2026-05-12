@@ -8,6 +8,8 @@ use Widget\Base\Contents;
 use Widget\Contents\EditTrait;
 use Widget\ActionInterface;
 use Widget\Contents\PrepareEditTrait;
+use Widget\Contents\Write\Request as WriteRequest;
+use Widget\Contents\Write\Response as WriteResponse;
 use Widget\Notice;
 use Widget\Service;
 
@@ -42,13 +44,13 @@ class Edit extends Contents implements ActionInterface
         $contents['created'] = $this->getCreated();
         $contents['visibility'] = ('hidden' == $contents['visibility'] ? 'hidden' : 'publish');
         $contents['parent'] = $this->getParent();
-        $contents = $this->normalizeWriteContents($contents);
+        $contents = WriteRequest::normalize($contents, $this->request, (int) ($this->cid ?? 0));
 
         $contents = self::pluginHandle()->filter('write', $contents, $this);
 
         if ($this->request->is('do=publish')) {
             $contents['type'] = 'page';
-            $this->publish($contents, false);
+            $this->publish($contents);
 
             self::pluginHandle()->call('finishPublish', $contents, $this);
 
@@ -73,10 +75,14 @@ class Edit extends Contents implements ActionInterface
         }
 
         $contents['type'] = 'page_draft';
-        $draftId = $this->save($contents, false);
+        $draftId = $this->save($contents);
 
         self::pluginHandle()->call('finishSave', $contents, $this);
-        $this->finishSaveResponse(
+        WriteResponse::finishSave(
+            $this->request,
+            $this->response,
+            (int) $this->options->time,
+            (int) $this->cid,
             (string) $this->title,
             $draftId,
             Common::url('write-page.php?cid=' . $this->cid, $this->options->adminUrl)
@@ -100,9 +106,19 @@ class Edit extends Contents implements ActionInterface
 
         foreach ($pages as $page) {
             self::pluginHandle()->call('mark', $status, $page, $this);
-            $condition = $this->db->sql()->where('cid = ?', $page);
+            $condition = $this->db->sql()
+                ->where('cid = ?', $page)
+                ->where('type = ? OR type = ?', 'page', 'page_draft');
 
-            if ($this->db->query($condition->update('table.contents')->rows(['status' => $status]))) {
+            if (!$this->isWriteable(clone $condition)) {
+                continue;
+            }
+
+            $changed = (bool) $this->withWriteTransaction(function () use ($condition, $status, $page) {
+                if (!$this->db->query($condition->update('table.contents')->rows(['status' => $status]))) {
+                    return false;
+                }
+
                 $draft = $this->db->fetchRow($this->revisionSelect((int) $page));
 
                 if (!empty($draft)) {
@@ -110,8 +126,11 @@ class Edit extends Contents implements ActionInterface
                         ->where('cid = ?', $draft['cid']));
                 }
 
-                self::pluginHandle()->call('finishMark', $status, $page, $this);
+                return true;
+            });
 
+            if ($changed) {
+                self::pluginHandle()->call('finishMark', $status, $page, $this);
                 $markCount++;
             }
         }
@@ -132,14 +151,29 @@ class Edit extends Contents implements ActionInterface
 
         foreach ($pages as $page) {
             self::pluginHandle()->call('delete', $page, $this);
-            $row = $this->db->fetchObject($this->select()->where('cid = ?', $page));
+            $condition = $this->db->sql()
+                ->where('cid = ?', $page)
+                ->where('type = ? OR type = ?', 'page', 'page_draft');
+
+            if (!$this->isWriteable(clone $condition)) {
+                continue;
+            }
+
+            $row = $this->db->fetchObject($this->select()
+                ->where('cid = ?', $page)
+                ->where('type = ? OR type = ?', 'page', 'page_draft')
+                ->limit(1));
             if (!$row) {
                 continue;
             }
 
             $parent = (int) ($row->parent ?? 0);
 
-            if ($this->delete($this->db->sql()->where('cid = ?', $page))) {
+            $deleted = (bool) $this->withWriteTransaction(function () use ($page, $parent, $condition) {
+                if (!$this->delete($condition)) {
+                    return false;
+                }
+
                 $this->db->query($this->db->delete('table.comments')
                     ->where('cid = ?', $page));
 
@@ -166,8 +200,11 @@ class Edit extends Contents implements ActionInterface
                         ->where('type = ? OR type = ?', 'page', 'page_draft')
                 );
 
-                self::pluginHandle()->call('finishDelete', $page, $this);
+                return true;
+            });
 
+            if ($deleted) {
+                self::pluginHandle()->call('finishDelete', $page, $this);
                 $deleteCount++;
             }
         }
@@ -196,10 +233,16 @@ class Edit extends Contents implements ActionInterface
             }
 
             $draft = $this->db->fetchRow($this->revisionSelect((int) $page));
+            $pageObject = $this->db->fetchObject($this->db->select('type', 'parent')
+                ->from('table.contents')->where('cid = ?', $page)->limit(1));
 
             if ($draft) {
                 $this->deleteContent($draft['cid'], false);
                 $this->deleteFields($draft['cid']);
+                $deleteCount++;
+            } elseif ($pageObject && $pageObject->type === 'page_draft' && (int) $pageObject->parent === 0) {
+                $this->deleteContent($page, false);
+                $this->deleteFields($page);
                 $deleteCount++;
             }
         }
@@ -219,8 +262,17 @@ class Edit extends Contents implements ActionInterface
 
         if ($pages) {
             foreach ($pages as $sort => $cid) {
+                $condition = $this->db->sql()
+                    ->where('cid = ?', $cid)
+                    ->where('type = ? OR type = ?', 'page', 'page_draft');
+
+                if (!$this->isWriteable(clone $condition)) {
+                    continue;
+                }
+
                 $this->db->query($this->db->update('table.contents')->rows(['order' => $sort + 1])
-                    ->where('cid = ?', $cid));
+                    ->where('cid = ?', $cid)
+                    ->where('type = ? OR type = ?', 'page', 'page_draft'));
             }
         }
 
@@ -296,5 +348,10 @@ class Edit extends Contents implements ActionInterface
     protected function getThemeFieldsHook(): string
     {
         return 'themePageFields';
+    }
+
+    protected function hasWriteMetas(): bool
+    {
+        return false;
     }
 }

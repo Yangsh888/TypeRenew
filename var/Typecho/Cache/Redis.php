@@ -296,7 +296,7 @@ class Redis implements Driver
 
     private function getBackoffCooldown(): int
     {
-        $index = min($this->failureCount, count(self::BACKOFF_STEPS) - 1);
+        $index = max(0, min($this->failureCount - 1, count(self::BACKOFF_STEPS) - 1));
         return self::BACKOFF_STEPS[$index];
     }
 

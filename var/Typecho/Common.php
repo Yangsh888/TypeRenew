@@ -109,7 +109,7 @@ namespace Typecho {
     class Common
     {
         public const SOFTWARE = 'TypeRenew';
-        public const VERSION = '1.4.2';
+        public const VERSION = '1.5.0';
 
         public static function generator(?string $version = null): string
         {

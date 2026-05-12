@@ -126,11 +126,14 @@ class Comments extends Base implements QueryInterface, RowFilterInterface, Prima
 
     private function refreshCommentsNum(int $cid): void
     {
-        $num = $this->db->fetchObject($this->db->select(['COUNT(coid)' => 'num'])->from('table.comments')
-            ->where('status = ? AND cid = ?', 'approved', $cid))->num;
+        $cid = max(0, $cid);
+        $prefix = $this->db->getPrefix();
 
-        $this->db->query($this->db->update('table.contents')->rows(['commentsNum' => $num])
-            ->where('cid = ?', $cid));
+        $this->db->query(
+            "UPDATE {$prefix}contents"
+            . " SET commentsNum = (SELECT COUNT(coid) FROM {$prefix}comments WHERE status = 'approved' AND cid = {$cid})"
+            . " WHERE cid = {$cid}"
+        );
     }
 
     public function size(Query $condition): int

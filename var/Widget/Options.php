@@ -186,13 +186,26 @@ class Options extends Base
             $themeOptionsKey = 'theme:' . $theme;
             if (array_key_exists($themeOptionsKey, $options)) {
                 $themeOptions = $this->decodeArrayOption($themeOptionsKey, $options[$themeOptionsKey], [], true);
-                $options = array_merge($options, $themeOptions);
+                $options = $this->mergeThemeOptions($options, $themeOptions);
             }
         } elseif (!empty($this->row)) {
             $options = \Utils\Defaults::bootstrapOptions($this->row);
         }
 
         $this->push($options);
+    }
+
+    private function mergeThemeOptions(array $options, array $themeOptions): array
+    {
+        foreach ($themeOptions as $key => $value) {
+            if (!is_string($key) || array_key_exists($key, $options)) {
+                continue;
+            }
+
+            $options[$key] = $value;
+        }
+
+        return $options;
     }
 
     /**

@@ -65,6 +65,7 @@ class Client
      */
     private function rpcCall(string $method, array $args): bool
     {
+        $this->error = null;
         $request = new Request($method, $args);
         $xml = $request->getXml();
 
@@ -80,7 +81,7 @@ class Client
                 ->setData($xml)
                 ->send($this->url);
         } catch (HttpClient\Exception $e) {
-            $this->error = new Error(-32700, $e->getMessage());
+            $this->error = new Error(-32300, $e->getMessage());
             return false;
         }
 
@@ -89,8 +90,9 @@ class Client
         // Now parse what we've got back
         $this->message = new Message($contents);
         if (!$this->message->parse()) {
-            // XML error
-            $this->error = new Error(-32700, 'parse error. not well formed');
+            $detail = $this->message->parseError !== '' ? $this->message->parseError : 'parse error. not well formed';
+            $code = $detail === Message::ERROR_XML_EXTENSION ? -32603 : -32700;
+            $this->error = new Error($code, $detail);
             return false;
         }
 

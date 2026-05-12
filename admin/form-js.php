@@ -59,18 +59,39 @@
                 return;
             }
 
+            function isPlaceholder() {
+                return passInput.value === '********';
+            }
+
             function markChanged() {
                 changedInput.value = '1';
+            }
+
+            function clearPlaceholder() {
+                if (!isPlaceholder()) {
+                    return;
+                }
+
+                passInput.value = '';
+                markChanged();
             }
 
             passInput.addEventListener('input', markChanged);
             passInput.addEventListener('change', markChanged);
             passInput.addEventListener('focus', function () {
-                if (this.value === '********') {
-                    this.value = '';
-                    markChanged();
+                if (isPlaceholder()) {
+                    this.select();
                 }
             });
+            passInput.addEventListener('keydown', function (event) {
+                if (
+                    isPlaceholder()
+                    && event.key.length === 1
+                ) {
+                    clearPlaceholder();
+                }
+            });
+            passInput.addEventListener('paste', clearPlaceholder);
             passInput.form && passInput.form.addEventListener('submit', function () {
                 if (passInput.value !== '********') {
                     markChanged();

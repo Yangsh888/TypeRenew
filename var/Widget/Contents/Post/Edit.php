@@ -8,6 +8,8 @@ use Widget\Base\Metas;
 use Widget\ActionInterface;
 use Widget\Contents\EditTrait;
 use Widget\Contents\PrepareEditTrait;
+use Widget\Contents\Write\Request as WriteRequest;
+use Widget\Contents\Write\Response as WriteResponse;
 use Widget\Notice;
 use Widget\Service;
 
@@ -41,7 +43,7 @@ class Edit extends Contents implements ActionInterface
         $contents['category'] = $this->request->getArray('category');
         $contents['title'] = $this->request->get('title', _t('未命名文档'));
         $contents['created'] = $this->getCreated();
-        $contents = $this->normalizeWriteContents($contents);
+        $contents = WriteRequest::normalize($contents, $this->request, (int) ($this->cid ?? 0));
 
         $contents = self::pluginHandle()->filter('write', $contents, $this);
 
@@ -51,8 +53,10 @@ class Edit extends Contents implements ActionInterface
 
             self::pluginHandle()->call('finishPublish', $contents, $this);
 
+            $trackbackInput = $this->request->get('trackback', '');
+            $trackbackText = is_scalar($trackbackInput) ? trim((string) $trackbackInput) : '';
             $trackback = array_filter(
-                array_unique(preg_split("/(\r|\n|\r\n)/", trim($this->request->get('trackback', ''))) ?: [])
+                array_unique(preg_split("/(\r|\n|\r\n)/", $trackbackText) ?: [])
             );
             Service::alloc()->sendPing($this, $trackback);
 
@@ -90,7 +94,11 @@ class Edit extends Contents implements ActionInterface
         $draftId = $this->save($contents);
 
         self::pluginHandle()->call('finishSave', $contents, $this);
-        $this->finishSaveResponse(
+        WriteResponse::finishSave(
+            $this->request,
+            $this->response,
+            (int) $this->options->time,
+            (int) $this->cid,
             (string) $this->title,
             $draftId,
             Common::url('write-post.php?cid=' . $this->cid, $this->options->adminUrl)
@@ -121,40 +129,45 @@ class Edit extends Contents implements ActionInterface
             $postObject = $this->db->fetchObject($this->db->select('status', 'type')
                 ->from('table.contents')->where('cid = ? AND (type = ? OR type = ?)', $post, 'post', 'post_draft'));
 
-            if ($this->isWriteable(clone $condition) && count((array)$postObject)) {
-                $this->db->query($condition->update('table.contents')->rows(['status' => $status]));
+            if ($this->isWriteable(clone $condition) && count((array) $postObject)) {
+                $changed = (bool) $this->withWriteTransaction(function () use ($condition, $status, $postObject, $post) {
+                    $this->db->query($condition->update('table.contents')->rows(['status' => $status]));
 
-                if ($postObject->type == 'post') {
-                    $op = null;
+                    if ($postObject->type == 'post') {
+                        $op = null;
 
-                    if ($status == 'publish' && $postObject->status != 'publish') {
-                        $op = '+';
-                    } elseif ($status != 'publish' && $postObject->status == 'publish') {
-                        $op = '-';
-                    }
+                        if ($status == 'publish' && $postObject->status != 'publish') {
+                            $op = '+';
+                        } elseif ($status != 'publish' && $postObject->status == 'publish') {
+                            $op = '-';
+                        }
 
-                    if (!empty($op)) {
-                        $metas = $this->db->fetchAll(
-                            $this->db->select()->from('table.relationships')->where('cid = ?', $post)
-                        );
-                        foreach ($metas as $meta) {
-                            $this->db->query($this->db->update('table.metas')
-                                ->expression('count', 'count ' . $op . ' 1')
-                                ->where('mid = ? AND (type = ? OR type = ?)', $meta['mid'], 'category', 'tag'));
+                        if (!empty($op)) {
+                            $metas = $this->db->fetchAll(
+                                $this->db->select()->from('table.relationships')->where('cid = ?', $post)
+                            );
+                            foreach ($metas as $meta) {
+                                $this->db->query($this->db->update('table.metas')
+                                    ->expression('count', 'count ' . $op . ' 1')
+                                    ->where('mid = ? AND (type = ? OR type = ?)', $meta['mid'], 'category', 'tag'));
+                            }
                         }
                     }
+
+                    $draft = $this->db->fetchRow($this->revisionSelect((int) $post));
+
+                    if (!empty($draft)) {
+                        $this->db->query($this->db->update('table.contents')->rows(['status' => $status])
+                            ->where('cid = ?', $draft['cid']));
+                    }
+
+                    return true;
+                });
+
+                if ($changed) {
+                    self::pluginHandle()->call('finishMark', $status, $post, $this);
+                    $markCount++;
                 }
-
-                $draft = $this->db->fetchRow($this->revisionSelect((int) $post));
-
-                if (!empty($draft)) {
-                    $this->db->query($this->db->update('table.contents')->rows(['status' => $status])
-                        ->where('cid = ?', $draft['cid']));
-                }
-
-                self::pluginHandle()->call('finishMark', $status, $post, $this);
-
-                $markCount++;
             }
         }
 
@@ -179,30 +192,39 @@ class Edit extends Contents implements ActionInterface
             $postObject = $this->db->fetchObject($this->db->select('status', 'type')
                 ->from('table.contents')->where('cid = ? AND (type = ? OR type = ?)', $post, 'post', 'post_draft'));
 
-            if ($this->isWriteable(clone $condition) && count((array)$postObject) && $this->delete($condition)) {
-                $this->setCategories($post, [], 'publish' == $postObject->status
-                    && 'post' == $postObject->type);
+            if ($this->isWriteable(clone $condition) && count((array) $postObject)) {
+                $deleted = (bool) $this->withWriteTransaction(function () use ($condition, $postObject, $post) {
+                    if (!$this->delete($condition)) {
+                        return false;
+                    }
 
-                $this->setTags($post, null, 'publish' == $postObject->status
-                    && 'post' == $postObject->type);
+                    $this->setCategories($post, [], 'publish' == $postObject->status
+                        && 'post' == $postObject->type);
 
-                $this->db->query($this->db->delete('table.comments')
-                    ->where('cid = ?', $post));
+                    $this->setTags($post, null, 'publish' == $postObject->status
+                        && 'post' == $postObject->type);
 
-                $this->unAttach($post);
+                    $this->db->query($this->db->delete('table.comments')
+                        ->where('cid = ?', $post));
 
-                $draft = $this->db->fetchRow($this->revisionSelect((int) $post));
+                    $this->unAttach($post);
 
-                $this->deleteFields($post);
+                    $draft = $this->db->fetchRow($this->revisionSelect((int) $post));
 
-                if ($draft) {
-                    $this->deleteContent($draft['cid']);
-                    $this->deleteFields($draft['cid']);
+                    $this->deleteFields($post);
+
+                    if ($draft) {
+                        $this->deleteContent($draft['cid']);
+                        $this->deleteFields($draft['cid']);
+                    }
+
+                    return true;
+                });
+
+                if ($deleted) {
+                    self::pluginHandle()->call('finishDelete', $post, $this);
+                    $deleteCount++;
                 }
-
-                self::pluginHandle()->call('finishDelete', $post, $this);
-
-                $deleteCount++;
             }
         }
 
@@ -233,10 +255,16 @@ class Edit extends Contents implements ActionInterface
             }
 
             $draft = $this->db->fetchRow($this->revisionSelect((int) $post));
+            $postObject = $this->db->fetchObject($this->db->select('type', 'parent')
+                ->from('table.contents')->where('cid = ?', $post)->limit(1));
 
             if ($draft) {
                 $this->deleteContent($draft['cid']);
                 $this->deleteFields($draft['cid']);
+                $deleteCount++;
+            } elseif ($postObject && $postObject->type === 'post_draft' && (int) $postObject->parent === 0) {
+                $this->deleteContent($post);
+                $this->deleteFields($post);
                 $deleteCount++;
             }
         }
@@ -274,5 +302,32 @@ class Edit extends Contents implements ActionInterface
     protected function getThemeFieldsHook(): string
     {
         return 'themePostFields';
+    }
+
+    protected function hasWriteMetas(): bool
+    {
+        return true;
+    }
+
+    protected function ___categories(): array
+    {
+        $cid = (int) ($this->draft['draftCid'] ?? 0);
+        if ($cid > 0) {
+            return \Widget\Metas\Category\Related::allocWithAlias($cid, ['cid' => $cid])
+                ->toArray(['mid', 'name', 'slug', 'description', 'order', 'parent', 'count', 'permalink']);
+        }
+
+        return parent::___categories();
+    }
+
+    protected function ___tags(): array
+    {
+        $cid = (int) ($this->draft['draftCid'] ?? 0);
+        if ($cid > 0) {
+            return \Widget\Metas\Tag\Related::allocWithAlias($cid, ['cid' => $cid])
+                ->toArray(['mid', 'name', 'slug', 'description', 'count', 'permalink']);
+        }
+
+        return parent::___tags();
     }
 }

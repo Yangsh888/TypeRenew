@@ -92,22 +92,39 @@ class Schema
         self::ensureTables($db, ['renew_seo_logs', 'renew_seo_404']);
     }
 
-    public static function ensureCoreIndexes(Db $db): void
+    public static function coreIndexes(Db $db): array
     {
         $prefix = $db->getPrefix();
 
-        self::ensureIndex($db, $prefix . 'comments', $prefix . 'comments_status', ['status']);
-        self::ensureIndex($db, $prefix . 'comments', $prefix . 'comments_cid_status', ['cid', 'status']);
-        self::ensureIndex($db, $prefix . 'comments', $prefix . 'comments_owner_status', ['ownerId', 'status']);
-        self::ensureIndex($db, $prefix . 'comments', $prefix . 'comments_parent', ['parent']);
+        return [
+            $prefix . 'comments' => [
+                ['name' => $prefix . 'comments_status', 'columns' => ['status']],
+                ['name' => $prefix . 'comments_cid_status', 'columns' => ['cid', 'status']],
+                ['name' => $prefix . 'comments_owner_status', 'columns' => ['ownerId', 'status']],
+                ['name' => $prefix . 'comments_parent', 'columns' => ['parent']],
+            ],
+            $prefix . 'contents' => [
+                ['name' => $prefix . 'contents_type_status_created', 'columns' => ['type', 'status', 'created']],
+                ['name' => $prefix . 'contents_author_type_status_created', 'columns' => ['authorId', 'type', 'status', 'created']],
+                ['name' => $prefix . 'contents_parent_type', 'columns' => ['parent', 'type']],
+            ],
+            $prefix . 'metas' => [
+                ['name' => $prefix . 'metas_type_slug', 'columns' => ['type', 'slug']],
+                ['name' => $prefix . 'metas_type_parent_order', 'columns' => ['type', 'parent', 'order']],
+            ],
+            $prefix . 'relationships' => [
+                ['name' => $prefix . 'relationships_mid', 'columns' => ['mid']],
+            ],
+        ];
+    }
 
-        self::ensureIndex($db, $prefix . 'contents', $prefix . 'contents_type_status_created', ['type', 'status', 'created']);
-        self::ensureIndex($db, $prefix . 'contents', $prefix . 'contents_author_type_status_created', ['authorId', 'type', 'status', 'created']);
-        self::ensureIndex($db, $prefix . 'contents', $prefix . 'contents_parent_type', ['parent', 'type']);
-
-        self::ensureIndex($db, $prefix . 'metas', $prefix . 'metas_type_slug', ['type', 'slug']);
-        self::ensureIndex($db, $prefix . 'metas', $prefix . 'metas_type_parent_order', ['type', 'parent', 'order']);
-        self::ensureIndex($db, $prefix . 'relationships', $prefix . 'relationships_mid', ['mid']);
+    public static function ensureCoreIndexes(Db $db): void
+    {
+        foreach (self::coreIndexes($db) as $table => $indexes) {
+            foreach ($indexes as $index) {
+                self::ensureIndex($db, $table, $index['name'], $index['columns']);
+            }
+        }
     }
 
     public static function repairMailInfra(Db $db): void
@@ -134,7 +151,7 @@ class Schema
         $dialect = self::dialect($db);
         $table = $db->getPrefix() . 'users';
 
-        if ($dialect === 'sqlite') {
+        if ($dialect === 'sqlite' || !self::tableExists($db, $table) || !self::columnExists($db, $table, 'password')) {
             return;
         }
 
@@ -593,13 +610,12 @@ class Schema
         $columnMap = self::mysqlColumns($db, $table);
 
         foreach ($definitions as $column => $definition) {
-            $actual = strtolower((string) ($columnMap[$column]['Type'] ?? ''));
-            $expectedType = self::mysqlDefinitionType((string) $definition);
-            if ($actual === '') {
+            $actual = $columnMap[$column] ?? null;
+            if (!is_array($actual)) {
                 continue;
             }
 
-            if ($expectedType !== '' && !str_contains($actual, $expectedType)) {
+            if (!self::mysqlDefinitionMatches($actual, (string) $definition)) {
                 $mismatches[] = (string) $column;
             }
         }
@@ -747,13 +763,12 @@ class Schema
         $definitions = (array) ($mysqlMeta['definitions'] ?? []);
 
         foreach ($definitions as $column => $definition) {
-            $actualType = strtolower((string) ($columnMap[$column]['Type'] ?? ''));
-            $expectedType = self::mysqlDefinitionType((string) $definition);
-            if ($actualType === '') {
+            $actual = $columnMap[$column] ?? null;
+            if (!is_array($actual)) {
                 continue;
             }
 
-            if ($expectedType !== '' && str_contains($actualType, $expectedType)) {
+            if (self::mysqlDefinitionMatches($actual, (string) $definition)) {
                 continue;
             }
 
@@ -765,6 +780,32 @@ class Schema
         }
     }
 
+    private static function mysqlDefinitionMatches(array $actual, string $definition): bool
+    {
+        $expected = self::mysqlDefinitionSignature($definition);
+        if ($expected === []) {
+            return true;
+        }
+
+        $actualType = strtolower((string) ($actual['Type'] ?? ''));
+        if ($actualType === '' || $actualType !== ($expected['type'] ?? '')) {
+            return false;
+        }
+
+        $actualNull = strtoupper((string) ($actual['Null'] ?? 'YES'));
+        if ($actualNull !== ($expected['null'] ?? 'YES')) {
+            return false;
+        }
+
+        $actualDefault = self::normalizeMysqlDefault($actual['Default'] ?? null);
+        if ($actualDefault !== ($expected['default'] ?? null)) {
+            return false;
+        }
+
+        $actualExtra = self::normalizeMysqlExtra((string) ($actual['Extra'] ?? ''));
+        return $actualExtra === ($expected['extra'] ?? '');
+    }
+
     private static function mysqlDefinitionType(string $definition): string
     {
         if (preg_match('/^`[^`]+`\s+(.+?)(?:\s+NOT\s+NULL|\s+DEFAULT|\s+NULL|\s+AUTO_INCREMENT|$)/i', trim($definition), $matches) !== 1) {
@@ -772,6 +813,58 @@ class Schema
         }
 
         return strtolower(trim((string) ($matches[1] ?? '')));
+    }
+
+    private static function mysqlDefinitionSignature(string $definition): array
+    {
+        $normalized = strtolower(trim($definition));
+        $type = self::mysqlDefinitionType($definition);
+        if ($type === '') {
+            return [];
+        }
+
+        $default = null;
+        if (preg_match('/\sdefault\s+((?:"[^"]*"|\'[^\']*\'|[^\s,]+))/i', $definition, $matches) === 1) {
+            $default = self::normalizeMysqlDefault(trim((string) $matches[1]));
+        }
+
+        return [
+            'type' => $type,
+            'null' => str_contains($normalized, ' not null') ? 'NO' : 'YES',
+            'default' => $default,
+            'extra' => str_contains($normalized, 'auto_increment') ? 'auto_increment' : '',
+        ];
+    }
+
+    private static function normalizeMysqlDefault($value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $string = trim((string) $value);
+        if ($string === '') {
+            return '';
+        }
+
+        $lower = strtolower($string);
+        if ($lower === 'null') {
+            return null;
+        }
+
+        if (
+            (str_starts_with($string, '"') && str_ends_with($string, '"'))
+            || (str_starts_with($string, '\'') && str_ends_with($string, '\''))
+        ) {
+            $string = substr($string, 1, -1);
+        }
+
+        return $string;
+    }
+
+    private static function normalizeMysqlExtra(string $value): string
+    {
+        return strtolower(trim($value));
     }
 
     public static function mysqlTableCollation(Db $db, string $table): string

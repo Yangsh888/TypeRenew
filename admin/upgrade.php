@@ -57,8 +57,13 @@ $mysqlRiskItems = array_values(array_filter(
     (array) ($mysqlRiskStatus['items'] ?? []),
     static fn(array $item): bool => (string) ($item['status'] ?? 'ok') !== 'ok'
 ));
+$mysqlBlockingItems = array_values(array_filter(
+    $mysqlRiskItems,
+    static fn(array $item): bool => (string) ($item['status'] ?? 'ok') === 'blocking'
+));
 $mysqlRiskCount = count($mysqlRiskItems);
-$dbActionBlocked = $showDbDiagnostics && $mysqlRiskCount > 0;
+$mysqlBlockingCount = count($mysqlBlockingItems);
+$dbActionBlocked = $showDbDiagnostics && $mysqlBlockingCount > 0;
 $dbDiagnosticsUrl = $options->adminUrl('upgrade.php?dbdiag=1', true);
 $dbOverviewUrl = $options->adminUrl('upgrade.php', true);
 ?>
@@ -75,7 +80,7 @@ $dbOverviewUrl = $options->adminUrl('upgrade.php', true);
                     <div class="tr-card tr-tone-muted">
                         <div class="tr-card-b">
                             <div class="tr-subtitle"><?php _e('环境预检'); ?></div>
-                            <div class="tr-help tr-mt-8"><?php _e('环境预检通过，共检查 %d 项。', count($upgradeItems)); ?></div>
+                            <div class="tr-help tr-mt-8"><?php _e('环境预检已完成，共检查 %d 项。', count($upgradeItems)); ?></div>
                             <?php if ($upgradeWarningCount > 0): ?>
                                 <div class="tr-help tr-tone-warning tr-mt-8"><?php _e('另有 %d 项环境提醒。', $upgradeWarningCount); ?></div>
                             <?php endif; ?>
@@ -241,7 +246,7 @@ $dbOverviewUrl = $options->adminUrl('upgrade.php', true);
                                         </div>
                                         <?php if ($dbActionBlocked): ?>
                                             <div class="tr-help tr-tone-warning tr-mt-12">
-                                                <?php _e('检测到 %d 项 MySQL 风险，处理前已暂时禁用数据库升级。', $mysqlRiskCount); ?>
+                                                <?php _e('检测到 %d 项需要人工处理的 MySQL 风险，处理前已暂时禁用数据库升级。', $mysqlBlockingCount); ?>
                                             </div>
                                         <?php endif; ?>
                                         <form action="<?php echo $dbUpgradeUrl; ?>" method="post" class="tr-mt-12">
@@ -259,7 +264,7 @@ $dbOverviewUrl = $options->adminUrl('upgrade.php', true);
                                         </div>
                                         <?php if ($dbActionBlocked): ?>
                                             <div class="tr-help tr-tone-warning tr-mt-12">
-                                                <?php _e('检测到 %d 项 MySQL 风险，处理前已暂时禁用结构修复。', $mysqlRiskCount); ?>
+                                                <?php _e('检测到 %d 项需要人工处理的 MySQL 风险，处理前已暂时禁用结构修复。', $mysqlBlockingCount); ?>
                                             </div>
                                         <?php endif; ?>
                                         <form action="<?php echo $dbUpgradeUrl; ?>" method="post" class="tr-mt-12">
@@ -300,7 +305,9 @@ $dbOverviewUrl = $options->adminUrl('upgrade.php', true);
                                                             <li>
                                                                 <?php echo htmlspecialchars((string) $item['label'], ENT_QUOTES, 'UTF-8'); ?>
                                                                 ：<?php
-                                                                if (!$item['exists']) {
+                                                                if (!array_key_exists('exists', $item)) {
+                                                                    echo _t('需处理');
+                                                                } elseif (!$item['exists']) {
                                                                     echo _t('缺表');
                                                                 } elseif (!empty($item['missingColumns'])) {
                                                                     echo _t('缺字段');
@@ -308,7 +315,11 @@ $dbOverviewUrl = $options->adminUrl('upgrade.php', true);
                                                                     echo _t('结构不一致');
                                                                 }
                                                                 ?>
-                                                                <span class="tr-help">(<?php echo htmlspecialchars((string) $item['table'], ENT_QUOTES, 'UTF-8'); ?>)</span>
+                                                                <?php if (!empty($item['table'])): ?>
+                                                                    <span class="tr-help">(<?php echo htmlspecialchars((string) $item['table'], ENT_QUOTES, 'UTF-8'); ?>)</span>
+                                                                <?php elseif (!empty($item['detail'])): ?>
+                                                                    <span class="tr-help">(<?php echo htmlspecialchars((string) $item['detail'], ENT_QUOTES, 'UTF-8'); ?>)</span>
+                                                                <?php endif; ?>
                                                                 <?php if (!empty($item['missingColumns'])): ?>
                                                                     <span class="tr-help">[<?php echo htmlspecialchars(implode(', ', $item['missingColumns']), ENT_QUOTES, 'UTF-8'); ?>]</span>
                                                                 <?php endif; ?>

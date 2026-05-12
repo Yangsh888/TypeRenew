@@ -133,7 +133,7 @@ function install_get_current_db_driver(): string
         $drivers = install_get_db_drivers();
 
         if (empty($driver) || !isset($drivers[$driver])) {
-            return key($drivers);
+            return (string) (array_key_first($drivers) ?? '');
         }
 
         return $driver;
@@ -1251,7 +1251,7 @@ function install_step_3_perform()
             }
         }
 
-        $installDb->query(
+        $userId = (int) $installDb->query(
             $installDb->insert('table.users')->rows([
                 'name' => $config['userName'],
                 'password' => \Utils\Password::hash($config['userPassword']),
@@ -1263,7 +1263,7 @@ function install_step_3_perform()
             ])
         );
 
-        $installDb->query(
+        $defaultCategoryId = (int) $installDb->query(
             $installDb->insert('table.metas')
                 ->rows([
                     'name' => _t('默认分类'),
@@ -1274,15 +1274,13 @@ function install_step_3_perform()
                 ])
         );
 
-        $installDb->query($installDb->insert('table.relationships')->rows(['cid' => 1, 'mid' => 1]));
-
-        $installDb->query(
+        $welcomePostId = (int) $installDb->query(
             $installDb->insert('table.contents')->rows([
                 'title' => _t('欢迎使用 TypeRenew'),
                 'slug' => 'start', 'created' => \Typecho\Date::time(),
                 'modified' => \Typecho\Date::time(),
                 'text' => '<!--markdown-->' . _t('本程序由 TypeRenew 焕新呈现，基于 Typecho 开发，为现代化而生'),
-                'authorId' => 1,
+                'authorId' => $userId,
                 'type' => 'post',
                 'status' => 'publish',
                 'commentsNum' => 1,
@@ -1293,6 +1291,11 @@ function install_step_3_perform()
             ])
         );
 
+        $installDb->query($installDb->insert('table.relationships')->rows([
+            'cid' => $welcomePostId,
+            'mid' => $defaultCategoryId
+        ]));
+
         $installDb->query(
             $installDb->insert('table.contents')->rows([
                 'title' => _t('关于'),
@@ -1300,7 +1303,7 @@ function install_step_3_perform()
                 'created' => \Typecho\Date::time(),
                 'modified' => \Typecho\Date::time(),
                 'text' => '<!--markdown-->' . _t('本页面由 TypeRenew 创建, 这只是个测试页面.'),
-                'authorId' => 1,
+                'authorId' => $userId,
                 'order' => 0,
                 'type' => 'page',
                 'status' => 'publish',
@@ -1314,9 +1317,9 @@ function install_step_3_perform()
 
         $installDb->query(
             $installDb->insert('table.comments')->rows([
-                'cid' => 1, 'created' => \Typecho\Date::time(),
+                'cid' => $welcomePostId, 'created' => \Typecho\Date::time(),
                 'author' => 'TypeRenew',
-                'ownerId' => 1,
+                'ownerId' => $userId,
                 'url' => 'https://github.com/Yangsh888/TypeRenew',
                 'ip' => '127.0.0.1',
                 'agent' => $options->generator,

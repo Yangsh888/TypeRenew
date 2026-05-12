@@ -168,6 +168,12 @@ class Request
         return is_array($default) == is_array($value) ? $value : $default;
     }
 
+    public function getAction(string $default = '', ?bool &$exists = true): string
+    {
+        $value = $this->getInput('do', $default, $exists);
+        return is_scalar($value) ? (string) $value : $default;
+    }
+
     public function __get(string $key)
     {
         return $this->get($key);
@@ -740,7 +746,7 @@ class Request
         if (!empty($params)) {
             $validated = true;
             foreach ($params as $key => $val) {
-                $param = $this->get($key, null, $exists);
+                $param = $this->getInput($key, null, $exists);
                 $validated = empty($val) ? $exists : ($val == $param);
 
                 if (!$validated) {

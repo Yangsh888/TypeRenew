@@ -63,7 +63,7 @@ class MethodRegistry
             'wp.getCategories' => ['callback' => [$this->xmlRpc, 'mwGetCategories'], 'access' => 'contributor', 'auth' => true],
             'wp.newCategory' => ['callback' => [$this->xmlRpc, 'wpNewCategory'], 'access' => 'editor', 'auth' => true],
             'wp.suggestCategories' => ['callback' => [$this->xmlRpc, 'wpSuggestCategories'], 'access' => 'contributor', 'auth' => true],
-            'wp.uploadFile' => ['callback' => [$mediaHandler, 'mwNewMediaObject'], 'access' => 'editor', 'auth' => true],
+            'wp.uploadFile' => ['callback' => [$mediaHandler, 'mwNewMediaObject'], 'access' => 'contributor', 'auth' => true],
 
             /** New WordPress API since 2.9.2 */
             'wp.getUsersBlogs' => ['callback' => [$this->xmlRpc, 'wpGetUsersBlogs'], 'access' => 'contributor', 'auth' => true],
@@ -103,7 +103,7 @@ class MethodRegistry
             'metaWeblog.getPost' => ['callback' => [$this->xmlRpc, 'mwGetPost'], 'access' => 'contributor', 'auth' => true],
             'metaWeblog.getRecentPosts' => ['callback' => [$this->xmlRpc, 'mwGetRecentPosts'], 'access' => 'contributor', 'auth' => true],
             'metaWeblog.getCategories' => ['callback' => [$this->xmlRpc, 'mwGetCategories'], 'access' => 'contributor', 'auth' => true],
-            'metaWeblog.newMediaObject' => ['callback' => [$mediaHandler, 'mwNewMediaObject'], 'access' => 'editor', 'auth' => true],
+            'metaWeblog.newMediaObject' => ['callback' => [$mediaHandler, 'mwNewMediaObject'], 'access' => 'contributor', 'auth' => true],
 
             'metaWeblog.deletePost' => ['callback' => [$this->xmlRpc, 'bloggerDeletePost'], 'access' => 'editor', 'auth' => true],
             'metaWeblog.getTemplate' => ['callback' => [$this->xmlRpc, 'bloggerGetTemplate'], 'access' => 'administrator', 'auth' => true],

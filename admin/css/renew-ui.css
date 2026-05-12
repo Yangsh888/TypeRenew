@@ -4628,23 +4628,6 @@ body.tr-admin ul.typecho-option.typecho-option-submit > li {
     gap: 10px;
 }
 
-body.tr-admin.tr-page-options-permalink .tr-settings-body > form {
-    max-width: 860px;
-}
-
-body.tr-admin.tr-page-options-permalink ul.typecho-option {
-    margin-bottom: 18px;
-}
-
-body.tr-admin.tr-page-options-permalink ul.typecho-option .typecho-label {
-    font-size: 14px;
-    letter-spacing: 0.01em;
-}
-
-body.tr-admin.tr-page-options-permalink ul.typecho-option .description {
-    color: rgba(15, 23, 42, 0.62);
-}
-
 body.tr-admin.tr-page-options-permalink .tr-rewrite-status-meta {
     display: flex;
     align-items: flex-start;
@@ -4754,7 +4737,6 @@ body.tr-admin.tr-page-options-permalink .multiline.tr-is-disabled {
     }
 }
 
-html.tr-theme-dark body.tr-admin.tr-page-options-permalink ul.typecho-option .description,
 html.tr-theme-dark body.tr-admin.tr-page-options-permalink ul.typecho-option.tr-rewrite-secondary .description {
     color: rgba(148, 163, 184, 0.78);
 }

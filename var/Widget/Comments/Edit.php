@@ -355,7 +355,7 @@ class Edit extends Comments implements ActionInterface
     public function action()
     {
         $this->user->pass('contributor');
-        $do = (string) $this->request->get('do');
+        $do = $this->request->getAction();
         if ($do !== 'get' && !$this->request->isPost()) {
             $this->response->setStatus(405)->throwContent(_t('Method Not Allowed'), 'text/plain');
             return;

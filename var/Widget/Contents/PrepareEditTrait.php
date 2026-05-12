@@ -4,7 +4,6 @@ namespace Widget\Contents;
 
 use Typecho\Db\Exception as DbException;
 use Typecho\Widget\Exception;
-use Widget\Base\Metas;
 use Widget\Metas\From as MetasFrom;
 
 trait PrepareEditTrait
@@ -37,17 +36,14 @@ trait PrepareEditTrait
                     [$this, 'filter']
                 );
 
-                if (isset($draft)) {
+                if (is_array($draft)) {
+                    $draftCid = (int) $draft['cid'];
                     $draft['parent'] = $this->row['parent'];    // keep parent
                     $draft['slug'] = ltrim($draft['slug'], '@');
                     $draft['type'] = $this->type;
+                    $draft['draftCid'] = $draftCid;
                     $draft['draft'] = $draft;
                     $draft['cid'] = $this->cid;
-                    $draft['tags'] = $this->db->fetchAll($this->db
-                        ->select()->from('table.metas')
-                        ->join('table.relationships', 'table.relationships.mid = table.metas.mid')
-                        ->where('table.relationships.cid = ?', $draft['cid'])
-                        ->where('table.metas.type = ?', 'tag'), [Metas::alloc(), 'filter']);
 
                     $this->row = $draft;
                 }
@@ -79,11 +75,11 @@ trait PrepareEditTrait
             $permission = strtolower($permission);
 
             if ('edit' == $permission) {
-                $allow &= ($this->user->pass('editor', true) || $this->authorId == $this->user->uid);
+                $allow = $allow && ($this->user->pass('editor', true) || $this->authorId == $this->user->uid);
             } else {
                 $permission = 'allow' . ucfirst(strtolower($permission));
                 $optionPermission = 'default' . ucfirst($permission);
-                $allow &= ($this->{$permission} ?? $this->options->{$optionPermission});
+                $allow = $allow && ($this->{$permission} ?? $this->options->{$optionPermission});
             }
         }
 

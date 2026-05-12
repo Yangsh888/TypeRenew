@@ -45,40 +45,84 @@ class MediaHandler extends AbstractHandler
     public function wpGetMediaItem(int $blogId, string $userName, string $password, int $attachmentId): array
     {
         $attachment = AttachmentEdit::alloc(null, ['cid' => $attachmentId]);
+        if (!$attachment->have()) {
+            throw new Exception('attachment not found', -32602);
+        }
 
         return $this->buildMediaStruct($attachment);
     }
 
     public function mwNewMediaObject(int $blogId, string $userName, string $password, array $data): array
     {
-        $result = Upload::uploadHandle($data);
+        $result = null;
+        $insertId = 0;
 
-        if (false === $result) {
-            throw new Exception('upload failed', -32001);
+        try {
+            $payload = $this->normalizeUploadPayload($data);
+            $result = Upload::uploadHandle($payload);
+
+            if (false === $result) {
+                throw new Exception('upload failed', -32001);
+            }
+
+            $insertId = $this->xmlRpc->insert([
+                'title' => $result['name'],
+                'slug' => $result['name'],
+                'type' => 'attachment',
+                'status' => 'publish',
+                'text' => Common::jsonEncode($result, 0, '{}'),
+                'allowComment' => 1,
+                'allowPing' => 0,
+                'allowFeed' => 1
+            ]);
+
+            $this->xmlRpc->db()->fetchRow(
+                $this->xmlRpc->select()->where('table.contents.cid = ?', $insertId)
+                    ->where('table.contents.type = ?', 'attachment'),
+                [$this->xmlRpc, 'push']
+            );
+
+            XmlRpcWidget::pluginHandle()->call('upload', $this->xmlRpc);
+
+            return [
+                'id' => $insertId,
+                'file' => $this->xmlRpc->attachment->name,
+                'url' => $this->xmlRpc->attachment->url,
+                'type' => $this->xmlRpc->attachment->mime ?? $this->xmlRpc->attachment->type,
+            ];
+        } catch (\Throwable $e) {
+            if ($insertId > 0) {
+                $this->xmlRpc->delete($this->xmlRpc->db()->sql()->where('cid = ?', $insertId));
+            }
+
+            if (is_array($result)) {
+                Upload::cleanupUploadResult($result);
+            }
+
+            if ($e instanceof Exception) {
+                throw $e;
+            }
+
+            throw new Exception($e->getMessage(), -32001);
+        }
+    }
+
+    private function normalizeUploadPayload(array $data): array
+    {
+        $name = $data['name'] ?? null;
+        if (!is_string($name) || trim($name) === '') {
+            throw new Exception('upload payload is invalid', -32602);
         }
 
-        $insertId = $this->xmlRpc->insert([
-            'title' => $result['name'],
-            'slug' => $result['name'],
-            'type' => 'attachment',
-            'status' => 'publish',
-            'text' => Common::jsonEncode($result, 0, '{}'),
-            'allowComment' => 1,
-            'allowPing' => 0,
-            'allowFeed' => 1
-        ]);
-
-        $this->xmlRpc->db()->fetchRow(
-            $this->xmlRpc->select()->where('table.contents.cid = ?', $insertId)
-                ->where('table.contents.type = ?', 'attachment'),
-            [$this->xmlRpc, 'push']
-        );
-
-        XmlRpcWidget::pluginHandle()->call('upload', $this->xmlRpc);
+        $bytes = $data['bytes'] ?? ($data['bits'] ?? null);
+        if (!is_string($bytes)) {
+            throw new Exception('upload payload is invalid', -32602);
+        }
 
         return [
-            'file' => $this->xmlRpc->attachment->name,
-            'url' => $this->xmlRpc->attachment->url
+            'name' => $name,
+            'size' => strlen($bytes),
+            isset($data['bytes']) ? 'bytes' : 'bits' => $bytes,
         ];
     }
 

@@ -98,7 +98,10 @@ class CommentHandler extends AbstractHandler
         $input = [];
 
         if (isset($struct['date_created_gmt']) && $struct['date_created_gmt'] instanceof Date) {
-            $input['created'] = $this->xmlRpc->fromUtcRpcDate($struct['date_created_gmt']);
+            $created = $this->xmlRpc->fromUtcRpcDate($struct['date_created_gmt']);
+            if ($created !== null) {
+                $input['created'] = $created;
+            }
         }
 
         if (isset($struct['status'])) {

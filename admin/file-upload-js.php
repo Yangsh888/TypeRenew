@@ -104,9 +104,6 @@ $(document).ready(function() {
             case 'type':
                 word = '<?php _e('文件扩展名不被支持'); ?>';
                 break;
-            case 'duplicate':
-                word = '<?php _e('文件已经上传过'); ?>';
-                break;
             case 'server':
                 if (serverMessage) {
                     word = serverMessage;
@@ -121,7 +118,7 @@ $(document).ready(function() {
             li, exist = $('#' + file.id);
 
         if (exist.length > 0) {
-            li = exist.removeClass('loading').html(fileError);
+            li = exist.removeClass('loading').html(fileError + '<br />' + word);
         } else {
             li = $('<li>' + fileError + '<br />' + word + '</li>').appendTo('#file-list');
         }

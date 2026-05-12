@@ -66,9 +66,12 @@ class Admin extends Comments
             }
         }
 
-        if (in_array($this->request->get('status'), ['approved', 'waiting', 'spam'])) {
-            $select->where('table.comments.status = ?', $this->request->get('status'));
-        } elseif ('hold' == $this->request->get('status')) {
+        $status = $this->request->get('status');
+        $status = is_scalar($status) ? (string) $status : '';
+
+        if (in_array($status, ['approved', 'waiting', 'spam'], true)) {
+            $select->where('table.comments.status = ?', $status);
+        } elseif ($status === 'hold') {
             $select->where('table.comments.status <> ?', 'approved');
         } else {
             $select->where('table.comments.status = ?', 'approved');

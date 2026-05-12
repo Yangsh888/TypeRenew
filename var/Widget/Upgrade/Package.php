@@ -18,7 +18,7 @@ class Package extends BaseOptions implements ActionInterface
         }
 
         $this->security->protect();
-        $do = (string) $this->request->get('do');
+        $do = $this->request->getAction();
 
         try {
             if ($do === 'upload') {

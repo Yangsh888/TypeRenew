@@ -108,6 +108,13 @@ class Request
         return $this->applyFilter($this->request->proxy($this->params)->getInput($key, $default, $exists));
     }
 
+    public function getAction(string $default = '', ?bool &$exists = true): string
+    {
+        $value = $this->request->proxy($this->params)->getAction($default, $exists);
+        $value = $this->applyFilter($value);
+        return is_scalar($value) ? (string) $value : $default;
+    }
+
     public function getArray(string $key): array
     {
         return $this->applyFilter($this->request->proxy($this->params)->getArray($key));

@@ -74,9 +74,7 @@ class Reset extends Users implements ActionInterface
         }
 
         $hashedPassword = Password::hash($password);
-        $authCode = function_exists('openssl_random_pseudo_bytes')
-            ? bin2hex(openssl_random_pseudo_bytes(16))
-            : sha1(Common::randString(20));
+        $authCode = bin2hex(random_bytes(16));
 
         $updatedRows = $this->db->query(
             $this->db->update('table.users')

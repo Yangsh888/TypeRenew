@@ -389,7 +389,7 @@ class Mail extends Options implements ActionInterface
         }
         $this->security->protect();
 
-        $do = (string) $this->request->get('do');
+        $do = $this->request->getAction();
         if ($do === 'deliver') {
             $result = Queue::deliverBatch(Db::get(), $this->options, (int) ($this->options->mailBatchSize ?? 50));
             $this->noticeAndGoBack(

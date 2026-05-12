@@ -38,21 +38,21 @@ class XmlRpc extends Contents implements ActionInterface
         return new Date($timestamp);
     }
 
-    public function fromSiteRpcDate(Date $date): int
+    public function fromSiteRpcDate(Date $date): ?int
     {
         return $this->parseRpcDate($date, false);
     }
 
-    public function fromUtcRpcDate(Date $date): int
+    public function fromUtcRpcDate(Date $date): ?int
     {
         return $this->parseRpcDate($date, true);
     }
 
-    private function parseRpcDate(Date $date, bool $utc): int
+    private function parseRpcDate(Date $date, bool $utc): ?int
     {
         $iso = trim($date->getIso());
         if ($iso === '') {
-            return 0;
+            return null;
         }
 
         $normalized = $iso;
@@ -68,7 +68,7 @@ class XmlRpc extends Contents implements ActionInterface
         }
 
         if (preg_match('/^([0-9]{4})([0-9]{2})([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})$/', $normalized, $matches) !== 1) {
-            return 0;
+            return null;
         }
 
         $year = (int) $matches[1];
@@ -85,10 +85,10 @@ class XmlRpc extends Contents implements ActionInterface
                 new DateTimeZone('UTC')
             );
 
-            return $dateTime instanceof DateTimeImmutable ? $dateTime->getTimestamp() : 0;
+            return $dateTime instanceof DateTimeImmutable ? $dateTime->getTimestamp() : null;
         }
 
-        return SiteTimezone::fromLocalParts($year, $month, $day, $hour, $minute, $second) ?? 0;
+        return SiteTimezone::fromLocalParts($year, $month, $day, $hour, $minute, $second);
     }
 
     private function createStrictDateTime(
@@ -225,7 +225,10 @@ class XmlRpc extends Contents implements ActionInterface
         }
 
         if (isset($content['dateCreated'])) {
-            $input['created'] = $this->fromSiteRpcDate($content['dateCreated']);
+            $created = $this->fromSiteRpcDate($content['dateCreated']);
+            if ($created !== null) {
+                $input['created'] = $created;
+            }
         }
 
         $input['allowComment'] = $this->resolveDiscussionSetting(
@@ -1260,12 +1263,12 @@ EOF;
     public function getPostExtended(Contents $content): array
     {
         //根据客户端显示来判断是否显示html代码
-        $agent = $this->request->getAgent();
+        $agent = (string) ($this->request->getAgent() ?? '');
 
         switch (true) {
             case false !== strpos($agent, 'wp-iphone'):   // wordpress iphone客户端
             case false !== strpos($agent, 'wp-blackberry'):  // 黑莓
-            case false !== strpos($agent, 'wp-andriod'):  // andriod
+            case false !== strpos($agent, 'wp-android'):  // android
             case false !== strpos($agent, 'plain-text'):  // 这是预留给第三方开发者的接口, 用于强行调用非所见即所得数据
             case $this->options->xmlrpcMarkdown:
                 $text = $content->text;

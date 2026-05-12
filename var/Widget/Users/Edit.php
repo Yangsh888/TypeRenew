@@ -26,7 +26,7 @@ class Edit extends Users implements ActionInterface
     {
         $this->user->pass('administrator');
 
-        if (($this->request->is('uid') && 'delete' != $this->request->get('do')) || $this->request->is('do=update')) {
+        if (($this->request->is('uid') && 'delete' != $this->request->getAction()) || $this->request->is('do=update')) {
             $this->db->fetchRow($this->select()
                 ->where('uid = ?', $this->request->get('uid'))->limit(1), [$this, 'push']);
 

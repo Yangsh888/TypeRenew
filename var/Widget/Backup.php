@@ -110,7 +110,7 @@ class Backup extends BaseOptions implements ActionInterface
             return;
         }
         $this->security->protect();
-        $action = (string) $this->request->filter('trim')->get('do');
+        $action = $this->request->filter('trim')->getAction();
 
         if ('' === $action) {
             Notice::alloc()->set(_t('请求缺少必要动作参数，请重新提交恢复请求'), 'error');

@@ -4,6 +4,7 @@ namespace Widget\Options;
 
 use Typecho\Cache as CacheFacade;
 use Typecho\Widget\Helper\Form;
+use Utils\Cipher;
 use Widget\ActionInterface;
 use Widget\Base\Options;
 
@@ -50,7 +51,9 @@ class Cache extends Options implements ActionInterface
         $passChanged = !empty($settings['cacheRedisPasswordChanged']);
         $password = trim((string) ($settings['cacheRedisPassword'] ?? ''));
         if ($passChanged) {
-            $settings['cacheRedisPassword'] = $password !== self::PASS_PLACEHOLDER ? $password : '';
+            $settings['cacheRedisPassword'] = ($password !== '' && $password !== self::PASS_PLACEHOLDER)
+                ? Cipher::encrypt($password, (string) $this->options->secret)
+                : '';
         } else {
             $settings['cacheRedisPassword'] = (string) ($this->options->cacheRedisPassword ?? '');
         }
@@ -65,7 +68,7 @@ class Cache extends Options implements ActionInterface
             'prefix' => $settings['cachePrefix'],
             'redisHost' => $settings['cacheRedisHost'],
             'redisPort' => $settings['cacheRedisPort'],
-            'redisPassword' => $settings['cacheRedisPassword'],
+            'redisPassword' => Cipher::decrypt($settings['cacheRedisPassword'], (string) $this->options->secret),
             'redisDatabase' => $settings['cacheRedisDatabase']
         ]);
 
@@ -192,7 +195,7 @@ class Cache extends Options implements ActionInterface
         }
         $this->security->protect();
 
-        if ($this->request->get('do') === 'flush') {
+        if ($this->request->getAction() === 'flush') {
             $this->clearCache();
             return;
         }

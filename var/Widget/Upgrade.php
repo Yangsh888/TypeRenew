@@ -23,8 +23,11 @@ class Upgrade extends BaseOptions implements ActionInterface
 
         $count = count(array_filter(
             (array) ($status['items'] ?? []),
-            static fn(array $item): bool => (string) ($item['status'] ?? 'ok') !== 'ok'
+            static fn(array $item): bool => (string) ($item['status'] ?? 'ok') === 'blocking'
         ));
+        if ($count === 0) {
+            return true;
+        }
         Notice::alloc()->set(
             _t('检测到 %d 项 MySQL 风险，请先在升级页查看数据库诊断并处理后再继续。', $count),
             'error'
@@ -100,7 +103,7 @@ class Upgrade extends BaseOptions implements ActionInterface
             return;
         }
         $this->security->protect();
-        if ('repairCriticalSchema' === $this->request->get('do')) {
+        if ('repairCriticalSchema' === $this->request->getAction()) {
             $this->repairCriticalSchema();
         } else {
             $this->upgrade();

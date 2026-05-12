@@ -12,6 +12,7 @@ use Typecho\Plugin;
 use Typecho\Response;
 use Typecho\Router;
 use Typecho\Widget;
+use Utils\Cipher;
 
 if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
@@ -76,7 +77,7 @@ class Init extends Widget
             'prefix' => (string) ($options->cachePrefix ?? 'typerenew:cache:'),
             'redisHost' => (string) ($options->cacheRedisHost ?? '127.0.0.1'),
             'redisPort' => (int) ($options->cacheRedisPort ?? 6379),
-            'redisPassword' => (string) ($options->cacheRedisPassword ?? ''),
+            'redisPassword' => Cipher::decrypt((string) ($options->cacheRedisPassword ?? ''), (string) ($options->secret ?? '')),
             'redisDatabase' => (int) ($options->cacheRedisDatabase ?? 0)
         ]);
 

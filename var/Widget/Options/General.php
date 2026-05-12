@@ -79,6 +79,12 @@ class General extends Options implements ActionInterface
             'allowXmlRpc',
             'lang'
         );
+
+        if ((int) ($settings['allowXmlRpc'] ?? 0) > 0 && !function_exists('xml_parser_create')) {
+            $this->noticeAndGoBack(_t('启用 XMLRPC 接口前，请先在服务器上安装 PHP XML 扩展。'), 'error');
+            return;
+        }
+
         $timezoneName = trim((string) $this->request->getInput('timezoneName', ''));
         $resolvedTimezoneName = Timezone::resolve($timezoneName, $this->options->timezone);
         $settings['timezoneName'] = $resolvedTimezoneName;

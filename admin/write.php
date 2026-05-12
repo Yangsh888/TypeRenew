@@ -4,17 +4,10 @@ if (!defined('__TYPECHO_ADMIN__')) {
 }
 
 $content = $write['content'];
+$editorHook = 'admin/' . $write['hook'];
 $draftAction = $options->index . '/action/' . $write['draftAction'];
 $draftToken = $security->getToken($draftAction);
-$vditorForceMarkdown = false;
-if (class_exists('VditorRenew_Plugin')) {
-    $vditorSettings = \VditorRenew_Plugin::getSettings();
-    $vditorEnabled = !empty($vditorSettings['enabled']);
-    $vditorLegacy = ($content->have() && !$content->isMarkdown)
-        ? (string) ($vditorSettings['legacy'] ?? 'convert')
-        : 'raw';
-    $vditorForceMarkdown = $vditorEnabled && (!$content->have() || $content->isMarkdown || $vditorLegacy === 'convert');
-}
+$vditorForceMarkdown = (bool) \Typecho\Plugin::factory($editorHook)->filter('forceMarkdown', false, $content);
 ?>
 <div class="col-mb-12 col-tb-9 tr-write-main" role="main">
     <?php if ($content->draft): ?>
@@ -90,5 +83,5 @@ if (class_exists('VditorRenew_Plugin')) {
         </span>
     </p>
 
-    <?php \Typecho\Plugin::factory('admin/' . $write['hook'])->call('content', $content); ?>
+    <?php \Typecho\Plugin::factory($editorHook)->call('content', $content); ?>
 </div>

@@ -9,6 +9,10 @@ namespace IXR;
  */
 class Message
 {
+    public const ERROR_XML_EXTENSION = 'server error. PHP XML extension is required';
+    private const MAX_NESTING = 32;
+    private const MAX_PARAMS = 64;
+
     /**
      * @var string
      */
@@ -22,6 +26,8 @@ class Message
     public int $faultCode = 0;
 
     public string $faultString = '';
+
+    public string $parseError = '';
 
     /**
      * @var string
@@ -55,14 +61,26 @@ class Message
      */
     public function parse(): bool
     {
+        $this->parseError = '';
+        $this->messageType = '';
+        $this->faultCode = 0;
+        $this->faultString = '';
+        $this->methodName = '';
+        $this->params = [];
+        $this->arrayStructs = [];
+        $this->arrayStructsTypes = [];
+        $this->currentStructName = [];
+        $this->currentTagContents = '';
         $this->message = preg_replace('/<\?xml(.*)?\?' . '>/', '', $this->message);
         if (trim($this->message) == '') {
+            $this->parseError = 'parse error. empty document';
             return false;
         }
 
         $count = 0;
         while (true) {
             if ($count >= 10) {
+                $this->parseError = 'parse error. invalid doctype';
                 return false;
             }
 
@@ -77,6 +95,7 @@ class Message
         }
 
         if (!function_exists('xml_parser_create')) {
+            $this->parseError = self::ERROR_XML_EXTENSION;
             return false;
         }
 
@@ -86,16 +105,27 @@ class Message
         xml_set_element_handler($parser, [$this, 'tagOpen'], [$this, 'tagClose']);
         xml_set_character_data_handler($parser, [$this, 'cdata']);
         if (!xml_parse($parser, $this->message)) {
+            $code = xml_get_error_code($parser);
+            $line = xml_get_current_line_number($parser);
+            $detail = xml_error_string($code);
+            $this->parseError = 'parse error. ' . strtolower($detail) . ($line > 0 ? ' at line ' . $line : '');
+            xml_parser_free($parser);
             return false;
         }
         xml_parser_free($parser);
 
+        if ($this->parseError !== '') {
+            return false;
+        }
+
         if ($this->messageType === '') {
+            $this->parseError = 'parse error. invalid xml-rpc request';
             return false;
         }
 
         if ($this->messageType === 'fault') {
             if (!isset($this->params[0]) || !is_array($this->params[0])) {
+                $this->parseError = 'parse error. invalid xml-rpc fault';
                 return false;
             }
 
@@ -113,6 +143,10 @@ class Message
      */
     private function tagOpen($parser, string $tag, $attr)
     {
+        if ($this->parseError !== '') {
+            return;
+        }
+
         switch ($tag) {
             case 'methodCall':
             case 'methodResponse':
@@ -123,10 +157,18 @@ class Message
             case 'data':    // data is to all intents and puposes more interesting than array
                 $this->arrayStructsTypes[] = 'array';
                 $this->arrayStructs[] = [];
+                if (count($this->arrayStructs) > self::MAX_NESTING) {
+                    $this->parseError = 'parse error. nesting too deep';
+                    return;
+                }
                 break;
             case 'struct':
                 $this->arrayStructsTypes[] = 'struct';
                 $this->arrayStructs[] = [];
+                if (count($this->arrayStructs) > self::MAX_NESTING) {
+                    $this->parseError = 'parse error. nesting too deep';
+                    return;
+                }
                 break;
         }
     }
@@ -137,6 +179,10 @@ class Message
      */
     private function cdata($parser, string $cdata)
     {
+        if ($this->parseError !== '') {
+            return;
+        }
+
         $this->currentTagContents .= $cdata;
     }
 
@@ -146,6 +192,10 @@ class Message
      */
     private function tagClose($parser, string $tag)
     {
+        if ($this->parseError !== '') {
+            return;
+        }
+
         switch ($tag) {
             case 'int':
             case 'i4':
@@ -157,7 +207,7 @@ class Message
                 $this->currentTagContents = '';
                 break;
             case 'string':
-                $value = trim($this->currentTagContents);
+                $value = $this->currentTagContents;
                 $this->currentTagContents = '';
                 break;
             case 'dateTime.iso8601':
@@ -166,17 +216,28 @@ class Message
                 break;
             case 'value':
                 // "If no type is indicated, the type is string."
-                if (trim($this->currentTagContents) != '') {
+                if ($this->currentTagContents !== '') {
                     $value = $this->currentTagContents;
                     $this->currentTagContents = '';
                 }
                 break;
             case 'boolean':
-                $value = (bool) trim($this->currentTagContents);
+                $raw = trim($this->currentTagContents);
+                if ($raw !== '0' && $raw !== '1') {
+                    $this->parseError = 'parse error. invalid boolean value';
+                    $this->currentTagContents = '';
+                    return;
+                }
+                $value = $raw === '1';
                 $this->currentTagContents = '';
                 break;
             case 'base64':
-                $value = base64_decode($this->currentTagContents);
+                $value = base64_decode($this->currentTagContents, true);
+                if ($value === false) {
+                    $this->parseError = 'parse error. invalid base64 payload';
+                    $this->currentTagContents = '';
+                    return;
+                }
                 $this->currentTagContents = '';
                 break;
             /* Deal with stacks of arrays and structs */
@@ -200,12 +261,20 @@ class Message
         if (isset($value)) {
             if (count($this->arrayStructs) > 0) {
                 if ($this->arrayStructsTypes[count($this->arrayStructsTypes) - 1] == 'struct') {
+                    if ($this->currentStructName === []) {
+                        $this->parseError = 'parse error. invalid struct member';
+                        return;
+                    }
                     $this->arrayStructs[count($this->arrayStructs) - 1]
                         [$this->currentStructName[count($this->currentStructName) - 1]] = $value;
                 } else {
                     $this->arrayStructs[count($this->arrayStructs) - 1][] = $value;
                 }
             } else {
+                if (count($this->params) >= self::MAX_PARAMS) {
+                    $this->parseError = 'parse error. too many params';
+                    return;
+                }
                 $this->params[] = $value;
             }
         }

@@ -45,20 +45,30 @@ class Config extends BaseOptions
 
     public function config(): Form
     {
+        $theme = Options::alloc()->theme;
         $form = new Form(
-            $this->security->getIndex('/action/themes-edit?config=' . Options::alloc()->theme),
+            $this->security->getIndex('/action/themes-edit?config=' . $theme),
             Form::POST_METHOD
         );
         themeConfig($form);
         $inputs = $form->getInputs();
+        $saved = json_decode((string) $this->options->__get('theme:' . $theme), true);
+        $saved = is_array($saved) ? $saved : [];
 
         if (!empty($inputs)) {
             foreach ($inputs as $key => $val) {
+                $input = $form->getInput($key);
+                if ($input === null) {
+                    continue;
+                }
+
+                if (array_key_exists((string) $key, $saved)) {
+                    $input->value($saved[(string) $key]);
+                    continue;
+                }
+
                 if (isset($this->options->{$key})) {
-                    $input = $form->getInput($key);
-                    if ($input !== null) {
-                        $input->value($this->options->{$key});
-                    }
+                    $input->value($this->options->{$key});
                 }
             }
         }
