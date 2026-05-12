@@ -94,7 +94,7 @@ class Feedback extends Comments implements ActionInterface
                     $this->options->commentsPostIntervalEnable
                 ) {
                     $latestComment = $this->db->fetchRow($this->db->select('created')->from('table.comments')
-                        ->where('cid = ? AND ip = ?', $this->content->cid, $this->request->getIp())
+                        ->where('type = ? AND ip = ?', 'comment', $this->request->getIp())
                         ->order('created', Db::SORT_DESC)
                         ->limit(1));
 
@@ -329,6 +329,7 @@ class Feedback extends Comments implements ActionInterface
         }
 
         $path = '/' . ltrim($path, '/');
+        $path = preg_replace('#/comment-page-\d+/?$#i', '', $path) ?: $path;
         return $path === '/' ? '/' : rtrim($path, '/');
     }
 

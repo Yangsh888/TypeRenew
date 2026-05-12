@@ -136,7 +136,7 @@
             create: { id: 'create', name: '创建', order: 20, icon: 'i-plus' },
             manage: { id: 'manage', name: '管理', order: 30, icon: 'i-folder' },
             settings: { id: 'settings', name: '设置', order: 40, icon: 'i-gear' },
-            appearance: { id: 'appearance', name: '外观', order: 50, icon: 'i-palette' },
+            appearance: { id: 'appearance', name: '外观', order: 50, icon: 'i-monitor' },
             tools: { id: 'tools', name: '工具', order: 60, icon: 'i-zap' },
             interface: { id: 'interface', name: '界面', order: 70, icon: 'i-monitor' },
             help: { id: 'help', name: '帮助', order: 80, icon: 'i-info' }

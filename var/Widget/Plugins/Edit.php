@@ -89,6 +89,17 @@ class Edit extends Options implements ActionInterface
                 );
             } catch (\Throwable $e) {
                 $rollbackErrors = [];
+
+                if ($activated) {
+                    $this->rollbackActivateStep(
+                        _t('执行插件停用回滚'),
+                        function () use ($className): void {
+                            call_user_func([$className, 'deactivate']);
+                        },
+                        $rollbackErrors
+                    );
+                }
+
                 $this->rollbackActivateStep(
                     _t('删除全局配置'),
                     function () use ($pluginName): void {
@@ -103,16 +114,6 @@ class Edit extends Options implements ActionInterface
                     },
                     $rollbackErrors
                 );
-
-                if ($activated) {
-                    $this->rollbackActivateStep(
-                        _t('执行插件停用回滚'),
-                        function () use ($className): void {
-                            call_user_func([$className, 'deactivate']);
-                        },
-                        $rollbackErrors
-                    );
-                }
 
                 if ($persisted) {
                     $this->rollbackActivateStep(
@@ -234,6 +235,8 @@ class Edit extends Options implements ActionInterface
                 }
             }
         }
+
+        \Widget\Options::destroy();
     }
 
     private static function isDuplicateOptionInsert(\Throwable $e): bool

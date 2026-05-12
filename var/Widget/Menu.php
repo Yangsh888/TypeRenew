@@ -29,6 +29,13 @@ class Menu extends Base
 {
     private const TAB_SETTINGS = 'settings';
     private const TAB_THEME = 'theme';
+    private const PARENT_META = [
+        1 => ['icon' => 'i-home'],
+        2 => ['icon' => 'i-pencil'],
+        3 => ['icon' => 'i-file-text'],
+        4 => ['icon' => 'i-gear'],
+        5 => ['icon' => 'i-puzzle'],
+    ];
 
     private const PAGE_META = [
         'index.php' => ['icon' => 'i-home'],
@@ -42,9 +49,9 @@ class Menu extends Base
         'manage-tags.php' => ['icon' => 'i-tag'],
         'manage-users.php' => ['icon' => 'i-users'],
         'plugins.php' => ['icon' => 'i-puzzle'],
-        'themes.php' => ['icon' => 'i-palette', 'tabGroup' => self::TAB_THEME],
-        'theme-editor.php' => ['icon' => 'i-palette', 'tabGroup' => self::TAB_THEME],
-        'options-theme.php' => ['icon' => 'i-palette', 'tabGroup' => self::TAB_THEME],
+        'themes.php' => ['icon' => 'i-monitor', 'tabGroup' => self::TAB_THEME],
+        'theme-editor.php' => ['icon' => 'i-code', 'tabGroup' => self::TAB_THEME],
+        'options-theme.php' => ['icon' => 'i-monitor', 'tabGroup' => self::TAB_THEME],
         'backup.php' => ['icon' => 'i-download'],
         'upgrade.php' => ['icon' => 'i-upload'],
         'options-general.php' => ['icon' => 'i-gear', 'tabGroup' => self::TAB_SETTINGS],
@@ -376,7 +383,7 @@ class Menu extends Base
                 'name' => $node[0],
                 'url' => $node[2],
                 'active' => $parentActive,
-                'meta' => $this->resolveParentMeta($children),
+                'meta' => $this->resolveParentMeta($parentId, $children),
                 'children' => $children,
             ];
         }
@@ -473,8 +480,12 @@ class Menu extends Base
         return $children;
     }
 
-    private function resolveParentMeta(array $children): array
+    private function resolveParentMeta(int $parentId, array $children): array
     {
+        if (isset(self::PARENT_META[$parentId])) {
+            return self::PARENT_META[$parentId];
+        }
+
         foreach ($children as $child) {
             if (!empty($child['active']) && !empty($child['meta'])) {
                 return (array) $child['meta'];
@@ -490,7 +501,7 @@ class Menu extends Base
         return [];
     }
 
-    private function resolveMenuMeta(string $menuUrl): array
+    public static function menuMeta(string $menuUrl, array $panelMeta = []): array
     {
         $parts = Common::parseUrl($menuUrl);
         $path = (string) ($parts['path'] ?? '');
@@ -512,6 +523,29 @@ class Menu extends Base
             return $meta;
         }
 
-        return array_merge($meta, $this->panelMeta[$panel] ?? []);
+        $encodedPanel = urlencode($panel);
+        $panelOverride = [];
+        if (isset($panelMeta[$panel]) && is_array($panelMeta[$panel])) {
+            $panelOverride = $panelMeta[$panel];
+        } elseif (isset($panelMeta[$encodedPanel]) && is_array($panelMeta[$encodedPanel])) {
+            $panelOverride = $panelMeta[$encodedPanel];
+        }
+
+        return array_merge($meta, $panelOverride);
+    }
+
+    public static function paletteCategory(string $menuUrl, array $panelMeta = []): ?string
+    {
+        $meta = self::menuMeta($menuUrl, $panelMeta);
+        return match ($meta['tabGroup'] ?? null) {
+            self::TAB_THEME => 'appearance',
+            self::TAB_SETTINGS => 'settings',
+            default => null,
+        };
+    }
+
+    private function resolveMenuMeta(string $menuUrl): array
+    {
+        return self::menuMeta($menuUrl, $this->panelMeta);
     }
 }

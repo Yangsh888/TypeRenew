@@ -4058,6 +4058,26 @@ body.tr-admin .typecho-list-operate .operate {
     gap: 10px;
 }
 
+body.tr-admin .typecho-list-operate .search {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 10px;
+    min-width: 0;
+    width: fit-content;
+    max-width: 100%;
+}
+
+body.tr-admin .typecho-list-operate .search > * {
+    margin: 0;
+}
+
+body.tr-admin .typecho-list-operate .search input[type="text"],
+body.tr-admin .typecho-list-operate .search .text-s {
+    flex: 0 1 220px;
+    min-width: 180px;
+}
+
 body.tr-admin form.operate-form + form.typecho-list-operate {
     margin-top: var(--tr-stack);
 }
@@ -6529,6 +6549,17 @@ body.tr-admin #edit-secondary .typecho-post-option + .typecho-post-option {
 }
 
 @media (max-width: 768px) {
+    body.tr-admin .typecho-list-operate .search {
+        flex-wrap: wrap;
+        width: 100%;
+    }
+
+    body.tr-admin .typecho-list-operate .search input[type="text"],
+    body.tr-admin .typecho-list-operate .search .text-s {
+        flex: 1 1 100%;
+        min-width: 0;
+    }
+
     .tr-panel-head,
     .tr-panel-section-head {
         flex-direction: column;
