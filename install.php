@@ -733,6 +733,46 @@ function install_split_sql_statements(string $sql): array
     return $statements;
 }
 
+function install_reset_tables(string $prefix): array
+{
+    return [
+        $prefix . 'comments',
+        $prefix . 'contents',
+        $prefix . 'fields',
+        $prefix . 'mail_queue',
+        $prefix . 'mail_unsub',
+        $prefix . 'metas',
+        $prefix . 'options',
+        $prefix . 'password_resets',
+        $prefix . 'relationships',
+        $prefix . 'renew_go_logs',
+        $prefix . 'renew_seo_404',
+        $prefix . 'renew_seo_logs',
+        $prefix . 'renew_shield_logs',
+        $prefix . 'renew_shield_state',
+        $prefix . 'users'
+    ];
+}
+
+function install_reset_sequences(string $prefix): array
+{
+    return [
+        $prefix . 'comments_seq',
+        $prefix . 'contents_seq',
+        $prefix . 'metas_seq',
+        $prefix . 'users_seq'
+    ];
+}
+
+function install_quote_identifier(string $name, string $type): string
+{
+    if ($type === 'Mysql') {
+        return '`' . str_replace('`', '``', $name) . '`';
+    }
+
+    return '"' . str_replace('"', '""', $name) . '"';
+}
+
 /**
  * display step 2
  */
@@ -1048,23 +1088,18 @@ function install_step_2_perform()
     }
 
     if ($config['dbNext'] == 'delete') {
-        $tables = [
-            $config['dbPrefix'] . 'comments',
-            $config['dbPrefix'] . 'contents',
-            $config['dbPrefix'] . 'fields',
-            $config['dbPrefix'] . 'mail_queue',
-            $config['dbPrefix'] . 'mail_unsub',
-            $config['dbPrefix'] . 'metas',
-            $config['dbPrefix'] . 'options',
-            $config['dbPrefix'] . 'password_resets',
-            $config['dbPrefix'] . 'relationships',
-            $config['dbPrefix'] . 'users'
-        ];
-
         try {
-            foreach ($tables as $table) {
-                $tableName = $type === 'Mysql' ? "`{$table}`" : $table;
-                $installDb->query("DROP TABLE IF EXISTS {$tableName}");
+            foreach (install_reset_tables($config['dbPrefix']) as $table) {
+                $installDb->query('DROP TABLE IF EXISTS ' . install_quote_identifier($table, $type), \Typecho\Db::WRITE);
+            }
+
+            if ($type === 'Pgsql') {
+                foreach (install_reset_sequences($config['dbPrefix']) as $sequence) {
+                    $installDb->query(
+                        'DROP SEQUENCE IF EXISTS ' . install_quote_identifier($sequence, $type),
+                        \Typecho\Db::WRITE
+                    );
+                }
             }
         } catch (\Typecho\Db\Exception $e) {
             install_raise_error(install_exception_message($e, _t('安装程序删除旧数据表时发生错误，请检查数据库权限设置')));
@@ -1102,12 +1137,13 @@ function install_step_2_perform()
         \Utils\Schema::ensureMailInfra($installDb);
     } catch (\Typecho\Db\Exception $e) {
         $code = $e->getCode();
-
-        if (
+        $isExistingObjectError = (
             ('Mysql' == $type && (1050 == $code || '42S01' == $code)) ||
             ('SQLite' == $type && ('HY000' == $code || 1 == $code)) ||
             ('Pgsql' == $type && '42P07' == $code)
-        ) {
+        );
+
+        if ($isExistingObjectError && $config['dbNext'] != 'delete') {
             if ($config['dbNext'] == 'keep') {
                 if (!install_check('config')) {
                     install_require_config($config['dbAdapter'], $config['dbPrefix'], $dbConfig);

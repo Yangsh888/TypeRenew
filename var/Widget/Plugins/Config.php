@@ -52,10 +52,6 @@ class Config extends Options
     {
         $this->user->pass('administrator');
         $config = Plugin::normalizeName((string) $this->request->get('config'));
-        if (empty($config)) {
-            throw new Exception(_t('插件不存在'), 404);
-        }
-
         [$this->pluginFileName, $this->className] = Plugin::portal($config, $this->options->pluginDir);
         $this->info = Plugin::parseInfo($this->pluginFileName);
     }

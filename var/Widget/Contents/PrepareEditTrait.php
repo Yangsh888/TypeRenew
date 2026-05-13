@@ -38,7 +38,9 @@ trait PrepareEditTrait
 
                 if (is_array($draft)) {
                     $draftCid = (int) $draft['cid'];
-                    $draft['parent'] = $this->row['parent'];    // keep parent
+                    $draft['parent'] = $type === 'page' && $draft['type'] === 'revision'
+                        ? $this->loadPageDraftParent($draftCid, (int) $this->row['parent'])
+                        : $this->row['parent'];
                     $draft['slug'] = ltrim($draft['slug'], '@');
                     $draft['type'] = $this->type;
                     $draft['draftCid'] = $draftCid;
@@ -55,6 +57,22 @@ trait PrepareEditTrait
         }
 
         return $this;
+    }
+
+    private function loadPageDraftParent(int $draftCid, int $fallback): int
+    {
+        if ($draftCid <= 0) {
+            return $fallback;
+        }
+
+        $row = $this->db->fetchRow(
+            $this->db->select('int_value')
+                ->from('table.fields')
+                ->where('cid = ? AND name = ?', $draftCid, '_tr_page_parent')
+                ->limit(1)
+        );
+
+        return isset($row['int_value']) ? (int) $row['int_value'] : $fallback;
     }
 
     abstract public function prepare(): self;

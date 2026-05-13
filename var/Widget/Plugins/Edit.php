@@ -394,17 +394,17 @@ class Edit extends Options implements ActionInterface
         $this->security->protect();
 
         if ($this->request->is('activate')) {
-            $this->activate(Plugin::normalizeName((string) $this->request->get('activate')));
+            $this->activate((string) $this->request->get('activate'));
             return;
         }
 
         if ($this->request->is('deactivate')) {
-            $this->deactivate(Plugin::normalizeName((string) $this->request->get('deactivate')));
+            $this->deactivate((string) $this->request->get('deactivate'));
             return;
         }
 
         if ($this->request->is('config')) {
-            $this->config(Plugin::normalizeName((string) $this->request->get('config')));
+            $this->config((string) $this->request->get('config'));
             return;
         }
 

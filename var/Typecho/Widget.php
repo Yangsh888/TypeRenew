@@ -78,8 +78,15 @@ abstract class Widget
                 if ($sandbox) {
                     Response::getInstance()->endSandbox();
                     Request::getInstance()->endSandbox();
-                    return $widget;
                 }
+            }
+
+            if ($sandbox) {
+                if (!$widget instanceof self) {
+                    throw new \RuntimeException('Sandbox widget was not initialized');
+                }
+
+                return $widget;
             }
 
             self::$widgetPool[$key] = $widget;

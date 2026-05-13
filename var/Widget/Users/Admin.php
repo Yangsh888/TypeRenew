@@ -29,10 +29,12 @@ class Admin extends Users
         $this->currentPage = $this->request->filter('int')->get('page', 1);
 
         if (null != ($keywords = $this->request->get('keywords'))) {
+            $keywords = '%' . Common::filterSearchQuery($keywords) . '%';
             $select->where(
-                'name LIKE ? OR screenName LIKE ?',
-                '%' . Common::filterSearchQuery($keywords) . '%',
-                '%' . Common::filterSearchQuery($keywords) . '%'
+                'name LIKE ? OR screenName LIKE ? OR mail LIKE ?',
+                $keywords,
+                $keywords,
+                $keywords
             );
         }
 

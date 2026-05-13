@@ -206,6 +206,7 @@ class Edit extends Options implements ActionInterface
      */
     public function config(string $theme)
     {
+        $theme = (string) $this->options->theme;
         $form = Config::alloc()->config();
 
         if (!Config::isExists($theme) || $form->validate()) {

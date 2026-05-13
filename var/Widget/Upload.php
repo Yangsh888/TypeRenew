@@ -36,7 +36,10 @@ class Upload extends Contents implements ActionInterface
             return $result;
         }
 
-        $path = __TYPECHO_ROOT_DIR__ . '/' . $content['attachment']->path;
+        $path = Common::url(
+            $content['attachment']->path,
+            defined('__TYPECHO_UPLOAD_ROOT_DIR__') ? __TYPECHO_UPLOAD_ROOT_DIR__ : __TYPECHO_ROOT_DIR__
+        );
         return is_file($path) && is_writable(dirname($path)) ? unlink($path) : false;
     }
 

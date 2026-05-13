@@ -22,6 +22,8 @@ class Edit extends Contents implements ActionInterface
     use PrepareEditTrait;
     use EditTrait;
 
+    private const DRAFT_PARENT_FIELD = '_tr_page_parent';
+
     public function execute()
     {
         $this->user->pass('editor');
@@ -77,6 +79,7 @@ class Edit extends Contents implements ActionInterface
 
         $contents['type'] = 'page_draft';
         $draftId = $this->save($contents);
+        $this->persistDraftParent($draftId, (int) $contents['parent']);
 
         self::pluginHandle()->call('finishSave', $contents, $this);
         WriteResponse::finishSave(
@@ -379,6 +382,15 @@ class Edit extends Contents implements ActionInterface
         }
 
         return 0;
+    }
+
+    private function persistDraftParent(int $draftId, int $parent): void
+    {
+        if (!$this->have() || $draftId <= 0 || $draftId === (int) ($this->cid ?? 0)) {
+            return;
+        }
+
+        $this->setField(self::DRAFT_PARENT_FIELD, 'int', $parent, $draftId);
     }
 
     protected function getThemeFieldsHook(): string

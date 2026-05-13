@@ -702,7 +702,7 @@ class Options extends Base
 
     protected function ___contentType(): string
     {
-        return $this->contentType ?? 'text/html';
+        return (string) ($this->row['contentType'] ?? 'text/html');
     }
 
     protected function ___software(): string

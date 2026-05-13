@@ -170,6 +170,10 @@ trait EditTrait
                     continue;
                 }
 
+                if ($this->isInternalFieldName((string) ($row['name'] ?? ''))) {
+                    continue;
+                }
+
                 if (!isset($defaultFields[$row['name']])) {
                     $fields[] = $row;
                 }

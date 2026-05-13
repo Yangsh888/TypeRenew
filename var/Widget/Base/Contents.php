@@ -76,6 +76,8 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
  */
 class Contents extends Base implements QueryInterface, RowFilterInterface, PrimaryKeyInterface, ParamsDelegateInterface
 {
+    protected const INTERNAL_FIELD_NAMES = ['_tr_page_parent'];
+
     public function getPrimaryKey(): string
     {
         return 'cid';
@@ -662,11 +664,20 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
             ->where('cid = ?', $this->cid));
 
         foreach ($rows as $row) {
+            if ($this->isInternalFieldName((string) ($row['name'] ?? ''))) {
+                continue;
+            }
+
             $value = 'json' == $row['type'] ? json_decode($row['str_value'], true) : $row[$row['type'] . '_value'];
             $fields[$row['name']] = $value;
         }
 
         return new Config($fields);
+    }
+
+    protected function isInternalFieldName(string $name): bool
+    {
+        return in_array($name, self::INTERNAL_FIELD_NAMES, true);
     }
 
     protected function ___excerpt(): ?string
