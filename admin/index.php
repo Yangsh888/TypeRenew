@@ -9,7 +9,6 @@ include 'menu.php';
 $stat = \Widget\Stat::alloc();
 
 $db = \Typecho\Db::get();
-$days = [];
 $postsData = [];
 $commentsData = [];
 $dayCount = 14;
@@ -17,8 +16,6 @@ $today = Timezone::at(Date::time());
 
 for ($i = $dayCount - 1; $i >= 0; $i--) {
     $dayTime = $today->modify("-{$i} days");
-    $label = $dayTime->format('m/d');
-    $days[] = $label;
 
     [$startTime, $endTime] = Timezone::dayRange(
         (int) $dayTime->format('Y'),

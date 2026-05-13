@@ -108,7 +108,7 @@ $pluginVersionToolbar = '<div class="tr-plugin-version-toolbar">'
                         <?php endwhile; ?>
 
                         <?php if (!empty($activatedPlugins->activatedPlugins)): ?>
-                            <?php foreach ($activatedPlugins->activatedPlugins as $key => $val): ?>
+                            <?php foreach (array_keys($activatedPlugins->activatedPlugins) as $key): ?>
                                 <tr>
                                     <td><?php echo $key; ?></td>
                                     <td colspan="3"><span

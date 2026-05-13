@@ -17,12 +17,7 @@ $trIconOf = function (array $item, string $default): string {
     return $icon === '' ? $default : $icon;
 };
 
-$trText = function ($value): string {
-    $text = trim(strip_tags((string) $value));
-    return $text;
-};
-
-$trRenderMenu = function () use ($menu, $iconsUrl, $trIconOf, $trText): string {
+$trRenderMenu = function () use ($menu, $iconsUrl, $trIconOf): string {
     $tree = $menu->getMenuTree();
     if (empty($tree)) {
         return '';
@@ -31,7 +26,7 @@ $trRenderMenu = function () use ($menu, $iconsUrl, $trIconOf, $trText): string {
     $out = '<ul class="tr-menu-root">';
     foreach ($tree as $parent) {
         $parentUrl = (string) ($parent['url'] ?? '#');
-        $parentName = $trText($parent['name'] ?? '');
+        $parentName = trim(strip_tags((string) ($parent['name'] ?? '')));
         $parentActive = !empty($parent['active']);
         $parentIconId = $trIconOf($parent, 'i-layers');
         $parentIcon = $parentIconId ? '<svg class="tr-ico" aria-hidden="true"><use href="' . htmlspecialchars($iconsUrl, ENT_QUOTES, 'UTF-8') . '#' . $parentIconId . '"></use></svg>' : '';
@@ -44,7 +39,7 @@ $trRenderMenu = function () use ($menu, $iconsUrl, $trIconOf, $trText): string {
         $out .= '<menu>';
         foreach ($children as $child) {
             $childUrl = (string) ($child['url'] ?? '#');
-            $childName = $trText($child['name'] ?? '');
+            $childName = trim(strip_tags((string) ($child['name'] ?? '')));
             $childActive = !empty($child['active']);
             $childIconId = $trIconOf($child, 'i-file');
             $childIcon = $childIconId ? '<svg class="tr-ico" aria-hidden="true"><use href="' . htmlspecialchars($iconsUrl, ENT_QUOTES, 'UTF-8') . '#' . $childIconId . '"></use></svg>' : '';
