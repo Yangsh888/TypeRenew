@@ -47,28 +47,28 @@ class Feed
      *
      * @var string
      */
-    private string $feedUrl;
+    private string $feedUrl = '';
 
     /**
      * 基本地址
      *
      * @var string
      */
-    private string $baseUrl;
+    private string $baseUrl = '';
 
     /**
      * 聚合标题
      *
      * @var string
      */
-    private string $title;
+    private string $title = '';
 
     /**
      * 聚合副标题
      *
      * @var string|null
      */
-    private ?string $subTitle;
+    private ?string $subTitle = null;
 
     /**
      * 版本信息

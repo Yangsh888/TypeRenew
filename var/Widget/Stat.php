@@ -40,7 +40,7 @@ class Stat extends Base
      */
     protected function initComponents(int &$components)
     {
-        $components = self::INIT_USER;
+        $components = self::INIT_USER | self::INIT_DB | self::INIT_OPTIONS;
     }
 
     protected function ___publishedPostsNum(): int

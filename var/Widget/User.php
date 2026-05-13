@@ -47,7 +47,7 @@ class User extends Users
      */
     protected function initComponents(int &$components)
     {
-        $components = self::INIT_OPTIONS;
+        $components = self::INIT_OPTIONS | self::INIT_DB;
     }
 
     public function execute()

@@ -6,7 +6,6 @@ if (!defined('__TYPECHO_ADMIN__')) {
 $bodyClass = $bodyClass ?? '';
 $bodyClass = trim((string) $bodyClass);
 $isBody100 = strpos(' ' . $bodyClass . ' ', ' body-100 ') !== false;
-$trAdminEnabled = !$isBody100;
 if (!$isBody100) {
     $bodyClass = trim($bodyClass . ' tr-admin');
     $script = basename((string) ($_SERVER['SCRIPT_NAME'] ?? ''));
@@ -19,7 +18,7 @@ if (!$isBody100) {
 }
 
 $header = '';
-if (!empty($trAdminEnabled)) {
+if (!$isBody100) {
     $header .= '<script>(function(){var k="trTheme";var p;try{p=localStorage.getItem(k)||"system";}catch(e){p="system";}var d=false;if(p==="dark"){d=true;}else if(p==="system"){try{d=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches;}catch(e){d=false;}}var r=document.documentElement;if(d){r.classList.add("tr-theme-dark");}else{r.classList.remove("tr-theme-dark");}})();</script>';
 }
 $header .= '<link rel="stylesheet" href="' . $options->adminStaticUrl('css', 'normalize.css', true) . '">

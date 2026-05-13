@@ -11,7 +11,7 @@
             $tabText = _t('可以使用的外观');
         } elseif ($tabFile === 'theme-editor.php') {
             $editingTheme = isset($files) ? $files->currentTheme() : $options->theme;
-            $tabText = (!isset($files) || $options->theme == $editingTheme)
+            $tabText = $options->theme == $editingTheme
                 ? _t('编辑当前外观')
                 : _t('编辑%s外观', ' ' . $editingTheme . ' ');
         } elseif ($tabFile === 'options-theme.php') {
