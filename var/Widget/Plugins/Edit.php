@@ -57,12 +57,12 @@ class Edit extends Options implements ActionInterface
                 throw new Exception(_t('无法启用插件'), 500);
             }
 
-            $activated = false;
+            $activateAttempted = false;
             $persisted = false;
 
             try {
+                $activateAttempted = true;
                 $result = call_user_func([$className, 'activate']);
-                $activated = true;
 
                 $form = new Form();
                 call_user_func([$className, 'config'], $form);
@@ -90,7 +90,7 @@ class Edit extends Options implements ActionInterface
             } catch (\Throwable $e) {
                 $rollbackErrors = [];
 
-                if ($activated) {
+                if ($activateAttempted && method_exists($className, 'deactivate')) {
                     $this->rollbackActivateStep(
                         _t('执行插件停用回滚'),
                         function () use ($className): void {
@@ -236,13 +236,8 @@ class Edit extends Options implements ActionInterface
                 }
             } else {
                 foreach ($options as $option) {
-                    $value = json_decode($option['value'], true);
-                    $value = is_array($value) ? $value : [];
-                    $value = array_merge($value, $settings);
-                    $encodedValue = Common::jsonEncode($value, 0, '{}');
-
                     $db->query($db->update('table.options')
-                        ->rows(['value' => $encodedValue])
+                        ->rows(['value' => $encodedSettings])
                         ->where('name = ?', $pluginName)
                         ->where('user = ?', $option['user']));
                 }

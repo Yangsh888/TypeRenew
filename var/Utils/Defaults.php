@@ -11,21 +11,26 @@ class Defaults
 {
     public static function language(): string
     {
-        $serverLang = Request::getInstance()->getServer('TYPECHO_LANG');
+        $request = Request::getInstance();
+        $serverLang = $request->getServer('TYPECHO_LANG');
 
-        if (!empty($serverLang)) {
+        if (is_string($serverLang) && $serverLang !== '') {
             return $serverLang;
         }
 
         $lang = 'zh_CN';
-        $request = Request::getInstance();
 
         if ($request->is('lang')) {
-            $lang = $request->get('lang');
-            Cookie::set('lang', $lang);
+            $candidate = $request->get('lang');
+            if (is_string($candidate) && preg_match('/^[A-Za-z_\\-]+$/', $candidate)) {
+                $lang = $candidate;
+                Cookie::set('lang', $lang);
+            }
         }
 
-        return Cookie::get('lang', $lang);
+        $cookieLang = Cookie::get('lang', $lang);
+
+        return is_string($cookieLang) && $cookieLang !== '' ? $cookieLang : $lang;
     }
 
     public static function siteUrl(): string

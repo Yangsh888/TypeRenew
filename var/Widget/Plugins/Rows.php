@@ -13,6 +13,7 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
 class Rows extends Widget
 {
     public array $activatedPlugins = [];
+    private static ?array $installedPluginsCache = null;
 
     public static function isOfficialPlugin($author, $homepage): bool
     {
@@ -32,51 +33,70 @@ class Rows extends Widget
         return in_array($host, ['www.typerenew.com', 'typerenew.com'], true);
     }
 
+    public static function collectInstalledPlugins(): array
+    {
+        if (self::$installedPluginsCache !== null) {
+            return self::$installedPluginsCache;
+        }
+
+        $plugins = [];
+        $entries = self::getPlugins();
+
+        foreach ($entries as $entry) {
+            $parts = self::getPlugin($entry);
+            if ($parts === null) {
+                continue;
+            }
+
+            [$pluginName, $pluginFileName] = $parts;
+            if (!is_file($pluginFileName)) {
+                continue;
+            }
+
+            $info = Plugin::parseInfo($pluginFileName);
+            $info['name'] = $pluginName;
+            $plugins[$pluginName] = $info;
+        }
+
+        self::$installedPluginsCache = $plugins;
+
+        return $plugins;
+    }
+
     public function execute()
     {
-        $pluginDirs = $this->getPlugins();
         $this->parameter->setDefault(['activated' => null]);
 
         $plugins = Plugin::export();
         $this->activatedPlugins = $plugins['activated'];
 
-        if (!empty($pluginDirs)) {
-            foreach ($pluginDirs as $key => $pluginDir) {
-                $parts = $this->getPlugin($pluginDir);
-                if (empty($parts)) {
-                    continue;
+        foreach (self::collectInstalledPlugins() as $pluginName => $info) {
+            $info['dependence'] = Plugin::checkDependence($info['since']);
+            $info['activated'] = true;
+
+            if ($info['activate'] || $info['deactivate'] || $info['config'] || $info['personalConfig']) {
+                $info['activated'] = array_key_exists($pluginName, $this->activatedPlugins);
+
+                if (array_key_exists($pluginName, $this->activatedPlugins)) {
+                    unset($this->activatedPlugins[$pluginName]);
                 }
+            }
 
-                [$pluginName, $pluginFileName] = $parts;
-
-                if (file_exists($pluginFileName)) {
-                    $info = Plugin::parseInfo($pluginFileName);
-                    $info['name'] = $pluginName;
-
-                    $info['dependence'] = Plugin::checkDependence($info['since']);
-                    $info['activated'] = true;
-
-                    if ($info['activate'] || $info['deactivate'] || $info['config'] || $info['personalConfig']) {
-                        $info['activated'] = array_key_exists($pluginName, $this->activatedPlugins);
-
-                        if (array_key_exists($pluginName, $this->activatedPlugins)) {
-                            unset($this->activatedPlugins[$pluginName]);
-                        }
-                    }
-
-                    if ($info['activated'] == $this->parameter->activated) {
-                        $this->push($info);
-                    }
-                }
+            if ($info['activated'] == $this->parameter->activated) {
+                $this->push($info);
             }
         }
     }
 
-    protected function getPlugins(): array
+    private static function getPlugins(): array
     {
-        return glob(__TYPECHO_ROOT_DIR__ . '/' . __TYPECHO_PLUGIN_DIR__ . '/*') ?: [];
+        $entries = glob(__TYPECHO_ROOT_DIR__ . '/' . __TYPECHO_PLUGIN_DIR__ . '/*') ?: [];
+        natcasesort($entries);
+
+        return $entries;
     }
-    protected function getPlugin(string $plugin): ?array
+
+    private static function getPlugin(string $plugin): ?array
     {
         if (is_dir($plugin)) {
             $pluginName = basename($plugin);

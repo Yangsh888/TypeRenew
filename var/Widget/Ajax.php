@@ -112,40 +112,6 @@ class Ajax extends BaseOptions implements ActionInterface
         return $items;
     }
 
-    private function collectInstalledPlugins(): array
-    {
-        $plugins = [];
-        $entries = glob(__TYPECHO_ROOT_DIR__ . '/' . __TYPECHO_PLUGIN_DIR__ . '/*');
-        $entries = is_array($entries) ? $entries : [];
-        natcasesort($entries);
-
-        foreach ($entries as $entry) {
-            $pluginName = null;
-            $pluginFile = null;
-
-            if (is_dir($entry)) {
-                $pluginName = basename($entry);
-                $pluginFile = $entry . '/Plugin.php';
-            } elseif (is_file($entry) && 'index.php' !== basename($entry)) {
-                $part = explode('.', basename($entry));
-                if (2 === count($part) && 'php' === $part[1]) {
-                    $pluginName = $part[0];
-                    $pluginFile = $entry;
-                }
-            }
-
-            if ($pluginName === null || $pluginFile === null || !is_file($pluginFile)) {
-                continue;
-            }
-
-            $info = Plugin::parseInfo($pluginFile);
-            $info['name'] = $pluginName;
-            $plugins[$pluginName] = $info;
-        }
-
-        return $plugins;
-    }
-
     private function normalizeComparableVersion(?string $version): ?string
     {
         $version = trim((string) $version);
@@ -374,7 +340,7 @@ class Ajax extends BaseOptions implements ActionInterface
         $source = $this->loadOfficialPluginVersions($forceRefresh);
         $statuses = [];
 
-        foreach ($this->collectInstalledPlugins() as $pluginName => $info) {
+        foreach (\Widget\Plugins\Rows::collectInstalledPlugins() as $pluginName => $info) {
             $localVersionRaw = trim((string) ($info['version'] ?? ''));
             $localVersion = $this->normalizeComparableVersion($localVersionRaw);
 

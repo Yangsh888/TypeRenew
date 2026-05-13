@@ -63,8 +63,13 @@ $mysqlBlockingItems = array_values(array_filter(
     $mysqlRiskItems,
     static fn(array $item): bool => (string) ($item['status'] ?? 'ok') === 'blocking'
 ));
+$repairBlockingItems = array_values(array_filter(
+    $mysqlBlockingItems,
+    static fn(array $item): bool => (string) ($item['key'] ?? '') !== 'users_mail_duplicates'
+));
 $mysqlRiskCount = count($mysqlRiskItems);
 $mysqlBlockingCount = count($mysqlBlockingItems);
+$repairBlockingCount = count($repairBlockingItems);
 $dbActionBlocked = $mysqlBlockingCount > 0;
 $dbDiagnosticsUrl = $options->adminUrl('upgrade.php?dbdiag=1', true);
 $dbOverviewUrl = $options->adminUrl('upgrade.php', true);
@@ -264,14 +269,14 @@ $dbOverviewUrl = $options->adminUrl('upgrade.php', true);
                                         <div class="tr-help tr-mt-12">
                                             <?php _e('当前发现 %d 项关键结构异常。', $schemaIssueCount); ?>
                                         </div>
-                                        <?php if ($dbActionBlocked): ?>
+                                        <?php if ($repairBlockingCount > 0): ?>
                                             <div class="tr-help tr-tone-warning tr-mt-12">
-                                                <?php _e('检测到 %d 项需要人工处理的 MySQL 风险，处理前已暂时禁用结构修复。', $mysqlBlockingCount); ?>
+                                                <?php _e('检测到 %d 项需要人工处理的 MySQL 风险，处理前已暂时禁用结构修复。', $repairBlockingCount); ?>
                                             </div>
                                         <?php endif; ?>
                                         <form action="<?php echo $dbUpgradeUrl; ?>" method="post" class="tr-mt-12">
                                             <input type="hidden" name="do" value="repairCriticalSchema">
-                                            <button class="tr-btn primary tr-block" type="submit"<?php echo $dbActionBlocked ? ' disabled aria-disabled="true"' : ''; ?>><?php _e('修复关键数据库结构'); ?></button>
+                                            <button class="tr-btn primary tr-block" type="submit"<?php echo $repairBlockingCount > 0 ? ' disabled aria-disabled="true"' : ''; ?>><?php _e('修复关键数据库结构'); ?></button>
                                         </form>
                                         <div class="tr-help tr-mt-12">
                                             <?php _e('该操作会补齐邮件通知与密码找回依赖的关键表、索引、字段类型和排序规则，并同步历史评论作者昵称，不会覆盖已有业务数据。'); ?>

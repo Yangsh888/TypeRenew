@@ -14,7 +14,7 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
 
 class Upgrade extends BaseOptions implements ActionInterface
 {
-    private function guardMysqlUpgradeRisks(): bool
+    private function guardMysqlUpgradeRisks(bool $forRepair = false): bool
     {
         $status = SchemaManager::inspectMysqlUpgradeRisks($this->db);
         if (!(bool) ($status['supported'] ?? false) || (bool) ($status['healthy'] ?? true)) {
@@ -23,7 +23,17 @@ class Upgrade extends BaseOptions implements ActionInterface
 
         $count = count(array_filter(
             (array) ($status['items'] ?? []),
-            static fn(array $item): bool => (string) ($item['status'] ?? 'ok') === 'blocking'
+            static function (array $item) use ($forRepair): bool {
+                if ((string) ($item['status'] ?? 'ok') !== 'blocking') {
+                    return false;
+                }
+
+                if (!$forRepair) {
+                    return true;
+                }
+
+                return (string) ($item['key'] ?? '') !== 'users_mail_duplicates';
+            }
         ));
         if ($count === 0) {
             return true;
@@ -64,7 +74,7 @@ class Upgrade extends BaseOptions implements ActionInterface
 
     public function repairCriticalSchema(): void
     {
-        if (!$this->guardMysqlUpgradeRisks()) {
+        if (!$this->guardMysqlUpgradeRisks(true)) {
             return;
         }
 
