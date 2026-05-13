@@ -48,7 +48,8 @@ class Stat extends Base
         return $this->db->fetchObject($this->db->select(['COUNT(cid)' => 'num'])
             ->from('table.contents')
             ->where('table.contents.type = ?', 'post')
-            ->where('table.contents.status = ?', 'publish'))->num;
+            ->where('table.contents.status = ?', 'publish')
+            ->where('table.contents.created < ?', $this->options->time))->num;
     }
 
     protected function ___waitingPostsNum(): int
@@ -72,6 +73,7 @@ class Stat extends Base
             ->from('table.contents')
             ->where('table.contents.type = ?', 'post')
             ->where('table.contents.status = ?', 'publish')
+            ->where('table.contents.created < ?', $this->options->time)
             ->where('table.contents.authorId = ?', $this->user->uid))->num;
     }
 
@@ -98,6 +100,7 @@ class Stat extends Base
             ->from('table.contents')
             ->where('table.contents.type = ?', 'post')
             ->where('table.contents.status = ?', 'publish')
+            ->where('table.contents.created < ?', $this->options->time)
             ->where('table.contents.authorId = ?', $this->request->filter('int')->get('uid')))->num;
     }
 
@@ -123,7 +126,8 @@ class Stat extends Base
         return $this->db->fetchObject($this->db->select(['COUNT(cid)' => 'num'])
             ->from('table.contents')
             ->where('table.contents.type = ?', 'page')
-            ->where('table.contents.status = ?', 'publish'))->num;
+            ->where('table.contents.status = ?', 'publish')
+            ->where('table.contents.created < ?', $this->options->time))->num;
     }
 
     protected function ___draftPagesNum(): int

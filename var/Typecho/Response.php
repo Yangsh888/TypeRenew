@@ -200,14 +200,12 @@ class Response
 
         if (!$isFastCGI) {
             if ($preserveBody) {
-                if (ob_get_level() <= 0) {
-                    ob_start();
+                if (ob_get_level() > 0 && !headers_sent()) {
+                    $length = ob_get_length();
+                    $this->setHeader('Connection', 'close');
+                    $this->setHeader('Content-Encoding', 'none');
+                    $this->setHeader('Content-Length', (string) max(0, (int) ($length === false ? 0 : $length)));
                 }
-
-                $length = ob_get_length();
-                $this->setHeader('Connection', 'close');
-                $this->setHeader('Content-Encoding', 'none');
-                $this->setHeader('Content-Length', (string) max(0, (int) ($length === false ? 0 : $length)));
             } else {
                 while (ob_get_level() > 0) {
                     ob_end_clean();

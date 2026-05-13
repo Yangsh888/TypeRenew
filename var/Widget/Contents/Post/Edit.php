@@ -22,6 +22,11 @@ class Edit extends Contents implements ActionInterface
     use PrepareEditTrait;
     use EditTrait;
 
+    private function isCountablePublishedPost(string $type, string $status, int $created): bool
+    {
+        return $type === 'post' && $status === 'publish' && $created > 0 && $created < (int) $this->options->time;
+    }
+
     public function execute()
     {
         $this->user->pass('contributor');
@@ -126,7 +131,7 @@ class Edit extends Contents implements ActionInterface
 
         foreach ($posts as $post) {
             $condition = $this->db->sql()->where('cid = ?', $post);
-            $postObject = $this->db->fetchObject($this->db->select('status', 'type')
+            $postObject = $this->db->fetchObject($this->db->select('status', 'type', 'created')
                 ->from('table.contents')->where('cid = ? AND (type = ? OR type = ?)', $post, 'post', 'post_draft'));
 
             if (!$this->isWriteable(clone $condition) || !count((array) $postObject)) {
@@ -142,24 +147,32 @@ class Edit extends Contents implements ActionInterface
             $changed = (bool) $this->withWriteTransaction(function () use ($condition, $status, $postObject, $post) {
                 $this->db->query($condition->update('table.contents')->rows(['status' => $status]));
 
-                if ($postObject->type == 'post') {
-                    $op = null;
+                $op = null;
+                $wasCountable = $this->isCountablePublishedPost(
+                    (string) $postObject->type,
+                    (string) $postObject->status,
+                    (int) ($postObject->created ?? 0)
+                );
+                $willCountable = $this->isCountablePublishedPost(
+                    (string) $postObject->type,
+                    (string) $status,
+                    (int) ($postObject->created ?? 0)
+                );
 
-                    if ($status == 'publish' && $postObject->status != 'publish') {
-                        $op = '+';
-                    } elseif ($status != 'publish' && $postObject->status == 'publish') {
-                        $op = '-';
-                    }
+                if ($willCountable && !$wasCountable) {
+                    $op = '+';
+                } elseif (!$willCountable && $wasCountable) {
+                    $op = '-';
+                }
 
-                    if (!empty($op)) {
-                        $metas = $this->db->fetchAll(
-                            $this->db->select()->from('table.relationships')->where('cid = ?', $post)
-                        );
-                        foreach ($metas as $meta) {
-                            $this->db->query($this->db->update('table.metas')
-                                ->expression('count', 'count ' . $op . ' 1')
-                                ->where('mid = ? AND (type = ? OR type = ?)', $meta['mid'], 'category', 'tag'));
-                        }
+                if (!empty($op)) {
+                    $metas = $this->db->fetchAll(
+                        $this->db->select()->from('table.relationships')->where('cid = ?', $post)
+                    );
+                    foreach ($metas as $meta) {
+                        $this->db->query($this->db->update('table.metas')
+                            ->expression('count', 'count ' . $op . ' 1')
+                            ->where('mid = ? AND (type = ? OR type = ?)', $meta['mid'], 'category', 'tag'));
                     }
                 }
 
@@ -199,7 +212,7 @@ class Edit extends Contents implements ActionInterface
 
         foreach ($posts as $post) {
             $condition = $this->db->sql()->where('cid = ?', $post);
-            $postObject = $this->db->fetchObject($this->db->select('status', 'type')
+            $postObject = $this->db->fetchObject($this->db->select('status', 'type', 'created')
                 ->from('table.contents')->where('cid = ? AND (type = ? OR type = ?)', $post, 'post', 'post_draft'));
 
             if ($this->isWriteable(clone $condition) && count((array) $postObject)) {
@@ -209,11 +222,15 @@ class Edit extends Contents implements ActionInterface
                         return false;
                     }
 
-                    $this->setCategories($post, [], 'publish' == $postObject->status
-                        && 'post' == $postObject->type);
+                    $countable = $this->isCountablePublishedPost(
+                        (string) $postObject->type,
+                        (string) $postObject->status,
+                        (int) ($postObject->created ?? 0)
+                    );
 
-                    $this->setTags($post, null, 'publish' == $postObject->status
-                        && 'post' == $postObject->type);
+                    $this->setCategories($post, [], $countable);
+
+                    $this->setTags($post, null, $countable);
 
                     $this->db->query($this->db->delete('table.comments')
                         ->where('cid = ?', $post));

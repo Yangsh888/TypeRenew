@@ -58,7 +58,7 @@ class Cookie
 
     public static function getSecure(): bool
     {
-        return self::$secure ?? false;
+        return self::$secure;
     }
 
     /**

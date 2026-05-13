@@ -19,6 +19,7 @@ class Defaults
         }
 
         $lang = 'zh_CN';
+        self::initLanguageCookie();
 
         if ($request->is('lang')) {
             $candidate = $request->get('lang');
@@ -31,6 +32,15 @@ class Defaults
         $cookieLang = Cookie::get('lang', $lang);
 
         return is_string($cookieLang) && $cookieLang !== '' ? $cookieLang : $lang;
+    }
+
+    private static function initLanguageCookie(): void
+    {
+        Cookie::setPrefix(self::siteUrl());
+
+        if (defined('__TYPECHO_COOKIE_OPTIONS__')) {
+            Cookie::setOptions(__TYPECHO_COOKIE_OPTIONS__);
+        }
     }
 
     public static function siteUrl(): string

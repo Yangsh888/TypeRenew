@@ -50,8 +50,14 @@ final class App
         $context = new Context($contents);
         $this->editor->checkStatus($context->contents);
         $context->isDraftToPublish = $this->isDraftType($this->editor->type());
-        $context->wasPublished = 'publish' === $this->editor->status();
-        $context->willPublish = 'publish' === ($context->contents['status'] ?? '');
+        $context->wasPublished = $this->isVisiblePublish(
+            $this->editor->status(),
+            $this->editor->created()
+        );
+        $context->willPublish = $this->isVisiblePublish(
+            (string) ($context->contents['status'] ?? ''),
+            (int) ($context->contents['created'] ?? 0)
+        );
 
         return $context;
     }
@@ -143,5 +149,10 @@ final class App
     private function isDraftType(string $type): bool
     {
         return (bool) preg_match('/_draft$/', $type);
+    }
+
+    private function isVisiblePublish(string $status, int $created): bool
+    {
+        return $status === 'publish' && $created > 0 && $created < time();
     }
 }

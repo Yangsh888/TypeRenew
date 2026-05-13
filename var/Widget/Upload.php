@@ -83,12 +83,22 @@ class Upload extends Contents implements ActionInterface
             return $result;
         }
 
-        return file_get_contents(
+        $attachment = $content['attachment'] ?? null;
+        $relativePath = is_object($attachment) && isset($attachment->path) && is_string($attachment->path)
+            ? $attachment->path
+            : '';
+        if ($relativePath === '') {
+            return '';
+        }
+
+        $data = file_get_contents(
             Common::url(
-                $content['attachment']->path,
+                $relativePath,
                 defined('__TYPECHO_UPLOAD_ROOT_DIR__') ? __TYPECHO_UPLOAD_ROOT_DIR__ : __TYPECHO_ROOT_DIR__
             )
         );
+
+        return is_string($data) ? $data : '';
     }
 
     public function action()

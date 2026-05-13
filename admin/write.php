@@ -42,7 +42,7 @@ $vditorForceMarkdown = (bool) \Typecho\Plugin::factory($editorHook)->filter('for
             <label for="slug" class="sr-only"><?php _e('网址缩略名'); ?></label>
             <?php echo $write['permalink']; ?>
         </p>
-        <?php if ($content->have() && method_exists($content, 'isFuturePublish') && $content->isFuturePublish()): ?>
+        <?php if ($content->have() && $content->isFuturePublish()): ?>
             <?php $previewCid = !empty($content->draft['cid']) ? (int) $content->draft['cid'] : (int) $content->cid; ?>
             <?php $scheduleDate = (new \Typecho\Date((int) $content->created))->format('Y-m-d H:i'); ?>
             <cite class="edit-draft-notice is-schedule">

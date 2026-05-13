@@ -132,7 +132,11 @@ class Config extends BaseOptions
                 }
 
                 if ($next[0] === T_STRING) {
-                    return $next[1] === $functionName;
+                    if ($next[1] === $functionName) {
+                        return true;
+                    }
+
+                    break;
                 }
 
                 if (!in_array($next[0], [T_WHITESPACE, T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG, T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG], true)) {

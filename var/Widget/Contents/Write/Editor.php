@@ -11,6 +11,7 @@ final class Editor
     private Closure $hasContent;
     private Closure $getCid;
     private Closure $getType;
+    private Closure $getCreated;
     private Closure $getStatus;
     private Closure $getDraft;
     private Closure $insert;
@@ -29,6 +30,7 @@ final class Editor
         Closure $hasContent,
         Closure $getCid,
         Closure $getType,
+        Closure $getCreated,
         Closure $getStatus,
         Closure $getDraft,
         Closure $insert,
@@ -46,6 +48,7 @@ final class Editor
         $this->hasContent = $hasContent;
         $this->getCid = $getCid;
         $this->getType = $getType;
+        $this->getCreated = $getCreated;
         $this->getStatus = $getStatus;
         $this->getDraft = $getDraft;
         $this->insert = $insert;
@@ -82,6 +85,11 @@ final class Editor
     public function type(): string
     {
         return (string) ($this->getType)();
+    }
+
+    public function created(): int
+    {
+        return (int) ($this->getCreated)();
     }
 
     public function status(): string

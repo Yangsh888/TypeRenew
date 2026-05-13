@@ -369,6 +369,9 @@ trait EditTrait
             function (): string {
                 return (string) ($this->type ?? '');
             },
+            function (): int {
+                return (int) ($this->created ?? 0);
+            },
             function (): string {
                 return (string) ($this->status ?? '');
             },
