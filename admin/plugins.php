@@ -18,29 +18,13 @@ $pluginHomepage = static function ($value): string {
 
     return '';
 };
-$pluginIsOfficial = static function ($author, $homepage): bool {
-    $author = strtolower(trim((string) $author));
-    if ($author !== 'typerenew') {
-        return false;
-    }
-
-    $candidate = trim((string) $homepage);
-    if ($candidate === '') {
-        return false;
-    }
-
-    $parts = \Typecho\Common::parseUrl($candidate);
-    $host = strtolower((string) ($parts['host'] ?? ''));
-
-    return in_array($host, ['www.typerenew.com', 'typerenew.com'], true);
-};
-$pluginVersionMeta = static function ($name, $version, $author, $homepage, $mobile = false) use ($pluginIsOfficial): string {
+$pluginVersionMeta = static function ($name, $version, $author, $homepage, $mobile = false): string {
     $pluginName = htmlspecialchars((string) $name, ENT_QUOTES, 'UTF-8');
     $versionText = trim((string) $version);
     $versionText = htmlspecialchars($versionText !== '' ? $versionText : '-', ENT_QUOTES, 'UTF-8');
     $loadingText = htmlspecialchars((string) _t('正在检测版本状态'), ENT_QUOTES, 'UTF-8');
     $unofficialText = htmlspecialchars((string) _t('这并非 TypeRenew 官方插件，无法在官方插件仓库中检测版本状态。'), ENT_QUOTES, 'UTF-8');
-    $official = $pluginIsOfficial($author, $homepage);
+    $official = \Widget\Plugins\Rows::isOfficialPlugin($author, $homepage);
     $defaultStatus = $official ? 'loading' : 'unofficial';
     $defaultTip = $official ? $loadingText : $unofficialText;
 

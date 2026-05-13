@@ -204,24 +204,6 @@ class Ajax extends BaseOptions implements ActionInterface
         return $versions;
     }
 
-    private function isOfficialPlugin(array $info): bool
-    {
-        $author = strtolower(trim((string) ($info['author'] ?? '')));
-        if ($author !== 'typerenew') {
-            return false;
-        }
-
-        $homepage = trim((string) ($info['homepage'] ?? ''));
-        if ($homepage === '') {
-            return false;
-        }
-
-        $parts = \Typecho\Common::parseUrl($homepage);
-        $host = strtolower((string) ($parts['host'] ?? ''));
-
-        return in_array($host, ['www.typerenew.com', 'typerenew.com'], true);
-    }
-
     private function readOfficialPluginVersionCache(): ?array
     {
         $row = $this->db->fetchRow(
@@ -396,7 +378,7 @@ class Ajax extends BaseOptions implements ActionInterface
             $localVersionRaw = trim((string) ($info['version'] ?? ''));
             $localVersion = $this->normalizeComparableVersion($localVersionRaw);
 
-            if (!$this->isOfficialPlugin($info)) {
+            if (!\Widget\Plugins\Rows::isOfficialPlugin($info['author'] ?? '', $info['homepage'] ?? '')) {
                 $statuses[$pluginName] = [
                     'status'  => 'unofficial',
                     'local'   => $localVersionRaw,

@@ -2,6 +2,7 @@
 
 namespace Widget\Plugins;
 
+use Typecho\Common;
 use Typecho\Plugin;
 use Typecho\Widget;
 
@@ -12,6 +13,25 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
 class Rows extends Widget
 {
     public array $activatedPlugins = [];
+
+    public static function isOfficialPlugin($author, $homepage): bool
+    {
+        $author = strtolower(trim((string) $author));
+        if ($author !== 'typerenew') {
+            return false;
+        }
+
+        $homepage = trim((string) $homepage);
+        if ($homepage === '') {
+            return false;
+        }
+
+        $parts = Common::parseUrl($homepage);
+        $host = strtolower((string) ($parts['host'] ?? ''));
+
+        return in_array($host, ['www.typerenew.com', 'typerenew.com'], true);
+    }
+
     public function execute()
     {
         $pluginDirs = $this->getPlugins();
