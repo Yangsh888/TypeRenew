@@ -25,22 +25,6 @@ class Permalink extends Options implements ActionInterface
             unset($routingTable[0]);
         }
 
-        $defaults = array_intersect_key(
-            \Utils\Defaults::routingTable(),
-            array_flip(['post', 'page', 'category', 'category_page', 'archive', 'archive_page'])
-        );
-
-        foreach ($defaults as $key => $value) {
-            if (!isset($routingTable[$key]) || !is_array($routingTable[$key])) {
-                $routingTable[$key] = $value;
-                continue;
-            }
-
-            if (!isset($routingTable[$key]['url']) || !is_string($routingTable[$key]['url']) || $routingTable[$key]['url'] === '') {
-                $routingTable[$key]['url'] = $value['url'];
-            }
-        }
-
         return $routingTable;
     }
 
@@ -52,15 +36,7 @@ class Permalink extends Options implements ActionInterface
      */
     public function checkPagePattern($value): bool
     {
-        if (!is_scalar($value)) {
-            return false;
-        }
-
-        $value = (string) $value;
-
-        return strpos($value, '{slug}') !== false
-            || strpos($value, '{cid}') !== false
-            || strpos($value, '{directory}') !== false;
+        return $this->containsAnyPlaceholder($value, ['{slug}', '{cid}', '{directory}']);
     }
 
     /**
@@ -71,15 +47,7 @@ class Permalink extends Options implements ActionInterface
      */
     public function checkCategoryPattern($value): bool
     {
-        if (!is_scalar($value)) {
-            return false;
-        }
-
-        $value = (string) $value;
-
-        return strpos($value, '{slug}') !== false
-            || strpos($value, '{mid}') !== false
-            || strpos($value, '{directory}') !== false;
+        return $this->containsAnyPlaceholder($value, ['{slug}', '{mid}', '{directory}']);
     }
 
     /**
@@ -97,14 +65,9 @@ class Permalink extends Options implements ActionInterface
         $postPattern = is_scalar($postPattern) ? (string) $postPattern : '';
         $pagePattern = is_scalar($pagePattern) ? (string) $pagePattern : '';
         $categoryPattern = is_scalar($categoryPattern) ? (string) $categoryPattern : '';
-        $rewriteServer = (string) $this->request->get('rewriteServer', 'nginx');
-        $rewriteMode = (string) $this->request->get('rewriteMode', 'manual');
-
         $before = [
             'rewrite' => (string) ($this->options->rewrite ?? ''),
             'routingTable' => $this->serializeRoutingTable($this->options->routingTable),
-            'rewriteServer' => (string) ($this->options->rewriteServer ?? ''),
-            'rewriteMode' => (string) ($this->options->rewriteMode ?? ''),
             'rewriteStatus' => (string) ($this->options->rewriteStatus ?? ''),
         ];
 
@@ -140,56 +103,21 @@ class Permalink extends Options implements ActionInterface
         }
         $settings['routingTable'] = Common::jsonEncode($routingTable, 0, '{}');
 
-        $settings = array_merge($settings, Manager::persistState([
-            'rewriteServer' => $rewriteServer,
-            'rewriteMode' => $rewriteMode,
-        ], $rewrite));
-
-        $apacheSnapshot = null;
+        $settings['rewrite'] = $rewrite === '1' ? '1' : '0';
+        $settings += Manager::normalizeStoredState([], $settings['rewrite'] === '1');
         if (
             $settings['rewrite'] === $before['rewrite']
-            && $settings['rewriteServer'] === $before['rewriteServer']
-            && $settings['rewriteMode'] === $before['rewriteMode']
             && (string) ($settings['routingTable'] ?? $before['routingTable']) === $before['routingTable']
         ) {
             $settings['rewriteStatus'] = (string) ($this->options->rewriteStatus ?? $settings['rewriteStatus']);
             $settings['rewriteVerifiedAt'] = (string) ($this->options->rewriteVerifiedAt ?? $settings['rewriteVerifiedAt']);
             $settings['rewriteMessage'] = (string) ($this->options->rewriteMessage ?? $settings['rewriteMessage']);
         }
-
-        $wasManaged = Manager::canManageApache(
-            (string) ($this->options->rewriteServer ?? ''),
-            (string) ($this->options->rewriteMode ?? '')
-        );
-        if ($settings['rewrite'] === '1' && Manager::canManageApache($settings['rewriteServer'], $settings['rewriteMode'])) {
-            if (!Manager::canWriteApacheConfig()) {
-                $this->noticeAndGoBack(_t('当前无法写入 .htaccess，请改为手动部署，或调整根目录 / .htaccess 的写权限。'), 'error');
-            }
-
-            $apacheSnapshot = Manager::snapshotApacheConfig();
-            if (!Manager::writeManagedApache(Manager::basePath($this->options))) {
-                $this->noticeAndGoBack(_t('写入 TypeRenew 的 Apache 重写规则失败，请检查 .htaccess 权限后重试。'), 'error');
-            }
-        } elseif ($wasManaged) {
-            $apacheSnapshot = Manager::snapshotApacheConfig();
-            if (!Manager::removeManagedApache()) {
-                $this->noticeAndGoBack(_t('移除 TypeRenew 的 Apache 重写规则失败，请检查 .htaccess 权限后重试。'), 'error');
-            }
-        }
-
-        try {
-            $this->persistOptions($settings);
-        } catch (\Throwable $throwable) {
-            if (is_array($apacheSnapshot)) {
-                Manager::restoreApacheConfig($apacheSnapshot);
-            }
-            throw $throwable;
-        }
+        $this->persistOptions($settings);
+        Manager::cleanupLegacyOptions($this->db);
         self::pluginHandle()->call('finishUpdate', $before, [
             'rewrite' => (string) ($settings['rewrite'] ?? $before['rewrite']),
             'routingTable' => (string) ($settings['routingTable'] ?? $before['routingTable']),
-            'rewriteServer' => (string) ($settings['rewriteServer'] ?? $before['rewriteServer']),
-            'rewriteMode' => (string) ($settings['rewriteMode'] ?? $before['rewriteMode']),
             'rewriteStatus' => (string) ($settings['rewriteStatus'] ?? $before['rewriteStatus']),
         ], $this);
 
@@ -210,39 +138,10 @@ class Permalink extends Options implements ActionInterface
                 ['0' => _t('不启用'), '1' => _t('启用')],
                 $this->options->rewrite,
                 _t('地址重写'),
-                _t('启用后，系统将按照当前固定链接规则输出不含 <code>index.php</code> 的访问地址。')
-                . '<br />' . _t('此设置不会修改已经保存的文章、页面和分类链接格式。')
+                _t('启用后，系统将按照当前规则输出不含 <code>index.php</code> 的访问地址。')
             );
             $form->addInput($rewrite);
         }
-
-        $rewriteServer = new Form\Element\Select(
-            'rewriteServer',
-            [
-                'nginx' => _t('Nginx（推荐）'),
-                'apache' => _t('Apache'),
-                'other' => _t('其他服务器'),
-            ],
-            $rewriteState['server'],
-            _t('Web 服务器'),
-            _t('请选择当前站点使用的 Web 服务器，以便显示对应的配置示例。')
-        );
-        $form->addInput($rewriteServer);
-
-        $modeOptions = [
-            'manual' => _t('手动配置') . ' <span class="description">' . _t('请将下方配置示例写入服务器配置文件。') . '</span>',
-            'managed' => _t('程序维护（Apache）') . ' <span class="description">' . _t('仅适用于 Apache，系统只维护 TypeRenew 写入的规则区块。') . '</span>',
-        ];
-        $rewriteMode = new Form\Element\Radio(
-            'rewriteMode',
-            $modeOptions,
-            $rewriteState['managed'] ? 'managed' : 'manual',
-            _t('规则部署方式'),
-            $rewriteState['server'] === 'apache'
-                ? _t('Apache 可选择手动配置，或由系统维护 TypeRenew 写入的规则区块。')
-                : _t('Nginx 与其他服务器请根据下方示例手动完成配置。')
-        );
-        $form->addInput($rewriteMode->multiMode());
 
         $rewriteStatus = new Form\Element\Fake('rewriteStatusText', $this->rewriteStatusLabel($rewriteState['status']));
         $rewriteStatus->label(_t('重写状态'));
@@ -257,7 +156,7 @@ class Permalink extends Options implements ActionInterface
             null,
             $rewriteState['nginxRules'],
             _t('Nginx 配置示例'),
-            _t('请将以下内容加入当前站点的 Nginx 配置后保存生效。')
+            _t('请将以下规则加入当前站点的 Nginx 配置中。')
         );
         $nginxRules->input->setAttribute('class', 'mono w-100 tr-rewrite-code');
         $nginxRules->input->setAttribute('rows', '6');
@@ -270,7 +169,7 @@ class Permalink extends Options implements ActionInterface
             null,
             $rewriteState['apacheRules'],
             _t('Apache 配置示例'),
-            _t('可手动写入 <code>.htaccess</code>；如选择“程序维护（Apache）”，系统只维护 TypeRenew 写入的规则区块。')
+            _t('请将以下规则写入当前站点的 <code>.htaccess</code> 文件。')
         );
         $apacheRules->input->setAttribute('class', 'mono w-100 tr-rewrite-code');
         $apacheRules->input->setAttribute('rows', '7');
@@ -308,7 +207,7 @@ class Permalink extends Options implements ActionInterface
             $postPatternValue,
             _t('文章固定链接'),
             _t('可用参数：<code>{cid}</code> 文章 ID、<code>{slug}</code> 文章别名、<code>{category}</code> 分类、<code>{directory}</code> 多级分类、<code>{year}</code> 年、<code>{month}</code> 月、<code>{day}</code> 日。')
-            . '<br />' . _t('请选择适合站点的文章链接结构。链接结构一旦投入使用，不建议频繁修改。')
+            . '<br />' . _t('请选择文章链接结构。')
         );
         if ($customPatternValue) {
             $postPattern->value('custom');
@@ -352,7 +251,8 @@ class Permalink extends Options implements ActionInterface
      */
     protected function decodeRule(string $rule): string
     {
-        return preg_replace("/\[([_a-z0-9-]+)[^\]]*\]/i", "{\\1}", $rule);
+        $decoded = preg_replace("/\[([_a-z0-9-]+)[^\]]*\]/i", "{\\1}", $rule);
+        return is_string($decoded) ? $decoded : $rule;
     }
 
     private function serializeRoutingTable(array $routingTable): string
@@ -373,7 +273,7 @@ class Permalink extends Options implements ActionInterface
     private function rewriteStatusDescription(array $state): string
     {
         $rows = [
-            '<span class="tr-rewrite-status-line"><span class="tr-rewrite-status-key">' . _t('配置说明：') . '</span><span id="tr-rewrite-status-note">' . htmlspecialchars($state['message'], ENT_QUOTES, 'UTF-8') . '</span></span>',
+            '<span class="tr-rewrite-status-line"><span class="tr-rewrite-status-key">' . _t('说明：') . '</span><span id="tr-rewrite-status-note">' . htmlspecialchars($state['message'], ENT_QUOTES, 'UTF-8') . '</span></span>',
         ];
 
         if ($state['basePath'] !== '/') {
@@ -404,7 +304,7 @@ class Permalink extends Options implements ActionInterface
 
         if (defined('__TYPECHO_REWRITE__')) {
             $rows[] = '<span class="tr-rewrite-status-line is-warning">'
-                . _t('检测到配置文件正在接管地址重写开关，后台仅显示当前状态。')
+                . _t('检测到配置文件接管地址重写开关，后台仅显示状态。')
                 . '</span>';
         }
 
@@ -424,11 +324,13 @@ class Permalink extends Options implements ActionInterface
 
     private function rewriteProbeScript(): string
     {
-        $url = Common::jsonEncode(Manager::probePath($this->options));
+        $publicUrl = Common::jsonEncode(Manager::publicProbePath($this->options));
+        $finalizeUrl = Common::jsonEncode(Manager::probePath($this->options));
         $verifiedText = Common::jsonEncode(_t('已校验'));
-        $failedText = Common::jsonEncode(_t('校验失败，请检查服务器规则是否已部署。'));
-        $checkingText = Common::jsonEncode(_t('验证中...'));
-        $checkingNote = Common::jsonEncode(_t('正在验证当前配置...'));
+        $failedText = Common::jsonEncode(_t('校验失败，请检查地址重写规则。'));
+        $checkingText = Common::jsonEncode(_t('校验中...'));
+        $checkingNote = Common::jsonEncode(_t('正在校验地址重写规则。'));
+        $finalizingNote = Common::jsonEncode(_t('正在更新校验状态。'));
 
         return <<<HTML
 <script>
@@ -438,40 +340,6 @@ class Permalink extends Options implements ActionInterface
     }
 
     window.__trRewriteProbeBound = true;
-
-    var syncRulePanels = function () {
-        var serverSelect = document.querySelector('select[name="rewriteServer"]');
-        var nginxField = document.querySelector('textarea[name="rewriteNginxRules"]');
-        var apacheField = document.querySelector('textarea[name="rewriteApacheRules"]');
-        var managedInput = document.querySelector('input[name="rewriteMode"][value="managed"]');
-        var manualInput = document.querySelector('input[name="rewriteMode"][value="manual"]');
-        var server = serverSelect ? serverSelect.value : '';
-        var nginxWrap = nginxField && nginxField.closest ? nginxField.closest('ul.typecho-option') : null;
-        var apacheWrap = apacheField && apacheField.closest ? apacheField.closest('ul.typecho-option') : null;
-        var managedWrap = managedInput && managedInput.closest ? managedInput.closest('.multiline') : null;
-        if (nginxWrap) {
-            nginxWrap.classList.remove('tr-rewrite-primary', 'tr-rewrite-secondary');
-        }
-        if (apacheWrap) {
-            apacheWrap.classList.remove('tr-rewrite-primary', 'tr-rewrite-secondary');
-        }
-        if (managedInput) {
-            managedInput.disabled = server !== 'apache';
-            if (managedWrap) {
-                managedWrap.classList.toggle('tr-is-disabled', managedInput.disabled);
-            }
-            if (managedInput.disabled && managedInput.checked && manualInput) {
-                manualInput.checked = true;
-            }
-        }
-        if (server === 'nginx') {
-            if (nginxWrap) nginxWrap.classList.add('tr-rewrite-primary');
-            if (apacheWrap) apacheWrap.classList.add('tr-rewrite-secondary');
-        } else if (server === 'apache') {
-            if (apacheWrap) apacheWrap.classList.add('tr-rewrite-primary');
-            if (nginxWrap) nginxWrap.classList.add('tr-rewrite-secondary');
-        }
-    };
 
     var setResult = function (message, state) {
         var statusNote = document.getElementById('tr-rewrite-status-note');
@@ -488,17 +356,38 @@ class Permalink extends Options implements ActionInterface
     };
 
     var init = function () {
-        var serverSelect = document.querySelector('select[name="rewriteServer"]');
         var statusNote = document.getElementById('tr-rewrite-status-note');
         if (statusNote && !statusNote.getAttribute('data-default-text')) {
             statusNote.setAttribute('data-default-text', statusNote.textContent || '');
         }
+    };
 
-        syncRulePanels();
-        if (serverSelect && !serverSelect.getAttribute('data-rewrite-sync-bound')) {
-            serverSelect.setAttribute('data-rewrite-sync-bound', '1');
-            serverSelect.addEventListener('change', syncRulePanels);
-        }
+    var requestJson = function (url, onSuccess, onFailure) {
+        var xhr = new XMLHttpRequest();
+        xhr.timeout = 10000;
+        xhr.open('GET', url, true);
+        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+        xhr.onerror = xhr.ontimeout = function () {
+            onFailure(null, xhr);
+        };
+        xhr.onreadystatechange = function () {
+            var data = null;
+            if (xhr.readyState !== 4) {
+                return;
+            }
+            try {
+                data = JSON.parse(xhr.responseText);
+            } catch (e) {
+                onFailure(null, xhr);
+                return;
+            }
+            if (xhr.status < 200 || xhr.status >= 300 || !data || !data.ok) {
+                onFailure(data, xhr);
+                return;
+            }
+            onSuccess(data, xhr);
+        };
+        xhr.send(null);
     };
 
     document.addEventListener('click', function (event) {
@@ -514,46 +403,33 @@ class Permalink extends Options implements ActionInterface
 
         var statusInput = document.querySelector('input[name="rewriteStatusText"]');
         var defaultButtonText = button.getAttribute('data-default-text') || button.textContent || '';
-        var xhr = new XMLHttpRequest();
         button.setAttribute('data-default-text', defaultButtonText);
         button.disabled = true;
         button.textContent = {$checkingText};
         setResult({$checkingNote}, '');
-        xhr.timeout = 10000;
-        xhr.open('GET', {$url}, true);
-        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-        xhr.onerror = xhr.ontimeout = function () {
-            button.disabled = false;
-            button.textContent = defaultButtonText;
-            setResult({$failedText}, 'error');
-        };
-        xhr.onreadystatechange = function () {
-            var data = null;
-            if (xhr.readyState !== 4) {
-                return;
-            }
-            button.disabled = false;
-            button.textContent = defaultButtonText;
-            try {
-                data = JSON.parse(xhr.responseText);
-            } catch (e) {
-                setResult({$failedText}, 'error');
-                return;
-            }
-            if (xhr.status < 200 || xhr.status >= 300 || !data || !data.ok) {
+        requestJson({$publicUrl}, function () {
+            setResult({$finalizingNote}, '');
+            requestJson({$finalizeUrl}, function (data) {
+                button.disabled = false;
+                button.textContent = defaultButtonText;
+                setResult(data.message || {$verifiedText}, 'success');
+                if (statusInput) {
+                    statusInput.value = {$verifiedText};
+                }
+                var statusNote = document.getElementById('tr-rewrite-status-note');
+                if (statusNote) {
+                    statusNote.setAttribute('data-default-text', data.message || {$verifiedText});
+                }
+            }, function (data) {
+                button.disabled = false;
+                button.textContent = defaultButtonText;
                 setResult((data && data.message) ? data.message : {$failedText}, 'error');
-                return;
-            }
-            setResult(data.message || {$verifiedText}, 'success');
-            if (statusInput) {
-                statusInput.value = {$verifiedText};
-            }
-            var statusNote = document.getElementById('tr-rewrite-status-note');
-            if (statusNote) {
-                statusNote.setAttribute('data-default-text', data.message || {$verifiedText});
-            }
-        };
-        xhr.send(null);
+            });
+        }, function (data) {
+            button.disabled = false;
+            button.textContent = defaultButtonText;
+            setResult((data && data.message) ? data.message : {$failedText}, 'error');
+        });
     });
 
     if (document.readyState === 'loading') {
@@ -602,13 +478,12 @@ HTML;
             return false;
         }
 
-        $candidateTable = ['candidate' => ['url' => (string) $routingTable[$routeKey]['url']]];
-        $parser = new Parser($candidateTable);
-        $parsed = $parser->parse();
-        $regx = (string) ($parsed['candidate']['regx'] ?? '');
-        if ($regx === '') {
+        $candidateUrl = (string) $routingTable[$routeKey]['url'];
+        $candidateRegex = $this->routeRegex($candidateUrl);
+        if ($candidateRegex === '') {
             return false;
         }
+        $candidatePath = $this->sampleRoutePath($candidateUrl);
 
         foreach ($routingTable as $key => $route) {
             if ($key === $routeKey || in_array($key, $ignoreKeys, true)) {
@@ -621,7 +496,49 @@ HTML;
             }
 
             $pathInfo = $this->sampleRoutePath($url);
-            if ($pathInfo !== '' && preg_match($regx, $pathInfo)) {
+            if ($pathInfo !== '' && preg_match($candidateRegex, $pathInfo) === 1) {
+                return true;
+            }
+
+            $routeRegex = $this->routeRegex($url);
+            if (
+                $candidatePath !== ''
+                && $routeRegex !== ''
+                && $this->isStandaloneRoutePattern($url)
+                && preg_match($routeRegex, $candidatePath) === 1
+            ) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    protected function routeRegex(string $url): string
+    {
+        if ($url === '') {
+            return '';
+        }
+
+        $parser = new Parser(['candidate' => ['url' => $url]]);
+        $parsed = $parser->parse();
+        return (string) ($parsed['candidate']['regx'] ?? '');
+    }
+
+    private function isStandaloneRoutePattern(string $url): bool
+    {
+        return $url !== '' && $url[0] === '/';
+    }
+
+    private function containsAnyPlaceholder($value, array $placeholders): bool
+    {
+        if (!is_scalar($value)) {
+            return false;
+        }
+
+        $value = (string) $value;
+        foreach ($placeholders as $placeholder) {
+            if (strpos($value, $placeholder) !== false) {
                 return true;
             }
         }

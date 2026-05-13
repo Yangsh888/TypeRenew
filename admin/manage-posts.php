@@ -8,6 +8,7 @@ $posts = \Widget\Contents\Post\Admin::alloc();
 $isAllPosts = ('on' == $request->get('__typecho_all_posts') || 'on' == \Typecho\Cookie::get('__typecho_all_posts'));
 $postAction = htmlspecialchars($options->index . '/action/contents-post-edit', ENT_QUOTES, 'UTF-8');
 $postToken = htmlspecialchars($security->getToken($options->index . '/action/contents-post-edit'), ENT_QUOTES, 'UTF-8');
+$isDraftPostsView = ($request->get('status') === 'draft');
 $uidQuery = isset($request->uid) ? '?uid=' . $request->filter('encode')->uid : '';
 $uidTail = isset($request->uid) ? '&uid=' . $request->filter('encode')->uid : '';
 $filterBase = [];
@@ -72,9 +73,9 @@ $cancelFilterUrl = 'manage-posts.php' . ($filterBase ? '?' . implode('&', $filte
                                     class="i-caret-down"></i></button>
                             <ul class="dropdown-menu">
                                 <li><a lang="<?php _e('你确认要删除这些文章吗?'); ?>"
-                                       href="<?php echo $postAction; ?>?do=delete"><?php _e('删除'); ?></a>
+                                       href="<?php echo $postAction; ?>?do=<?php echo $isDraftPostsView ? 'deleteDraft' : 'delete'; ?>"><?php _e('删除'); ?></a>
                                 </li>
-                                <?php if ($user->pass('editor', true)): ?>
+                                <?php if ($user->pass('editor', true) && !$isDraftPostsView): ?>
                                     <li>
                                         <a href="<?php echo $postAction; ?>?do=mark&amp;status=publish"><?php _e('标记为<strong>%s</strong>', _t('公开')); ?></a>
                                     </li>

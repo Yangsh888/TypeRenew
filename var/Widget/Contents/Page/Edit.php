@@ -56,11 +56,12 @@ class Edit extends Contents implements ActionInterface
 
             Service::alloc()->sendPing($this);
 
+            $scheduleDate = (new \Typecho\Date((int) $this->created))->format('Y-m-d H:i');
             $notice = $this->isFuturePublish()
                 ? _t(
                     '页面 "%s" 已计划于 %s 发布，当前可先<a href="%s">预览</a>',
                     $this->title,
-                    $this->date('Y-m-d H:i'),
+                    $scheduleDate,
                     $this->getAdminPreviewUrl()
                 )
                 : _t('页面 "<a href="%s">%s</a>" 已经发布', $this->permalink, $this->title);
@@ -103,9 +104,9 @@ class Edit extends Contents implements ActionInterface
 
         $pages = $this->request->filter('int')->getArray('cid');
         $markCount = 0;
+        $skippedDraftCount = 0;
 
         foreach ($pages as $page) {
-            self::pluginHandle()->call('mark', $status, $page, $this);
             $condition = $this->db->sql()
                 ->where('cid = ?', $page)
                 ->where('type = ? OR type = ?', 'page', 'page_draft');
@@ -114,6 +115,17 @@ class Edit extends Contents implements ActionInterface
                 continue;
             }
 
+            $pageObject = $this->db->fetchObject($this->db->select('type')
+                ->from('table.contents')->where('cid = ?', $page)->limit(1));
+
+            if (!$pageObject || $pageObject->type !== 'page') {
+                if ($pageObject && $pageObject->type === 'page_draft') {
+                    $skippedDraftCount++;
+                }
+                continue;
+            }
+
+            self::pluginHandle()->call('mark', $status, $page, $this);
             $changed = (bool) $this->withWriteTransaction(function () use ($condition, $status, $page) {
                 if (!$this->db->query($condition->update('table.contents')->rows(['status' => $status]))) {
                     return false;
@@ -137,7 +149,11 @@ class Edit extends Contents implements ActionInterface
 
         Notice::alloc()
             ->set(
-                $markCount > 0 ? _t('页面已经被标记为<strong>%s</strong>', $statusList[$status]) : _t('没有页面被标记'),
+                $markCount > 0
+                    ? ($skippedDraftCount > 0
+                        ? _t('页面已经被标记为<strong>%s</strong>，草稿已跳过', $statusList[$status])
+                        : _t('页面已经被标记为<strong>%s</strong>', $statusList[$status]))
+                    : ($skippedDraftCount > 0 ? _t('草稿不支持批量标记') : _t('没有页面被标记')),
                 $markCount > 0 ? 'success' : 'notice'
             );
 
@@ -150,7 +166,6 @@ class Edit extends Contents implements ActionInterface
         $deleteCount = 0;
 
         foreach ($pages as $page) {
-            self::pluginHandle()->call('delete', $page, $this);
             $condition = $this->db->sql()
                 ->where('cid = ?', $page)
                 ->where('type = ? OR type = ?', 'page', 'page_draft');
@@ -169,6 +184,7 @@ class Edit extends Contents implements ActionInterface
 
             $parent = (int) ($row->parent ?? 0);
 
+            self::pluginHandle()->call('delete', $page, $this);
             $deleted = (bool) $this->withWriteTransaction(function () use ($page, $parent, $condition) {
                 if (!$this->delete($condition)) {
                     return false;
@@ -237,12 +253,32 @@ class Edit extends Contents implements ActionInterface
                 ->from('table.contents')->where('cid = ?', $page)->limit(1));
 
             if ($draft) {
-                $this->deleteContent($draft['cid'], false);
-                $this->deleteFields($draft['cid']);
-                $deleteCount++;
-            } elseif ($pageObject && $pageObject->type === 'page_draft' && (int) $pageObject->parent === 0) {
-                $this->deleteContent($page, false);
-                $this->deleteFields($page);
+                $deleted = (bool) $this->withWriteTransaction(function () use ($draft) {
+                    $this->unAttach((int) $draft['cid']);
+                    $this->deleteContent((int) $draft['cid'], false);
+                    $this->deleteFields((int) $draft['cid']);
+
+                    return true;
+                });
+            } elseif ($pageObject && $pageObject->type === 'page_draft') {
+                $parent = (int) $pageObject->parent;
+                $deleted = (bool) $this->withWriteTransaction(function () use ($page, $parent) {
+                    $this->unAttach($page);
+                    $this->deleteContent($page, false);
+                    $this->deleteFields($page);
+                    $this->update(
+                        ['parent' => $parent],
+                        $this->db->sql()->where('parent = ?', $page)
+                            ->where('type = ? OR type = ?', 'page', 'page_draft')
+                    );
+
+                    return true;
+                });
+            } else {
+                $deleted = false;
+            }
+
+            if ($deleted) {
                 $deleteCount++;
             }
         }

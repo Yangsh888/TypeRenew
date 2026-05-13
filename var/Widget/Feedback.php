@@ -77,13 +77,13 @@ class Feedback extends Comments implements ActionInterface
                     $currentPart = Common::parseUrl((string) $this->content->permalink);
 
                     if (!$this->sameRefererTarget($refererPart, $currentPart)) {
-                        if ('page:' . $this->content->cid == $this->options->frontPage) {
-                            $currentPart = Common::parseUrl(rtrim($this->options->siteUrl, '/') . '/');
+                        $isFrontPage = 'page:' . $this->content->cid == $this->options->frontPage;
+                        $matchesFrontPage = $isFrontPage && $this->sameRefererTarget(
+                            $refererPart,
+                            Common::parseUrl(rtrim($this->options->siteUrl, '/') . '/')
+                        );
 
-                            if (!$this->sameRefererTarget($refererPart, $currentPart)) {
-                                throw new Exception(_t('评论来源页错误.'), 403);
-                            }
-                        } else {
+                        if (!$matchesFrontPage) {
                             throw new Exception(_t('评论来源页错误.'), 403);
                         }
                     }

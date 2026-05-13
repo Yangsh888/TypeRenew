@@ -11,26 +11,16 @@ class Apache
     public static function render(string $basePath): string
     {
         $basePath = Manager::normalizeBasePath($basePath);
-        $target = $basePath === '/' ? '/index.php' : rtrim($basePath, '/') . '/index.php';
 
         return implode("\n", [
-            '# TypeRenew rewrite rules',
+            Manager::RULES_HEADER,
             '<IfModule mod_rewrite.c>',
             'RewriteEngine On',
             'RewriteBase ' . $basePath,
             'RewriteCond %{REQUEST_FILENAME} !-f',
             'RewriteCond %{REQUEST_FILENAME} !-d',
-            'RewriteRule . ' . $target . ' [L]',
+            'RewriteRule ^(.*)$ index.php/$1 [L]',
             '</IfModule>',
-        ]);
-    }
-
-    public static function managedBlock(string $basePath): string
-    {
-        return implode("\n", [
-            Manager::BLOCK_BEGIN,
-            self::render($basePath),
-            Manager::BLOCK_END,
         ]);
     }
 }

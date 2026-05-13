@@ -279,11 +279,14 @@ class SchemaManager
         foreach ($state as $name => $value) {
             self::upsertOption($db, $name, $value, $existing);
         }
+
+        Manager::cleanupLegacyOptions($db);
     }
 
     private static function inspectRewriteOptions(Db $db): array
     {
         [$existing, , $normalized] = self::rewriteOptionState($db);
+        $legacyOptions = self::legacyRewriteOptions($db);
         $missingColumns = [];
         $typeMismatches = [];
         foreach ($normalized as $name => $value) {
@@ -295,6 +298,10 @@ class SchemaManager
             if ((string) $existing[$name] !== (string) $value) {
                 $typeMismatches[] = $name;
             }
+        }
+
+        if ($legacyOptions !== []) {
+            $typeMismatches = array_merge($typeMismatches, $legacyOptions);
         }
 
         $healthy = $missingColumns === [] && $typeMismatches === [];
@@ -323,8 +330,6 @@ class SchemaManager
                 ->from('table.options')
                 ->where('user = ? AND name IN ?', 0, [
                     'rewrite',
-                    'rewriteServer',
-                    'rewriteMode',
                     'rewriteStatus',
                     'rewriteVerifiedAt',
                     'rewriteMessage',
@@ -340,12 +345,21 @@ class SchemaManager
         }
 
         $rewriteEnabled = (string) ($existing['rewrite'] ?? '0') === '1';
-        $stateInput = $existing;
-        if (!array_key_exists('rewriteServer', $stateInput)) {
-            $stateInput['rewriteServer'] = Manager::inferLegacyServer($rewriteEnabled);
-        }
+        return [$existing, $rewriteEnabled, Manager::normalizeStoredState($existing, $rewriteEnabled)];
+    }
 
-        return [$existing, $rewriteEnabled, Manager::normalizeStoredState($stateInput, $rewriteEnabled)];
+    private static function legacyRewriteOptions(Db $db): array
+    {
+        $rows = $db->fetchAll(
+            $db->select('name')
+                ->from('table.options')
+                ->where('user = ? AND name IN ?', 0, ['rewriteServer', 'rewriteMode'])
+        );
+
+        return array_values(array_map(
+            static fn(array $row): string => (string) ($row['name'] ?? ''),
+            array_filter($rows, static fn(array $row): bool => !empty($row['name']))
+        ));
     }
 
     private static function ensureTimezoneOptions(Db $db): bool

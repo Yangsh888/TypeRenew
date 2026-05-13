@@ -56,7 +56,7 @@ while ($parents->next()) {
                 <label for="date" class="typecho-label"><?php _e('发布日期'); ?></label>
                 <p><input class="typecho-date w-100" type="text" name="date" id="date" autocomplete="off"
                           value="<?php echo $page->have() && $page->created > 0
-                              ? $page->date('Y-m-d H:i')
+                              ? (new \Typecho\Date((int) $page->created))->format('Y-m-d H:i')
                               : \Typecho\Timezone::format((int) $options->time, 'Y-m-d H:i'); ?>"/>
                 </p>
             </section>

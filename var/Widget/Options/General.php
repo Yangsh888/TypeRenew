@@ -122,34 +122,13 @@ class General extends Options implements ActionInterface
 
         $settings['attachmentTypes'] = implode(',', $attachmentTypes);
         $siteUrlChanged = array_key_exists('siteUrl', $settings) && (string) $settings['siteUrl'] !== $before['siteUrl'];
-        $apacheSnapshot = null;
         if ($siteUrlChanged) {
             $rewriteEnabled = RewriteManager::enabled($this->options);
-            $rewriteServer = (string) ($this->options->rewriteServer ?? 'nginx');
-            $rewriteMode = (string) ($this->options->rewriteMode ?? 'manual');
-            $settings += RewriteManager::metadata($rewriteEnabled, $rewriteServer, $rewriteMode);
-            if ($rewriteEnabled && RewriteManager::canManageApache($rewriteServer, $rewriteMode)) {
-                if (!RewriteManager::canWriteApacheConfig()) {
-                    $this->noticeAndGoBack(_t('站点地址已改变，但当前无法同步更新 .htaccess，请先调整权限后再保存。'), 'error');
-                    return;
-                }
-
-                $apacheSnapshot = RewriteManager::snapshotApacheConfig();
-                if (!RewriteManager::writeManagedApache(RewriteManager::basePathFromUrl((string) $settings['siteUrl']))) {
-                    $this->noticeAndGoBack(_t('站点地址已改变，但同步更新 Apache 重写规则失败，请检查 .htaccess 后重试。'), 'error');
-                    return;
-                }
-            }
+            $settings += RewriteManager::normalizeStoredState([], $rewriteEnabled);
         }
 
-        try {
-            $this->persistOptions($settings);
-        } catch (\Throwable $throwable) {
-            if (is_array($apacheSnapshot)) {
-                RewriteManager::restoreApacheConfig($apacheSnapshot);
-            }
-            throw $throwable;
-        }
+        $this->persistOptions($settings);
+        RewriteManager::cleanupLegacyOptions($this->db);
         self::pluginHandle()->call('finishUpdate', $before, array_merge($before, $settings), $this);
 
         $this->saveSuccessAndGoBack();

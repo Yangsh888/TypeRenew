@@ -496,13 +496,15 @@ class Upload extends Contents implements ActionInterface
 
     public static function checkFileType(string $ext): bool
     {
-        if ($ext === '' || !preg_match('/^[a-z0-9]+$/i', $ext)) {
+        $ext = strtolower($ext);
+
+        if ($ext === '' || !preg_match('/^[a-z0-9]+$/', $ext)) {
             return false;
         }
         if (preg_match("/^(php|php3|php4|php5|php7|php8|phtml|pht|phar|cgi|shtml|asp|aspx|jsp|rb|py|pl|dll|exe|bat|cmd|com)$/i", $ext)) {
             return false;
         }
-        return in_array($ext, Options::alloc()->allowedAttachmentTypes);
+        return in_array($ext, Options::alloc()->allowedAttachmentTypes, true);
     }
 
     private static function resolveManagedUploadPath($path): ?string

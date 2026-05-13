@@ -203,6 +203,21 @@ function install_remove_config_file()
     }
 }
 
+function install_require_config(string $adapter, string $dbPrefix, array $dbConfig): void
+{
+    $code = install_config_file($adapter, $dbPrefix, $dbConfig);
+
+    if (!install_check('config')) {
+        install_raise_error(
+            _t('安装程序无法自动创建 <strong>config.inc.php</strong> 文件') . "\n" .
+            _t('您可以在网站根目录下手动创建 <strong>config.inc.php</strong> 文件, 并复制如下代码至其中'),
+            [
+                'code' => $code
+            ]
+        );
+    }
+}
+
 function install_check(string $type): bool
 {
     switch ($type) {
@@ -1030,18 +1045,6 @@ function install_step_2_perform()
         } catch (\Typecho\Db\Exception $e) {
             install_raise_error(install_exception_message($e, _t('安装程序执行数据库初始化时发生错误，请检查数据库配置与权限设置')));
         }
-
-        $code = install_config_file($config['dbAdapter'], $config['dbPrefix'], $dbConfig);
-
-        if (!install_check('config')) {
-            install_raise_error(
-                _t('安装程序无法自动创建 <strong>config.inc.php</strong> 文件') . "\n" .
-                _t('您可以在网站根目录下手动创建 <strong>config.inc.php</strong> 文件, 并复制如下代码至其中'),
-                [
-                'code' => $code
-                ]
-            );
-        }
     }
 
     if ($config['dbNext'] == 'delete') {
@@ -1106,6 +1109,9 @@ function install_step_2_perform()
             ('Pgsql' == $type && '42P07' == $code)
         ) {
             if ($config['dbNext'] == 'keep') {
+                if (!install_check('config')) {
+                    install_require_config($config['dbAdapter'], $config['dbPrefix'], $dbConfig);
+                }
                 if (install_check('db_data')) {
                     install_success(0);
                 } else {
@@ -1124,6 +1130,10 @@ function install_step_2_perform()
 
             install_raise_error(install_exception_message($e, _t('安装程序执行数据库脚本时发生错误，请检查数据库配置、字符集和权限设置')));
         }
+    }
+
+    if (!install_check('config')) {
+        install_require_config($config['dbAdapter'], $config['dbPrefix'], $dbConfig);
     }
 
     install_success(3);

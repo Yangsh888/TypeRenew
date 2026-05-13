@@ -61,11 +61,12 @@ class Edit extends Contents implements ActionInterface
             Service::alloc()->sendPing($this, $trackback);
 
             if ('post' == $this->type) {
+                $scheduleDate = (new \Typecho\Date((int) $this->created))->format('Y-m-d H:i');
                 $notice = $this->isFuturePublish()
                     ? _t(
                         '文章 "%s" 已计划于 %s 发布，当前可先<a href="%s">预览</a>',
                         $this->title,
-                        $this->date('Y-m-d H:i'),
+                        $scheduleDate,
                         $this->getAdminPreviewUrl()
                     )
                     : _t('文章 "<a href="%s">%s</a>" 已经发布', $this->permalink, $this->title);
@@ -121,59 +122,70 @@ class Edit extends Contents implements ActionInterface
 
         $posts = $this->request->filter('int')->getArray('cid');
         $markCount = 0;
+        $skippedDraftCount = 0;
 
         foreach ($posts as $post) {
-            self::pluginHandle()->call('mark', $status, $post, $this);
-
             $condition = $this->db->sql()->where('cid = ?', $post);
             $postObject = $this->db->fetchObject($this->db->select('status', 'type')
                 ->from('table.contents')->where('cid = ? AND (type = ? OR type = ?)', $post, 'post', 'post_draft'));
 
-            if ($this->isWriteable(clone $condition) && count((array) $postObject)) {
-                $changed = (bool) $this->withWriteTransaction(function () use ($condition, $status, $postObject, $post) {
-                    $this->db->query($condition->update('table.contents')->rows(['status' => $status]));
+            if (!$this->isWriteable(clone $condition) || !count((array) $postObject)) {
+                continue;
+            }
 
-                    if ($postObject->type == 'post') {
-                        $op = null;
+            if ($postObject->type !== 'post') {
+                $skippedDraftCount++;
+                continue;
+            }
 
-                        if ($status == 'publish' && $postObject->status != 'publish') {
-                            $op = '+';
-                        } elseif ($status != 'publish' && $postObject->status == 'publish') {
-                            $op = '-';
-                        }
+            self::pluginHandle()->call('mark', $status, $post, $this);
+            $changed = (bool) $this->withWriteTransaction(function () use ($condition, $status, $postObject, $post) {
+                $this->db->query($condition->update('table.contents')->rows(['status' => $status]));
 
-                        if (!empty($op)) {
-                            $metas = $this->db->fetchAll(
-                                $this->db->select()->from('table.relationships')->where('cid = ?', $post)
-                            );
-                            foreach ($metas as $meta) {
-                                $this->db->query($this->db->update('table.metas')
-                                    ->expression('count', 'count ' . $op . ' 1')
-                                    ->where('mid = ? AND (type = ? OR type = ?)', $meta['mid'], 'category', 'tag'));
-                            }
-                        }
+                if ($postObject->type == 'post') {
+                    $op = null;
+
+                    if ($status == 'publish' && $postObject->status != 'publish') {
+                        $op = '+';
+                    } elseif ($status != 'publish' && $postObject->status == 'publish') {
+                        $op = '-';
                     }
 
-                    $draft = $this->db->fetchRow($this->revisionSelect((int) $post));
-
-                    if (!empty($draft)) {
-                        $this->db->query($this->db->update('table.contents')->rows(['status' => $status])
-                            ->where('cid = ?', $draft['cid']));
+                    if (!empty($op)) {
+                        $metas = $this->db->fetchAll(
+                            $this->db->select()->from('table.relationships')->where('cid = ?', $post)
+                        );
+                        foreach ($metas as $meta) {
+                            $this->db->query($this->db->update('table.metas')
+                                ->expression('count', 'count ' . $op . ' 1')
+                                ->where('mid = ? AND (type = ? OR type = ?)', $meta['mid'], 'category', 'tag'));
+                        }
                     }
-
-                    return true;
-                });
-
-                if ($changed) {
-                    self::pluginHandle()->call('finishMark', $status, $post, $this);
-                    $markCount++;
                 }
+
+                $draft = $this->db->fetchRow($this->revisionSelect((int) $post));
+
+                if (!empty($draft)) {
+                    $this->db->query($this->db->update('table.contents')->rows(['status' => $status])
+                        ->where('cid = ?', $draft['cid']));
+                }
+
+                return true;
+            });
+
+            if ($changed) {
+                self::pluginHandle()->call('finishMark', $status, $post, $this);
+                $markCount++;
             }
         }
 
         Notice::alloc()
             ->set(
-                $markCount > 0 ? _t('文章已经被标记为<strong>%s</strong>', $statusList[$status]) : _t('没有文章被标记'),
+                $markCount > 0
+                    ? ($skippedDraftCount > 0
+                        ? _t('文章已经被标记为<strong>%s</strong>，草稿已跳过', $statusList[$status])
+                        : _t('文章已经被标记为<strong>%s</strong>', $statusList[$status]))
+                    : ($skippedDraftCount > 0 ? _t('草稿不支持批量标记') : _t('没有文章被标记')),
                 $markCount > 0 ? 'success' : 'notice'
             );
 
@@ -186,13 +198,12 @@ class Edit extends Contents implements ActionInterface
         $deleteCount = 0;
 
         foreach ($posts as $post) {
-            self::pluginHandle()->call('delete', $post, $this);
-
             $condition = $this->db->sql()->where('cid = ?', $post);
             $postObject = $this->db->fetchObject($this->db->select('status', 'type')
                 ->from('table.contents')->where('cid = ? AND (type = ? OR type = ?)', $post, 'post', 'post_draft'));
 
             if ($this->isWriteable(clone $condition) && count((array) $postObject)) {
+                self::pluginHandle()->call('delete', $post, $this);
                 $deleted = (bool) $this->withWriteTransaction(function () use ($condition, $postObject, $post) {
                     if (!$this->delete($condition)) {
                         return false;
@@ -259,12 +270,26 @@ class Edit extends Contents implements ActionInterface
                 ->from('table.contents')->where('cid = ?', $post)->limit(1));
 
             if ($draft) {
-                $this->deleteContent($draft['cid']);
-                $this->deleteFields($draft['cid']);
-                $deleteCount++;
+                $deleted = (bool) $this->withWriteTransaction(function () use ($draft) {
+                    $this->unAttach((int) $draft['cid']);
+                    $this->deleteContent((int) $draft['cid']);
+                    $this->deleteFields((int) $draft['cid']);
+
+                    return true;
+                });
             } elseif ($postObject && $postObject->type === 'post_draft' && (int) $postObject->parent === 0) {
-                $this->deleteContent($post);
-                $this->deleteFields($post);
+                $deleted = (bool) $this->withWriteTransaction(function () use ($post) {
+                    $this->unAttach($post);
+                    $this->deleteContent($post);
+                    $this->deleteFields($post);
+
+                    return true;
+                });
+            } else {
+                $deleted = false;
+            }
+
+            if ($deleted) {
                 $deleteCount++;
             }
         }

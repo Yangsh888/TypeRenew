@@ -4725,25 +4725,6 @@ body.tr-admin.tr-page-options-permalink .tr-rewrite-code[readonly] {
     line-height: 1.75;
 }
 
-body.tr-admin.tr-page-options-permalink ul.typecho-option.tr-rewrite-primary .typecho-label {
-    color: rgba(15, 23, 42, 0.92);
-}
-
-body.tr-admin.tr-page-options-permalink ul.typecho-option.tr-rewrite-secondary .typecho-label,
-body.tr-admin.tr-page-options-permalink ul.typecho-option.tr-rewrite-secondary .description {
-    color: rgba(15, 23, 42, 0.5);
-}
-
-body.tr-admin.tr-page-options-permalink ul.typecho-option.tr-rewrite-secondary .tr-rewrite-code[readonly] {
-    background: rgba(15, 23, 42, 0.92);
-    color: rgba(203, 213, 225, 0.72);
-    border-color: rgba(15, 23, 42, 0.06);
-}
-
-body.tr-admin.tr-page-options-permalink .multiline.tr-is-disabled {
-    opacity: 0.56;
-}
-
 @media (max-width: 620px) {
     body.tr-admin.tr-page-options-permalink .tr-rewrite-status-meta {
         display: block;
@@ -4755,10 +4736,6 @@ body.tr-admin.tr-page-options-permalink .multiline.tr-is-disabled {
         margin-top: 10px;
         white-space: normal;
     }
-}
-
-html.tr-theme-dark body.tr-admin.tr-page-options-permalink ul.typecho-option.tr-rewrite-secondary .description {
-    color: rgba(148, 163, 184, 0.78);
 }
 
 html.tr-theme-dark body.tr-admin.tr-page-options-permalink .tr-rewrite-status-key {
@@ -4789,10 +4766,6 @@ html.tr-theme-dark body.tr-admin.tr-page-options-permalink .tr-rewrite-code[read
     border-color: rgba(148, 163, 184, 0.16);
     background: rgba(2, 6, 23, 0.92);
     color: rgba(226, 232, 240, 0.94);
-}
-
-html.tr-theme-dark body.tr-admin.tr-page-options-permalink ul.typecho-option.tr-rewrite-secondary .typecho-label {
-    color: rgba(203, 213, 225, 0.72);
 }
 
 body.tr-admin .typecho-post-option ul {
@@ -5889,6 +5862,12 @@ body.tr-admin.tr-page-plugins .tr-plugin-version-badge.is-latest {
     border-color: rgba(16, 185, 129, 0.22);
 }
 
+body.tr-admin.tr-page-plugins .tr-plugin-version-badge.is-ahead {
+    color: #1d4ed8;
+    background: rgba(59, 130, 246, 0.14);
+    border-color: rgba(59, 130, 246, 0.24);
+}
+
 body.tr-admin.tr-page-plugins .tr-plugin-version-badge.is-update {
     color: #b45309;
     background: rgba(245, 158, 11, 0.16);
@@ -6037,6 +6016,12 @@ html.tr-theme-dark body.tr-admin.tr-page-plugins .tr-plugin-version-badge.is-lat
     color: #6ee7b7;
     background: rgba(16, 185, 129, 0.18);
     border-color: rgba(52, 211, 153, 0.26);
+}
+
+html.tr-theme-dark body.tr-admin.tr-page-plugins .tr-plugin-version-badge.is-ahead {
+    color: #93c5fd;
+    background: rgba(59, 130, 246, 0.18);
+    border-color: rgba(96, 165, 250, 0.28);
 }
 
 html.tr-theme-dark body.tr-admin.tr-page-plugins .tr-plugin-version-badge.is-update {
@@ -6634,8 +6619,6 @@ html.tr-theme-dark body.tr-admin .typecho-page-main > .typecho-list > .typecho-l
     color: var(--tr-text) !important;
 }
 
-html.tr-theme-dark body.tr-admin.tr-page-write #edit-secondary .typecho-post-option,
-html.tr-theme-dark body.tr-admin.tr-page-write #edit-secondary .category-option,
 html.tr-theme-dark body.tr-admin.tr-page-write #edit-secondary .category-option ul,
 html.tr-theme-dark body.tr-admin.tr-page-write #edit-secondary .category-option li {
     background: var(--tr-post-option-bg) !important;

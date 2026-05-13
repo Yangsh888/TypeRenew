@@ -44,9 +44,10 @@ $vditorForceMarkdown = (bool) \Typecho\Plugin::factory($editorHook)->filter('for
         </p>
         <?php if ($content->have() && method_exists($content, 'isFuturePublish') && $content->isFuturePublish()): ?>
             <?php $previewCid = !empty($content->draft['cid']) ? (int) $content->draft['cid'] : (int) $content->cid; ?>
+            <?php $scheduleDate = (new \Typecho\Date((int) $content->created))->format('Y-m-d H:i'); ?>
             <cite class="edit-draft-notice is-schedule">
                 <span class="edit-draft-notice-tag"><?php _e('定时发布'); ?></span>
-                <span class="edit-draft-notice-text"><?php _e('当前内容将于 %s 定时发布，前台链接届时才可访问。', $content->date('Y-m-d H:i')); ?></span>
+                <span class="edit-draft-notice-text"><?php _e('当前内容将于 %s 定时发布，前台链接届时才可访问。', $scheduleDate); ?></span>
                 <?php if ($previewCid > 0): ?>
                     <a href="<?php $options->adminUrl('preview.php?cid=' . $previewCid); ?>" target="_blank" rel="noopener noreferrer"><?php _e('立即预览'); ?></a>
                 <?php endif; ?>

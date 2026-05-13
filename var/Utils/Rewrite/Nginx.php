@@ -11,18 +11,26 @@ class Nginx
     public static function render(string $basePath): string
     {
         $basePath = Manager::normalizeBasePath($basePath);
-        $location = $basePath;
-        $target = $basePath === '/' ? '/index.php$is_args$args' : rtrim($basePath, '/') . '/index.php$is_args$args';
-        $rules = ['# TypeRenew rewrite rules'];
+        $rules = [Manager::RULES_HEADER];
 
-        if ($basePath !== '/') {
-            $rules[] = 'location = ' . rtrim($location, '/') . ' {';
-            $rules[] = '    try_files $uri $uri/ ' . $target . ';';
+        if ($basePath === '/') {
+            $rules[] = 'location / {';
+            $rules[] = '    if (!-e $request_filename) {';
+            $rules[] = '        rewrite ^(.*)$ /index.php$1 last;';
+            $rules[] = '    }';
             $rules[] = '}';
+            return implode("\n", $rules);
         }
 
-        $rules[] = 'location ^~ ' . $location . ' {';
-        $rules[] = '    try_files $uri $uri/ ' . $target . ';';
+        $prefix = rtrim($basePath, '/');
+        $pattern = preg_quote($prefix, '/');
+        $rules[] = 'location = ' . $prefix . ' {';
+        $rules[] = '    return 301 ' . $prefix . '/;';
+        $rules[] = '}';
+        $rules[] = 'location ' . $basePath . ' {';
+        $rules[] = '    if (!-e $request_filename) {';
+        $rules[] = '        rewrite ^' . $pattern . '(.*)$ ' . $prefix . '/index.php$1 last;';
+        $rules[] = '    }';
         $rules[] = '}';
 
         return implode("\n", $rules);

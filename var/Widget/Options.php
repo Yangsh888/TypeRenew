@@ -136,8 +136,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
  * @property string $secret
  * @property bool $installed
  * @property bool $rewrite
- * @property string $rewriteServer
- * @property string $rewriteMode
  * @property string $rewriteStatus
  * @property int $rewriteVerifiedAt
  * @property string $rewriteMessage
@@ -377,8 +375,26 @@ class Options extends Base
     protected function ___routingTable(): array
     {
         $routingTable = $this->decodeArrayOption('routingTable', $this->row['routingTable'] ?? null, \Utils\Defaults::routingTable(), true);
+        $defaults = \Utils\Defaults::routingTable();
+        $repaired = false;
 
-        if (isset($this->db) && !isset($routingTable[0])) {
+        foreach ($defaults as $key => $route) {
+            if (!isset($routingTable[$key]) || !is_array($routingTable[$key])) {
+                $routingTable[$key] = $route;
+                $repaired = true;
+                continue;
+            }
+
+            if (
+                $key === 'rewrite_probe'
+                && (string) ($routingTable[$key]['url'] ?? '') !== (string) ($route['url'] ?? '')
+            ) {
+                $routingTable[$key] = $route;
+                $repaired = true;
+            }
+        }
+
+        if (isset($this->db) && ($repaired || !isset($routingTable[0]))) {
             $parser = new Parser($routingTable);
             $parsedRoutingTable = $parser->parse();
             $routingTable = array_merge([$parsedRoutingTable], $routingTable);
@@ -721,13 +737,19 @@ class Options extends Base
             $attachmentTypes = str_replace(
                 ['@image@', '@media@', '@doc@'],
                 [
-                    'gif,jpg,jpeg,png,tiff,bmp,webp', 'mp3,mp4,mov,wmv,wma,rmvb,rm,avi,flv,ogg,oga,ogv',
+                    'gif,jpg,jpeg,png,tiff,bmp,webp,avif', 'mp3,mp4,mov,wmv,wma,rmvb,rm,avi,flv,ogg,oga,ogv',
                     'txt,doc,docx,xls,xlsx,ppt,pptx,zip,rar,pdf'
                 ],
                 $this->attachmentTypes
             );
 
-            $attachmentTypesResult = array_unique(array_map('trim', preg_split("/([,.])/", $attachmentTypes)));
+            $parts = preg_split('/[\s,]+/', strtolower((string) $attachmentTypes)) ?: [];
+            $attachmentTypesResult = array_values(array_unique(array_filter(array_map(
+                static function (string $type): string {
+                    return trim($type, " .\t\n\r\0\x0B");
+                },
+                $parts
+            ))));
         }
 
         return $attachmentTypesResult;

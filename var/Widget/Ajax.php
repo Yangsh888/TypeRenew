@@ -29,6 +29,26 @@ class Ajax extends BaseOptions implements ActionInterface
 
     private const OFFICIAL_PLUGIN_VERSION_TIMEOUT = 4;
 
+    private function ensureRewriteProbeEnabled(): void
+    {
+        if (!Manager::enabled($this->options)) {
+            $this->response->setStatus(409)->throwJson([
+                'ok' => false,
+                'message' => Manager::disabledMessage(),
+            ]);
+        }
+    }
+
+    private function ensureRewriteProbeToken(string $token): void
+    {
+        if (!Manager::verify($this->options, $token)) {
+            $this->response->setStatus(403)->throwJson([
+                'ok' => false,
+                'message' => Manager::expiredProbeMessage(),
+            ]);
+        }
+    }
+
     private function decodeFeedText(string $text): string
     {
         $text = html_entity_decode($text, ENT_QUOTES | ENT_XML1, 'UTF-8');
@@ -427,11 +447,21 @@ class Ajax extends BaseOptions implements ActionInterface
                 continue;
             }
 
+            if (version_compare($localVersion, $remoteVersion, '>')) {
+                $statuses[$pluginName] = [
+                    'status'  => 'ahead',
+                    'local'   => $localVersion,
+                    'remote'  => $remoteVersion,
+                    'message' => _t('当前版本 %s 高于官方仓库标注的最新版本 %s，请确认本地安装的是预发布版或已定制版本。', $localVersion, $remoteVersion),
+                ];
+                continue;
+            }
+
             $statuses[$pluginName] = [
                 'status'  => 'latest',
                 'local'   => $localVersion,
                 'remote'  => $remoteVersion,
-                'message' => _t('当前版本 %s，不低于官方仓库标注的最新版本 %s。', $localVersion, $remoteVersion),
+                'message' => _t('当前版本 %s 与官方仓库标注的最新版本 %s 一致。', $localVersion, $remoteVersion),
             ];
         }
 
@@ -439,7 +469,7 @@ class Ajax extends BaseOptions implements ActionInterface
             'ok'        => (bool) $source['ok'],
             'checkedAt' => (int) $source['checkedAt'],
             'cached'    => (bool) $source['cached'],
-            'ttl'       => self::OFFICIAL_PLUGIN_VERSION_CACHE_TTL,
+            'ttl'       => (int) ($source['ttl'] ?? self::OFFICIAL_PLUGIN_VERSION_CACHE_TTL),
             'source'    => self::OFFICIAL_PLUGIN_VERSION_SOURCE,
             'message'   => (string) $source['message'],
             'statuses'  => $statuses,
@@ -461,39 +491,39 @@ class Ajax extends BaseOptions implements ActionInterface
     {
         $this->user->pass('administrator');
 
-        if (!Manager::enabled($this->options)) {
-            $this->response->setStatus(409)->throwJson([
-                'ok' => false,
-                'message' => _t('当前未启用地址重写。'),
-            ]);
-            return;
-        }
+        $this->ensureRewriteProbeEnabled();
+        $this->ensureRewriteProbeToken((string) $this->request->get('token', ''));
 
-        if (!Manager::verify($this->options, (string) $this->request->get('token', ''))) {
-            $this->response->setStatus(403)->throwJson([
-                'ok' => false,
-                'message' => _t('验证请求已失效，请刷新页面后重试。'),
-            ]);
-            return;
-        }
-
-        $status = Manager::status($this->options);
-        $timestamp = (string) $this->options->time;
-        $message = _t('已验证当前地址重写配置可以正常工作。');
+        $timestamp = (string) time();
+        $message = Manager::verifiedMessage();
 
         $this->persistOptions(Manager::normalizeStoredState([
-            'rewriteServer' => $status['server'],
-            'rewriteMode' => $status['mode'],
             'rewriteStatus' => 'verified',
             'rewriteVerifiedAt' => $timestamp,
             'rewriteMessage' => $message,
         ], true));
+        Manager::cleanupLegacyOptions($this->db);
 
         $this->response->throwJson([
             'ok' => true,
             'status' => 'verified',
             'message' => $message,
             'verifiedAt' => (int) $timestamp,
+        ]);
+    }
+
+    public function rewritePublicProbe()
+    {
+        if (!$this->request->isGet()) {
+            $this->response->setStatus(405)->throwContent(_t('Method Not Allowed'), 'text/plain');
+            return;
+        }
+
+        $this->ensureRewriteProbeEnabled();
+
+        $this->response->throwJson([
+            'ok' => true,
+            'message' => _t('校验请求已通过。'),
         ]);
     }
 

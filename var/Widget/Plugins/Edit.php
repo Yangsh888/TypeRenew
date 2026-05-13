@@ -314,7 +314,7 @@ class Edit extends Options implements ActionInterface
             require_once $pluginFileName;
 
             if (
-                !array_key_exists($pluginName, $activatedPlugins) || !class_exists($className)
+                !class_exists($className)
                 || !method_exists($className, 'deactivate')
             ) {
                 throw new Exception(_t('无法禁用插件'), 500);

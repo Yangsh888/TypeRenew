@@ -105,15 +105,6 @@ class Plugin
 
     public static function parseInfo(string $pluginFile): array
     {
-        $tokens = token_get_all(file_get_contents($pluginFile));
-        $isDoc = false;
-        $isFunction = false;
-        $isClass = false;
-        $isInClass = false;
-        $isInFunction = false;
-        $isDefined = false;
-        $current = null;
-
         $info = [
             'description' => '',
             'title' => '',
@@ -127,6 +118,24 @@ class Plugin
             'personalConfig' => false
         ];
 
+        if (!is_file($pluginFile) || !is_readable($pluginFile)) {
+            return $info;
+        }
+
+        $source = file_get_contents($pluginFile);
+        if (!is_string($source) || $source === '') {
+            return $info;
+        }
+
+        $tokens = token_get_all($source);
+        $isDoc = false;
+        $isFunction = false;
+        $isClass = false;
+        $isInClass = false;
+        $isInFunction = false;
+        $isDefined = false;
+        $current = null;
+
         $map = [
             'package' => 'title',
             'author' => 'author',
@@ -139,7 +148,7 @@ class Plugin
             if (!$isDoc && is_array($token) && T_DOC_COMMENT == $token[0]) {
 
                 $described = false;
-                $lines = preg_split("([\r\n])", $token[1]);
+                $lines = preg_split('/\R/u', $token[1]) ?: [$token[1]];
                 foreach ($lines as $line) {
                     $line = trim($line);
                     if (!empty($line) && '*' == $line[0]) {

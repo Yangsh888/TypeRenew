@@ -104,6 +104,7 @@ class Defaults
             'archive_day_page' => ['url' => '/[year:digital:4]/[month:digital:2]/[day:digital:2]/page/[page:digital]/', 'widget' => '\Widget\Archive', 'action' => 'render'],
             'comment_page' => ['url' => '[permalink:string]/comment-page-[commentPage:digital]', 'widget' => '\Widget\CommentPage', 'action' => 'action'],
             'feed' => ['url' => '/feed[feed:string:0]', 'widget' => '\Widget\Feed', 'action' => 'render'],
+            'rewrite_probe' => ['url' => '/__tr/rewrite-probe/', 'widget' => '\Widget\Ajax', 'action' => 'rewritePublicProbe'],
             'page' => ['url' => '/[slug].html', 'widget' => '\Widget\Archive', 'action' => 'render'],
             'feedback' => ['url' => '[permalink:string]/[type:alpha]', 'widget' => '\Widget\Feedback', 'action' => 'action'],
         ];
@@ -212,7 +213,10 @@ class Defaults
             'cacheRedisPassword' => '',
             'cacheRedisDatabase' => 0,
             'allowXmlRpc' => 0,
-        ] + Manager::metadata(false, 'nginx', 'manual');
+            'rewriteStatus' => 'disabled',
+            'rewriteVerifiedAt' => '0',
+            'rewriteMessage' => '',
+        ];
     }
 
     private static function routingOptions(): array

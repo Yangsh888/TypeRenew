@@ -237,6 +237,7 @@ include 'common-js.php';
         ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE); ?>;
         var symbols = {
             latest: '√',
+            ahead: '^',
             update: '!',
             failed: '×',
             unofficial: '?',

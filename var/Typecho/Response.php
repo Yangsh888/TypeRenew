@@ -41,6 +41,9 @@ class Response
         415 => 'Unsupported Media Type',
         416 => 'Requested Range Not Satisfiable',
         417 => 'Expectation Failed',
+        422 => 'Unprocessable Content',
+        429 => 'Too Many Requests',
+        451 => 'Unavailable For Legal Reasons',
         500 => 'Internal Server Error',
         501 => 'Not Implemented',
         502 => 'Bad Gateway',
@@ -129,7 +132,8 @@ class Response
             $sentHeaders[] = strtolower(trim($key));
         }
 
-        header('HTTP/1.1 ' . $this->status . ' ' . self::HTTP_CODE[$this->status], true, $this->status);
+        $reason = self::HTTP_CODE[$this->status] ?? 'Unknown Status';
+        header('HTTP/1.1 ' . $this->status . ' ' . $reason, true, $this->status);
 
         foreach ($this->headers as $name => $value) {
             if (!in_array(strtolower($name), $sentHeaders)) {
@@ -238,7 +242,7 @@ class Response
     public function setStatus(int $code): Response
     {
         if (!$this->sandbox) {
-            $this->status = $code;
+            $this->status = ($code >= 100 && $code <= 599) ? $code : 500;
         }
 
         return $this;
