@@ -260,6 +260,10 @@ class Request
 
     private function applyFilterValue($value, callable $filter)
     {
+        if ($value === null) {
+            return null;
+        }
+
         if (is_array($value)) {
             foreach ($value as $key => $item) {
                 $value[$key] = $this->applyFilterValue($item, $filter);
@@ -268,7 +272,7 @@ class Request
             return $value;
         }
 
-        return $filter(is_scalar($value) || $value === null ? (string) $value : '');
+        return $filter(is_scalar($value) ? (string) $value : '');
     }
 
     /**

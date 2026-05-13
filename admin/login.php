@@ -19,6 +19,7 @@ include 'auth.php';
     'description' => _t('请登录以继续')
 ]); ?>
 <form action="<?php $options->loginAction(); ?>" method="post" name="login" role="form" class="tr-auth-form">
+    <input type="hidden" name="_" value="<?php echo htmlspecialchars($security->getToken($request->getRequestUrl()), ENT_QUOTES, 'UTF-8'); ?>" />
     <div class="tr-auth-field">
         <label for="name"><?php _e('用户名或邮箱'); ?></label>
         <input type="text" id="name" name="name" value="<?php echo htmlspecialchars($rememberName, ENT_QUOTES, 'UTF-8'); ?>" placeholder="<?php _e('请输入用户名或邮箱'); ?>" required autofocus />

@@ -25,24 +25,30 @@ class Router
      */
     public static function match(string $pathInfo, $parameter = null, bool $once = true)
     {
-        if ($once && self::$matched) {
+        $previousMatched = self::$matched;
+
+        if ($once && $previousMatched) {
             throw new RouterException("Path '{$pathInfo}' not found", 404);
         }
 
         self::$matched = true;
 
-        foreach (self::route($pathInfo) as $result) {
-            [$route, $params] = $result;
-            try {
-                return Widget::widget($route['widget'], $parameter, $params);
-            } catch (\Throwable $e) {
-                if (404 == $e->getCode()) {
-                    Widget::destroy($route['widget']);
-                    continue;
-                }
+        try {
+            foreach (self::route($pathInfo) as $result) {
+                [$route, $params] = $result;
+                try {
+                    return Widget::widget($route['widget'], $parameter, $params);
+                } catch (\Throwable $e) {
+                    if (404 == $e->getCode()) {
+                        Widget::destroy($route['widget']);
+                        continue;
+                    }
 
-                throw $e;
+                    throw $e;
+                }
             }
+        } finally {
+            self::$matched = $previousMatched;
         }
 
         return false;

@@ -99,7 +99,7 @@ class Plugin
     private static function pluginHandlesDiff(array $pluginHandles, array $otherPluginHandles): array
     {
         foreach ($otherPluginHandles as $handle) {
-            while (false !== ($index = array_search($handle, $pluginHandles))) {
+            while (false !== ($index = array_search($handle, $pluginHandles, true))) {
                 unset($pluginHandles[$index]);
             }
         }

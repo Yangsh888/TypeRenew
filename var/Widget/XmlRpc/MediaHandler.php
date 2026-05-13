@@ -25,11 +25,12 @@ class MediaHandler extends AbstractHandler
 
         $pageSize = 10;
         if (!empty($struct['number'])) {
-            $pageSize = abs(intval($struct['number']));
+            $pageSize = max(1, abs(intval($struct['number'])));
         }
 
         if (!empty($struct['offset'])) {
-            $input['page'] = abs(intval($struct['offset'])) + 1;
+            $offset = abs(intval($struct['offset']));
+            $input['page'] = intdiv($offset, $pageSize) + 1;
         }
 
         $attachments = AttachmentAdmin::alloc('pageSize=' . $pageSize, $input, false);

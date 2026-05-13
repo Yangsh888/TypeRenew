@@ -126,6 +126,10 @@ class Response
             return;
         }
 
+        if (headers_sent()) {
+            return;
+        }
+
         $sentHeaders = [];
         foreach (headers_list() as $header) {
             [$key] = explode(':', $header, 2);

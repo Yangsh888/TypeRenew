@@ -75,17 +75,7 @@ class Edit extends Comments implements ActionInterface
                 return false;
             }
 
-            $this->db->query($this->db->update('table.comments')
-                ->rows(['status' => $status])->where('coid = ?', $coid));
-
-            if ('approved' == $comment['status'] && 'approved' != $status) {
-                $this->db->query($this->db->update('table.contents')
-                    ->expression('commentsNum', 'commentsNum - 1')
-                    ->where('cid = ? AND commentsNum > 0', $comment['cid']));
-            } elseif ('approved' != $comment['status'] && 'approved' == $status) {
-                $this->db->query($this->db->update('table.contents')
-                    ->expression('commentsNum', 'commentsNum + 1')->where('cid = ?', $comment['cid']));
-            }
+            $this->update(['status' => $status], $this->db->sql()->where('coid = ?', $coid));
 
             if ('approved' != $comment['status'] && 'approved' == $status) {
                 \Typecho\Mail\Queue::enqueueComment($this, 'approved', $this->options);
@@ -166,12 +156,7 @@ class Edit extends Comments implements ActionInterface
             if ($comment && $this->commentIsWriteable()) {
                 self::pluginHandle()->call('delete', $comment, $this);
 
-                $this->db->query($this->db->delete('table.comments')->where('coid = ?', $coid));
-
-                if ('approved' == $comment['status']) {
-                    $this->db->query($this->db->update('table.contents')
-                        ->expression('commentsNum', 'commentsNum - 1')->where('cid = ?', $comment['cid']));
-                }
+                $this->delete($this->db->sql()->where('coid = ?', $coid));
 
                 self::pluginHandle()->call('finishDelete', $comment, $this);
 
@@ -270,11 +255,18 @@ class Edit extends Comments implements ActionInterface
             $comment['mail'] = $this->request->filter('strip_tags', 'trim', 'xss')->get('mail');
             $comment['url'] = $this->request->filter('url')->get('url');
 
+            if ($this->request->is('status')) {
+                $status = (string) $this->request->get('status');
+                if (in_array($status, ['approved', 'waiting', 'spam'], true)) {
+                    $comment['status'] = $status;
+                }
+            }
+
             if ($this->request->is('created')) {
                 $comment['created'] = $this->request->filter('int')->get('created');
             }
 
-            $comment = self::pluginHandle()->filter('edit', $comment, $this);
+            $comment = self::pluginHandle()->filter('edit', $comment, $commentSelect, $this);
 
             $this->update($comment, $this->db->sql()->where('coid = ?', $coid));
 

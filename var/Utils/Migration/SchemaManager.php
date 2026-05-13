@@ -438,7 +438,7 @@ class SchemaManager
         try {
             $db->fetchRow($db->select('1')->from($tableAlias)->limit(1));
             return true;
-        } catch (\Typecho\Db\Adapter\SQLException $e) {
+        } catch (\Throwable $e) {
             return false;
         }
     }

@@ -124,7 +124,7 @@ class Comments extends Base implements QueryInterface, RowFilterInterface, Prima
         return $deleteRows;
     }
 
-    private function refreshCommentsNum(int $cid): void
+    protected function refreshCommentsNum(int $cid): void
     {
         $cid = max(0, $cid);
         $prefix = $this->db->getPrefix();

@@ -1148,6 +1148,15 @@ function install_step_2_perform()
                 if (!install_check('config')) {
                     install_require_config($config['dbAdapter'], $config['dbPrefix'], $dbConfig);
                 }
+
+                try {
+                    \Utils\Migration\SchemaManager::syncCurrentRelease($installDb);
+                } catch (\Throwable $e) {
+                    install_raise_error(
+                        install_exception_message($e, _t('安装程序同步当前版本数据库结构时发生错误，请检查旧库结构与权限设置'))
+                    );
+                }
+
                 if (install_check('db_data')) {
                     install_success(0);
                 } else {

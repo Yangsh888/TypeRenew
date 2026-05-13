@@ -68,7 +68,9 @@ class Cookie
      */
     public static function setOptions(array $options)
     {
-        self::$domain = $options['domain'] ?: self::$domain;
+        if (array_key_exists('domain', $options) && $options['domain'] !== '') {
+            self::$domain = (string) $options['domain'];
+        }
         if (array_key_exists('secure', $options)) {
             self::$secure = (bool) $options['secure'];
         }
@@ -93,7 +95,11 @@ class Cookie
     {
         $key = self::$prefix . $key;
         $value = $_COOKIE[$key] ?? $default;
-        return is_array($value) ? $default : $value;
+        if (is_array($value)) {
+            return $default;
+        }
+
+        return is_string($value) ? rawurldecode($value) : $value;
     }
 
     /**

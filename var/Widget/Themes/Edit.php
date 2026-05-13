@@ -204,7 +204,7 @@ class Edit extends Options implements ActionInterface
      * @param string $theme 外观名
      * @throws \Typecho\Db\Exception
      */
-    public function config(string $theme)
+    public function config(string $theme = '')
     {
         $theme = (string) $this->options->theme;
         $form = Config::alloc()->config();
@@ -257,7 +257,7 @@ class Edit extends Options implements ActionInterface
         $this->on($this->request->is('change'))->changeTheme($this->request->filter('slug')->get('change'));
         $this->on($this->request->is('edit&theme'))
             ->editThemeFile($this->request->filter('slug')->get('theme'), (string) $this->request->get('edit', ''));
-        $this->on($this->request->is('config'))->config($this->request->filter('slug')->get('config'));
+        $this->on($this->request->is('config'))->config();
         $this->response->redirect($this->options->adminUrl);
     }
 }
