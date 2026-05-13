@@ -78,20 +78,15 @@ class Message
         }
 
         $count = 0;
-        while (true) {
+        while (false !== ($pos = strpos($this->message, '<!DOCTYPE'))) {
             if ($count >= 10) {
                 $this->parseError = 'parse error. invalid doctype';
                 return false;
             }
 
-            $pos = strpos($this->message, '<!DOCTYPE');
-            if ($pos !== false) {
-                $this->message = substr($this->message, 0, $pos)
-                    . substr($this->message, strpos($this->message, '>', $pos) + 1);
-                $count ++;
-            } else {
-                break;
-            }
+            $this->message = substr($this->message, 0, $pos)
+                . substr($this->message, strpos($this->message, '>', $pos) + 1);
+            $count++;
         }
 
         if (!function_exists('xml_parser_create')) {

@@ -181,15 +181,13 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
         }
 
         $count = 1;
-        while (true) {
-            $row = $this->db->fetchObject($this->db->select(['COUNT(cid)' => 'num'])
-                ->from('table.contents')->where('slug = ? AND cid <> ?', $result, $cid));
-            if ((int) ($row->num ?? 0) <= 0) {
-                break;
-            }
-
+        $row = $this->db->fetchObject($this->db->select(['COUNT(cid)' => 'num'])
+            ->from('table.contents')->where('slug = ? AND cid <> ?', $result, $cid));
+        while ((int) ($row->num ?? 0) > 0) {
             $result = $slug . '-' . $count;
             $count++;
+            $row = $this->db->fetchObject($this->db->select(['COUNT(cid)' => 'num'])
+                ->from('table.contents')->where('slug = ? AND cid <> ?', $result, $cid));
         }
 
         $this->db->query($this->db->update('table.contents')->rows(['slug' => $result])
