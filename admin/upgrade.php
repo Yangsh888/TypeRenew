@@ -15,10 +15,12 @@ $showDbDiagnostics = (int) $request->get('dbdiag', 0) === 1;
 $schemaStatus = ['healthy' => true, 'items' => [], 'missing' => []];
 $needSchemaRepair = false;
 $mysqlRiskStatus = ['supported' => false, 'healthy' => true, 'items' => []];
+if ($needDbUpgrade || $showDbDiagnostics) {
+    $mysqlRiskStatus = \Utils\Migration\SchemaManager::inspectMysqlUpgradeRisks(\Typecho\Db::get());
+}
 if ($showDbDiagnostics) {
     $schemaStatus = \Utils\Migration\SchemaManager::inspectCriticalSchema(\Typecho\Db::get());
     $needSchemaRepair = !$schemaStatus['healthy'];
-    $mysqlRiskStatus = \Utils\Migration\SchemaManager::inspectMysqlUpgradeRisks(\Typecho\Db::get());
 }
 $upgradeReport = \Typecho\Upgrade\Runner::inspect();
 $state = $upgradeReport['state'];
@@ -63,7 +65,7 @@ $mysqlBlockingItems = array_values(array_filter(
 ));
 $mysqlRiskCount = count($mysqlRiskItems);
 $mysqlBlockingCount = count($mysqlBlockingItems);
-$dbActionBlocked = $showDbDiagnostics && $mysqlBlockingCount > 0;
+$dbActionBlocked = $mysqlBlockingCount > 0;
 $dbDiagnosticsUrl = $options->adminUrl('upgrade.php?dbdiag=1', true);
 $dbOverviewUrl = $options->adminUrl('upgrade.php', true);
 ?>

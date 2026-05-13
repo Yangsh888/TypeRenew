@@ -136,7 +136,25 @@ class Profile extends Users implements ActionInterface
         $group = call_user_func([$className, 'personalConfig'], $form);
         $group = $group ?: 'subscriber';
 
-        $options = $this->options->personalPlugin($pluginName);
+        $options = [];
+        try {
+            $options = $this->options->personalPlugin($pluginName)->toArray();
+        } catch (\Typecho\Plugin\Exception) {
+        }
+
+        $userOption = $this->db->fetchRow(
+            $this->db->select('value')
+                ->from('table.options')
+                ->where('name = ? AND user = ?', '_plugin:' . $pluginName, (int) $this->user->uid)
+                ->limit(1)
+        );
+        if (is_array($userOption) && array_key_exists('value', $userOption)) {
+            $userSettings = is_string($userOption['value']) ? json_decode($userOption['value'], true) : null;
+            $options = array_merge(
+                $options,
+                is_array($userSettings) ? $userSettings : []
+            );
+        }
 
         foreach ($options as $key => $val) {
             $input = $form->getInput($key);

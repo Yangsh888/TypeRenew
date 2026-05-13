@@ -110,7 +110,11 @@ class Edit extends Options implements ActionInterface
                 $this->rollbackActivateStep(
                     _t('删除个人配置'),
                     function () use ($pluginName): void {
-                        $this->db->query($this->db->delete('table.options')->where('name = ?', '_plugin:' . $pluginName));
+                        $this->db->query(
+                            $this->db->delete('table.options')
+                                ->where('name = ?', '_plugin:' . $pluginName)
+                                ->where('user = ?', 0)
+                        );
                     },
                     $rollbackErrors
                 );
@@ -128,6 +132,8 @@ class Edit extends Options implements ActionInterface
                         $rollbackErrors
                     );
                 }
+
+                Plugin::rollbackTemporaryHandles();
 
                 $message = $e->getMessage();
                 if ($rollbackErrors !== []) {
@@ -187,20 +193,27 @@ class Edit extends Options implements ActionInterface
      * @param string $pluginName 插件名称
      * @param array $settings 变量键值对
      * @param bool $isPersonal 是否为私人变量
+     * @param int $userId 目标用户
      * @throws Db\Exception
      */
-    public static function configPlugin(string $pluginName, array $settings, bool $isPersonal = false)
+    public static function configPlugin(string $pluginName, array $settings, bool $isPersonal = false, int $userId = 0)
     {
         $db = Db::get();
         $pluginName = ($isPersonal ? '_' : '') . 'plugin:' . $pluginName;
+        $targetUser = $isPersonal ? max(0, $userId) : 0;
 
         $select = $db->select()->from('table.options')
-            ->where('name = ?', $pluginName);
+            ->where('name = ?', $pluginName)
+            ->where('user = ?', $targetUser);
 
         $options = $db->fetchAll($select);
 
         if (empty($settings)) {
-            $db->query($db->delete('table.options')->where('name = ?', $pluginName));
+            $db->query(
+                $db->delete('table.options')
+                    ->where('name = ?', $pluginName)
+                    ->where('user = ?', $targetUser)
+            );
         } else {
             $encodedSettings = Common::jsonEncode($settings, 0, '{}');
             if (empty($options)) {
@@ -209,7 +222,7 @@ class Edit extends Options implements ActionInterface
                         ->rows([
                             'name'  => $pluginName,
                             'value' => $encodedSettings,
-                            'user'  => 0
+                            'user'  => $targetUser
                         ]));
                 } catch (SQLException $e) {
                     if (!self::isDuplicateOptionInsert($e)) {
@@ -219,7 +232,7 @@ class Edit extends Options implements ActionInterface
                     $db->query($db->update('table.options')
                         ->rows(['value' => $encodedSettings])
                         ->where('name = ?', $pluginName)
-                        ->where('user = ?', 0));
+                        ->where('user = ?', $targetUser));
                 }
             } else {
                 foreach ($options as $option) {

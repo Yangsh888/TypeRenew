@@ -47,6 +47,35 @@ class Plugin
         self::$tmp = [];
     }
 
+    public static function rollbackTemporaryHandles(): void
+    {
+        if (
+            !isset(self::$tmp['handles'])
+            || !is_array(self::$tmp['handles'])
+            || self::$tmp['handles'] === []
+        ) {
+            self::$tmp = [];
+            return;
+        }
+
+        foreach (self::$tmp['handles'] as $handle => $handles) {
+            if (!isset(self::$plugin['handles'][$handle]) || !is_array(self::$plugin['handles'][$handle])) {
+                continue;
+            }
+
+            self::$plugin['handles'][$handle] = self::pluginHandlesDiff(
+                self::$plugin['handles'][$handle],
+                is_array($handles) ? $handles : []
+            );
+
+            if (empty(self::$plugin['handles'][$handle])) {
+                unset(self::$plugin['handles'][$handle]);
+            }
+        }
+
+        self::$tmp = [];
+    }
+
     public static function deactivate(string $pluginName)
     {
         if (

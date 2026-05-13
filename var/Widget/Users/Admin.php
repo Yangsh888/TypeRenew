@@ -42,6 +42,7 @@ class Admin extends Users
             ->page($this->currentPage, $this->parameter->pageSize);
 
         $this->db->fetchAll($select, [$this, 'push']);
+        $this->hydratePostsCount();
     }
 
     /**
@@ -62,28 +63,39 @@ class Admin extends Users
         $nav->render('&laquo;', '&raquo;');
     }
 
-    /**
-     * 仅仅输出域名和路径
-     *
-     * @return string
-     */
-    protected function ___domainPath(): string
+    private function hydratePostsCount(): void
     {
-        $parts = \Typecho\Common::parseUrl((string) $this->url);
-        return (string) ($parts['host'] ?? '') . (string) ($parts['path'] ?? '');
-    }
+        if ($this->stack === []) {
+            return;
+        }
 
-    /**
-     * 发布文章数
-     *
-     * @throws Db\Exception
-     */
-    protected function ___postsNum(): int
-    {
-        return $this->db->fetchObject($this->db->select(['COUNT(cid)' => 'num'])
+        $uids = array_values(array_filter(array_map(
+            static fn(array $row): int => (int) ($row['uid'] ?? 0),
+            $this->stack
+        )));
+
+        if ($uids === []) {
+            return;
+        }
+
+        $rows = $this->db->fetchAll(
+            $this->db->select('table.contents.authorId', ['COUNT(table.contents.cid)' => 'num'])
             ->from('table.contents')
+            ->where('table.contents.authorId IN ?', $uids)
             ->where('table.contents.type = ?', 'post')
             ->where('table.contents.status = ?', 'publish')
-            ->where('table.contents.authorId = ?', $this->uid))->num;
+            ->group('table.contents.authorId')
+        );
+
+        $counts = [];
+        foreach ($rows as $row) {
+            $counts[(int) ($row['authorId'] ?? 0)] = (int) ($row['num'] ?? 0);
+        }
+
+        foreach ($this->stack as &$row) {
+            $uid = (int) ($row['uid'] ?? 0);
+            $row['postsNum'] = $counts[$uid] ?? 0;
+        }
+        unset($row);
     }
 }
