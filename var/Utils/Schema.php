@@ -574,6 +574,21 @@ class Schema
         };
     }
 
+    private static function tableExists(Db $db, string $table): bool
+    {
+        $dialect = self::dialect($db);
+
+        try {
+            $db->fetchRow(
+                'SELECT 1 FROM ' . self::quote($table, $dialect) . ' LIMIT 1'
+            );
+
+            return true;
+        } catch (\Throwable) {
+            return false;
+        }
+    }
+
     public static function indexExists(Db $db, string $table, string $index): bool
     {
         $dialect = self::dialect($db);

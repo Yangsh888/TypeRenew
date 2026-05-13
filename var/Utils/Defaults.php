@@ -215,7 +215,7 @@ class Defaults
             'allowXmlRpc' => 0,
             'rewriteStatus' => 'disabled',
             'rewriteVerifiedAt' => '0',
-            'rewriteMessage' => '',
+            'rewriteMessage' => Manager::disabledMessage(),
         ];
     }
 
