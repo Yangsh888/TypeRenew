@@ -266,23 +266,76 @@ class Edit extends Users implements ActionInterface
         $row = $this->db->fetchObject($this->db->select(['MIN(uid)' => 'num'])->from('table.users'));
         $masterUserId = (int) ($row->num ?? 0);
         $deleteCount = 0;
+        $blockedCount = 0;
 
         foreach ($users as $user) {
             if ($masterUserId == $user || $user == $this->user->uid) {
                 continue;
             }
 
+            if ($this->hasOwnedContents((int) $user)) {
+                $blockedCount++;
+                continue;
+            }
+
+            $this->cleanupDeletedUserReferences((int) $user);
+
             if ($this->delete($this->db->sql()->where('uid = ?', $user))) {
                 $deleteCount++;
             }
         }
 
-        Notice::alloc()->set(
-            $deleteCount > 0 ? _t('用户已经删除') : _t('没有用户被删除'),
-            $deleteCount > 0 ? 'success' : 'notice'
-        );
+        if ($deleteCount > 0 && $blockedCount > 0) {
+            Notice::alloc()->set(_t('部分用户已删除，包含文章或页面的用户未执行删除'), 'notice');
+        } elseif ($deleteCount > 0) {
+            Notice::alloc()->set(_t('用户已经删除'), 'success');
+        } elseif ($blockedCount > 0) {
+            Notice::alloc()->set(_t('部分用户包含文章或页面，未执行删除'), 'notice');
+        } else {
+            Notice::alloc()->set(_t('没有用户被删除'), 'notice');
+        }
 
         $this->response->redirect(Common::url('manage-users.php', $this->options->adminUrl));
+    }
+
+    private function hasOwnedContents(int $uid): bool
+    {
+        $row = $this->db->fetchRow(
+            $this->db->select(['COUNT(cid)' => 'num'])
+                ->from('table.contents')
+                ->where('authorId = ?', $uid)
+                ->where('type IN ?', ['post', 'page'])
+                ->limit(1)
+        );
+
+        return (int) ($row['num'] ?? 0) > 0;
+    }
+
+    private function cleanupDeletedUserReferences(int $uid): void
+    {
+        $this->db->query(
+            $this->db->update('table.contents')
+                ->rows(['authorId' => 0])
+                ->where('authorId = ?', $uid)
+                ->where('type NOT IN ?', ['post', 'page'])
+        );
+
+        $this->db->query(
+            $this->db->update('table.comments')
+                ->rows(['authorId' => 0])
+                ->where('authorId = ?', $uid)
+        );
+
+        $this->db->query(
+            $this->db->update('table.comments')
+                ->rows(['ownerId' => 0])
+                ->where('ownerId = ?', $uid)
+        );
+
+        $this->db->query(
+            $this->db->delete('table.options')
+                ->where('user = ?', $uid)
+        );
     }
 
     public function action()

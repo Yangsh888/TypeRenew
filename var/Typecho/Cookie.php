@@ -68,8 +68,12 @@ class Cookie
      */
     public static function setOptions(array $options)
     {
-        if (array_key_exists('domain', $options) && $options['domain'] !== '') {
-            self::$domain = (string) $options['domain'];
+        if (array_key_exists('path', $options)) {
+            $path = trim((string) $options['path']);
+            self::$path = $path === '' ? '/' : $path;
+        }
+        if (array_key_exists('domain', $options)) {
+            self::$domain = trim((string) $options['domain']);
         }
         if (array_key_exists('secure', $options)) {
             self::$secure = (bool) $options['secure'];
@@ -112,6 +116,11 @@ class Cookie
     public static function set(string $key, $value, int $expire = 0)
     {
         $key = self::$prefix . $key;
+        if (!is_scalar($value) && $value !== null) {
+            $value = \Typecho\Common::jsonEncode($value);
+        }
+
+        $value = (string) $value;
         $_COOKIE[$key] = $value;
         Response::getInstance()->setCookie(
             $key,
@@ -133,11 +142,30 @@ class Cookie
     public static function delete(string $key)
     {
         $key = self::$prefix . $key;
-        if (!isset($_COOKIE[$key])) {
-            return;
+        $paths = array_values(array_unique(array_filter([
+            self::$path,
+            '/',
+        ], static fn(string $path): bool => $path !== '')));
+        $domains = array_values(array_unique([
+            self::$domain,
+            '',
+        ]));
+
+        foreach ($paths as $path) {
+            foreach ($domains as $domain) {
+                Response::getInstance()->setCookie(
+                    $key,
+                    '',
+                    -1,
+                    $path,
+                    $domain,
+                    self::$secure,
+                    self::$httponly,
+                    self::$sameSite
+                );
+            }
         }
 
-        Response::getInstance()->setCookie($key, '', -1, self::$path, self::$domain, self::$secure, self::$httponly, self::$sameSite);
         unset($_COOKIE[$key]);
     }
 }

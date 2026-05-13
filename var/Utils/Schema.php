@@ -574,9 +574,10 @@ class Schema
         };
     }
 
-    private static function tableExists(Db $db, string $table): bool
+    public static function tableExists(Db $db, string $table): bool
     {
         $dialect = self::dialect($db);
+        $table = self::normalizeTableName($db, $table);
 
         try {
             $db->fetchRow(
@@ -737,6 +738,15 @@ class Schema
         $escaped = str_replace($dialect === 'mysql' ? '`' : '"', $dialect === 'mysql' ? '``' : '""', $name);
 
         return $dialect === 'mysql' ? '`' . $escaped . '`' : '"' . $escaped . '"';
+    }
+
+    private static function normalizeTableName(Db $db, string $table): string
+    {
+        if (str_starts_with($table, 'table.')) {
+            return $db->getPrefix() . substr($table, 6);
+        }
+
+        return $table;
     }
 
     private static function sqlString(string $value): string

@@ -124,23 +124,17 @@ class Edit extends Options implements ActionInterface
 
         $this->options->themeUrl = $this->options->themeUrl(null, $theme);
 
-        $configFile = $this->options->themeFile($theme, 'functions.php');
+        if (Config::isExists($theme) && Config::loadThemeFunctions($theme) && function_exists('themeConfig')) {
+            $form = new Form();
+            themeConfig($form);
+            $options = $form->getValues();
 
-        if (file_exists($configFile)) {
-            require_once $configFile;
-
-            if (function_exists('themeConfig')) {
-                $form = new Form();
-                themeConfig($form);
-                $options = $form->getValues();
-
-                if ($options && !$this->configHandle($options, true)) {
-                    $this->insert([
-                        'name'  => 'theme:' . $theme,
-                        'value' => Common::jsonEncode($options, 0, '{}'),
-                        'user'  => 0
-                    ]);
-                }
+            if ($options && !$this->configHandle($options, true)) {
+                $this->insert([
+                    'name'  => 'theme:' . $theme,
+                    'value' => Common::jsonEncode($options, 0, '{}'),
+                    'user'  => 0
+                ]);
             }
         }
 

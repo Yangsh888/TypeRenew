@@ -130,19 +130,11 @@ class Response
             return;
         }
 
-        $sentHeaders = [];
-        foreach (headers_list() as $header) {
-            [$key] = explode(':', $header, 2);
-            $sentHeaders[] = strtolower(trim($key));
-        }
-
         $reason = self::HTTP_CODE[$this->status] ?? 'Unknown Status';
         header('HTTP/1.1 ' . $this->status . ' ' . $reason, true, $this->status);
 
         foreach ($this->headers as $name => $value) {
-            if (!in_array(strtolower($name), $sentHeaders)) {
-                header($name . ': ' . $value);
-            }
+            header($name . ': ' . $value, true);
         }
 
         foreach ($this->cookies as $cookie) {
@@ -293,11 +285,15 @@ class Response
         string $sameSite = 'Lax'
     ): Response {
         if (!$this->sandbox) {
+            if (!is_scalar($value) && $value !== null) {
+                $value = Common::jsonEncode($value);
+            }
+
             $sameSite = ucfirst(strtolower(trim($sameSite)));
             if (!in_array($sameSite, ['Lax', 'Strict', 'None'], true)) {
                 $sameSite = 'Lax';
             }
-            $this->cookies[] = [$key, $value, $timeout, $path, $domain, $secure, $httponly, $sameSite];
+            $this->cookies[] = [$key, (string) $value, $timeout, $path, $domain, $secure, $httponly, $sameSite];
         }
 
         return $this;

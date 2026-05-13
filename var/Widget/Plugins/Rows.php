@@ -82,7 +82,7 @@ class Rows extends Widget
                 }
             }
 
-            if ($info['activated'] == $this->parameter->activated) {
+            if ($info['activated'] === $this->parameter->activated) {
                 $this->push($info);
             }
         }
@@ -102,10 +102,10 @@ class Rows extends Widget
             $pluginName = basename($plugin);
 
             $pluginFileName = $plugin . '/Plugin.php';
-        } elseif (file_exists($plugin) && 'index.php' != basename($plugin)) {
+        } elseif (file_exists($plugin) && 'index.php' !== basename($plugin)) {
             $pluginFileName = $plugin;
             $part = explode('.', basename($plugin));
-            if (2 == count($part) && 'php' == $part[1]) {
+            if (count($part) === 2 && $part[1] === 'php') {
                 $pluginName = $part[0];
             } else {
                 return null;

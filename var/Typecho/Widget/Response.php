@@ -182,6 +182,11 @@ class Response
             return $result;
         }
 
+        if (!is_scalar($message) && $message !== null) {
+            $message = Common::jsonEncode($message);
+        }
+
+        $message = (string) $message;
         return preg_match("/^[^<>]+$/is", $message) ? $message : '<![CDATA[' . $message . ']]>';
     }
 }

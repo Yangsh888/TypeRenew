@@ -156,6 +156,12 @@ class Edit extends Comments implements ActionInterface
             if ($comment && $this->commentIsWriteable()) {
                 self::pluginHandle()->call('delete', $comment, $this);
 
+                $this->db->query(
+                    $this->db->update('table.comments')
+                        ->rows(['parent' => 0])
+                        ->where('parent = ?', $coid)
+                );
+
                 $this->delete($this->db->sql()->where('coid = ?', $coid));
 
                 self::pluginHandle()->call('finishDelete', $comment, $this);
@@ -196,16 +202,44 @@ class Edit extends Comments implements ActionInterface
      */
     public function deleteSpamComment()
     {
-        $deleteQuery = $this->db->delete('table.comments')->where('status = ?', 'spam');
+        $select = $this->db->select('coid', 'cid')
+            ->from('table.comments')
+            ->where('status = ?', 'spam');
+
         if (!$this->request->is('__typecho_all_comments=on') || !$this->user->pass('editor', true)) {
-            $deleteQuery->where('ownerId = ?', $this->user->uid);
+            $select->where('ownerId = ?', $this->user->uid);
         }
 
         if ($this->request->is('cid')) {
-            $deleteQuery->where('cid = ?', $this->request->get('cid'));
+            $select->where('cid = ?', $this->request->get('cid'));
         }
 
-        $deleteRows = $this->db->query($deleteQuery);
+        $spamComments = $this->db->fetchAll($select);
+        $deleteRows = count($spamComments);
+
+        if ($deleteRows > 0) {
+            $commentIds = array_column($spamComments, 'coid');
+            $contentIds = array_unique(array_map('intval', array_column($spamComments, 'cid')));
+
+            foreach ($commentIds as $coid) {
+                $this->db->query(
+                    $this->db->update('table.comments')
+                        ->rows(['parent' => 0])
+                        ->where('parent = ?', (int) $coid)
+                );
+            }
+
+            $this->db->query(
+                $this->db->delete('table.comments')
+                    ->where('coid IN ?', array_map('intval', $commentIds))
+            );
+
+            foreach ($contentIds as $cid) {
+                $this->refreshCommentsNum($cid);
+            }
+
+            $this->purgeCommentCacheForTransition('spam', null);
+        }
 
         Notice::alloc()->set(
             $deleteRows > 0 ? _t('所有垃圾评论已经被删除') : _t('没有垃圾评论被删除'),
@@ -275,7 +309,10 @@ class Edit extends Comments implements ActionInterface
             $updatedComment['content'] = $this->content;
 
             self::pluginHandle()->call('finishEdit', $this);
-            $this->purgeCommentCacheForTransition((string) ($commentSelect['status'] ?? ''), (string) ($commentSelect['status'] ?? ''));
+            $this->purgeCommentCacheForTransition(
+                (string) ($commentSelect['status'] ?? ''),
+                (string) ($comment['status'] ?? $commentSelect['status'] ?? '')
+            );
 
             $this->response->throwJson([
                 'success' => 1,

@@ -60,7 +60,7 @@ class SchemaManager
         $tables = Schema::criticalSchema();
 
         foreach ($tables as $key => $meta) {
-            $exists = self::tableExists($db, 'table.' . $key);
+            $exists = Schema::tableExists($db, 'table.' . $key);
             $missingColumns = $exists
                 ? self::missingColumns($db, $prefix . $key, Schema::criticalColumns($key))
                 : [];
@@ -132,6 +132,7 @@ class SchemaManager
 
     public static function repairCriticalSchema(Db $db): array
     {
+        self::ensureTimezoneOptions($db);
         self::ensureEncryptedCachePassword($db);
         self::ensureMailInfrastructure($db);
         self::ensureRewriteOptions($db);
@@ -181,7 +182,7 @@ class SchemaManager
         ];
 
         $mailUnsubTable = $db->getPrefix() . 'mail_unsub';
-        $mailUnsubExists = self::tableExists($db, 'table.mail_unsub');
+        $mailUnsubExists = Schema::tableExists($db, 'table.mail_unsub');
         $mailUnsubCollation = $mailUnsubExists ? Schema::mysqlTableCollation($db, $mailUnsubTable) : '';
         $mailUnsubMismatch = $mailUnsubExists && $mailUnsubCollation !== '' && strtolower($mailUnsubCollation) !== strtolower($collation);
         $items[] = [
@@ -292,6 +293,10 @@ class SchemaManager
         foreach ($normalized as $name => $value) {
             if (!array_key_exists($name, $existing)) {
                 $missingColumns[] = $name;
+                continue;
+            }
+
+            if ($name === 'rewriteMessage') {
                 continue;
             }
 
@@ -426,21 +431,11 @@ class SchemaManager
 
     public static function syncCommentAuthors(Db $db): int
     {
-        if (!self::tableExists($db, 'table.users') || !self::tableExists($db, 'table.comments')) {
+        if (!Schema::tableExists($db, 'table.users') || !Schema::tableExists($db, 'table.comments')) {
             return 0;
         }
 
         return Comment::syncAllAuthors($db, self::commentCacheFlush());
-    }
-
-    private static function tableExists(Db $db, string $tableAlias): bool
-    {
-        try {
-            $db->fetchRow($db->select('1')->from($tableAlias)->limit(1));
-            return true;
-        } catch (\Throwable $e) {
-            return false;
-        }
     }
 
     private static function commentCacheFlush(): int
@@ -483,7 +478,7 @@ class SchemaManager
         $missing = [];
 
         foreach (Schema::coreIndexes($db) as $table => $indexes) {
-            if (!self::tableExists($db, self::tableAlias($db, $table))) {
+            if (!Schema::tableExists($db, self::tableAlias($db, $table))) {
                 $missing[] = $table;
                 continue;
             }
@@ -547,7 +542,7 @@ class SchemaManager
     private static function inspectUserPasswordStorage(Db $db): array
     {
         $table = $db->getPrefix() . 'users';
-        if (!self::tableExists($db, 'table.users')) {
+        if (!Schema::tableExists($db, 'table.users')) {
             return [
                 'key' => 'users_password',
                 'label' => '用户密码字段',
@@ -612,7 +607,7 @@ class SchemaManager
 
     private static function mailUnsubDuplicateGroups(Db $db, string $collation): array
     {
-        if (!self::tableExists($db, 'table.mail_unsub')) {
+        if (!Schema::tableExists($db, 'table.mail_unsub')) {
             return ['rows' => [], 'error' => null];
         }
 
@@ -645,7 +640,7 @@ class SchemaManager
 
     private static function usersMailDuplicateGroups(Db $db, string $collation): array
     {
-        if (!self::tableExists($db, 'table.users')) {
+        if (!Schema::tableExists($db, 'table.users')) {
             return ['rows' => [], 'error' => null];
         }
 

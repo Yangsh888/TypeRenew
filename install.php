@@ -12,6 +12,8 @@ if (!file_exists(dirname(__FILE__) . '/config.inc.php')) {
     $installDb = \Typecho\Db::get();
 }
 
+$configWritten = false;
+
 /**
  * detect cli mode
  *
@@ -34,12 +36,18 @@ function install_session_start(): void
 function install_issue_flow(): void
 {
     install_session_start();
+    if (session_status() !== PHP_SESSION_ACTIVE) {
+        return;
+    }
     $_SESSION['__typecho_install_flow'] = true;
 }
 
 function install_has_flow(): bool
 {
     install_session_start();
+    if (session_status() !== PHP_SESSION_ACTIVE) {
+        return false;
+    }
     return !empty($_SESSION['__typecho_install_flow']);
 }
 

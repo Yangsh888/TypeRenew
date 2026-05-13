@@ -27,7 +27,8 @@ class Rows extends Widget
                 $info = Plugin::parseInfo($themeFile);
                 $info['name'] = $this->getTheme($theme);
 
-                if ($info['activated'] = ($options->theme == $info['name'])) {
+                $info['activated'] = ($options->theme === $info['name']);
+                if ($info['activated']) {
                     $activated = $key;
                 }
 

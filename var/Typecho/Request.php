@@ -121,7 +121,7 @@ class Request
                 break;
         }
 
-        if (!isset($value) || $value === '') {
+        if (!isset($value)) {
             $exists = false;
             return $default;
         }
@@ -159,7 +159,7 @@ class Request
                 break;
         }
 
-        if (!isset($value) || $value === '') {
+        if (!isset($value)) {
             $exists = false;
             return $default;
         }
@@ -701,7 +701,7 @@ class Request
      */
     public function isCli(): bool
     {
-        return php_sapi_name() == 'cli';
+        return php_sapi_name() === 'cli';
     }
 
     public function isGet(): bool
@@ -721,7 +721,7 @@ class Request
 
     public function isAjax(): bool
     {
-        return 'XMLHttpRequest' == $this->getHeader('X-Requested-With');
+        return 'XMLHttpRequest' === $this->getHeader('X-Requested-With');
     }
 
     public function isJson(): bool
@@ -747,7 +747,11 @@ class Request
             $validated = true;
             foreach ($params as $key => $val) {
                 $param = $this->getInput($key, null, $exists);
-                $validated = empty($val) ? $exists : ($val == $param);
+                if (!isset($val) || $val === '') {
+                    $validated = $exists;
+                } else {
+                    $validated = is_scalar($param) ? ((string) $val === (string) $param) : false;
+                }
 
                 if (!$validated) {
                     break;

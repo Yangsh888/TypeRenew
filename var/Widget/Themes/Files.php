@@ -93,7 +93,7 @@ class Files extends Base
                     $this->push([
                         'file'    => $file,
                         'theme'   => $this->currentTheme,
-                        'current' => ($file == $this->currentFile)
+                        'current' => ($file === $this->currentFile)
                     ]);
                 }
 

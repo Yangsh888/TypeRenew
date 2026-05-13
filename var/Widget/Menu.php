@@ -64,6 +64,23 @@ class Menu extends Base
         'extending.php' => ['icon' => 'i-puzzle'],
     ];
 
+    private static function normalizeQueryParams(array $params): array
+    {
+        $normalized = [];
+
+        foreach ($params as $name => $value) {
+            if (!is_scalar($name)) {
+                continue;
+            }
+
+            if (is_scalar($value)) {
+                $normalized[(string) $name] = (string) $value;
+            }
+        }
+
+        return $normalized;
+    }
+
     /**
      * 当前菜单标题
      * @var string
@@ -202,6 +219,7 @@ class Menu extends Base
         $currentUrlParams = [];
         if (!empty($currentUrlParts['query'])) {
             parse_str($currentUrlParts['query'], $currentUrlParams);
+            $currentUrlParams = self::normalizeQueryParams($currentUrlParams);
         }
 
         $currentPath = (string) ($currentUrlParts['path'] ?? '');
@@ -241,14 +259,15 @@ class Menu extends Base
                 $urlParams = [];
                 if (!empty($urlParts['query'])) {
                     parse_str($urlParts['query'], $urlParams);
+                    $urlParams = self::normalizeQueryParams($urlParams);
                 }
 
                 $validate = true;
-                if (($urlParts['path'] ?? null) != ($currentUrlParts['path'] ?? null)) {
+                if (($urlParts['path'] ?? null) !== ($currentUrlParts['path'] ?? null)) {
                     $validate = false;
                 } else {
                     foreach ($urlParams as $paramName => $paramValue) {
-                        if (!isset($currentUrlParams[$paramName])) {
+                        if (!isset($currentUrlParams[$paramName]) || $currentUrlParams[$paramName] !== $paramValue) {
                             $validate = false;
                             break;
                         }
@@ -257,9 +276,9 @@ class Menu extends Base
 
                 if (
                     $validate
-                    && basename((string) ($urlParts['path'] ?? '')) == 'extending.php'
+                    && basename((string) ($urlParts['path'] ?? '')) === 'extending.php'
                     && !empty($currentUrlParams['panel']) && !empty($urlParams['panel'])
-                    && $urlParams['panel'] != $currentUrlParams['panel']
+                    && $urlParams['panel'] !== $currentUrlParams['panel']
                 ) {
                     $validate = false;
                 }
@@ -296,7 +315,7 @@ class Menu extends Base
                 }
 
                 if ($validate) {
-                    if ('visitor' != $access) {
+                    if ('visitor' !== $access) {
                         $this->user->pass($access);
                     }
 
@@ -375,7 +394,7 @@ class Menu extends Base
                 continue;
             }
 
-            $parentActive = $parentId == $this->currentParent;
+            $parentActive = $parentId === $this->currentParent;
             $children = $this->exportChildren($node, $parentActive);
 
             $tree[] = [
@@ -402,7 +421,7 @@ class Menu extends Base
 
             $tabs = array_merge(
                 $tabs,
-                $this->exportChildren($node, $parentId == $this->currentParent, $group, $includeOriginalHidden)
+                $this->exportChildren($node, $parentId === $this->currentParent, $group, $includeOriginalHidden)
             );
         }
 
@@ -419,8 +438,10 @@ class Menu extends Base
                 continue;
             }
 
-            echo "<li" . ($key == $this->currentParent ? " class=\"{$class}\"" : '')
-                . "><a href=\"{$node[2]}\">{$node[0]}</a>"
+            $parentHref = htmlspecialchars((string) $node[2], ENT_QUOTES, 'UTF-8');
+            $parentLabel = htmlspecialchars((string) $node[0], ENT_QUOTES, 'UTF-8');
+            echo "<li" . ($key === $this->currentParent ? " class=\"{$class}\"" : '')
+                . "><a href=\"{$parentHref}\">{$parentLabel}</a>"
                 . "<menu>";
 
             foreach ($node[3] as $inKey => $inNode) {
@@ -429,15 +450,21 @@ class Menu extends Base
                 }
 
                 $focus = false;
-                if ($key == $this->currentParent && $inKey == $this->currentChild) {
+                if ($key === $this->currentParent && $inKey === $this->currentChild) {
                     $focus = true;
                 } elseif ($inNode[6]) {
                     continue;
                 }
 
+                $childHref = htmlspecialchars(
+                    (string) ($key === $this->currentParent && $inKey === $this->currentChild ? $this->currentUrl : $inNode[2]),
+                    ENT_QUOTES,
+                    'UTF-8'
+                );
+                $childLabel = htmlspecialchars((string) $inNode[0], ENT_QUOTES, 'UTF-8');
                 echo "<li" . ($focus ? " class=\"{$childClass}\"" : '') . "><a href=\""
-                    . ($key == $this->currentParent && $inKey == $this->currentChild ? $this->currentUrl : $inNode[2])
-                    . "\">{$inNode[0]}</a></li>";
+                    . $childHref
+                    . "\">{$childLabel}</a></li>";
             }
 
             echo '</menu></li>';
@@ -457,7 +484,7 @@ class Menu extends Base
                 continue;
             }
 
-            $active = $parentActive && $childId == $this->currentChild;
+            $active = $parentActive && $childId === $this->currentChild;
             if (!$active && $child[6] && !$includeOriginalHidden) {
                 continue;
             }
@@ -518,7 +545,8 @@ class Menu extends Base
         }
 
         parse_str($query, $params);
-        $panel = trim((string) ($params['panel'] ?? ''));
+        $params = self::normalizeQueryParams($params);
+        $panel = trim($params['panel'] ?? '');
         if ($panel === '') {
             return $meta;
         }

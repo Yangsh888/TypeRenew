@@ -219,6 +219,13 @@ class Edit extends Contents implements ActionInterface
                         ->where('type = ? OR type = ?', 'page', 'page_draft')
                 );
 
+                $this->db->query(
+                    $this->db->update('table.fields')
+                        ->rows(['int_value' => $parent])
+                        ->where('name = ?', self::DRAFT_PARENT_FIELD)
+                        ->where('int_value = ?', $page)
+                );
+
                 return true;
             });
 
@@ -273,6 +280,12 @@ class Edit extends Contents implements ActionInterface
                         ['parent' => $parent],
                         $this->db->sql()->where('parent = ?', $page)
                             ->where('type = ? OR type = ?', 'page', 'page_draft')
+                    );
+                    $this->db->query(
+                        $this->db->update('table.fields')
+                            ->rows(['int_value' => $parent])
+                            ->where('name = ?', self::DRAFT_PARENT_FIELD)
+                            ->where('int_value = ?', $page)
                     );
 
                     return true;

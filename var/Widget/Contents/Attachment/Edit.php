@@ -175,18 +175,31 @@ class Edit extends Contents implements ActionInterface
     {
         $posts = $this->request->filter('int')->getArray('cid');
         $deleteCount = 0;
+        $fileDeleteFailed = false;
 
-        $this->deleteByIds($posts, $deleteCount);
+        $this->deleteByIds($posts, $deleteCount, $fileDeleteFailed);
 
         if ($this->request->isAjax()) {
-            $this->response->throwJson($deleteCount > 0 ? ['code' => 200, 'message' => _t('文件已经被删除')]
-                : ['code' => 500, 'message' => _t('没有文件被删除')]);
+            $message = $deleteCount > 0 ? _t('文件已经被删除') : _t('没有文件被删除');
+            if ($fileDeleteFailed) {
+                $message = _t('文件记录已删除，但物理文件未能清理');
+            }
+
+            $this->response->throwJson(
+                $deleteCount > 0
+                    ? ['code' => 200, 'message' => $message]
+                    : ['code' => 500, 'message' => $message]
+            );
         } else {
             Notice::alloc()
                 ->set(
                     $deleteCount > 0 ? _t('文件已经被删除') : _t('没有文件被删除'),
                     $deleteCount > 0 ? 'success' : 'notice'
                 );
+
+            if ($fileDeleteFailed) {
+                Notice::alloc()->set(_t('文件记录已删除，但物理文件未能清理'), 'notice');
+            }
 
             $this->response->redirect(Common::url('manage-medias.php', $this->options->adminUrl));
         }
@@ -196,21 +209,27 @@ class Edit extends Contents implements ActionInterface
     {
         $page = 1;
         $deleteCount = 0;
+        $fileDeleteFailed = false;
 
         do {
             $posts = array_column($this->db->fetchAll($this->db->select('cid')
                 ->from('table.contents')
-                ->where('type = ? AND parent = ?', 'attachment', 0)
+                ->where('type = ?', 'attachment')
+                ->where('parent = ? OR parent IS NULL', 0)
                 ->page($page, 100)), 'cid');
             $page++;
 
-            $this->deleteByIds($posts, $deleteCount);
+            $this->deleteByIds($posts, $deleteCount, $fileDeleteFailed);
         } while (count($posts) == 100);
 
         Notice::alloc()->set(
             $deleteCount > 0 ? _t('未归档文件已经被清理') : _t('没有未归档文件被清理'),
             $deleteCount > 0 ? 'success' : 'notice'
         );
+
+        if ($fileDeleteFailed) {
+            Notice::alloc()->set(_t('部分文件记录已删除，但物理文件未能清理'), 'notice');
+        }
 
         $this->response->redirect(Common::url('manage-medias.php', $this->options->adminUrl));
     }
@@ -234,7 +253,7 @@ class Edit extends Contents implements ActionInterface
         $this->response->redirect($this->options->adminUrl);
     }
 
-    protected function deleteByIds(array $posts, int &$deleteCount): void
+    protected function deleteByIds(array $posts, int &$deleteCount, bool &$fileDeleteFailed = false): void
     {
         foreach ($posts as $post) {
             self::pluginHandle()->call('delete', $post, $this);
@@ -252,7 +271,9 @@ class Edit extends Contents implements ActionInterface
             }
 
             if ($this->isWriteable(clone $condition) && $this->delete($condition)) {
-                Upload::deleteHandle($this->toColumn(['cid', 'attachment', 'parent']));
+                if (!Upload::deleteHandle($row)) {
+                    $fileDeleteFailed = true;
+                }
                 $this->db->query($this->db->delete('table.comments')
                     ->where('cid = ?', $post));
                 self::pluginHandle()->call('finishDelete', $post, $this);

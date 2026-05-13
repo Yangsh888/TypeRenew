@@ -22,7 +22,7 @@ include 'menu.php';
                                         class="sr-only"><?php _e('操作'); ?></i><?php _e('选中项'); ?> <i
                                         class="i-caret-down"></i></button>
                                 <ul class="dropdown-menu">
-                                    <li><a lang="<?php _e('此分类下的所有内容将被删除, 你确认要删除这些分类吗?'); ?>"
+                                    <li><a lang="<?php _e('此操作将删除分类关系并调整子分类, 你确认要删除这些分类吗?'); ?>"
                                            href="<?php $security->index('/action/metas-category-edit?do=delete'); ?>"><?php _e('删除'); ?></a>
                                     </li>
                                     <li><a lang="<?php _e('刷新分类可能需要等待较长时间, 你确认要刷新这些分类吗?'); ?>"

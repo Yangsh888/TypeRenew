@@ -394,11 +394,14 @@ class Options extends Base
             }
         }
 
-        if (isset($this->db) && ($repaired || !isset($routingTable[0]))) {
-            $parser = new Parser($routingTable);
-            $parsedRoutingTable = $parser->parse();
+        $parsedRoutingTable = (new Parser($routingTable))->parse();
+        $compiledRoutingTable = isset($routingTable[0]) && is_array($routingTable[0]) ? $routingTable[0] : null;
+
+        if (isset($this->db) && ($repaired || $compiledRoutingTable !== $parsedRoutingTable)) {
             $routingTable = array_merge([$parsedRoutingTable], $routingTable);
             $this->repairArrayOption('routingTable', $routingTable);
+        } elseif ($compiledRoutingTable === null) {
+            $routingTable = array_merge([$parsedRoutingTable], $routingTable);
         }
 
         return $routingTable;
