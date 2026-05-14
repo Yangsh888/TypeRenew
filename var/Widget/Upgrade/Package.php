@@ -21,14 +21,14 @@ class Package extends BaseOptions implements ActionInterface
         $do = $this->request->getAction();
 
         try {
-            if ($do === 'upload') {
+            if ($do === 'upload' || $do === 'apply') {
                 $this->assertEnvironmentReady();
                 $runner = new Runner();
-                $this->upload($runner);
-            } elseif ($do === 'apply') {
-                $this->assertEnvironmentReady();
-                $runner = new Runner();
-                $this->apply($runner);
+                if ($do === 'upload') {
+                    $this->upload($runner);
+                } else {
+                    $this->apply($runner);
+                }
             } elseif ($do === 'clear') {
                 $runner = new Runner();
                 $removed = $runner->clear();

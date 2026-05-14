@@ -66,6 +66,10 @@ class Rows extends Widget
     public function execute()
     {
         $this->parameter->setDefault(['activated' => null]);
+        $activated = $this->parameter->activated;
+        if ($activated !== null) {
+            $activated = (bool) (int) $activated;
+        }
 
         $plugins = Plugin::export();
         $this->activatedPlugins = $plugins['activated'];
@@ -82,7 +86,7 @@ class Rows extends Widget
                 }
             }
 
-            if ($info['activated'] === $this->parameter->activated) {
+            if ($activated === null || $info['activated'] === $activated) {
                 $this->push($info);
             }
         }

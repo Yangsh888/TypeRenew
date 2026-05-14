@@ -262,7 +262,7 @@ class Reading extends Permalink
     private function resolveFrontPageFile(string $file): ?string
     {
         $file = basename(str_replace('\\', '/', trim($file)));
-        if ($file === '' || str_contains($file, "\0") || !preg_match('/^[A-Za-z0-9._-]+\.php$/', $file)) {
+        if ($file === '' || str_contains($file, "\0") || !preg_match('/\.php$/iu', $file)) {
             return null;
         }
 
