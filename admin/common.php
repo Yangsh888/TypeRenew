@@ -22,14 +22,6 @@ $menu = \Widget\Menu::alloc();
 
 $request = $options->request;
 $response = $options->response;
-$currentUrl = (string) $request->getRequestUrl();
-$currentUrlParts = \Typecho\Common::parseUrl($currentUrl);
-$currentAdminFile = basename((string) ($currentUrlParts['path'] ?? 'index.php'));
-$publicPages = ['login.php', 'register.php', 'forgot.php', 'reset.php'];
-
-if (!$user->hasLogin() && !in_array($currentAdminFile, $publicPages, true)) {
-    $response->redirect(\Typecho\Common::url('login.php?referer=' . urlencode($currentUrl), $options->adminUrl));
-}
 
 $currentMenu = $menu->getCurrentMenu();
 

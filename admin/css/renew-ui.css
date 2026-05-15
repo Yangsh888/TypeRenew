@@ -4058,26 +4058,6 @@ body.tr-admin .typecho-list-operate .operate {
     gap: 10px;
 }
 
-body.tr-admin .typecho-list-operate .search {
-    display: flex;
-    align-items: center;
-    flex-wrap: nowrap;
-    gap: 10px;
-    min-width: 0;
-    width: fit-content;
-    max-width: 100%;
-}
-
-body.tr-admin .typecho-list-operate .search > * {
-    margin: 0;
-}
-
-body.tr-admin .typecho-list-operate .search input[type="text"],
-body.tr-admin .typecho-list-operate .search .text-s {
-    flex: 0 1 220px;
-    min-width: 180px;
-}
-
 body.tr-admin form.operate-form + form.typecho-list-operate {
     margin-top: var(--tr-stack);
 }
@@ -4646,126 +4626,6 @@ body.tr-admin ul.typecho-option.typecho-option-submit > li {
     align-items: center;
     justify-content: flex-end;
     gap: 10px;
-}
-
-body.tr-admin.tr-page-options-permalink .tr-rewrite-status-meta {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 16px;
-    width: 100%;
-}
-
-body.tr-admin.tr-page-options-permalink .tr-rewrite-status-info {
-    display: block;
-    flex: 1 1 auto;
-    min-width: 0;
-}
-
-body.tr-admin.tr-page-options-permalink .tr-rewrite-status-line {
-    display: block;
-    color: rgba(15, 23, 42, 0.7);
-    line-height: 1.7;
-    margin-bottom: 6px;
-}
-
-body.tr-admin.tr-page-options-permalink .tr-rewrite-status-info .tr-rewrite-status-line:last-child {
-    margin-bottom: 0;
-}
-
-body.tr-admin.tr-page-options-permalink .tr-rewrite-status-key {
-    color: rgba(15, 23, 42, 0.76);
-    font-weight: 600;
-}
-
-body.tr-admin.tr-page-options-permalink .tr-rewrite-status-line code {
-    color: rgba(15, 23, 42, 0.82);
-    word-break: break-all;
-}
-
-body.tr-admin.tr-page-options-permalink .tr-rewrite-status-line.is-warning {
-    color: rgba(180, 83, 9, 0.92);
-}
-
-body.tr-admin.tr-page-options-permalink .tr-rewrite-status-actions {
-    display: flex;
-    flex: 0 0 auto;
-    align-items: center;
-    flex-wrap: nowrap;
-    justify-content: flex-end;
-    gap: 0;
-    margin-top: 0;
-    white-space: nowrap;
-    margin-left: auto;
-    align-self: flex-start;
-    min-width: max-content;
-}
-
-body.tr-admin.tr-page-options-permalink #tr-rewrite-status-note {
-    transition: color .2s ease;
-}
-
-body.tr-admin.tr-page-options-permalink #tr-rewrite-status-note.is-success {
-    color: #15803d;
-}
-
-body.tr-admin.tr-page-options-permalink #tr-rewrite-status-note.is-error {
-    color: #b91c1c;
-}
-
-body.tr-admin.tr-page-options-permalink .tr-rewrite-code[readonly] {
-    min-height: 132px;
-    padding: 14px 16px;
-    border-radius: 14px;
-    border: 1px solid rgba(15, 23, 42, 0.08);
-    background: #0f172a;
-    color: rgba(226, 232, 240, 0.94);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
-    font-size: 12px;
-    line-height: 1.75;
-}
-
-@media (max-width: 620px) {
-    body.tr-admin.tr-page-options-permalink .tr-rewrite-status-meta {
-        display: block;
-    }
-
-    body.tr-admin.tr-page-options-permalink .tr-rewrite-status-actions {
-        justify-content: flex-start;
-        align-items: flex-start;
-        margin-top: 10px;
-        white-space: normal;
-    }
-}
-
-html.tr-theme-dark body.tr-admin.tr-page-options-permalink .tr-rewrite-status-key {
-    color: rgba(226, 232, 240, 0.84);
-}
-
-html.tr-theme-dark body.tr-admin.tr-page-options-permalink .tr-rewrite-status-line {
-    color: rgba(148, 163, 184, 0.86);
-}
-
-html.tr-theme-dark body.tr-admin.tr-page-options-permalink .tr-rewrite-status-line code {
-    color: rgba(241, 245, 249, 0.88);
-}
-
-html.tr-theme-dark body.tr-admin.tr-page-options-permalink .tr-rewrite-status-line.is-warning {
-    color: #fbbf24;
-}
-
-html.tr-theme-dark body.tr-admin.tr-page-options-permalink #tr-rewrite-status-note.is-success {
-    color: #4ade80;
-}
-
-html.tr-theme-dark body.tr-admin.tr-page-options-permalink #tr-rewrite-status-note.is-error {
-    color: #f87171;
-}
-
-html.tr-theme-dark body.tr-admin.tr-page-options-permalink .tr-rewrite-code[readonly] {
-    border-color: rgba(148, 163, 184, 0.16);
-    background: rgba(2, 6, 23, 0.92);
-    color: rgba(226, 232, 240, 0.94);
 }
 
 body.tr-admin .typecho-post-option ul {
@@ -5862,12 +5722,6 @@ body.tr-admin.tr-page-plugins .tr-plugin-version-badge.is-latest {
     border-color: rgba(16, 185, 129, 0.22);
 }
 
-body.tr-admin.tr-page-plugins .tr-plugin-version-badge.is-ahead {
-    color: #1d4ed8;
-    background: rgba(59, 130, 246, 0.14);
-    border-color: rgba(59, 130, 246, 0.24);
-}
-
 body.tr-admin.tr-page-plugins .tr-plugin-version-badge.is-update {
     color: #b45309;
     background: rgba(245, 158, 11, 0.16);
@@ -6016,12 +5870,6 @@ html.tr-theme-dark body.tr-admin.tr-page-plugins .tr-plugin-version-badge.is-lat
     color: #6ee7b7;
     background: rgba(16, 185, 129, 0.18);
     border-color: rgba(52, 211, 153, 0.26);
-}
-
-html.tr-theme-dark body.tr-admin.tr-page-plugins .tr-plugin-version-badge.is-ahead {
-    color: #93c5fd;
-    background: rgba(59, 130, 246, 0.18);
-    border-color: rgba(96, 165, 250, 0.28);
 }
 
 html.tr-theme-dark body.tr-admin.tr-page-plugins .tr-plugin-version-badge.is-update {
@@ -6534,17 +6382,6 @@ body.tr-admin #edit-secondary .typecho-post-option + .typecho-post-option {
 }
 
 @media (max-width: 768px) {
-    body.tr-admin .typecho-list-operate .search {
-        flex-wrap: wrap;
-        width: 100%;
-    }
-
-    body.tr-admin .typecho-list-operate .search input[type="text"],
-    body.tr-admin .typecho-list-operate .search .text-s {
-        flex: 1 1 100%;
-        min-width: 0;
-    }
-
     .tr-panel-head,
     .tr-panel-section-head {
         flex-direction: column;
@@ -6619,6 +6456,8 @@ html.tr-theme-dark body.tr-admin .typecho-page-main > .typecho-list > .typecho-l
     color: var(--tr-text) !important;
 }
 
+html.tr-theme-dark body.tr-admin.tr-page-write #edit-secondary .typecho-post-option,
+html.tr-theme-dark body.tr-admin.tr-page-write #edit-secondary .category-option,
 html.tr-theme-dark body.tr-admin.tr-page-write #edit-secondary .category-option ul,
 html.tr-theme-dark body.tr-admin.tr-page-write #edit-secondary .category-option li {
     background: var(--tr-post-option-bg) !important;

@@ -13,6 +13,14 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
+/**
+ * 编辑风格组件
+ *
+ * @author qining
+ * @package Widget
+ * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
+ * @license GNU General Public License 2.0
+ */
 class Edit extends Options implements ActionInterface
 {
     private function ignoreFsWarning(callable $callback): void
@@ -124,17 +132,23 @@ class Edit extends Options implements ActionInterface
 
         $this->options->themeUrl = $this->options->themeUrl(null, $theme);
 
-        if (Config::isExists($theme) && Config::loadThemeFunctions($theme) && function_exists('themeConfig')) {
-            $form = new Form();
-            themeConfig($form);
-            $options = $form->getValues();
+        $configFile = $this->options->themeFile($theme, 'functions.php');
 
-            if ($options && !$this->configHandle($options, true)) {
-                $this->insert([
-                    'name'  => 'theme:' . $theme,
-                    'value' => Common::jsonEncode($options, 0, '{}'),
-                    'user'  => 0
-                ]);
+        if (file_exists($configFile)) {
+            require_once $configFile;
+
+            if (function_exists('themeConfig')) {
+                $form = new Form();
+                themeConfig($form);
+                $options = $form->getValues();
+
+                if ($options && !$this->configHandle($options, true)) {
+                    $this->insert([
+                        'name'  => 'theme:' . $theme,
+                        'value' => Common::jsonEncode($options, 0, '{}'),
+                        'user'  => 0
+                    ]);
+                }
             }
         }
 
@@ -175,16 +189,10 @@ class Edit extends Options implements ActionInterface
             && (!defined('__TYPECHO_THEME_WRITEABLE__') || __TYPECHO_THEME_WRITEABLE__)
         ) {
             try {
-                $content = $this->request->get('content');
-                if (!is_scalar($content) && $content !== null) {
-                    throw new Exception(_t('文件内容格式不合法'));
-                }
-
-                $this->writeThemeFile($path, (string) $content, $file);
+                $this->writeThemeFile($path, (string) $this->request->get('content'), $file);
                 Notice::alloc()->set(_t("文件 %s 的更改已经保存", $file), 'success');
             } catch (Exception $e) {
-                $message = trim($e->getMessage());
-                Notice::alloc()->set($message !== '' ? $message : _t("文件 %s 无法被写入", $file), 'error');
+                Notice::alloc()->set(_t("文件 %s 无法被写入", $file), 'error');
             }
             $this->response->goBack();
         } else {
@@ -198,9 +206,8 @@ class Edit extends Options implements ActionInterface
      * @param string $theme 外观名
      * @throws \Typecho\Db\Exception
      */
-    public function config(string $theme = '')
+    public function config(string $theme)
     {
-        $theme = (string) $this->options->theme;
         $form = Config::alloc()->config();
 
         if (!Config::isExists($theme) || $form->validate()) {
@@ -244,14 +251,14 @@ class Edit extends Options implements ActionInterface
     {
         $this->user->pass('administrator');
         if (!$this->request->isPost()) {
-            $this->response->setStatus(405)->throwContent(_t('Method Not Allowed'), 'text/plain');
-            return;
+            $this->response->setStatus(405);
+            $this->response->goBack();
         }
         $this->security->protect();
         $this->on($this->request->is('change'))->changeTheme($this->request->filter('slug')->get('change'));
         $this->on($this->request->is('edit&theme'))
-            ->editThemeFile($this->request->filter('slug')->get('theme'), (string) $this->request->get('edit', ''));
-        $this->on($this->request->is('config'))->config();
+            ->editThemeFile($this->request->filter('slug')->get('theme'), $this->request->get('edit'));
+        $this->on($this->request->is('config'))->config($this->request->filter('slug')->get('config'));
         $this->response->redirect($this->options->adminUrl);
     }
 }

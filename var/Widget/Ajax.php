@@ -4,8 +4,6 @@ namespace Widget;
 
 use Typecho\Http\Client;
 use Typecho\Plugin;
-use Typecho\Timezone;
-use Utils\Rewrite\Manager;
 use Typecho\Widget\Exception;
 use Widget\Base\Options as BaseOptions;
 
@@ -28,26 +26,6 @@ class Ajax extends BaseOptions implements ActionInterface
     private const OFFICIAL_PLUGIN_VERSION_FAILURE_TTL = 600;
 
     private const OFFICIAL_PLUGIN_VERSION_TIMEOUT = 4;
-
-    private function ensureRewriteProbeEnabled(): void
-    {
-        if (!Manager::enabled($this->options)) {
-            $this->response->setStatus(409)->throwJson([
-                'ok' => false,
-                'message' => Manager::disabledMessage(),
-            ]);
-        }
-    }
-
-    private function ensureRewriteProbeToken(string $token): void
-    {
-        if (!Manager::verify($this->options, $token)) {
-            $this->response->setStatus(403)->throwJson([
-                'ok' => false,
-                'message' => Manager::expiredProbeMessage(),
-            ]);
-        }
-    }
 
     private function decodeFeedText(string $text): string
     {
@@ -104,12 +82,46 @@ class Ajax extends BaseOptions implements ActionInterface
             $items[] = [
                 'title' => $title,
                 'link'  => $link,
-                'date'  => Timezone::format($timestamp, 'n.j'),
+                'date'  => date('n.j', $timestamp),
                 'ts'    => $timestamp,
             ];
         }
 
         return $items;
+    }
+
+    private function collectInstalledPlugins(): array
+    {
+        $plugins = [];
+        $entries = glob(__TYPECHO_ROOT_DIR__ . '/' . __TYPECHO_PLUGIN_DIR__ . '/*');
+        $entries = is_array($entries) ? $entries : [];
+        natcasesort($entries);
+
+        foreach ($entries as $entry) {
+            $pluginName = null;
+            $pluginFile = null;
+
+            if (is_dir($entry)) {
+                $pluginName = basename($entry);
+                $pluginFile = $entry . '/Plugin.php';
+            } elseif (is_file($entry) && 'index.php' !== basename($entry)) {
+                $part = explode('.', basename($entry));
+                if (2 === count($part) && 'php' === $part[1]) {
+                    $pluginName = $part[0];
+                    $pluginFile = $entry;
+                }
+            }
+
+            if ($pluginName === null || $pluginFile === null || !is_file($pluginFile)) {
+                continue;
+            }
+
+            $info = Plugin::parseInfo($pluginFile);
+            $info['name'] = $pluginName;
+            $plugins[$pluginName] = $info;
+        }
+
+        return $plugins;
     }
 
     private function normalizeComparableVersion(?string $version): ?string
@@ -168,6 +180,24 @@ class Ajax extends BaseOptions implements ActionInterface
         }
 
         return $versions;
+    }
+
+    private function isOfficialPlugin(array $info): bool
+    {
+        $author = strtolower(trim((string) ($info['author'] ?? '')));
+        if ($author !== 'typerenew') {
+            return false;
+        }
+
+        $homepage = trim((string) ($info['homepage'] ?? ''));
+        if ($homepage === '') {
+            return false;
+        }
+
+        $parts = \Typecho\Common::parseUrl($homepage);
+        $host = strtolower((string) ($parts['host'] ?? ''));
+
+        return in_array($host, ['www.typerenew.com', 'typerenew.com'], true);
     }
 
     private function readOfficialPluginVersionCache(): ?array
@@ -241,33 +271,6 @@ class Ajax extends BaseOptions implements ActionInterface
         ]);
     }
 
-    private function buildOfficialPluginVersionResult(
-        bool $ok,
-        int $checkedAt,
-        array $versions = [],
-        string $message = '',
-        bool $cached = false,
-        ?int $ttl = null
-    ): array {
-        return [
-            'ok'        => $ok,
-            'checkedAt' => $checkedAt,
-            'ttl'       => (int) ($ttl ?? ($ok
-                ? self::OFFICIAL_PLUGIN_VERSION_CACHE_TTL
-                : self::OFFICIAL_PLUGIN_VERSION_FAILURE_TTL)),
-            'versions'  => $versions,
-            'cached'    => $cached,
-            'message'   => $message,
-        ];
-    }
-
-    private function failOfficialPluginVersionSource(int $checkedAt, string $message): array
-    {
-        $ttl = self::OFFICIAL_PLUGIN_VERSION_FAILURE_TTL;
-        $this->writeOfficialPluginVersionCache(false, [], $checkedAt, $message, $ttl);
-        return $this->buildOfficialPluginVersionResult(false, $checkedAt, [], $message, false, $ttl);
-    }
-
     private function loadOfficialPluginVersions(bool $forceRefresh = false): array
     {
         $now = time();
@@ -277,21 +280,29 @@ class Ajax extends BaseOptions implements ActionInterface
                 $cache !== null
                 && ($now - (int) $cache['checkedAt']) < (int) ($cache['ttl'] ?? self::OFFICIAL_PLUGIN_VERSION_CACHE_TTL)
             ) {
-                return $this->buildOfficialPluginVersionResult(
-                    (bool) ($cache['ok'] ?? false),
-                    (int) $cache['checkedAt'],
-                    (array) ($cache['versions'] ?? []),
-                    (string) ($cache['message'] ?? ''),
-                    true,
-                    (int) ($cache['ttl'] ?? self::OFFICIAL_PLUGIN_VERSION_CACHE_TTL)
-                );
+                return [
+                    'ok'        => (bool) ($cache['ok'] ?? false),
+                    'checkedAt' => (int) $cache['checkedAt'],
+                    'ttl'       => (int) ($cache['ttl'] ?? self::OFFICIAL_PLUGIN_VERSION_CACHE_TTL),
+                    'versions'  => $cache['versions'],
+                    'cached'    => true,
+                    'message'   => (string) ($cache['message'] ?? ''),
+                ];
             }
         }
 
         $client = Client::get();
         if (!$client) {
             $message = _t('当前环境缺少 curl 扩展，无法访问 GitHub Raw 地址。');
-            return $this->failOfficialPluginVersionSource($now, $message);
+            $this->writeOfficialPluginVersionCache(false, [], $now, $message, self::OFFICIAL_PLUGIN_VERSION_FAILURE_TTL);
+            return [
+                'ok'        => false,
+                'checkedAt' => $now,
+                'ttl'       => self::OFFICIAL_PLUGIN_VERSION_FAILURE_TTL,
+                'versions'  => [],
+                'cached'    => false,
+                'message'   => $message,
+            ];
         }
 
         try {
@@ -302,7 +313,15 @@ class Ajax extends BaseOptions implements ActionInterface
 
             if ($client->getResponseStatus() !== 200) {
                 $message = _t('官方插件仓库返回异常状态，暂时无法检测版本。');
-                return $this->failOfficialPluginVersionSource($now, $message);
+                $this->writeOfficialPluginVersionCache(false, [], $now, $message, self::OFFICIAL_PLUGIN_VERSION_FAILURE_TTL);
+                return [
+                    'ok'        => false,
+                    'checkedAt' => $now,
+                    'ttl'       => self::OFFICIAL_PLUGIN_VERSION_FAILURE_TTL,
+                    'versions'  => [],
+                    'cached'    => false,
+                    'message'   => $message,
+                ];
             }
 
             $responseUrl = $client->getResponseUrl();
@@ -310,28 +329,52 @@ class Ajax extends BaseOptions implements ActionInterface
             $host = strtolower((string) ($parts['host'] ?? ''));
             if ($host !== 'raw.githubusercontent.com') {
                 $message = _t('官方版本源校验失败，暂时无法检测版本。');
-                return $this->failOfficialPluginVersionSource($now, $message);
+                $this->writeOfficialPluginVersionCache(false, [], $now, $message, self::OFFICIAL_PLUGIN_VERSION_FAILURE_TTL);
+                return [
+                    'ok'        => false,
+                    'checkedAt' => $now,
+                    'ttl'       => self::OFFICIAL_PLUGIN_VERSION_FAILURE_TTL,
+                    'versions'  => [],
+                    'cached'    => false,
+                    'message'   => $message,
+                ];
             }
 
             $versions = $this->parseOfficialPluginVersions($client->getResponseBody());
             if (empty($versions)) {
                 $message = _t('官方插件仓库文档格式已变化，暂时无法解析版本信息。');
-                return $this->failOfficialPluginVersionSource($now, $message);
+                $this->writeOfficialPluginVersionCache(false, [], $now, $message, self::OFFICIAL_PLUGIN_VERSION_FAILURE_TTL);
+                return [
+                    'ok'        => false,
+                    'checkedAt' => $now,
+                    'ttl'       => self::OFFICIAL_PLUGIN_VERSION_FAILURE_TTL,
+                    'versions'  => [],
+                    'cached'    => false,
+                    'message'   => $message,
+                ];
             }
 
             $this->writeOfficialPluginVersionCache(true, $versions, $now, '', self::OFFICIAL_PLUGIN_VERSION_CACHE_TTL);
 
-            return $this->buildOfficialPluginVersionResult(
-                true,
-                $now,
-                $versions,
-                '',
-                false,
-                self::OFFICIAL_PLUGIN_VERSION_CACHE_TTL
-            );
+            return [
+                'ok'        => true,
+                'checkedAt' => $now,
+                'ttl'       => self::OFFICIAL_PLUGIN_VERSION_CACHE_TTL,
+                'versions'  => $versions,
+                'cached'    => false,
+                'message'   => '',
+            ];
         } catch (\Throwable) {
             $message = _t('当前服务器可能无法访问 GitHub Raw 地址，或网络 / SSL 临时异常。');
-            return $this->failOfficialPluginVersionSource($now, $message);
+            $this->writeOfficialPluginVersionCache(false, [], $now, $message, self::OFFICIAL_PLUGIN_VERSION_FAILURE_TTL);
+            return [
+                'ok'        => false,
+                'checkedAt' => $now,
+                'ttl'       => self::OFFICIAL_PLUGIN_VERSION_FAILURE_TTL,
+                'versions'  => [],
+                'cached'    => false,
+                'message'   => $message,
+            ];
         }
     }
 
@@ -340,11 +383,11 @@ class Ajax extends BaseOptions implements ActionInterface
         $source = $this->loadOfficialPluginVersions($forceRefresh);
         $statuses = [];
 
-        foreach (\Widget\Plugins\Rows::collectInstalledPlugins() as $pluginName => $info) {
+        foreach ($this->collectInstalledPlugins() as $pluginName => $info) {
             $localVersionRaw = trim((string) ($info['version'] ?? ''));
             $localVersion = $this->normalizeComparableVersion($localVersionRaw);
 
-            if (!\Widget\Plugins\Rows::isOfficialPlugin($info['author'] ?? '', $info['homepage'] ?? '')) {
+            if (!$this->isOfficialPlugin($info)) {
                 $statuses[$pluginName] = [
                     'status'  => 'unofficial',
                     'local'   => $localVersionRaw,
@@ -395,21 +438,11 @@ class Ajax extends BaseOptions implements ActionInterface
                 continue;
             }
 
-            if (version_compare($localVersion, $remoteVersion, '>')) {
-                $statuses[$pluginName] = [
-                    'status'  => 'ahead',
-                    'local'   => $localVersion,
-                    'remote'  => $remoteVersion,
-                    'message' => _t('当前版本 %s 高于官方仓库标注的最新版本 %s，请确认本地安装的是预发布版或已定制版本。', $localVersion, $remoteVersion),
-                ];
-                continue;
-            }
-
             $statuses[$pluginName] = [
                 'status'  => 'latest',
                 'local'   => $localVersion,
                 'remote'  => $remoteVersion,
-                'message' => _t('当前版本 %s 与官方仓库标注的最新版本 %s 一致。', $localVersion, $remoteVersion),
+                'message' => _t('当前版本 %s，不低于官方仓库标注的最新版本 %s。', $localVersion, $remoteVersion),
             ];
         }
 
@@ -417,7 +450,7 @@ class Ajax extends BaseOptions implements ActionInterface
             'ok'        => (bool) $source['ok'],
             'checkedAt' => (int) $source['checkedAt'],
             'cached'    => (bool) $source['cached'],
-            'ttl'       => (int) ($source['ttl'] ?? self::OFFICIAL_PLUGIN_VERSION_CACHE_TTL),
+            'ttl'       => self::OFFICIAL_PLUGIN_VERSION_CACHE_TTL,
             'source'    => self::OFFICIAL_PLUGIN_VERSION_SOURCE,
             'message'   => (string) $source['message'],
             'statuses'  => $statuses,
@@ -426,53 +459,13 @@ class Ajax extends BaseOptions implements ActionInterface
 
     public function remoteCallback()
     {
-        if ((string) $this->options->generator === (string) $this->request->getAgent()) {
+        if ($this->options->generator == $this->request->getAgent()) {
             $this->response->throwCallback(static function () {
                 echo 'OK';
             }, 'text/plain');
         }
 
         $this->response->setStatus(403)->throwContent('', 'text/plain');
-    }
-
-    public function rewriteProbe()
-    {
-        $this->user->pass('administrator');
-
-        $this->ensureRewriteProbeEnabled();
-        $this->ensureRewriteProbeToken((string) $this->request->get('token', ''));
-
-        $timestamp = (string) time();
-        $message = Manager::verifiedMessage();
-
-        $this->persistOptions(Manager::normalizeStoredState([
-            'rewriteStatus' => 'verified',
-            'rewriteVerifiedAt' => $timestamp,
-            'rewriteMessage' => $message,
-        ], true));
-        Manager::cleanupLegacyOptions($this->db);
-
-        $this->response->throwJson([
-            'ok' => true,
-            'status' => 'verified',
-            'message' => $message,
-            'verifiedAt' => (int) $timestamp,
-        ]);
-    }
-
-    public function rewritePublicProbe()
-    {
-        if (!$this->request->isGet()) {
-            $this->response->setStatus(405)->throwContent(_t('Method Not Allowed'), 'text/plain');
-            return;
-        }
-
-        $this->ensureRewriteProbeEnabled();
-
-        $this->response->throwJson([
-            'ok' => true,
-            'message' => _t('校验请求已通过。'),
-        ]);
     }
 
     public function pluginVersion()
@@ -600,7 +593,6 @@ class Ajax extends BaseOptions implements ActionInterface
         }
 
         $this->on($this->request->is('do=remoteCallback'))->remoteCallback();
-        $this->on($this->request->is('do=rewriteProbe'))->rewriteProbe();
         $this->on($this->request->is('do=feed'))->feed();
         $this->on($this->request->is('do=pluginVersion'))->pluginVersion();
         $this->on($this->request->is('do=editorResize'))->editorResize();

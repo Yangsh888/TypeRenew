@@ -52,6 +52,16 @@ include 'file-upload-js.php';
             $(this).select();
         });
 
+        $('.operate-delete').click(function () {
+            var t = $(this), href = t.attr('href');
+
+            if (confirm(t.attr('lang'))) {
+                window.location.href = href;
+            }
+
+            return false;
+        });
+
         Typecho.uploadComplete = function (attachment) {
             if (attachment.isImage) {
                 $('.typecho-attachment-photo').attr('src', attachment.url + '?' + Math.random());

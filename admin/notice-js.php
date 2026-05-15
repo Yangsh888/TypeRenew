@@ -41,14 +41,14 @@ if (session_status() === PHP_SESSION_ACTIVE) {
                 cookies.highlight = sessionHighlight;
             }
 
-            if (cookies.notice && 'success|notice|error'.indexOf(cookies.noticeType) >= 0) {
+            if (!!cookies.notice && 'success|notice|error'.indexOf(cookies.noticeType) >= 0) {
                 var messages = [];
                 try {
                     messages = $.parseJSON(cookies.notice);
                 } catch (e) {
                     messages = [cookies.notice];
                 }
-                var isTrAdmin = document.body.classList.contains('tr-admin');
+                var isTrAdmin = document.body && (' ' + document.body.className + ' ').indexOf(' tr-admin ') >= 0;
                 var sanitizeMessage = function (raw) {
                     var wrap = document.createElement('div');
                     wrap.innerHTML = String(raw == null ? '' : raw);

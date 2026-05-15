@@ -6,6 +6,13 @@ use Typecho\Widget\Helper\Layout;
 
 trait TextInputTrait
 {
+    /**
+     * 初始化当前输入项
+     *
+     * @param string|null $name 表单元素名称
+     * @param array|null $options 选择项
+     * @return Layout|null
+     */
     public function input(?string $name = null, ?array $options = null): ?Layout
     {
         $input = new Layout('input', [
@@ -25,6 +32,11 @@ trait TextInputTrait
         return $input;
     }
 
+    /**
+     * 设置表单项默认值
+     *
+     * @param mixed $value 表单项默认值
+     */
     protected function inputValue($value)
     {
         if (isset($value)) {
@@ -34,7 +46,14 @@ trait TextInputTrait
         }
     }
 
+    /**
+     * @param string $value
+     * @return string
+     */
     abstract protected function filterValue(string $value): string;
 
+    /**
+     * @return string
+     */
     abstract protected function getType(): string;
 }

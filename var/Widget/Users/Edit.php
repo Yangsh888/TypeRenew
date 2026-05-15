@@ -14,6 +14,13 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
+/**
+ * 编辑用户组件
+ *
+ * @package Widget
+ * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
+ * @license GNU General Public License 2.0
+ */
 class Edit extends Users implements ActionInterface
 {
     use EditTrait;
@@ -26,7 +33,7 @@ class Edit extends Users implements ActionInterface
     {
         $this->user->pass('administrator');
 
-        if (($this->request->is('uid') && 'delete' != $this->request->getAction()) || $this->request->is('do=update')) {
+        if (($this->request->is('uid') && 'delete' != $this->request->get('do')) || $this->request->is('do=update')) {
             $this->db->fetchRow($this->select()
                 ->where('uid = ?', $this->request->get('uid'))->limit(1), [$this, 'push']);
 
@@ -72,14 +79,9 @@ class Edit extends Users implements ActionInterface
             $this->response->goBack();
         }
 
-        $user = $this->request->fromInput('name', 'mail', 'screenName', 'password', 'url', 'group');
+        $user = $this->request->from('name', 'mail', 'screenName', 'password', 'url', 'group');
         $user['screenName'] = Common::strBy($user['screenName'] ?? null, $user['name']);
-        $password = $user['password'] ?? null;
-        if (!is_string($password) || $password === '') {
-            Notice::alloc()->set(_t('必须填写密码'));
-            $this->response->goBack();
-        }
-        $user['password'] = Password::hash($password);
+        $user['password'] = Password::hash($user['password']);
         $user['created'] = $this->options->time;
 
         try {
@@ -223,13 +225,12 @@ class Edit extends Users implements ActionInterface
         }
 
         $currentScreenName = (string) $this->screenName;
-        $user = $this->request->fromInput('mail', 'screenName', 'password', 'url', 'group');
+        $user = $this->request->from('mail', 'screenName', 'password', 'url', 'group');
         $user['screenName'] = Common::strBy($user['screenName'] ?? null, $this->name);
-        $password = $user['password'] ?? null;
-        if (!is_string($password) || $password === '') {
+        if (empty($user['password'])) {
             unset($user['password']);
         } else {
-            $user['password'] = Password::hash($password);
+            $user['password'] = Password::hash($user['password']);
         }
 
         try {
@@ -266,85 +267,28 @@ class Edit extends Users implements ActionInterface
         $row = $this->db->fetchObject($this->db->select(['MIN(uid)' => 'num'])->from('table.users'));
         $masterUserId = (int) ($row->num ?? 0);
         $deleteCount = 0;
-        $blockedCount = 0;
 
         foreach ($users as $user) {
             if ($masterUserId == $user || $user == $this->user->uid) {
                 continue;
             }
 
-            if ($this->hasOwnedContents((int) $user)) {
-                $blockedCount++;
-                continue;
-            }
-
-            $this->cleanupDeletedUserReferences((int) $user);
-
             if ($this->delete($this->db->sql()->where('uid = ?', $user))) {
                 $deleteCount++;
             }
         }
 
-        if ($deleteCount > 0 && $blockedCount > 0) {
-            Notice::alloc()->set(_t('部分用户已删除，包含文章或页面的用户未执行删除'), 'notice');
-        } elseif ($deleteCount > 0) {
-            Notice::alloc()->set(_t('用户已经删除'), 'success');
-        } elseif ($blockedCount > 0) {
-            Notice::alloc()->set(_t('部分用户包含文章或页面，未执行删除'), 'notice');
-        } else {
-            Notice::alloc()->set(_t('没有用户被删除'), 'notice');
-        }
+        Notice::alloc()->set(
+            $deleteCount > 0 ? _t('用户已经删除') : _t('没有用户被删除'),
+            $deleteCount > 0 ? 'success' : 'notice'
+        );
 
         $this->response->redirect(Common::url('manage-users.php', $this->options->adminUrl));
-    }
-
-    private function hasOwnedContents(int $uid): bool
-    {
-        $row = $this->db->fetchRow(
-            $this->db->select(['COUNT(cid)' => 'num'])
-                ->from('table.contents')
-                ->where('authorId = ?', $uid)
-                ->where('type IN ?', ['post', 'page'])
-                ->limit(1)
-        );
-
-        return (int) ($row['num'] ?? 0) > 0;
-    }
-
-    private function cleanupDeletedUserReferences(int $uid): void
-    {
-        $this->db->query(
-            $this->db->update('table.contents')
-                ->rows(['authorId' => 0])
-                ->where('authorId = ?', $uid)
-                ->where('type NOT IN ?', ['post', 'page'])
-        );
-
-        $this->db->query(
-            $this->db->update('table.comments')
-                ->rows(['authorId' => 0])
-                ->where('authorId = ?', $uid)
-        );
-
-        $this->db->query(
-            $this->db->update('table.comments')
-                ->rows(['ownerId' => 0])
-                ->where('ownerId = ?', $uid)
-        );
-
-        $this->db->query(
-            $this->db->delete('table.options')
-                ->where('user = ?', $uid)
-        );
     }
 
     public function action()
     {
         $this->user->pass('administrator');
-        if (!$this->request->isPost()) {
-            $this->response->setStatus(405)->throwContent(_t('Method Not Allowed'), 'text/plain');
-            return;
-        }
         $this->security->protect();
         $this->on($this->request->is('do=insert'))->insertUser();
         $this->on($this->request->is('do=update'))->updateUser();

@@ -47,7 +47,7 @@ class User extends Users
      */
     protected function initComponents(int &$components)
     {
-        $components = self::INIT_OPTIONS | self::INIT_DB;
+        $components = self::INIT_OPTIONS;
     }
 
     public function execute()
@@ -169,7 +169,8 @@ class User extends Users
      */
     public function commitLogin(&$user, int $expire = 0)
     {
-        $authCode = bin2hex(random_bytes(16));
+        $authCode = function_exists('openssl_random_pseudo_bytes') ?
+            bin2hex(openssl_random_pseudo_bytes(16)) : sha1(Common::randString(20));
         $user['authCode'] = $authCode;
 
         Cookie::set('__typecho_uid', $user['uid'], $expire);

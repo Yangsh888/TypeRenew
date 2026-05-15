@@ -13,6 +13,13 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
+/**
+ * 评论归档组件
+ *
+ * @package Widget
+ * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
+ * @license GNU General Public License 2.0
+ */
 class Archive extends Comments
 {
     private int $currentPage;
@@ -37,6 +44,8 @@ class Archive extends Comments
 
     /**
      * 输出文章评论数
+     *
+     * @param ...$args
      */
     public function num(...$args)
     {
@@ -138,6 +147,12 @@ class Archive extends Comments
         reset($this->stack);
     }
 
+    /**
+     * 将每行的值压入堆栈
+     *
+     * @param array $value 每行的值
+     * @return array
+     */
     public function push(array $value): array
     {
         $value = $this->filter($value);
@@ -208,6 +223,8 @@ class Archive extends Comments
 
     /**
      * 列出评论
+     *
+     * @param mixed $singleCommentOptions 单个评论自定义选项
      */
     public function listComments($singleCommentOptions = null)
     {
@@ -311,6 +328,8 @@ class Archive extends Comments
 
     /**
      * 根据深度余数输出
+     *
+     * @param mixed ...$args 需要输出的值
      */
     public function levelsAlt(...$args)
     {
@@ -319,6 +338,8 @@ class Archive extends Comments
 
     /**
      * 重载alt函数,以适应多级评论
+     *
+     * @param ...$args
      */
     public function alt(...$args)
     {
@@ -328,6 +349,8 @@ class Archive extends Comments
 
     /**
      * 评论回复链接
+     *
+     * @param string $word 回复链接文字
      */
     public function reply(string $word = '')
     {
@@ -372,6 +395,8 @@ class Archive extends Comments
 
     /**
      * 取消评论回复链接
+     *
+     * @param string $word 取消回复链接文字
      */
     public function cancelReply(string $word = '')
     {
@@ -389,6 +414,8 @@ class Archive extends Comments
 
     /**
      * 子评论
+     *
+     * @return array
      */
     protected function ___children(): array
     {
@@ -403,6 +430,8 @@ class Archive extends Comments
 
     /**
      * 重载评论页码获取
+     *
+     * @return int
      */
     protected function ___commentPage(): int
     {
@@ -411,6 +440,8 @@ class Archive extends Comments
 
     /**
      * 重载内容获取
+     *
+     * @return Contents
      */
     protected function ___parentContent(): Contents
     {

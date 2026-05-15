@@ -29,8 +29,9 @@ $(document).ready(function() {
         secondText      :   '<?php _e('秒'); ?>',
 
         dateFormat      :   'yy-mm-dd',
-        hour            :   <?php echo (int) \Typecho\Timezone::format((int) $options->time, 'H'); ?>,
-        minute          :   <?php echo (int) \Typecho\Timezone::format((int) $options->time, 'i'); ?>
+        timezone        :   <?php $options->timezone(); ?> / 60,
+        hour            :   (new Date()).getHours(),
+        minute          :   (new Date()).getMinutes()
     });
 
     $('#title').select();
@@ -378,6 +379,21 @@ $(document).ready(function() {
         form.addClass('submitting');
     });
 
+    const dstOffset = (function () {
+        const d = new Date(),
+            jan = new Date(d.getFullYear(), 0, 1),
+            jul = new Date(d.getFullYear(), 6, 1),
+            stdOffset = Math.max(jan.getTimezoneOffset(), jul.getTimezoneOffset());
+
+        return stdOffset - d.getTimezoneOffset();
+    })();
+
+    if (dstOffset > 0) {
+        $('<input name="dst" type="hidden" />').appendTo(form).val(dstOffset);
+    }
+
+    $('<input name="timezone" type="hidden" />').appendTo(form).val(- (new Date).getTimezoneOffset() * 60);
+
     function getPreviewFrame() {
         return $('.preview-frame').get(0) || null;
     }
@@ -443,8 +459,10 @@ $(document).ready(function() {
                     previewData(draftId);
                 });
             }
-        } else if (draftId || cid) {
-            previewData(draftId || cid);
+        } else if (!!draftId) {
+            previewData(draftId);
+        } else if (!!cid) {
+            previewData(cid);
         }
     });
 
@@ -463,5 +481,12 @@ $(document).ready(function() {
         }
     });
 
+    $('.edit-draft-notice a').click(function () {
+        if (confirm('<?php _e('您确认要删除这份草稿吗?'); ?>')) {
+            window.location.href = $(this).attr('href');
+        }
+
+        return false;
+    });
 });
 </script>

@@ -4,14 +4,11 @@ namespace Widget\Contents;
 
 use Typecho\Common;
 use Typecho\Config;
-use Typecho\Timezone;
 use Typecho\Validate;
 use Typecho\Widget\Helper\Form\Element;
 use Typecho\Widget\Helper\Layout;
 use Widget\Base\Contents;
 use Widget\Base\Metas;
-use Widget\Contents\Write\App as WriteApp;
-use Widget\Contents\Write\Editor as WriteEditor;
 
 trait EditTrait
 {
@@ -19,25 +16,6 @@ trait EditTrait
     {
         return $this->db->query($this->db->delete('table.fields')
             ->where('cid = ?', $cid));
-    }
-
-    protected function withWriteTransaction(callable $callback)
-    {
-        $this->db->query('BEGIN');
-
-        try {
-            $result = $callback();
-            $this->db->query('COMMIT');
-
-            return $result;
-        } catch (\Throwable $e) {
-            try {
-                $this->db->query('ROLLBACK');
-            } catch (\Throwable) {
-            }
-
-            throw $e;
-        }
     }
 
     public function applyFields(array $fields, $cid)
@@ -167,10 +145,6 @@ trait EditTrait
                     ->trigger($plugged)->call('isFieldReadOnly', $row['name']);
 
                 if ($plugged && $isFieldReadOnly) {
-                    continue;
-                }
-
-                if ($this->isInternalFieldName((string) ($row['name'] ?? ''))) {
                     continue;
                 }
 
@@ -310,31 +284,33 @@ trait EditTrait
 
     protected function getCreated(): int
     {
-        $created = $this->have() && $this->created > 0 ? (int) $this->created : (int) $this->options->time;
+        $created = $this->options->time;
         if ($this->request->is('created')) {
             $created = $this->request->get('created');
         } elseif ($this->request->is('date')) {
+            $dstOffset = $this->request->get('dst', 0);
+            $timezoneSymbol = $this->options->timezone >= 0 ? '+' : '-';
+            $timezoneOffset = abs($this->options->timezone);
+            $timezone = $timezoneSymbol . str_pad($timezoneOffset / 3600, 2, '0', STR_PAD_LEFT) . ':00';
             $dateParts = preg_split('/\s+/', trim((string) $this->request->get('date', '')), 2);
-            $date = $dateParts[0] ?? Timezone::format($created, 'Y-m-d');
-            $time = $dateParts[1] ?? Timezone::format($created, 'H:i:s');
-            $timestamp = Timezone::fromLocalString("{$date} {$time}");
+            $date = $dateParts[0] ?? date('Y-m-d', $created);
+            $time = $dateParts[1] ?? date('H:i:s', $created);
+            $timestamp = strtotime("{$date}T{$time}{$timezone}");
 
-            if (null !== $timestamp) {
-                $created = $timestamp;
+            if (false !== $timestamp) {
+                $created = $timestamp - (int) $dstOffset;
             }
         } elseif ($this->request->is('year&month&day')) {
-            $second = $this->request->filter('int')->get('sec', (int) Timezone::format($created, 's'));
-            $min = $this->request->filter('int')->get('min', (int) Timezone::format($created, 'i'));
-            $hour = $this->request->filter('int')->get('hour', (int) Timezone::format($created, 'H'));
+            $second = $this->request->filter('int')->get('sec', date('s'));
+            $min = $this->request->filter('int')->get('min', date('i'));
+            $hour = $this->request->filter('int')->get('hour', date('H'));
 
             $year = $this->request->filter('int')->get('year');
             $month = $this->request->filter('int')->get('month');
             $day = $this->request->filter('int')->get('day');
 
-            $timestamp = Timezone::fromLocalParts($year, $month, $day, $hour, $min, $second);
-            if (null !== $timestamp) {
-                $created = $timestamp;
-            }
+            $created = mktime($hour, $min, $second, $month, $day, $year)
+                - $this->options->timezone + $this->options->serverTimezone;
         } elseif ($this->have() && $this->created > 0) {
             $created = $this->created;
         } elseif ($this->request->is('do=save')) {
@@ -342,92 +318,6 @@ trait EditTrait
         }
 
         return $created;
-    }
-
-    abstract protected function hasWriteMetas(): bool;
-
-    protected function getWriteApp(): WriteApp
-    {
-        return new WriteApp($this->getWriteEditor(), $this->hasWriteMetas());
-    }
-
-    protected function getWriteEditor(): WriteEditor
-    {
-        return new WriteEditor(
-            function (callable $callback) {
-                return $this->withWriteTransaction($callback);
-            },
-            function (array &$contents): void {
-                $this->checkStatus($contents);
-            },
-            function (): bool {
-                return $this->have();
-            },
-            function (): int {
-                return (int) ($this->cid ?? 0);
-            },
-            function (): string {
-                return (string) ($this->type ?? '');
-            },
-            function (): int {
-                return (int) ($this->created ?? 0);
-            },
-            function (): string {
-                return (string) ($this->status ?? '');
-            },
-            function (): array {
-                $draft = $this->draft ?? null;
-                return is_array($draft) ? $draft : [];
-            },
-            function (array $contents): int {
-                return (int) $this->insert($contents);
-            },
-            function (array $contents, int $cid): int {
-                return (int) $this->update($contents, $this->db->sql()->where('cid = ?', $cid));
-            },
-            function (int $cid, bool $hasMetas): void {
-                $this->deleteContent($cid, $hasMetas);
-            },
-            function (int $cid): int {
-                return $this->deleteFields($cid);
-            },
-            function (int $fromCid, int $toCid): void {
-                if ($fromCid <= 0 || $fromCid === $toCid) {
-                    return;
-                }
-
-                $this->db->query($this->db->update('table.contents')->rows([
-                    'parent' => $toCid
-                ])->where('parent = ? AND type = ? AND authorId = ?', $fromCid, 'attachment', $this->user->uid));
-            },
-            function (int $cid, array $contents, bool $beforeCount, bool $afterCount): void {
-                if (array_key_exists('category', $contents)) {
-                    $this->setCategories(
-                        $cid,
-                        !empty($contents['category']) && is_array($contents['category'])
-                            ? $contents['category'] : [$this->options->defaultCategory],
-                        $beforeCount,
-                        $afterCount
-                    );
-                }
-
-                if (array_key_exists('tags', $contents)) {
-                    $this->setTags($cid, $contents['tags'], $beforeCount, $afterCount);
-                }
-            },
-            function (int $cid, array $contents): void {
-                $this->attach($cid, $contents);
-            },
-            function (int $cid): void {
-                $this->applyFields($this->getFields(), $cid);
-            },
-            function (int $cid): void {
-                $this->db->fetchRow(
-                    $this->select()->where('table.contents.cid = ?', $cid)->limit(1),
-                    [$this, 'push']
-                );
-            }
-        );
     }
 
     public function isFuturePublish(?int $created = null): bool
@@ -478,7 +368,6 @@ trait EditTrait
                         $this->db->select('mid')
                             ->from('table.metas')
                             ->where('mid = ?', $category)
-                            ->where('type = ?', 'category')
                             ->limit(1)
                     )
                 ) {
@@ -578,6 +467,16 @@ trait EditTrait
             }
         }
 
+        $attachUnattached = !empty($contents['attachUnattached']) || $this->request->get('attachUnattached');
+        if ($attachUnattached) {
+            $authorId = $this->user->uid;
+            $this->db->query($this->db->update('table.contents')->rows([
+                'parent' => $cid,
+                'status' => 'publish'
+            ])->where('parent = 0 AND type = ? AND authorId = ?', 'attachment', $authorId)
+                ->limit(100));
+        }
+        
         if (!empty($contents['oldCid']) && $contents['oldCid'] != $cid) {
             $oldCid = intval($contents['oldCid']);
             $authorId = $this->user->uid;
@@ -594,14 +493,147 @@ trait EditTrait
             ->where('parent = ? AND type = ?', $cid, 'attachment'));
     }
 
-    protected function publish(array $contents)
+    protected function publish(array $contents, bool $hasMetas = true)
     {
-        $this->getWriteApp()->publish($contents);
+        $this->checkStatus($contents);
+
+        $realId = 0;
+        $draftCid = 0;
+        $orphanDraftCid = 0;
+
+        $isDraftToPublish = false;
+        $isBeforePublish = false;
+        $isAfterPublish = 'publish' === $contents['status'];
+
+        if ($this->have()) {
+            $isDraftToPublish = preg_match("/_draft$/", $this->type);
+            $isBeforePublish = 'publish' === $this->status;
+
+            if (!$isDraftToPublish && $this->draft) {
+                $draftCid = $this->draft['cid'];
+                $this->deleteContent($draftCid);
+                $this->deleteFields($draftCid);
+            }
+
+            if ($this->update($contents, $this->db->sql()->where('cid = ?', $this->cid))) {
+                $realId = $this->cid;
+            }
+        } else {
+            $requestCid = $this->request->filter('int')->get('cid');
+            if ($requestCid > 0) {
+                $existingDraft = $this->db->fetchRow($this->select()
+                    ->where('table.contents.cid = ? AND table.contents.parent = ?', $requestCid, 0)
+                    ->where('table.contents.type = ?', $contents['type'] . '_draft')
+                    ->where('table.contents.authorId = ?', $this->user->uid)
+                    ->limit(1));
+                
+                if ($existingDraft) {
+                    $orphanDraftCid = $requestCid;
+                }
+            }
+            
+            $realId = $this->insert($contents);
+        }
+
+        if ($realId > 0) {
+            if ($isDraftToPublish && $this->draft && $this->draft['cid'] > 0) {
+                $draftCid = $this->draft['cid'];
+            }
+            
+            if ($draftCid > 0 && $draftCid != $realId) {
+                $authorId = $this->user->uid;
+                $this->db->query($this->db->update('table.contents')->rows([
+                    'parent' => $realId
+                ])->where('parent = ? AND type = ? AND authorId = ?', $draftCid, 'attachment', $authorId));
+            }
+            
+            if ($orphanDraftCid > 0 && $orphanDraftCid != $realId) {
+                $authorId = $this->user->uid;
+                $this->db->query($this->db->update('table.contents')->rows([
+                    'parent' => $realId
+                ])->where('parent = ? AND type = ? AND authorId = ?', $orphanDraftCid, 'attachment', $authorId));
+                
+                $this->deleteContent($orphanDraftCid);
+                $this->deleteFields($orphanDraftCid);
+            }
+
+            if ($hasMetas) {
+                if (array_key_exists('category', $contents)) {
+                    $this->setCategories(
+                        $realId,
+                        !empty($contents['category']) && is_array($contents['category'])
+                            ? $contents['category'] : [$this->options->defaultCategory],
+                        !$isDraftToPublish && $isBeforePublish,
+                        $isAfterPublish
+                    );
+                }
+
+                if (array_key_exists('tags', $contents)) {
+                    $this->setTags($realId, $contents['tags'], !$isDraftToPublish && $isBeforePublish, $isAfterPublish);
+                }
+            }
+
+            $this->attach($realId, $contents);
+
+            $this->applyFields($this->getFields(), $realId);
+
+            $this->db->fetchRow($this->select()
+                ->where('table.contents.cid = ?', $realId)->limit(1), [$this, 'push']);
+        }
     }
 
-    protected function save(array $contents): int
+    protected function save(array $contents, bool $hasMetas = true): int
     {
-        return $this->getWriteApp()->save($contents);
+        $this->checkStatus($contents);
+
+        $realId = 0;
+
+        if ($this->draft) {
+            $isRevision = !preg_match("/_draft$/", $this->type);
+            if ($isRevision) {
+                $contents['parent'] = $this->cid;
+                $contents['type'] = 'revision';
+            }
+
+            if ($this->update($contents, $this->db->sql()->where('cid = ?', $this->draft['cid']))) {
+                $realId = $this->draft['cid'];
+            }
+        } else {
+            if ($this->have()) {
+                $contents['parent'] = $this->cid;
+                $contents['type'] = 'revision';
+            }
+
+            $realId = $this->insert($contents);
+
+            if (!$this->have()) {
+                $this->db->fetchRow(
+                    $this->select()->where('table.contents.cid = ?', $realId)->limit(1),
+                    [$this, 'push']
+                );
+            }
+        }
+
+        if ($realId > 0) {
+            if ($hasMetas) {
+                if (array_key_exists('category', $contents)) {
+                    $this->setCategories($realId, !empty($contents['category']) && is_array($contents['category']) ?
+                        $contents['category'] : [$this->options->defaultCategory], false, false);
+                }
+
+                if (array_key_exists('tags', $contents)) {
+                    $this->setTags($realId, $contents['tags'], false, false);
+                }
+            }
+
+            $this->attach($realId, $contents);
+
+            $this->applyFields($this->getFields(), $realId);
+
+            return $realId;
+        }
+
+        return $this->draft['cid'] ?? 0;
     }
 
     protected function getPageOffset(
@@ -663,5 +695,48 @@ trait EditTrait
                 ->where('cid = ?', $attachmentCid)
                 ->where('type = ?', 'attachment')
         );
+    }
+
+    protected function normalizeWriteContents(array $contents): array
+    {
+        $attachmentCids = trim((string) $this->request->get('attachment_cids', ''));
+        if ($attachmentCids !== '') {
+            $cids = array_filter(array_map('intval', explode(',', $attachmentCids)));
+            if (!empty($cids)) {
+                $contents['attachment'] = $cids;
+            }
+        }
+
+        if (empty($this->cid)) {
+            $contents['attachUnattached'] = true;
+        } else {
+            $contents['oldCid'] = $this->cid;
+        }
+
+        if ($this->request->is('markdown=1')) {
+            $contents['text'] = '<!--markdown-->' . (string) ($contents['text'] ?? '');
+        }
+
+        return $contents;
+    }
+
+    protected function finishSaveResponse(string $title, int $draftId, string $redirect): void
+    {
+        \Widget\Notice::alloc()->highlight($this->cid);
+
+        if ($this->request->isAjax()) {
+            $this->response->throwJson([
+                'success' => 1,
+                'time' => date('H:i:s A', (int) $this->options->time),
+                'cid' => $this->cid,
+                'draftId' => $draftId
+            ]);
+        }
+
+        \Widget\Notice::alloc()->set(
+            _t('草稿 "%s" 已经被保存', htmlspecialchars((string) $title, ENT_QUOTES, 'UTF-8')),
+            'success'
+        );
+        $this->response->redirect($redirect);
     }
 }

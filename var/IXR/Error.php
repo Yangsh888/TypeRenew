@@ -40,8 +40,6 @@ class Error
      */
     public function getXml(): string
     {
-        $message = htmlspecialchars((string) $this->message, ENT_QUOTES, 'UTF-8');
-
         return <<<EOD
 <methodResponse>
   <fault>
@@ -53,7 +51,7 @@ class Error
         </member>
         <member>
           <name>faultString</name>
-          <value><string>{$message}</string></value>
+          <value><string>{$this->message}</string></value>
         </member>
       </struct>
     </value>

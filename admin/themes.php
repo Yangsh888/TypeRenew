@@ -4,6 +4,15 @@ include 'header.php';
 include 'menu.php';
 $themeAction = htmlspecialchars($options->index . '/action/themes-edit', ENT_QUOTES, 'UTF-8');
 $themeToken = htmlspecialchars($security->getToken($options->index . '/action/themes-edit'), ENT_QUOTES, 'UTF-8');
+$themeHomepage = static function ($value): string {
+    $candidate = trim((string) $value);
+
+    if ($candidate !== '' && preg_match('#^https?://#i', $candidate)) {
+        return htmlspecialchars($candidate, ENT_QUOTES, 'UTF-8');
+    }
+
+    return '';
+};
 ?>
 
 <main class="main">
@@ -42,12 +51,7 @@ $themeToken = htmlspecialchars($security->getToken($options->index . '/action/th
                                                   alt="<?php $themes->name(); ?>"/></td>
                             <td valign="top">
                                 <h3><?php '' != $themes->title ? $themes->title() : $themes->name(); ?></h3>
-                                <?php
-                                $homepage = trim((string) $themes->homepage);
-                                $homepage = $homepage !== '' && preg_match('#^https?://#i', $homepage)
-                                    ? htmlspecialchars($homepage, ENT_QUOTES, 'UTF-8')
-                                    : '';
-                                ?>
+                                <?php $homepage = $themeHomepage($themes->homepage); ?>
                                 <cite>
                                     <?php if ($themes->author): ?><?php _e('作者'); ?>: <?php if ($homepage !== ''): ?><a href="<?php echo $homepage; ?>" target="_blank" rel="noopener noreferrer"><?php endif; ?><?php $themes->author(); ?><?php if ($homepage !== ''): ?></a><?php endif; ?> &nbsp;&nbsp;<?php endif; ?>
                                     <?php if ($themes->version): ?><?php _e('版本'); ?>: <?php $themes->version() ?><?php endif; ?>

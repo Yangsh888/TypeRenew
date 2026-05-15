@@ -4,13 +4,22 @@ namespace Widget\Contents;
 
 use Typecho\Db\Exception as DbException;
 use Typecho\Widget\Exception;
+use Widget\Base\Metas;
 use Widget\Metas\From as MetasFrom;
 
+/**
+ * 编辑准备组件
+ */
 trait PrepareEditTrait
 {
 
     /**
      * 准备编辑
+     *
+     * @param string $type
+     * @param bool $hasDraft
+     * @param string $notFoundMessage
+     * @return $this
      * @throws Exception|DbException
      */
     protected function prepareEdit(string $type, bool $hasDraft, string $notFoundMessage): self
@@ -36,16 +45,17 @@ trait PrepareEditTrait
                     [$this, 'filter']
                 );
 
-                if (is_array($draft)) {
-                    $draftCid = (int) $draft['cid'];
-                    $draft['parent'] = $type === 'page' && $draft['type'] === 'revision'
-                        ? $this->loadPageDraftParent($draftCid, (int) $this->row['parent'])
-                        : $this->row['parent'];
+                if (isset($draft)) {
+                    $draft['parent'] = $this->row['parent'];    // keep parent
                     $draft['slug'] = ltrim($draft['slug'], '@');
                     $draft['type'] = $this->type;
-                    $draft['draftCid'] = $draftCid;
                     $draft['draft'] = $draft;
                     $draft['cid'] = $this->cid;
+                    $draft['tags'] = $this->db->fetchAll($this->db
+                        ->select()->from('table.metas')
+                        ->join('table.relationships', 'table.relationships.mid = table.metas.mid')
+                        ->where('table.relationships.cid = ?', $draft['cid'])
+                        ->where('table.metas.type = ?', 'tag'), [Metas::alloc(), 'filter']);
 
                     $this->row = $draft;
                 }
@@ -59,30 +69,22 @@ trait PrepareEditTrait
         return $this;
     }
 
-    private function loadPageDraftParent(int $draftCid, int $fallback): int
-    {
-        if ($draftCid <= 0) {
-            return $fallback;
-        }
-
-        $row = $this->db->fetchRow(
-            $this->db->select('int_value')
-                ->from('table.fields')
-                ->where('cid = ? AND name = ?', $draftCid, '_tr_page_parent')
-                ->limit(1)
-        );
-
-        return isset($row['int_value']) ? (int) $row['int_value'] : $fallback;
-    }
-
+    /**
+     * @return $this
+     */
     abstract public function prepare(): self;
 
+    /**
+     * @return string
+     */
     public function getMenuTitle(): string
     {
         return _t('编辑 %s', $this->prepare()->title);
     }
 
     /**
+     * @param mixed ...$permissions
+     * @return bool
      * @throws Exception|DbException
      */
     public function allow(...$permissions): bool
@@ -93,27 +95,36 @@ trait PrepareEditTrait
             $permission = strtolower($permission);
 
             if ('edit' == $permission) {
-                $allow = $allow && ($this->user->pass('editor', true) || $this->authorId == $this->user->uid);
+                $allow &= ($this->user->pass('editor', true) || $this->authorId == $this->user->uid);
             } else {
                 $permission = 'allow' . ucfirst(strtolower($permission));
                 $optionPermission = 'default' . ucfirst($permission);
-                $allow = $allow && ($this->{$permission} ?? $this->options->{$optionPermission});
+                $allow &= ($this->{$permission} ?? $this->options->{$optionPermission});
             }
         }
 
         return $allow;
     }
 
+    /**
+     * @return string
+     */
     protected function ___title(): string
     {
         return $this->have() ? $this->row['title'] : '';
     }
 
+    /**
+     * @return string
+     */
     protected function ___text(): string
     {
         return $this->have() ? ($this->isMarkdown ? substr($this->row['text'], 15) : $this->row['text']) : '';
     }
 
+    /**
+     * @return array
+     */
     protected function ___categories(): array
     {
         return $this->have() ? parent::___categories()

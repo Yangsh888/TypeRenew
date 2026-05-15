@@ -11,6 +11,12 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
 }
 
 /**
+ * 分类输出组件
+ *
+ * @category typecho
+ * @package Widget
+ * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
+ * @license GNU General Public License 2.0
  * @property-read int $levels
  * @property-read array $children
  */
@@ -19,11 +25,19 @@ class Rows extends Metas
     use InitTreeRowsTrait;
     use TreeViewTrait;
 
+    /**
+     * @return void
+     */
     public function execute()
     {
         $this->pushAll($this->getRows($this->orders, $this->parameter->ignore));
     }
 
+    /**
+     * treeViewCategories
+     *
+     * @param mixed $categoryOptions 输出选项
+     */
     public function listCategories($categoryOptions = null)
     {
         $categoryOptions = Config::factory($categoryOptions);

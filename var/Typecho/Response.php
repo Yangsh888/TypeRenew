@@ -41,9 +41,6 @@ class Response
         415 => 'Unsupported Media Type',
         416 => 'Requested Range Not Satisfiable',
         417 => 'Expectation Failed',
-        422 => 'Unprocessable Content',
-        429 => 'Too Many Requests',
-        451 => 'Unavailable For Legal Reasons',
         500 => 'Internal Server Error',
         501 => 'Not Implemented',
         502 => 'Bad Gateway',
@@ -126,15 +123,18 @@ class Response
             return;
         }
 
-        if (headers_sent()) {
-            return;
+        $sentHeaders = [];
+        foreach (headers_list() as $header) {
+            [$key] = explode(':', $header, 2);
+            $sentHeaders[] = strtolower(trim($key));
         }
 
-        $reason = self::HTTP_CODE[$this->status] ?? 'Unknown Status';
-        header('HTTP/1.1 ' . $this->status . ' ' . $reason, true, $this->status);
+        header('HTTP/1.1 ' . $this->status . ' ' . self::HTTP_CODE[$this->status], true, $this->status);
 
         foreach ($this->headers as $name => $value) {
-            header($name . ': ' . $value, true);
+            if (!in_array(strtolower($name), $sentHeaders)) {
+                header($name . ': ' . $value);
+            }
         }
 
         foreach ($this->cookies as $cookie) {
@@ -172,7 +172,7 @@ class Response
         }
 
         foreach ($this->responders as $responder) {
-            $responder($this);
+            call_user_func($responder, $this);
         }
 
         if (!empty($this->backgroundResponders)) {
@@ -180,7 +180,7 @@ class Response
 
             foreach ($this->backgroundResponders as $responder) {
                 try {
-                    $responder($this);
+                    call_user_func($responder, $this);
                 } catch (\Throwable $e) {
                     error_log('Response.background: ' . $e->getMessage());
                 }
@@ -200,12 +200,14 @@ class Response
 
         if (!$isFastCGI) {
             if ($preserveBody) {
-                if (ob_get_level() > 0 && !headers_sent()) {
-                    $length = ob_get_length();
-                    $this->setHeader('Connection', 'close');
-                    $this->setHeader('Content-Encoding', 'none');
-                    $this->setHeader('Content-Length', (string) max(0, (int) ($length === false ? 0 : $length)));
+                if (ob_get_level() <= 0) {
+                    ob_start();
                 }
+
+                $length = ob_get_length();
+                $this->setHeader('Connection', 'close');
+                $this->setHeader('Content-Encoding', 'none');
+                $this->setHeader('Content-Length', (string) max(0, (int) ($length === false ? 0 : $length)));
             } else {
                 while (ob_get_level() > 0) {
                     ob_end_clean();
@@ -236,7 +238,7 @@ class Response
     public function setStatus(int $code): Response
     {
         if (!$this->sandbox) {
-            $this->status = ($code >= 100 && $code <= 599) ? $code : 500;
+            $this->status = $code;
         }
 
         return $this;
@@ -283,15 +285,11 @@ class Response
         string $sameSite = 'Lax'
     ): Response {
         if (!$this->sandbox) {
-            if (!is_scalar($value) && $value !== null) {
-                $value = Common::jsonEncode($value);
-            }
-
             $sameSite = ucfirst(strtolower(trim($sameSite)));
             if (!in_array($sameSite, ['Lax', 'Strict', 'None'], true)) {
                 $sameSite = 'Lax';
             }
-            $this->cookies[] = [$key, (string) $value, $timeout, $path, $domain, $secure, $httponly, $sameSite];
+            $this->cookies[] = [$key, $value, $timeout, $path, $domain, $secure, $httponly, $sameSite];
         }
 
         return $this;

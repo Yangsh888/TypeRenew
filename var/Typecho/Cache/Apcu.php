@@ -89,11 +89,7 @@ class Apcu implements Driver
         $total = 0;
         foreach (array_chunk($keys, 100) as $chunk) {
             $deleted = apcu_delete($chunk);
-            if (is_array($deleted)) {
-                $total += count($chunk) - count($deleted);
-            } elseif ($deleted) {
-                $total += count($chunk);
-            }
+            $total += is_array($deleted) ? count($deleted) : (int) $deleted;
         }
         return $total;
     }

@@ -103,18 +103,6 @@ class Request
         return $this->applyFilter($this->request->proxy($this->params)->get($key, $default, $exists));
     }
 
-    public function getInput(string $key, $default = null, ?bool &$exists = true)
-    {
-        return $this->applyFilter($this->request->proxy($this->params)->getInput($key, $default, $exists));
-    }
-
-    public function getAction(string $default = '', ?bool &$exists = true): string
-    {
-        $value = $this->request->proxy($this->params)->getAction($default, $exists);
-        $value = $this->applyFilter($value);
-        return is_scalar($value) ? (string) $value : $default;
-    }
-
     public function getArray(string $key): array
     {
         return $this->applyFilter($this->request->proxy($this->params)->getArray($key));
@@ -122,12 +110,7 @@ class Request
 
     public function from(...$params): array
     {
-        return $this->applyFilter($this->request->proxy($this->params)->from(...$params));
-    }
-
-    public function fromInput(...$params): array
-    {
-        return $this->applyFilter($this->request->proxy($this->params)->fromInput(...$params));
+        return $this->applyFilter(call_user_func_array([$this->request->proxy($this->params), 'from'], $params));
     }
 
     public function is(string|array $query): bool
@@ -248,7 +231,8 @@ class Request
     {
         if ($this->filter) {
             foreach ($this->filter as $filter) {
-                $value = $this->applyFilterValue($value, $filter);
+                $value = is_array($value) ? array_map($filter, $value) :
+                    call_user_func($filter, $value);
             }
 
             $this->filter = [];
@@ -256,23 +240,6 @@ class Request
 
         $this->request->endProxy();
         return $value;
-    }
-
-    private function applyFilterValue($value, callable $filter)
-    {
-        if ($value === null) {
-            return null;
-        }
-
-        if (is_array($value)) {
-            foreach ($value as $key => $item) {
-                $value[$key] = $this->applyFilterValue($item, $filter);
-            }
-
-            return $value;
-        }
-
-        return $filter(is_scalar($value) ? (string) $value : '');
     }
 
     /**
@@ -284,6 +251,8 @@ class Request
      */
     private function wrapFilter(callable $filter): callable
     {
-        return fn($value) => $filter($value ?? '');
+        return function ($value) use ($filter) {
+            return call_user_func($filter, $value ?? '');
+        };
     }
 }

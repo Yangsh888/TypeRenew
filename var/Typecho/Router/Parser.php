@@ -41,22 +41,10 @@ class Parser
         if (1 == $paramsNum) {
             return sprintf($this->defaultRegex['char'], '+');
         } elseif (2 == $paramsNum) {
-            if (!isset($this->defaultRegex[$params[1]])) {
-                return '([^\r\n]+)';
-            }
-
             return sprintf($this->defaultRegex[$params[1]], '+');
         } elseif (3 == $paramsNum) {
-            if (!isset($this->defaultRegex[$params[1]])) {
-                return '([^\r\n]+)';
-            }
-
             return sprintf($this->defaultRegex[$params[1]], $params[2] > 0 ? '{' . $params[2] . '}' : '*');
         } elseif (4 == $paramsNum) {
-            if (!isset($this->defaultRegex[$params[1]])) {
-                return '([^\r\n]+)';
-            }
-
             return sprintf($this->defaultRegex[$params[1]], '{' . $params[2] . ',' . $params[3] . '}');
         }
 

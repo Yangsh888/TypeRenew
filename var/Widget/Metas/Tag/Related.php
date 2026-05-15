@@ -8,8 +8,14 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
+/**
+ * 相关信息输出组件
+ */
 class Related extends Metas
 {
+    /**
+     * @return void
+     */
     public function execute()
     {
         $this->db->fetchAll($this->select()

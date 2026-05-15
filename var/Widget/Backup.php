@@ -14,6 +14,11 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
+/**
+ * 备份工具
+ *
+ * @package Widget
+ */
 class Backup extends BaseOptions implements ActionInterface
 {
     public const HEADER = '%TYPECHO_BACKUP_XXXX%';
@@ -104,13 +109,8 @@ class Backup extends BaseOptions implements ActionInterface
     public function action()
     {
         $this->user->pass('administrator');
-        if (!$this->request->isPost()) {
-            $this->response->setStatus(405);
-            $this->finish();
-            return;
-        }
         $this->security->protect();
-        $action = $this->request->filter('trim')->getAction();
+        $action = (string) $this->request->filter('trim')->get('do');
 
         if ('' === $action) {
             Notice::alloc()->set(_t('请求缺少必要动作参数，请重新提交恢复请求'), 'error');
@@ -1017,7 +1017,11 @@ class Backup extends BaseOptions implements ActionInterface
             return ['blocking' => [], 'warning' => [], 'info' => []];
         }
 
-        return self::normalizeReport($report);
+        return [
+            'blocking' => array_values(array_filter((array) ($report['blocking'] ?? []), 'is_string')),
+            'warning' => array_values(array_filter((array) ($report['warning'] ?? []), 'is_string')),
+            'info' => array_values(array_filter((array) ($report['info'] ?? []), 'is_string')),
+        ];
     }
 
     private function stashReport(array $report): void
@@ -1026,12 +1030,7 @@ class Backup extends BaseOptions implements ActionInterface
             return;
         }
 
-        $_SESSION[self::REPORT_SESSION_KEY] = self::normalizeReport($report);
-    }
-
-    private static function normalizeReport(array $report): array
-    {
-        return [
+        $_SESSION[self::REPORT_SESSION_KEY] = [
             'blocking' => array_values(array_filter((array) ($report['blocking'] ?? []), 'is_string')),
             'warning' => array_values(array_filter((array) ($report['warning'] ?? []), 'is_string')),
             'info' => array_values(array_filter((array) ($report['info'] ?? []), 'is_string')),

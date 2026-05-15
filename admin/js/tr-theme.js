@@ -118,18 +118,26 @@
     if (window.matchMedia) {
         try {
             const media = window.matchMedia('(prefers-color-scheme: dark)');
-            media.addEventListener('change', () => {
-                if (pref === 'system') {
-                    apply();
-                }
-            });
+            if (media.addEventListener) {
+                media.addEventListener('change', () => {
+                    if (pref === 'system') {
+                        apply();
+                    }
+                });
+            } else if (media.addListener) {
+                media.addListener(() => {
+                    if (pref === 'system') {
+                        apply();
+                    }
+                });
+            }
         } catch (e) {
             warn('watchSystemTheme', e);
         }
     }
 
     window.addEventListener('tr-theme-change', (e) => {
-        const detail = e.detail || {};
+        const detail = e && e.detail ? e.detail : {};
         const next = detail.pref || getPref();
         pref = next;
         apply();

@@ -13,10 +13,35 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
+/**
+ * 后台成员列表组件
+ *
+ * @author qining
+ * @package Widget
+ * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
+ * @license GNU General Public License 2.0
+ */
 class Admin extends Users
 {
+    /**
+     * 分页计算对象
+     *
+     * @var Query
+     */
     private Query $countSql;
+
+    /**
+     * 所有文章个数
+     *
+     * @var integer
+     */
     private int $total;
+
+    /**
+     * 当前页
+     *
+     * @var integer
+     */
     private int $currentPage;
 
     /**
@@ -29,12 +54,10 @@ class Admin extends Users
         $this->currentPage = $this->request->filter('int')->get('page', 1);
 
         if (null != ($keywords = $this->request->get('keywords'))) {
-            $keywords = '%' . Common::filterSearchQuery($keywords) . '%';
             $select->where(
-                'name LIKE ? OR screenName LIKE ? OR mail LIKE ?',
-                $keywords,
-                $keywords,
-                $keywords
+                'name LIKE ? OR screenName LIKE ?',
+                '%' . Common::filterSearchQuery($keywords) . '%',
+                '%' . Common::filterSearchQuery($keywords) . '%'
             );
         }
 
@@ -44,7 +67,6 @@ class Admin extends Users
             ->page($this->currentPage, $this->parameter->pageSize);
 
         $this->db->fetchAll($select, [$this, 'push']);
-        $this->hydratePostsCount();
     }
 
     /**
@@ -65,39 +87,28 @@ class Admin extends Users
         $nav->render('&laquo;', '&raquo;');
     }
 
-    private function hydratePostsCount(): void
+    /**
+     * 仅仅输出域名和路径
+     *
+     * @return string
+     */
+    protected function ___domainPath(): string
     {
-        if ($this->stack === []) {
-            return;
-        }
+        $parts = \Typecho\Common::parseUrl((string) $this->url);
+        return (string) ($parts['host'] ?? '') . (string) ($parts['path'] ?? '');
+    }
 
-        $uids = array_values(array_filter(array_map(
-            static fn(array $row): int => (int) ($row['uid'] ?? 0),
-            $this->stack
-        )));
-
-        if ($uids === []) {
-            return;
-        }
-
-        $rows = $this->db->fetchAll(
-            $this->db->select('table.contents.authorId', ['COUNT(table.contents.cid)' => 'num'])
+    /**
+     * 发布文章数
+     *
+     * @throws Db\Exception
+     */
+    protected function ___postsNum(): int
+    {
+        return $this->db->fetchObject($this->db->select(['COUNT(cid)' => 'num'])
             ->from('table.contents')
-            ->where('table.contents.authorId IN ?', $uids)
             ->where('table.contents.type = ?', 'post')
             ->where('table.contents.status = ?', 'publish')
-            ->group('table.contents.authorId')
-        );
-
-        $counts = [];
-        foreach ($rows as $row) {
-            $counts[(int) ($row['authorId'] ?? 0)] = (int) ($row['num'] ?? 0);
-        }
-
-        foreach ($this->stack as &$row) {
-            $uid = (int) ($row['uid'] ?? 0);
-            $row['postsNum'] = $counts[$uid] ?? 0;
-        }
-        unset($row);
+            ->where('table.contents.authorId = ?', $this->uid))->num;
     }
 }

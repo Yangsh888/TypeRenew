@@ -7,7 +7,6 @@ use Typecho\Config;
 use Typecho\Db;
 use Typecho\Plugin\Exception as PluginException;
 use Typecho\Date;
-use Typecho\Timezone;
 use Typecho\Router;
 use Typecho\Router\Parser;
 use Typecho\Widget;
@@ -51,7 +50,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
  * @property int $pageSize
  * @property int $serverTimezone
  * @property int $timezone
- * @property string $timezoneName
  * @property string $charset
  * @property string $contentType
  * @property string $generator
@@ -136,9 +134,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
  * @property string $secret
  * @property bool $installed
  * @property bool $rewrite
- * @property string $rewriteStatus
- * @property int $rewriteVerifiedAt
- * @property string $rewriteMessage
  * @property string $postDateFormat
  */
 class Options extends Base
@@ -184,26 +179,13 @@ class Options extends Base
             $themeOptionsKey = 'theme:' . $theme;
             if (array_key_exists($themeOptionsKey, $options)) {
                 $themeOptions = $this->decodeArrayOption($themeOptionsKey, $options[$themeOptionsKey], [], true);
-                $options = $this->mergeThemeOptions($options, $themeOptions);
+                $options = array_merge($options, $themeOptions);
             }
         } elseif (!empty($this->row)) {
             $options = \Utils\Defaults::bootstrapOptions($this->row);
         }
 
         $this->push($options);
-    }
-
-    private function mergeThemeOptions(array $options, array $themeOptions): array
-    {
-        foreach ($themeOptions as $key => $value) {
-            if (!is_string($key) || array_key_exists($key, $options)) {
-                continue;
-            }
-
-            $options[$key] = $value;
-        }
-
-        return $options;
     }
 
     /**
@@ -375,33 +357,12 @@ class Options extends Base
     protected function ___routingTable(): array
     {
         $routingTable = $this->decodeArrayOption('routingTable', $this->row['routingTable'] ?? null, \Utils\Defaults::routingTable(), true);
-        $defaults = \Utils\Defaults::routingTable();
-        $repaired = false;
 
-        foreach ($defaults as $key => $route) {
-            if (!isset($routingTable[$key]) || !is_array($routingTable[$key])) {
-                $routingTable[$key] = $route;
-                $repaired = true;
-                continue;
-            }
-
-            if (
-                $key === 'rewrite_probe'
-                && (string) ($routingTable[$key]['url'] ?? '') !== (string) ($route['url'] ?? '')
-            ) {
-                $routingTable[$key] = $route;
-                $repaired = true;
-            }
-        }
-
-        $parsedRoutingTable = (new Parser($routingTable))->parse();
-        $compiledRoutingTable = isset($routingTable[0]) && is_array($routingTable[0]) ? $routingTable[0] : null;
-
-        if (isset($this->db) && ($repaired || $compiledRoutingTable !== $parsedRoutingTable)) {
+        if (isset($this->db) && !isset($routingTable[0])) {
+            $parser = new Parser($routingTable);
+            $parsedRoutingTable = $parser->parse();
             $routingTable = array_merge([$parsedRoutingTable], $routingTable);
             $this->repairArrayOption('routingTable', $routingTable);
-        } elseif ($compiledRoutingTable === null) {
-            $routingTable = array_merge([$parsedRoutingTable], $routingTable);
         }
 
         return $routingTable;
@@ -560,7 +521,7 @@ class Options extends Base
      */
     protected function ___index(): string
     {
-        return (defined('__TYPECHO_REWRITE__') ? (bool) __TYPECHO_REWRITE__ : (bool) $this->rewrite)
+        return ($this->rewrite || (defined('__TYPECHO_REWRITE__') && __TYPECHO_REWRITE__))
             ? $this->rootUrl : Common::url('index.php', $this->rootUrl);
     }
 
@@ -674,30 +635,9 @@ class Options extends Base
 
     protected function ___serverTimezone(): int
     {
-        return Timezone::serverOffset();
+        return Date::$serverTimezoneOffset;
     }
 
-    private function resolveTimezoneOption(): string
-    {
-        $raw = $this->row['timezone'] ?? null;
-
-        return Timezone::resolve(
-            is_string($this->row['timezoneName'] ?? null) ? $this->row['timezoneName'] : '',
-            is_numeric($raw) ? (int) $raw : null
-        );
-    }
-
-    protected function ___timezone(): int
-    {
-        $name = $this->resolveTimezoneOption();
-
-        return Timezone::offsetFromName($name, Date::time());
-    }
-
-    protected function ___timezoneName(): string
-    {
-        return $this->resolveTimezoneOption();
-    }
     protected function ___time(): int
     {
         return Date::time();
@@ -705,7 +645,7 @@ class Options extends Base
 
     protected function ___contentType(): string
     {
-        return (string) ($this->row['contentType'] ?? 'text/html');
+        return $this->contentType ?? 'text/html';
     }
 
     protected function ___software(): string
@@ -740,19 +680,13 @@ class Options extends Base
             $attachmentTypes = str_replace(
                 ['@image@', '@media@', '@doc@'],
                 [
-                    'gif,jpg,jpeg,png,tiff,bmp,webp,avif', 'mp3,mp4,mov,wmv,wma,rmvb,rm,avi,flv,ogg,oga,ogv',
+                    'gif,jpg,jpeg,png,tiff,bmp,webp', 'mp3,mp4,mov,wmv,wma,rmvb,rm,avi,flv,ogg,oga,ogv',
                     'txt,doc,docx,xls,xlsx,ppt,pptx,zip,rar,pdf'
                 ],
                 $this->attachmentTypes
             );
 
-            $parts = preg_split('/[\s,]+/', strtolower((string) $attachmentTypes)) ?: [];
-            $attachmentTypesResult = array_values(array_unique(array_filter(array_map(
-                static function (string $type): string {
-                    return trim($type, " .\t\n\r\0\x0B");
-                },
-                $parts
-            ))));
+            $attachmentTypesResult = array_unique(array_map('trim', preg_split("/([,.])/", $attachmentTypes)));
         }
 
         return $attachmentTypesResult;

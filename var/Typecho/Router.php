@@ -8,7 +8,7 @@ use Typecho\Router\Exception as RouterException;
 
 class Router
 {
-    public static ?string $current = null;
+    public static string $current;
 
     private static array $routingTable = [];
 
@@ -25,32 +25,24 @@ class Router
      */
     public static function match(string $pathInfo, $parameter = null, bool $once = true)
     {
-        $previousMatched = self::$matched;
-        $previousCurrent = self::$current;
-
-        if ($once && $previousMatched) {
+        if ($once && self::$matched) {
             throw new RouterException("Path '{$pathInfo}' not found", 404);
         }
 
         self::$matched = true;
 
-        try {
-            foreach (self::route($pathInfo) as $result) {
-                [$route, $params] = $result;
-                try {
-                    return Widget::widget($route['widget'], $parameter, $params);
-                } catch (\Throwable $e) {
-                    if (404 == $e->getCode()) {
-                        Widget::destroy($route['widget']);
-                        continue;
-                    }
-
-                    throw $e;
+        foreach (self::route($pathInfo) as $result) {
+            [$route, $params] = $result;
+            try {
+                return Widget::widget($route['widget'], $parameter, $params);
+            } catch (\Throwable $e) {
+                if (404 == $e->getCode()) {
+                    Widget::destroy($route['widget']);
+                    continue;
                 }
+
+                throw $e;
             }
-        } finally {
-            self::$matched = $previousMatched;
-            self::$current = $previousCurrent;
         }
 
         return false;
@@ -72,12 +64,7 @@ class Router
                 $widget = Widget::widget($route['widget'], null, $params);
 
                 if (isset($route['action'])) {
-                    $action = $route['action'];
-                    if (!is_string($action) || $action === '' || !is_callable([$widget, $action])) {
-                        throw new RouterException("Path '{$pathInfo}' not found", 404);
-                    }
-
-                    $widget->{$action}();
+                    $widget->{$route['action']}();
                 }
 
                 return;
@@ -163,18 +150,15 @@ class Router
     {
         foreach (self::$routingTable as $key => $route) {
             if (preg_match($route['regx'], $pathInfo, $matches)) {
+                self::$current = $key;
+
                 $params = null;
 
                 if (!empty($route['params'])) {
                     unset($matches[0]);
-                    if (count($route['params']) !== count($matches)) {
-                        continue;
-                    }
-
                     $params = array_combine($route['params'], $matches);
                 }
 
-                self::$current = $key;
                 yield [$route, $params];
             }
         }

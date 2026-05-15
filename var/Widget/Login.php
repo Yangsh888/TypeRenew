@@ -15,11 +15,6 @@ class Login extends Users implements ActionInterface
 {
     public function action()
     {
-        if (!$this->request->isPost()) {
-            $this->response->setStatus(405)->throwContent(_t('Method Not Allowed'), 'text/plain');
-            return;
-        }
-
         $this->security->protect();
 
         if ($this->user->hasLogin()) {
@@ -30,29 +25,25 @@ class Login extends Users implements ActionInterface
         $validator->addRule('name', 'required', _t('请输入用户名'));
         $validator->addRule('password', 'required', _t('请输入密码'));
         $expire = 30 * 24 * 3600;
-        $remember = $this->request->getInput('remember', '') === '1';
-        $name = $this->request->getInput('name', '');
-        $password = $this->request->getInput('password', '');
-        $referer = $this->request->getInput('referer', '');
 
-        if ($remember) {
+        if ($this->request->is('remember=1')) {
             Cookie::set('__typecho_remember_remember', 1, $expire);
         } elseif (Cookie::get('__typecho_remember_remember')) {
             Cookie::delete('__typecho_remember_remember');
         }
 
-        if ($error = $validator->run(['name' => $name, 'password' => $password])) {
-            Cookie::set('__typecho_remember_name', $name);
+        if ($error = $validator->run($this->request->from('name', 'password'))) {
+            Cookie::set('__typecho_remember_name', $this->request->get('name'));
 
             Notice::alloc()->set($error);
             $this->response->goBack();
         }
 
         $valid = $this->user->login(
-            $name,
-            $password,
+            $this->request->get('name'),
+            $this->request->get('password'),
             false,
-            $remember ? $expire : 0
+            $this->request->is('remember=1') ? $expire : 0
         );
 
         if (!$valid) {
@@ -61,27 +52,27 @@ class Login extends Users implements ActionInterface
             self::pluginHandle()->call(
                 'loginFailure',
                 $this->user,
-                $name,
+                $this->request->get('name'),
                 null,
-                $remember
+                $this->request->is('remember=1')
             );
 
-            Cookie::set('__typecho_remember_name', $name);
+            Cookie::set('__typecho_remember_name', $this->request->get('name'));
             Notice::alloc()->set(_t('用户名或密码无效'), 'error');
-            $this->response->goBack('?referer=' . urlencode($referer));
+            $this->response->goBack('?referer=' . urlencode($this->request->get('referer')));
         }
 
         self::pluginHandle()->call(
             'loginSuccess',
             $this->user,
-            $name,
+            $this->request->get('name'),
             null,
-            $remember
+            $this->request->is('remember=1')
         );
 
-        if ($referer !== '') {
-            if ($this->isSafeRedirect($referer)) {
-                $this->response->redirect($referer);
+        if (!empty($this->request->referer)) {
+            if ($this->isSafeRedirect((string) $this->request->referer)) {
+                $this->response->redirect($this->request->referer);
             }
         } elseif (!$this->user->pass('contributor', true)) {
             $this->response->redirect($this->options->profileUrl);

@@ -383,7 +383,7 @@ class HyperDown
         }
 
         foreach ($this->_hooks[$type] as $callback) {
-            $value = $callback(...$args);
+            $value = call_user_func_array($callback, $args);
             $args[0] = $value;
         }
 
@@ -695,7 +695,7 @@ class HyperDown
             $args = [$block, $key, $line, &$state, $lines];
 
             if ($this->_current != 'normal') {
-                $pass = ($this->_parsers[$this->_current])(...$args);
+                $pass = call_user_func_array($this->_parsers[$this->_current], $args);
 
                 if (!$pass) {
                     continue;
@@ -704,7 +704,7 @@ class HyperDown
 
             foreach ($this->_parsers as $name => $parser) {
                 if ($name != $this->_current) {
-                    $pass = $parser(...$args);
+                    $pass = call_user_func_array($parser, $args);
 
                     if (!$pass) {
                         break;

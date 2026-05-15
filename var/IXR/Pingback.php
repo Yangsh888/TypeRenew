@@ -9,6 +9,7 @@ use Typecho\Http\Client\Exception as HttpException;
 /**
  * fetch pingback
  */
+#[\AllowDynamicProperties]
 class Pingback
 {
     /**
@@ -84,15 +85,7 @@ class Pingback
             $encoding = strtoupper($matches[1]);
         }
 
-        if ($encoding == 'UTF-8') {
-            $this->html = $response;
-        } else {
-            try {
-                $this->html = mb_convert_encoding($response, 'UTF-8', $encoding);
-            } catch (\ValueError $e) {
-                throw new Exception('Source page charset is invalid', 50);
-            }
-        }
+        $this->html = $encoding == 'UTF-8' ? $response : mb_convert_encoding($response, 'UTF-8', $encoding);
 
         if (
             !$client->getResponseHeader('X-Pingback') &&
@@ -138,7 +131,7 @@ class Pingback
         $text = Common::stripTags($this->html, '<a href="">');
 
         /** 此处将$target quote,留着后面用*/
-        $pregLink = preg_quote($this->target, '|');
+        $pregLink = preg_quote($this->target);
 
         $finalText = '';
         $matched = false;

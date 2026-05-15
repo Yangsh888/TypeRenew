@@ -5,42 +5,26 @@ namespace Utils;
 use Typecho\Common;
 use Typecho\Cookie;
 use Typecho\Request;
-use Utils\Rewrite\Manager;
 
 class Defaults
 {
     public static function language(): string
     {
-        $request = Request::getInstance();
-        $serverLang = $request->getServer('TYPECHO_LANG');
+        $serverLang = Request::getInstance()->getServer('TYPECHO_LANG');
 
-        if (is_string($serverLang) && $serverLang !== '') {
+        if (!empty($serverLang)) {
             return $serverLang;
         }
 
         $lang = 'zh_CN';
-        self::initLanguageCookie();
+        $request = Request::getInstance();
 
         if ($request->is('lang')) {
-            $candidate = $request->get('lang');
-            if (is_string($candidate) && preg_match('/^[A-Za-z_\\-]+$/', $candidate)) {
-                $lang = $candidate;
-                Cookie::set('lang', $lang);
-            }
+            $lang = $request->get('lang');
+            Cookie::set('lang', $lang);
         }
 
-        $cookieLang = Cookie::get('lang', $lang);
-
-        return is_string($cookieLang) && $cookieLang !== '' ? $cookieLang : $lang;
-    }
-
-    private static function initLanguageCookie(): void
-    {
-        Cookie::setPrefix(self::siteUrl());
-
-        if (defined('__TYPECHO_COOKIE_OPTIONS__')) {
-            Cookie::setOptions(__TYPECHO_COOKIE_OPTIONS__);
-        }
+        return Cookie::get('lang', $lang);
     }
 
     public static function siteUrl(): string
@@ -75,7 +59,6 @@ class Defaults
                 'charset' => 'UTF-8',
                 'contentType' => 'text/html',
                 'timezone' => '28800',
-                'timezoneName' => 'Asia/Shanghai',
                 'installed' => (int) ($context['installed'] ?? 0),
                 'generator' => $context['generator'] ?? Common::generator(),
                 'siteUrl' => $context['siteUrl'] ?? self::siteUrl(),
@@ -119,7 +102,6 @@ class Defaults
             'archive_day_page' => ['url' => '/[year:digital:4]/[month:digital:2]/[day:digital:2]/page/[page:digital]/', 'widget' => '\Widget\Archive', 'action' => 'render'],
             'comment_page' => ['url' => '[permalink:string]/comment-page-[commentPage:digital]', 'widget' => '\Widget\CommentPage', 'action' => 'action'],
             'feed' => ['url' => '/feed[feed:string:0]', 'widget' => '\Widget\Feed', 'action' => 'render'],
-            'rewrite_probe' => ['url' => '/__tr/rewrite-probe/', 'widget' => '\Widget\Ajax', 'action' => 'rewritePublicProbe'],
             'page' => ['url' => '/[slug].html', 'widget' => '\Widget\Archive', 'action' => 'render'],
             'feedback' => ['url' => '[permalink:string]/[type:alpha]', 'widget' => '\Widget\Feedback', 'action' => 'action'],
         ];
@@ -168,7 +150,6 @@ class Defaults
                 ],
             ]),
             'timezone' => '28800',
-            'timezoneName' => 'Asia/Shanghai',
             'charset' => 'UTF-8',
             'contentType' => 'text/html',
             'gzip' => 0,
@@ -227,10 +208,7 @@ class Defaults
             'cacheRedisPort' => 6379,
             'cacheRedisPassword' => '',
             'cacheRedisDatabase' => 0,
-            'allowXmlRpc' => 0,
-            'rewriteStatus' => 'disabled',
-            'rewriteVerifiedAt' => '0',
-            'rewriteMessage' => Manager::disabledMessage(),
+            'allowXmlRpc' => 1,
         ];
     }
 

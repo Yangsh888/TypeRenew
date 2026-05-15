@@ -8,14 +8,34 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
+/**
+ * 经典分页样式
+ *
+ * @author qining
+ * @category typecho
+ * @package Widget
+ * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
+ * @license GNU General Public License 2.0
+ */
 class Classic extends PageNavigator
 {
+    /**
+     * 输出经典样式的分页
+     * @param string $prevWord 上一页文字
+     * @param string $nextWord 下一页文字
+     * @return void
+     */
     public function render(string $prevWord = 'PREV', string $nextWord = 'NEXT')
     {
         $this->prev($prevWord);
         $this->next($nextWord);
     }
 
+    /**
+     * 输出上一页
+     * @param string $prevWord 上一页文字
+     * @return void
+     */
     public function prev(string $prevWord = 'PREV')
     {
         if ($this->total > 0 && $this->currentPage > 1) {
@@ -26,6 +46,11 @@ class Classic extends PageNavigator
         }
     }
 
+    /**
+     * 输出下一页
+     * @param string $nextWord 下一页文字
+     * @return void
+     */
     public function next(string $nextWord = 'NEXT')
     {
         if ($this->total > 0 && $this->currentPage < $this->totalPage) {

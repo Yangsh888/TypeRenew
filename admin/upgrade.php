@@ -15,12 +15,10 @@ $showDbDiagnostics = (int) $request->get('dbdiag', 0) === 1;
 $schemaStatus = ['healthy' => true, 'items' => [], 'missing' => []];
 $needSchemaRepair = false;
 $mysqlRiskStatus = ['supported' => false, 'healthy' => true, 'items' => []];
-if ($needDbUpgrade || $showDbDiagnostics) {
-    $mysqlRiskStatus = \Utils\Migration\SchemaManager::inspectMysqlUpgradeRisks(\Typecho\Db::get());
-}
 if ($showDbDiagnostics) {
     $schemaStatus = \Utils\Migration\SchemaManager::inspectCriticalSchema(\Typecho\Db::get());
     $needSchemaRepair = !$schemaStatus['healthy'];
+    $mysqlRiskStatus = \Utils\Migration\SchemaManager::inspectMysqlUpgradeRisks(\Typecho\Db::get());
 }
 $upgradeReport = \Typecho\Upgrade\Runner::inspect();
 $state = $upgradeReport['state'];
@@ -52,6 +50,12 @@ $statusMap = [
 ];
 $statusLabel = $statusMap[$status] ?? ($status !== '' ? $status : _t('无'));
 $packageActionLocked = !$upgradeAvailable;
+$upgradeBlockedCount = 0;
+foreach ($upgradeItems as $item) {
+    if (strtolower((string) ($item['status'] ?? '')) === 'blocked') {
+        $upgradeBlockedCount++;
+    }
+}
 $upgradeWarningCount = count($upgradeWarning);
 $schemaIssues = array_values($schemaStatus['missing'] ?? []);
 $schemaIssueCount = count($schemaIssues);
@@ -59,18 +63,7 @@ $mysqlRiskItems = array_values(array_filter(
     (array) ($mysqlRiskStatus['items'] ?? []),
     static fn(array $item): bool => (string) ($item['status'] ?? 'ok') !== 'ok'
 ));
-$mysqlBlockingItems = array_values(array_filter(
-    $mysqlRiskItems,
-    static fn(array $item): bool => (string) ($item['status'] ?? 'ok') === 'blocking'
-));
-$repairBlockingItems = array_values(array_filter(
-    $mysqlBlockingItems,
-    static fn(array $item): bool => (string) ($item['key'] ?? '') !== 'users_mail_duplicates'
-));
 $mysqlRiskCount = count($mysqlRiskItems);
-$mysqlBlockingCount = count($mysqlBlockingItems);
-$repairBlockingCount = count($repairBlockingItems);
-$dbActionBlocked = $mysqlBlockingCount > 0;
 $dbDiagnosticsUrl = $options->adminUrl('upgrade.php?dbdiag=1', true);
 $dbOverviewUrl = $options->adminUrl('upgrade.php', true);
 ?>
@@ -87,9 +80,15 @@ $dbOverviewUrl = $options->adminUrl('upgrade.php', true);
                     <div class="tr-card tr-tone-muted">
                         <div class="tr-card-b">
                             <div class="tr-subtitle"><?php _e('环境预检'); ?></div>
-                            <div class="tr-help tr-mt-8"><?php _e('环境预检已完成，共检查 %d 项。', count($upgradeItems)); ?></div>
-                            <?php if ($upgradeWarningCount > 0): ?>
-                                <div class="tr-help tr-tone-warning tr-mt-8"><?php _e('另有 %d 项环境提醒。', $upgradeWarningCount); ?></div>
+                            <?php if ($upgradeBlockedCount > 0): ?>
+                                <div class="tr-help tr-tone-warning tr-mt-8">
+                                    <strong><?php _e('环境预检未通过：%d 项阻塞，%d 项提醒。', $upgradeBlockedCount, $upgradeWarningCount); ?></strong>
+                                </div>
+                            <?php else: ?>
+                                <div class="tr-help tr-mt-8"><?php _e('环境预检通过，共检查 %d 项。', count($upgradeItems)); ?></div>
+                                <?php if ($upgradeWarningCount > 0): ?>
+                                    <div class="tr-help tr-tone-warning tr-mt-8"><?php _e('另有 %d 项环境提醒。', $upgradeWarningCount); ?></div>
+                                <?php endif; ?>
                             <?php endif; ?>
 
                             <?php if (!empty($upgradeBlocking)): ?>
@@ -251,13 +250,8 @@ $dbOverviewUrl = $options->adminUrl('upgrade.php', true);
                                                 <?php _e('另有 %d 项关键结构异常待处理。', $schemaIssueCount); ?>
                                             <?php endif; ?>
                                         </div>
-                                        <?php if ($dbActionBlocked): ?>
-                                            <div class="tr-help tr-tone-warning tr-mt-12">
-                                                <?php _e('检测到 %d 项需要人工处理的 MySQL 风险，处理前已暂时禁用数据库升级。', $mysqlBlockingCount); ?>
-                                            </div>
-                                        <?php endif; ?>
                                         <form action="<?php echo $dbUpgradeUrl; ?>" method="post" class="tr-mt-12">
-                                            <button class="tr-btn primary tr-block" type="submit"<?php echo $dbActionBlocked ? ' disabled aria-disabled="true"' : ''; ?>><?php _e('完成数据库升级'); ?></button>
+                                            <button class="tr-btn primary tr-block" type="submit"><?php _e('完成数据库升级'); ?></button>
                                         </form>
                                         <div class="tr-help tr-mt-12">
                                             <?php _e('数据库升级会执行结构迁移，建议在低峰期操作并保持页面不刷新，直到完成。'); ?>
@@ -269,14 +263,9 @@ $dbOverviewUrl = $options->adminUrl('upgrade.php', true);
                                         <div class="tr-help tr-mt-12">
                                             <?php _e('当前发现 %d 项关键结构异常。', $schemaIssueCount); ?>
                                         </div>
-                                        <?php if ($repairBlockingCount > 0): ?>
-                                            <div class="tr-help tr-tone-warning tr-mt-12">
-                                                <?php _e('检测到 %d 项需要人工处理的 MySQL 风险，处理前已暂时禁用结构修复。', $repairBlockingCount); ?>
-                                            </div>
-                                        <?php endif; ?>
                                         <form action="<?php echo $dbUpgradeUrl; ?>" method="post" class="tr-mt-12">
                                             <input type="hidden" name="do" value="repairCriticalSchema">
-                                            <button class="tr-btn primary tr-block" type="submit"<?php echo $repairBlockingCount > 0 ? ' disabled aria-disabled="true"' : ''; ?>><?php _e('修复关键数据库结构'); ?></button>
+                                            <button class="tr-btn primary tr-block" type="submit"><?php _e('修复关键数据库结构'); ?></button>
                                         </form>
                                         <div class="tr-help tr-mt-12">
                                             <?php _e('该操作会补齐邮件通知与密码找回依赖的关键表、索引、字段类型和排序规则，并同步历史评论作者昵称，不会覆盖已有业务数据。'); ?>
@@ -312,9 +301,7 @@ $dbOverviewUrl = $options->adminUrl('upgrade.php', true);
                                                             <li>
                                                                 <?php echo htmlspecialchars((string) $item['label'], ENT_QUOTES, 'UTF-8'); ?>
                                                                 ：<?php
-                                                                if (!array_key_exists('exists', $item)) {
-                                                                    echo _t('需处理');
-                                                                } elseif (!$item['exists']) {
+                                                                if (!$item['exists']) {
                                                                     echo _t('缺表');
                                                                 } elseif (!empty($item['missingColumns'])) {
                                                                     echo _t('缺字段');
@@ -322,11 +309,7 @@ $dbOverviewUrl = $options->adminUrl('upgrade.php', true);
                                                                     echo _t('结构不一致');
                                                                 }
                                                                 ?>
-                                                                <?php if (!empty($item['table'])): ?>
-                                                                    <span class="tr-help">(<?php echo htmlspecialchars((string) $item['table'], ENT_QUOTES, 'UTF-8'); ?>)</span>
-                                                                <?php elseif (!empty($item['detail'])): ?>
-                                                                    <span class="tr-help">(<?php echo htmlspecialchars((string) $item['detail'], ENT_QUOTES, 'UTF-8'); ?>)</span>
-                                                                <?php endif; ?>
+                                                                <span class="tr-help">(<?php echo htmlspecialchars((string) $item['table'], ENT_QUOTES, 'UTF-8'); ?>)</span>
                                                                 <?php if (!empty($item['missingColumns'])): ?>
                                                                     <span class="tr-help">[<?php echo htmlspecialchars(implode(', ', $item['missingColumns']), ENT_QUOTES, 'UTF-8'); ?>]</span>
                                                                 <?php endif; ?>

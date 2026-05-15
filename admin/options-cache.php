@@ -5,7 +5,7 @@ include 'menu.php';
 
 \Widget\Options\Cache::alloc()->to($cacheWidget);
 $cachePanel = $cacheWidget->panel();
-$cacheOn = ($cachePanel['status'] ?? 'disabled') === 'enabled';
+$cacheOn = $cachePanel['status'] === 'enabled';
 ?>
 
 <main class="main">
@@ -37,7 +37,7 @@ $cacheOn = ($cachePanel['status'] ?? 'disabled') === 'enabled';
                             <div class="tr-kpi">
                                 <div>
                                     <div class="tr-kpi-label"><?php _e('缓存驱动'); ?></div>
-                                    <div class="tr-kpi-value"><?php echo htmlspecialchars((string) ($cachePanel['driver'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></div>
+                                    <div class="tr-kpi-value"><?php echo htmlspecialchars((string) $cachePanel['driver'], ENT_QUOTES, 'UTF-8'); ?></div>
                                 </div>
                                 <div class="tr-kpi-icon tr-tone-blue" aria-hidden="true">
                                     <svg class="tr-ico"><use href="<?php echo htmlspecialchars($options->adminStaticUrl('img', 'icons.svg', true), ENT_QUOTES, 'UTF-8'); ?>#i-database"></use></svg>
@@ -50,7 +50,7 @@ $cacheOn = ($cachePanel['status'] ?? 'disabled') === 'enabled';
                             <div class="tr-kpi">
                                 <div>
                                     <div class="tr-kpi-label"><?php _e('平均耗时'); ?></div>
-                                    <div class="tr-kpi-value"><?php echo (float) ($cachePanel['avg'] ?? 0); ?>ms</div>
+                                    <div class="tr-kpi-value"><?php echo (float) $cachePanel['avg']; ?>ms</div>
                                 </div>
                                 <div class="tr-kpi-icon tr-tone-ink" aria-hidden="true">
                                     <svg class="tr-ico"><use href="<?php echo htmlspecialchars($options->adminStaticUrl('img', 'icons.svg', true), ENT_QUOTES, 'UTF-8'); ?>#i-clock"></use></svg>
@@ -63,7 +63,7 @@ $cacheOn = ($cachePanel['status'] ?? 'disabled') === 'enabled';
                             <div class="tr-kpi">
                                 <div>
                                     <div class="tr-kpi-label"><?php _e('缓存条目'); ?></div>
-                                    <div class="tr-kpi-value"><?php echo (int) ($cachePanel['count'] ?? 0); ?></div>
+                                    <div class="tr-kpi-value"><?php echo (int) $cachePanel['count']; ?></div>
                                 </div>
                                 <div class="tr-kpi-icon tr-tone-blue" aria-hidden="true">
                                     <svg class="tr-ico"><use href="<?php echo htmlspecialchars($options->adminStaticUrl('img', 'icons.svg', true), ENT_QUOTES, 'UTF-8'); ?>#i-list"></use></svg>

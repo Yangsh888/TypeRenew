@@ -50,11 +50,6 @@ class Feedback extends Comments implements ActionInterface
         $callback = $this->request->get('type');
         $this->content = Router::match($this->request->get('permalink'));
 
-        if ($callback === 'comment' && !$this->request->isPost()) {
-            $this->response->setStatus(405)->throwContent(_t('Method Not Allowed'), 'text/plain');
-            return;
-        }
-
         if (
             $this->content instanceof Archive &&
             $this->content->have() && $this->content->is('single') &&
@@ -77,13 +72,13 @@ class Feedback extends Comments implements ActionInterface
                     $currentPart = Common::parseUrl((string) $this->content->permalink);
 
                     if (!$this->sameRefererTarget($refererPart, $currentPart)) {
-                        $isFrontPage = 'page:' . $this->content->cid == $this->options->frontPage;
-                        $matchesFrontPage = $isFrontPage && $this->sameRefererTarget(
-                            $refererPart,
-                            Common::parseUrl(rtrim($this->options->siteUrl, '/') . '/')
-                        );
+                        if ('page:' . $this->content->cid == $this->options->frontPage) {
+                            $currentPart = Common::parseUrl(rtrim($this->options->siteUrl, '/') . '/');
 
-                        if (!$matchesFrontPage) {
+                            if (!$this->sameRefererTarget($refererPart, $currentPart)) {
+                                throw new Exception(_t('评论来源页错误.'), 403);
+                            }
+                        } else {
                             throw new Exception(_t('评论来源页错误.'), 403);
                         }
                     }
@@ -94,7 +89,7 @@ class Feedback extends Comments implements ActionInterface
                     $this->options->commentsPostIntervalEnable
                 ) {
                     $latestComment = $this->db->fetchRow($this->db->select('created')->from('table.comments')
-                        ->where('type = ? AND ip = ?', 'comment', $this->request->getIp())
+                        ->where('cid = ? AND ip = ?', $this->content->cid, $this->request->getIp())
                         ->order('created', Db::SORT_DESC)
                         ->limit(1));
 
@@ -168,12 +163,12 @@ class Feedback extends Comments implements ActionInterface
 
         $validator->addRule('text', 'required', _t('必须填写评论内容'));
 
-        $comment['text'] = $this->request->getInput('text', '');
+        $comment['text'] = $this->request->get('text');
 
         if (!$this->user->hasLogin()) {
-            $comment['author'] = $this->request->filter('trim')->getInput('author', '');
-            $comment['mail'] = $this->request->filter('trim')->getInput('mail', '');
-            $comment['url'] = $this->request->filter('trim', 'url')->getInput('url', '');
+            $comment['author'] = $this->request->filter('trim')->get('author');
+            $comment['mail'] = $this->request->filter('trim')->get('mail');
+            $comment['url'] = $this->request->filter('trim', 'url')->get('url');
 
             if (!empty($comment['url'])) {
                 $urlParams = Common::parseUrl((string) $comment['url']);
@@ -212,7 +207,8 @@ class Feedback extends Comments implements ActionInterface
         }
 
         if ($error = $validator->run($comment)) {
-            Cookie::set('__typecho_remember_text', $comment['text']);
+            $safeText = htmlspecialchars($comment['text'], ENT_QUOTES, 'UTF-8');
+            Cookie::set('__typecho_remember_text', $safeText);
             throw new Exception(implode("\n", $error));
         }
 
@@ -329,7 +325,6 @@ class Feedback extends Comments implements ActionInterface
         }
 
         $path = '/' . ltrim($path, '/');
-        $path = preg_replace('#/comment-page-\d+/?$#i', '', $path) ?: $path;
         return $path === '/' ? '/' : rtrim($path, '/');
     }
 

@@ -56,9 +56,12 @@ class Cookie
         return self::$domain;
     }
 
+    /**
+     * @return bool
+     */
     public static function getSecure(): bool
     {
-        return self::$secure;
+        return self::$secure ?: false;
     }
 
     /**
@@ -68,13 +71,7 @@ class Cookie
      */
     public static function setOptions(array $options)
     {
-        if (array_key_exists('path', $options)) {
-            $path = trim((string) $options['path']);
-            self::$path = $path === '' ? '/' : $path;
-        }
-        if (array_key_exists('domain', $options)) {
-            self::$domain = trim((string) $options['domain']);
-        }
+        self::$domain = $options['domain'] ?: self::$domain;
         if (array_key_exists('secure', $options)) {
             self::$secure = (bool) $options['secure'];
         }
@@ -99,11 +96,7 @@ class Cookie
     {
         $key = self::$prefix . $key;
         $value = $_COOKIE[$key] ?? $default;
-        if (is_array($value)) {
-            return $default;
-        }
-
-        return is_string($value) ? rawurldecode($value) : $value;
+        return is_array($value) ? $default : $value;
     }
 
     /**
@@ -116,11 +109,6 @@ class Cookie
     public static function set(string $key, $value, int $expire = 0)
     {
         $key = self::$prefix . $key;
-        if (!is_scalar($value) && $value !== null) {
-            $value = \Typecho\Common::jsonEncode($value);
-        }
-
-        $value = (string) $value;
         $_COOKIE[$key] = $value;
         Response::getInstance()->setCookie(
             $key,
@@ -142,30 +130,11 @@ class Cookie
     public static function delete(string $key)
     {
         $key = self::$prefix . $key;
-        $paths = array_values(array_unique(array_filter([
-            self::$path,
-            '/',
-        ], static fn(string $path): bool => $path !== '')));
-        $domains = array_values(array_unique([
-            self::$domain,
-            '',
-        ]));
-
-        foreach ($paths as $path) {
-            foreach ($domains as $domain) {
-                Response::getInstance()->setCookie(
-                    $key,
-                    '',
-                    -1,
-                    $path,
-                    $domain,
-                    self::$secure,
-                    self::$httponly,
-                    self::$sameSite
-                );
-            }
+        if (!isset($_COOKIE[$key])) {
+            return;
         }
 
+        Response::getInstance()->setCookie($key, '', -1, self::$path, self::$domain, self::$secure, self::$httponly, self::$sameSite);
         unset($_COOKIE[$key]);
     }
 }

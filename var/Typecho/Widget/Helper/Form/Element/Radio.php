@@ -9,6 +9,14 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
+/**
+ * 单选框帮手类
+ *
+ * @category typecho
+ * @package Widget
+ * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
+ * @license GNU General Public License 2.0
+ */
 class Radio extends Element
 {
     /**
@@ -18,6 +26,13 @@ class Radio extends Element
      */
     private array $options = [];
 
+    /**
+     * 初始化当前输入项
+     *
+     * @param string|null $name 表单元素名称
+     * @param array|null $options 选择项
+     * @return Layout|null
+     */
     public function input(?string $name = null, ?array $options = null): ?Layout
     {
         foreach ($options as $value => $label) {
@@ -39,6 +54,11 @@ class Radio extends Element
         return current($this->options) ?: null;
     }
 
+    /**
+     * 设置表单元素值
+     *
+     * @param mixed $value 表单元素值
+     */
     protected function inputValue($value)
     {
         foreach ($this->options as $option) {

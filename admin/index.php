@@ -1,7 +1,4 @@
 <?php
-use Typecho\Date;
-use Typecho\Timezone;
-
 include 'common.php';
 include 'header.php';
 include 'menu.php';
@@ -9,31 +6,30 @@ include 'menu.php';
 $stat = \Widget\Stat::alloc();
 
 $db = \Typecho\Db::get();
+$days = [];
 $postsData = [];
 $commentsData = [];
 $dayCount = 14;
-$today = Timezone::at(Date::time());
 
 for ($i = $dayCount - 1; $i >= 0; $i--) {
-    $dayTime = $today->modify("-{$i} days");
+    $date = date('Y-m-d', strtotime("-{$i} days"));
+    $label = date('m/d', strtotime("-{$i} days"));
+    $days[] = $label;
 
-    [$startTime, $endTime] = Timezone::dayRange(
-        (int) $dayTime->format('Y'),
-        (int) $dayTime->format('n'),
-        (int) $dayTime->format('j')
-    );
+    $startTime = strtotime($date . ' 00:00:00');
+    $endTime = strtotime($date . ' 23:59:59');
 
     $postCount = $db->fetchObject($db->select(['COUNT(cid)' => 'num'])
         ->from('table.contents')
         ->where('type = ?', 'post')
         ->where('status = ?', 'publish')
         ->where('created >= ?', $startTime)
-        ->where('created < ?', $endTime))->num;
+        ->where('created <= ?', $endTime))->num;
 
     $commentCount = $db->fetchObject($db->select(['COUNT(coid)' => 'num'])
         ->from('table.comments')
         ->where('created >= ?', $startTime)
-        ->where('created < ?', $endTime))->num;
+        ->where('created <= ?', $endTime))->num;
 
     $postsData[] = (int) $postCount;
     $commentsData[] = (int) $commentCount;

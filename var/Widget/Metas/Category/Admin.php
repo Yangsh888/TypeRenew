@@ -12,6 +12,9 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
+/**
+ * Category Admin
+ */
 class Admin extends Metas
 {
     use InitTreeRowsTrait;
@@ -28,6 +31,11 @@ class Admin extends Metas
         $this->pushAll($this->getRows($this->getChildIds($this->parentId)));
     }
 
+    /**
+     * 向上的返回链接
+     *
+     * @throws Db\Exception
+     */
     public function backLink()
     {
         if ($this->parentId) {
@@ -51,6 +59,12 @@ class Admin extends Metas
         }
     }
 
+    /**
+     * 获取菜单标题
+     *
+     * @return string|null
+     * @throws Db\Exception|Exception
+     */
     public function getMenuTitle(): ?string
     {
         if ($this->parentId) {
@@ -59,15 +73,18 @@ class Admin extends Metas
             if (!empty($category)) {
                 return _t('管理 %s 的子分类', $category['name']);
             }
-        }
-
-        if (!$this->parentId) {
+        } else {
             return null;
         }
 
         throw new Exception(_t('分类不存在'), 404);
     }
 
+    /**
+     * 获取菜单标题
+     *
+     * @return string
+     */
     public function getAddLink(): string
     {
         return 'category.php' . ($this->parentId ? '?parent=' . $this->parentId : '');

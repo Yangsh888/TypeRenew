@@ -114,7 +114,6 @@ class Response
 
                 if ($parts !== [] && isset($myParts['query'])) {
                     $args = [];
-                    $currentArgs = [];
                     if (isset($parts['query'])) {
                         parse_str($parts['query'], $args);
                     }
@@ -130,9 +129,9 @@ class Response
             }
 
             $this->redirect($referer);
+        } else {
+            $this->redirect($default ?: '/');
         }
-
-        $this->redirect($default ?: '/');
     }
 
     private function isSafeReferer(string $referer): bool
@@ -180,13 +179,8 @@ class Response
             }
 
             return $result;
+        } else {
+            return preg_match("/^[^<>]+$/is", $message) ? $message : '<![CDATA[' . $message . ']]>';
         }
-
-        if (!is_scalar($message) && $message !== null) {
-            $message = Common::jsonEncode($message);
-        }
-
-        $message = (string) $message;
-        return preg_match("/^[^<>]+$/is", $message) ? $message : '<![CDATA[' . $message . ']]>';
     }
 }

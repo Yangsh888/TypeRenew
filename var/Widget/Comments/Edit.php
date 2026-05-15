@@ -13,6 +13,15 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
+/**
+ * 评论编辑组件
+ *
+ * @author qining
+ * @category typecho
+ * @package Widget
+ * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
+ * @license GNU General Public License 2.0
+ */
 class Edit extends Comments implements ActionInterface
 {
     /**
@@ -40,6 +49,9 @@ class Edit extends Comments implements ActionInterface
 
     /**
      * 评论是否可以被修改
+     *
+     * @param Query|null $condition 条件
+     * @return bool
      * @throws Exception|\Typecho\Widget\Exception
      */
     public function commentIsWriteable(?Query $condition = null): bool
@@ -61,6 +73,9 @@ class Edit extends Comments implements ActionInterface
 
     /**
      * 标记评论状态
+     *
+     * @param integer $coid 评论主键
+     * @param string $status 状态
      * @throws Exception
      */
     private function mark(int $coid, string $status): bool
@@ -75,7 +90,17 @@ class Edit extends Comments implements ActionInterface
                 return false;
             }
 
-            $this->update(['status' => $status], $this->db->sql()->where('coid = ?', $coid));
+            $this->db->query($this->db->update('table.comments')
+                ->rows(['status' => $status])->where('coid = ?', $coid));
+
+            if ('approved' == $comment['status'] && 'approved' != $status) {
+                $this->db->query($this->db->update('table.contents')
+                    ->expression('commentsNum', 'commentsNum - 1')
+                    ->where('cid = ? AND commentsNum > 0', $comment['cid']));
+            } elseif ('approved' != $comment['status'] && 'approved' == $status) {
+                $this->db->query($this->db->update('table.contents')
+                    ->expression('commentsNum', 'commentsNum + 1')->where('cid = ?', $comment['cid']));
+            }
 
             if ('approved' != $comment['status'] && 'approved' == $status) {
                 \Typecho\Mail\Queue::enqueueComment($this, 'approved', $this->options);
@@ -156,13 +181,12 @@ class Edit extends Comments implements ActionInterface
             if ($comment && $this->commentIsWriteable()) {
                 self::pluginHandle()->call('delete', $comment, $this);
 
-                $this->db->query(
-                    $this->db->update('table.comments')
-                        ->rows(['parent' => 0])
-                        ->where('parent = ?', $coid)
-                );
+                $this->db->query($this->db->delete('table.comments')->where('coid = ?', $coid));
 
-                $this->delete($this->db->sql()->where('coid = ?', $coid));
+                if ('approved' == $comment['status']) {
+                    $this->db->query($this->db->update('table.contents')
+                        ->expression('commentsNum', 'commentsNum - 1')->where('cid = ?', $comment['cid']));
+                }
 
                 self::pluginHandle()->call('finishDelete', $comment, $this);
 
@@ -202,44 +226,16 @@ class Edit extends Comments implements ActionInterface
      */
     public function deleteSpamComment()
     {
-        $select = $this->db->select('coid', 'cid')
-            ->from('table.comments')
-            ->where('status = ?', 'spam');
-
+        $deleteQuery = $this->db->delete('table.comments')->where('status = ?', 'spam');
         if (!$this->request->is('__typecho_all_comments=on') || !$this->user->pass('editor', true)) {
-            $select->where('ownerId = ?', $this->user->uid);
+            $deleteQuery->where('ownerId = ?', $this->user->uid);
         }
 
         if ($this->request->is('cid')) {
-            $select->where('cid = ?', $this->request->get('cid'));
+            $deleteQuery->where('cid = ?', $this->request->get('cid'));
         }
 
-        $spamComments = $this->db->fetchAll($select);
-        $deleteRows = count($spamComments);
-
-        if ($deleteRows > 0) {
-            $commentIds = array_column($spamComments, 'coid');
-            $contentIds = array_unique(array_map('intval', array_column($spamComments, 'cid')));
-
-            foreach ($commentIds as $coid) {
-                $this->db->query(
-                    $this->db->update('table.comments')
-                        ->rows(['parent' => 0])
-                        ->where('parent = ?', (int) $coid)
-                );
-            }
-
-            $this->db->query(
-                $this->db->delete('table.comments')
-                    ->where('coid IN ?', array_map('intval', $commentIds))
-            );
-
-            foreach ($contentIds as $cid) {
-                $this->refreshCommentsNum($cid);
-            }
-
-            $this->purgeCommentCacheForTransition('spam', null);
-        }
+        $deleteRows = $this->db->query($deleteQuery);
 
         Notice::alloc()->set(
             $deleteRows > 0 ? _t('所有垃圾评论已经被删除') : _t('没有垃圾评论被删除'),
@@ -275,6 +271,8 @@ class Edit extends Comments implements ActionInterface
 
     /**
      * 编辑评论
+     *
+     * @return bool
      * @throws Exception
      */
     public function editComment(): bool
@@ -289,18 +287,11 @@ class Edit extends Comments implements ActionInterface
             $comment['mail'] = $this->request->filter('strip_tags', 'trim', 'xss')->get('mail');
             $comment['url'] = $this->request->filter('url')->get('url');
 
-            if ($this->request->is('status')) {
-                $status = (string) $this->request->get('status');
-                if (in_array($status, ['approved', 'waiting', 'spam'], true)) {
-                    $comment['status'] = $status;
-                }
-            }
-
             if ($this->request->is('created')) {
                 $comment['created'] = $this->request->filter('int')->get('created');
             }
 
-            $comment = self::pluginHandle()->filter('edit', $comment, $commentSelect, $this);
+            $comment = self::pluginHandle()->filter('edit', $comment, $this);
 
             $this->update($comment, $this->db->sql()->where('coid = ?', $coid));
 
@@ -309,10 +300,7 @@ class Edit extends Comments implements ActionInterface
             $updatedComment['content'] = $this->content;
 
             self::pluginHandle()->call('finishEdit', $this);
-            $this->purgeCommentCacheForTransition(
-                (string) ($commentSelect['status'] ?? ''),
-                (string) ($comment['status'] ?? $commentSelect['status'] ?? '')
-            );
+            $this->purgeCommentCacheForTransition((string) ($commentSelect['status'] ?? ''), (string) ($commentSelect['status'] ?? ''));
 
             $this->response->throwJson([
                 'success' => 1,
@@ -384,10 +372,10 @@ class Edit extends Comments implements ActionInterface
     public function action()
     {
         $this->user->pass('contributor');
-        $do = $this->request->getAction();
+        $do = (string) $this->request->get('do');
         if ($do !== 'get' && !$this->request->isPost()) {
-            $this->response->setStatus(405)->throwContent(_t('Method Not Allowed'), 'text/plain');
-            return;
+            $this->response->setStatus(405);
+            $this->response->goBack();
         }
         $this->security->protect();
         $this->on($this->request->is('do=waiting'))->waitingComment();

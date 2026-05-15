@@ -9,32 +9,32 @@ $users = \Widget\Users\Admin::alloc();
     <div class="body container">
         <div class="row typecho-page-main" role="main">
             <div class="col-mb-12 typecho-list">
-                <form method="get" id="manage-users-search" hidden></form>
-                <form method="post" name="manage_users" class="operate-form">
-                    <div class="typecho-list-operate">
-                        <div class="operate">
-                            <label><i class="sr-only"><?php _e('全选'); ?></i><input type="checkbox"
-                                                                                   class="typecho-table-select-all"/></label>
-                            <div class="btn-group btn-drop">
-                                <button class="btn dropdown-toggle btn-s" type="button"><i
-                                        class="sr-only"><?php _e('操作'); ?></i><?php _e('选中项'); ?> <i
-                                            class="i-caret-down"></i></button>
-                                <ul class="dropdown-menu">
-                                    <li><a lang="<?php _e('你确认要删除这些用户吗?'); ?>"
-                                           href="<?php $security->index('/action/users-edit?do=delete'); ?>"><?php _e('删除'); ?></a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                        <div class="search" role="search">
-                            <?php if ('' != $request->keywords): ?>
-                                <a href="<?php $options->adminUrl('manage-users.php'); ?>"><?php _e('&laquo; 取消筛选'); ?></a>
-                            <?php endif; ?>
-                            <input type="text" class="text-s" placeholder="<?php _e('请输入关键字'); ?>"
-                                   value="<?php echo $request->filter('html')->keywords; ?>" name="keywords" form="manage-users-search"/>
-                            <button type="submit" class="btn btn-s" form="manage-users-search"><?php _e('筛选'); ?></button>
+                <form method="get" class="typecho-list-operate">
+                    <div class="operate">
+                        <label><i class="sr-only"><?php _e('全选'); ?></i><input type="checkbox"
+                                                                               class="typecho-table-select-all"/></label>
+                        <div class="btn-group btn-drop">
+                            <button class="btn dropdown-toggle btn-s" type="button"><i
+                                    class="sr-only"><?php _e('操作'); ?></i><?php _e('选中项'); ?> <i
+                                    class="i-caret-down"></i></button>
+                            <ul class="dropdown-menu">
+                                <li><a lang="<?php _e('你确认要删除这些用户吗?'); ?>"
+                                       href="<?php $security->index('/action/users-edit?do=delete'); ?>"><?php _e('删除'); ?></a>
+                                </li>
+                            </ul>
                         </div>
                     </div>
+                    <div class="search" role="search">
+                        <?php if ('' != $request->keywords): ?>
+                            <a href="<?php $options->adminUrl('manage-users.php'); ?>"><?php _e('&laquo; 取消筛选'); ?></a>
+                        <?php endif; ?>
+                        <input type="text" class="text-s" placeholder="<?php _e('请输入关键字'); ?>"
+                               value="<?php echo $request->filter('html')->keywords; ?>" name="keywords"/>
+                        <button type="submit" class="btn btn-s"><?php _e('筛选'); ?></button>
+                    </div>
+                </form>
+
+                <form method="post" name="manage_users" class="operate-form">
                     <table class="typecho-list-table">
                         <colgroup>
                             <col width="3%" class="kit-hidden-mb"/>

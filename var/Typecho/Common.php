@@ -8,14 +8,15 @@ namespace {
     {
         if (empty($args)) {
             return I18n::translate($string);
+        } else {
+            return vsprintf(I18n::translate($string), $args);
         }
-
-        return vsprintf(I18n::translate($string), $args);
     }
 
     function _e(string $string, ...$args)
     {
-        echo _t($string, ...$args);
+        array_unshift($args, $string);
+        echo call_user_func_array('_t', $args);
     }
 
     function _n(string $single, string $plural, int $number): string
@@ -109,7 +110,7 @@ namespace Typecho {
     class Common
     {
         public const SOFTWARE = 'TypeRenew';
-        public const VERSION = '1.5.0';
+        public const VERSION = '1.4.2';
 
         public static function generator(?string $version = null): string
         {
@@ -161,15 +162,10 @@ namespace Typecho {
             });
 
             set_exception_handler(function (\Throwable $exception) {
-                if (defined('__TYPECHO_DEBUG__') && __TYPECHO_DEBUG__) {
-                    echo '<pre><code>';
-                    echo '<h1>' . htmlspecialchars($exception->getMessage()) . '</h1>';
-                    echo htmlspecialchars($exception->__toString());
-                    echo '</code></pre>';
-                } else {
-                    self::error($exception);
-                }
-
+                echo '<pre><code>';
+                echo '<h1>' . htmlspecialchars($exception->getMessage()) . '</h1>';
+                echo htmlspecialchars($exception->__toString());
+                echo '</code></pre>';
                 exit;
             });
         }
@@ -401,7 +397,7 @@ EOF;
 
         public static function filterSearchQuery(?string $query): string
         {
-            return str_replace('-', ' ', self::slugName($query));
+            return isset($query) ? str_replace('-', ' ', self::slugName($query) ?? '') : '';
         }
 
         public static function slugName(?string $str, string $default = '', int $maxLength = 128): string
@@ -456,7 +452,8 @@ EOF;
                 return [];
             }
 
-            return parse_url($url) ?: [];
+            $parts = parse_url($url);
+            return is_array($parts) ? $parts : [];
         }
 
         public static function safeUrl(?string $url): string
@@ -574,7 +571,7 @@ EOF;
             $tLength = $length < $iLength ? ($length - self::strLen($trim)) : $length;
             $str = mb_substr($str, $start, $tLength, 'UTF-8');
 
-            return $length < $iLength ? $str . $trim : $str;
+            return $length < $iLength ? ($str . $trim) : $str;
         }
 
         public static function strBy(?string $a, ?string $b = null): ?string
@@ -596,9 +593,9 @@ EOF;
             if ('$T$' == substr($to, 0, 3)) {
                 $salt = substr($to, 3, 9);
                 return self::hash($from, $salt) === $to;
+            } else {
+                return md5($from) === $to;
             }
-
-        return md5($from) === $to;
         }
 
         public static function hash(?string $string, ?string $salt = null): string
@@ -942,26 +939,26 @@ EOF;
 
             [$type, $stream] = $parts;
 
-            if (!in_array($type, ['image', 'video', 'audio', 'text', 'application'])) {
+            if (in_array($type, ['image', 'video', 'audio', 'text', 'application'])) {
+                switch (true) {
+                    case in_array($stream, ['msword', 'msaccess', 'ms-powerpoint', 'ms-powerpoint']):
+                    case 0 === strpos($stream, 'vnd.'):
+                        return 'office';
+                    case false !== strpos($stream, 'html')
+                        || false !== strpos($stream, 'xml')
+                        || false !== strpos($stream, 'wml'):
+                        return 'html';
+                    case false !== strpos($stream, 'compressed')
+                        || false !== strpos($stream, 'zip')
+                        || in_array($stream, ['application/x-gtar', 'application/x-tar']):
+                        return 'archive';
+                    case 'text' == $type && 0 === strpos($stream, 'x-'):
+                        return 'script';
+                    default:
+                        return $type;
+                }
+            } else {
                 return 'unknown';
-            }
-
-            switch (true) {
-                case in_array($stream, ['msword', 'msaccess', 'ms-powerpoint']):
-                case 0 === strpos($stream, 'vnd.'):
-                    return 'office';
-                case false !== strpos($stream, 'html')
-                    || false !== strpos($stream, 'xml')
-                    || false !== strpos($stream, 'wml'):
-                    return 'html';
-                case false !== strpos($stream, 'compressed')
-                    || false !== strpos($stream, 'zip')
-                    || in_array($stream, ['x-gtar', 'x-tar']):
-                    return 'archive';
-                case 'text' == $type && 0 === strpos($stream, 'x-'):
-                    return 'script';
-                default:
-                    return $type;
             }
         }
 

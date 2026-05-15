@@ -12,10 +12,16 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
+/**
+ * 皮肤配置组件
+ *
+ * @author qining
+ * @package Widget
+ * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
+ * @license GNU General Public License 2.0
+ */
 class Config extends BaseOptions
 {
-    private static ?string $loadedTheme = null;
-
     /**
      * @throws Exception|\Typecho\Db\Exception
      */
@@ -35,57 +41,37 @@ class Config extends BaseOptions
         $configFile = $options->themeFile($theme, 'functions.php');
 
         if (!$options->missingTheme && file_exists($configFile)) {
-            return self::declaresFunction($configFile, 'themeConfig');
+            require_once $configFile;
+
+            if (function_exists('themeConfig')) {
+                return true;
+            }
         }
 
         return false;
     }
 
-    public static function loadThemeFunctions(?string $theme = null): bool
-    {
-        $options = Options::alloc();
-        $theme = $theme ?? $options->theme;
-        $configFile = $options->themeFile($theme, 'functions.php');
-
-        if ($options->missingTheme || !file_exists($configFile)) {
-            return false;
-        }
-
-        if (self::$loadedTheme !== $theme) {
-            require_once $configFile;
-            self::$loadedTheme = $theme;
-        }
-
-        return true;
-    }
-
+    /**
+     * 配置外观
+     *
+     * @return Form
+     */
     public function config(): Form
     {
-        $theme = Options::alloc()->theme;
-        self::loadThemeFunctions($theme);
         $form = new Form(
-            $this->security->getIndex('/action/themes-edit?config=' . $theme),
+            $this->security->getIndex('/action/themes-edit?config=' . Options::alloc()->theme),
             Form::POST_METHOD
         );
         themeConfig($form);
         $inputs = $form->getInputs();
-        $saved = json_decode((string) $this->options->__get('theme:' . $theme), true);
-        $saved = is_array($saved) ? $saved : [];
 
         if (!empty($inputs)) {
             foreach ($inputs as $key => $val) {
-                $input = $form->getInput($key);
-                if ($input === null) {
-                    continue;
-                }
-
-                if (array_key_exists((string) $key, $saved)) {
-                    $input->value($saved[(string) $key]);
-                    continue;
-                }
-
                 if (isset($this->options->{$key})) {
-                    $input->value($this->options->{$key});
+                    $input = $form->getInput($key);
+                    if ($input !== null) {
+                        $input->value($this->options->{$key});
+                    }
                 }
             }
         }
@@ -94,57 +80,5 @@ class Config extends BaseOptions
         $submit->input->setAttribute('class', 'btn primary');
         $form->addItem($submit);
         return $form;
-    }
-
-    private static function declaresFunction(string $file, string $functionName): bool
-    {
-        $source = file_get_contents($file);
-        if (!is_string($source) || $source === '') {
-            return false;
-        }
-
-        $tokens = token_get_all($source);
-        $level = 0;
-        $count = count($tokens);
-
-        for ($i = 0; $i < $count; $i++) {
-            $token = $tokens[$i];
-
-            if ($token === '{') {
-                $level++;
-                continue;
-            }
-
-            if ($token === '}') {
-                $level = max(0, $level - 1);
-                continue;
-            }
-
-            if (!is_array($token) || $token[0] !== T_FUNCTION || $level !== 0) {
-                continue;
-            }
-
-            for ($j = $i + 1; $j < $count; $j++) {
-                $next = $tokens[$j];
-
-                if (!is_array($next)) {
-                    continue;
-                }
-
-                if ($next[0] === T_STRING) {
-                    if ($next[1] === $functionName) {
-                        return true;
-                    }
-
-                    break;
-                }
-
-                if (!in_array($next[0], [T_WHITESPACE, T_AMPERSAND_NOT_FOLLOWED_BY_VAR_OR_VARARG, T_AMPERSAND_FOLLOWED_BY_VAR_OR_VARARG], true)) {
-                    break;
-                }
-            }
-        }
-
-        return false;
     }
 }

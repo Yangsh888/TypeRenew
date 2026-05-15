@@ -8,7 +8,6 @@ use Typecho\Cookie;
 use Typecho\Db;
 use Typecho\Db\Query;
 use Typecho\Router;
-use Typecho\Timezone;
 use Typecho\Widget\Exception as WidgetException;
 use Typecho\Widget\Helper\PageNavigator\Classic;
 use Typecho\Widget\Helper\PageNavigator\Box;
@@ -34,10 +33,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
  */
 class Archive extends Contents
 {
-    private const XMLRPC_DISABLED = 0;
-    private const XMLRPC_ENABLED = 1;
-    private const XMLRPC_WITH_PINGBACK = 2;
-
     private string $themeFile;
 
     private string $themeDir;
@@ -418,9 +413,9 @@ class Archive extends Contents
         if ($this->invokeByFeed) {
             return parent::select(...$fields)->where('table.contents.allowFeed = ?', 1)
                 ->where("table.contents.password IS NULL OR table.contents.password = ''");
+        } else {
+            return parent::select(...$fields);
         }
-
-        return parent::select(...$fields);
     }
 
     public function content($more = null)
@@ -643,20 +638,19 @@ class Archive extends Contents
 
         $allows = self::pluginHandle()->filter('headerOptions', $allows, $this);
         $title = (empty($this->archiveTitle) ? '' : $this->archiveTitle . ' &raquo; ') . $this->options->title;
-        $xmlRpcEnabled = $this->isXmlRpcEnabled();
 
         $header = ($this->is('single') && !$this->is('index')) ? '<link rel="canonical" href="' . $this->archiveUrl . '" />' . "\n" : '';
 
-        if (!empty($allows['pingback']) && $this->isPingbackEnabled()) {
+        if (!empty($allows['pingback']) && 2 == $this->options->allowXmlRpc) {
             $header .= '<link rel="pingback" href="' . $allows['pingback'] . '" />' . "\n";
         }
 
-        if (!empty($allows['xmlrpc']) && $xmlRpcEnabled) {
+        if (!empty($allows['xmlrpc']) && 0 < $this->options->allowXmlRpc) {
             $header .= '<link rel="EditURI" type="application/rsd+xml" title="RSD" href="'
                 . $allows['xmlrpc'] . '" />' . "\n";
         }
 
-        if (!empty($allows['wlw']) && $xmlRpcEnabled) {
+        if (!empty($allows['wlw']) && 0 < $this->options->allowXmlRpc) {
             $header .= '<link rel="wlwmanifest" type="application/wlwmanifest+xml" href="'
                 . $allows['wlw'] . '" />' . "\n";
         }
@@ -874,7 +868,7 @@ EOF;
     public function remember(string $cookieName, bool $return = false)
     {
         $cookieName = strtolower($cookieName);
-        if (!in_array($cookieName, ['author', 'mail', 'url', 'text'])) {
+        if (!in_array($cookieName, ['author', 'mail', 'url'])) {
             return '';
         }
 
@@ -912,7 +906,7 @@ EOF;
     {
         $this->checkPermalink();
 
-        if ($this->isPingbackEnabled()) {
+        if (2 == $this->options->allowXmlRpc) {
             $this->response->setHeader('X-Pingback', $this->options->xmlRpcUrl);
         }
         $valid = false;
@@ -1080,16 +1074,6 @@ EOF;
         return preg_split('#/+#', trim($directory, '/'), -1, PREG_SPLIT_NO_EMPTY) ?: [];
     }
 
-    private function isXmlRpcEnabled(): bool
-    {
-        return (int) $this->options->allowXmlRpc > self::XMLRPC_DISABLED;
-    }
-
-    private function isPingbackEnabled(): bool
-    {
-        return (int) $this->options->allowXmlRpc === self::XMLRPC_WITH_PINGBACK;
-    }
-
     private function applyContentVisibilityScope(Query $select, bool $includeHidden): void
     {
         if ($this->parameter->preview) {
@@ -1167,32 +1151,18 @@ EOF;
             $fromMonth = $this->request->filter('int')->get('month');
             $toMonth = $fromMonth;
 
+            $toDay = date('t', mktime(0, 0, 0, $toMonth, 1, $year));
+
             if ($this->request->is('day')) {
                 $fromDay = $this->request->filter('int')->get('day');
                 $toDay = $fromDay;
             }
         }
 
-        if (
-            ($this->request->is('day') && !Timezone::isValidLocalDate($year, $fromMonth, $fromDay))
-            || ($this->request->is('month') && !$this->request->is('day') && !Timezone::isValidLocalDate($year, $fromMonth, 1))
-            || (!$this->request->is('month') && !Timezone::isValidLocalDate($year))
-        ) {
-            throw new WidgetException(_t('请求的地址不存在'), 404);
-        }
-
-        if ($this->request->is('day')) {
-            [$from, $to] = Timezone::dayRange($year, $fromMonth, $fromDay);
-        } elseif ($this->request->is('month')) {
-            [$from, $to] = Timezone::monthRange($year, $fromMonth);
-        } else {
-            [$from, $to] = Timezone::yearRange($year);
-        }
-
-        if (null === $from || null === $to) {
-            throw new WidgetException(_t('请求的地址不存在'), 404);
-        }
-
+        $from = mktime(0, 0, 0, $fromMonth, $fromDay, $year)
+            - $this->options->timezone + $this->options->serverTimezone;
+        $to = mktime(23, 59, 59, $toMonth, $toDay, $year)
+            - $this->options->timezone + $this->options->serverTimezone;
         $select->where('table.contents.created >= ? AND table.contents.created < ?', $from, $to);
     }
 
@@ -1469,37 +1439,24 @@ EOF;
         $day = $this->request->filter('int')->get('day');
 
         if (!empty($year) && !empty($month) && !empty($day)) {
-            if (!Timezone::isValidLocalDate($year, $month, $day)) {
-                throw new WidgetException(_t('请求的地址不存在'), 404);
-            }
-
-            [$from, $to] = Timezone::dayRange($year, $month, $day);
+            $from = mktime(0, 0, 0, $month, $day, $year);
+            $to = mktime(23, 59, 59, $month, $day, $year);
             $this->archiveSlug = 'day';
             $this->archiveTitle = _t('%d年%d月%d日', $year, $month, $day);
         } elseif (!empty($year) && !empty($month)) {
-            if (!Timezone::isValidLocalDate($year, $month, 1)) {
-                throw new WidgetException(_t('请求的地址不存在'), 404);
-            }
-
-            [$from, $to] = Timezone::monthRange($year, $month);
+            $from = mktime(0, 0, 0, $month, 1, $year);
+            $to = mktime(23, 59, 59, $month, date('t', $from), $year);
             $this->archiveSlug = 'month';
             $this->archiveTitle = _t('%d年%d月', $year, $month);
         } elseif (!empty($year)) {
-            if (!Timezone::isValidLocalDate($year)) {
-                throw new WidgetException(_t('请求的地址不存在'), 404);
-            }
-
-            [$from, $to] = Timezone::yearRange($year);
+            $from = mktime(0, 0, 0, 1, 1, $year);
+            $to = mktime(23, 59, 59, 12, 31, $year);
             $this->archiveSlug = 'year';
             $this->archiveTitle = _t('%d年', $year);
         }
 
-        if (!isset($from, $to)) {
-            throw new WidgetException(_t('请求的地址不存在'), 404);
-        }
-
-        $select->where('table.contents.created >= ?', $from)
-            ->where('table.contents.created < ?', $to)
+        $select->where('table.contents.created >= ?', $from - $this->options->timezone + $this->options->serverTimezone)
+            ->where('table.contents.created <= ?', $to - $this->options->timezone + $this->options->serverTimezone)
             ->where('table.contents.type = ?', 'post');
 
         $this->archiveType = 'date';

@@ -9,10 +9,9 @@ use Typecho\Widget\Exception as WidgetException;
  *
  * @package IXR
  */
+#[\AllowDynamicProperties]
 class Server
 {
-    private const DEFAULT_MAX_REQUEST_BYTES = 16777216;
-
     /**
      * 回调函数
      *
@@ -37,15 +36,11 @@ class Server
      *
      * @param array $callbacks 回调函数
      */
-    public function __construct(
-        array $callbacks = [],
-        bool $allowListMethods = true,
-        bool $allowMulticall = true
-    )
+    public function __construct(array $callbacks = [])
     {
-        $this->setCapabilities($allowMulticall);
+        $this->setCapabilities();
         $this->callbacks = $callbacks;
-        $this->setCallbacks($allowListMethods, $allowMulticall);
+        $this->setCallbacks();
     }
 
     /**
@@ -83,7 +78,7 @@ class Server
             } else {
                 $result = $this->call($method, $params);
             }
-            if ($result instanceof Error) {
+            if (is_a($result, 'Error')) {
                 $return[] = [
                     'faultCode'   => $result->code,
                     'faultString' => $result->message
@@ -134,10 +129,6 @@ class Server
      */
     private function call(string $methodName, array $args)
     {
-        if (!$this->isPositionalArgs($args)) {
-            return new Error(-32602, 'server error. requested class method "' . $methodName . '" params must be positional.');
-        }
-
         if (!$this->hasMethod($methodName)) {
             return new Error(-32601, 'server error. requested method ' . $methodName . ' does not exist.');
         }
@@ -184,7 +175,7 @@ class Server
                 }
             }
 
-            $result = $method(...$args);
+            $result = call_user_func_array($method, $args);
 
             if (isset($this->hook)) {
                 $this->hook->afterRpcCall($methodName, $result);
@@ -217,15 +208,6 @@ class Server
                 'server error. requested class method "' . $methodName . '" failed.'
             );
         }
-    }
-
-    private function isPositionalArgs(array $args): bool
-    {
-        if ($args === []) {
-            return true;
-        }
-
-        return array_keys($args) === range(0, count($args) - 1);
     }
 
     /**
@@ -311,9 +293,9 @@ class Server
         }
 
         return match ($name) {
-            'int' => $this->coerceInt($value),
-            'float' => $this->coerceFloat($value),
-            'bool' => $this->coerceBool($value),
+            'int' => settype($value, 'integer'),
+            'float' => settype($value, 'double'),
+            'bool' => settype($value, 'boolean'),
             'string' => !is_array($value) && (!is_object($value) || method_exists($value, '__toString'))
                 && settype($value, 'string'),
             'array' => is_array($value),
@@ -325,67 +307,6 @@ class Server
         };
     }
 
-    private function coerceInt(&$value): bool
-    {
-        if (is_int($value)) {
-            return true;
-        }
-
-        if (is_float($value) && is_finite($value) && floor($value) === $value) {
-            $value = (int) $value;
-            return true;
-        }
-
-        if (is_string($value) && preg_match('/^-?\d+$/', trim($value)) === 1) {
-            $value = (int) $value;
-            return true;
-        }
-
-        return false;
-    }
-
-    private function coerceFloat(&$value): bool
-    {
-        if (is_float($value)) {
-            return true;
-        }
-
-        if (is_int($value)) {
-            $value = (float) $value;
-            return true;
-        }
-
-        if (is_string($value) && is_numeric(trim($value))) {
-            $value = (float) $value;
-            return true;
-        }
-
-        return false;
-    }
-
-    private function coerceBool(&$value): bool
-    {
-        if (is_bool($value)) {
-            return true;
-        }
-
-        if (is_int($value) && ($value === 0 || $value === 1)) {
-            $value = (bool) $value;
-            return true;
-        }
-
-        if (is_string($value)) {
-            $normalized = strtolower(trim($value));
-
-            if (in_array($normalized, ['0', '1', 'true', 'false'], true)) {
-                $value = in_array($normalized, ['1', 'true'], true);
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     /**
      * 是否存在方法
      * @param string $method 方法名
@@ -393,45 +314,14 @@ class Server
      */
     private function hasMethod(string $method): bool
     {
-        return isset($this->callbacks[$method]);
-    }
-
-    private function getMaxRequestBytes(): int
-    {
-        $postMaxSize = $this->parseIniBytes(function_exists('ini_get') ? (string) ini_get('post_max_size') : '');
-        $uploadMaxSize = $this->parseIniBytes(function_exists('ini_get') ? (string) ini_get('upload_max_filesize') : '');
-        $limit = max($postMaxSize, $uploadMaxSize);
-
-        return $limit > 0 ? $limit : self::DEFAULT_MAX_REQUEST_BYTES;
-    }
-
-    private function parseIniBytes(string $value): int
-    {
-        $value = trim($value);
-        if ($value === '') {
-            return 0;
-        }
-
-        $unit = strtolower(substr($value, -1));
-        $number = is_numeric($unit) ? (float) $value : (float) substr($value, 0, -1);
-
-        if ($number <= 0) {
-            return 0;
-        }
-
-        return match ($unit) {
-            'g' => (int) ($number * 1024 * 1024 * 1024),
-            'm' => (int) ($number * 1024 * 1024),
-            'k' => (int) ($number * 1024),
-            default => (int) $number,
-        };
+        return in_array($method, array_keys($this->callbacks));
     }
 
     /**
      * 设置默认参数
      * @return void
      */
-    private function setCapabilities(bool $allowMulticall)
+    private function setCapabilities()
     {
         // Initialises capabilities array
         $this->capabilities = [
@@ -443,32 +333,23 @@ class Server
                 'specUrl'     => 'http://xmlrpc-epi.sourceforge.net/specs/rfc.fault_codes.php',
                 'specVersion' => 20010516
             ],
-        ];
-
-        if ($allowMulticall) {
-            $this->capabilities['system.multicall'] = [
+            'system.multicall' => [
                 'specUrl'     => 'http://www.xmlrpc.com/discuss/msgReader$1208',
                 'specVersion' => 1
-            ];
-        }
+            ],
+        ];
     }
 
     /**
      * 设置默认方法
      * @return void
      */
-    private function setCallbacks(bool $allowListMethods, bool $allowMulticall)
+    private function setCallbacks()
     {
         $this->callbacks['system.getCapabilities'] = [$this, 'getCapabilities'];
+        $this->callbacks['system.listMethods'] = [$this, 'listMethods'];
+        $this->callbacks['system.multicall'] = [$this, 'multiCall'];
         $this->callbacks['system.methodHelp'] = [$this, 'methodHelp'];
-
-        if ($allowListMethods) {
-            $this->callbacks['system.listMethods'] = [$this, 'listMethods'];
-        }
-
-        if ($allowMulticall) {
-            $this->callbacks['system.multicall'] = [$this, 'multiCall'];
-        }
     }
 
     /**
@@ -476,17 +357,10 @@ class Server
      */
     public function serve()
     {
-        $payload = file_get_contents('php://input') ?: '';
-        if (strlen($payload) > $this->getMaxRequestBytes()) {
-            $this->error(-32600, 'server error. request entity too large.');
-        }
-
-        $message = new Message($payload);
+        $message = new Message(file_get_contents('php://input') ?: '');
 
         if (!$message->parse()) {
-            $detail = $message->parseError !== '' ? $message->parseError : 'parse error. not well formed';
-            $code = $message->parseError === Message::ERROR_XML_EXTENSION ? -32603 : -32700;
-            $this->error($code, $detail);
+            $this->error(-32700, 'parse error. not well formed');
         } elseif ($message->messageType != 'methodCall') {
             $this->error(-32600, 'server error. invalid xml-rpc. not conforming to spec. Request must be a methodCall');
         }

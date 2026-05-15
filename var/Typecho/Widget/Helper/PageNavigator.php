@@ -4,20 +4,60 @@ namespace Typecho\Widget\Helper;
 
 use Typecho\Widget\Exception;
 
+/**
+ * 内容分页抽象类
+ *
+ * @package Widget
+ */
 abstract class PageNavigator
 {
+    /**
+     * 记录总数
+     *
+     * @var integer
+     */
     protected int $total;
 
+    /**
+     * 页面总数
+     *
+     * @var integer
+     */
     protected int $totalPage;
 
+    /**
+     * 当前页面
+     *
+     * @var integer
+     */
     protected int $currentPage;
 
+    /**
+     * 每页内容数
+     *
+     * @var integer
+     */
     protected int $pageSize;
 
+    /**
+     * 页面链接模板
+     *
+     * @var string
+     */
     protected string $pageTemplate;
 
+    /**
+     * 链接锚点
+     *
+     * @var string
+     */
     protected string $anchor = '';
 
+    /**
+     * 页面占位符
+     *
+     * @var mixed
+     */
     protected $pageHolder = ['{page}', '%7Bpage%7D'];
 
     /**
@@ -42,17 +82,32 @@ abstract class PageNavigator
         }
     }
 
+    /**
+     * 设置页面占位符
+     *
+     * @param string $holder 页面占位符
+     */
     public function setPageHolder(string $holder)
     {
         $this->pageHolder = ['{' . $holder . '}',
             str_replace(['{', '}'], ['%7B', '%7D'], $holder)];
     }
 
+    /**
+     * 设置锚点
+     *
+     * @param string $anchor 锚点
+     */
     public function setAnchor(string $anchor)
     {
         $this->anchor = '#' . $anchor;
     }
 
+    /**
+     * 输出方法
+     *
+     * @throws Exception
+     */
     public function render()
     {
         throw new Exception('Method Not Implemented', 500);

@@ -70,23 +70,16 @@ abstract class Widget
                 $widget = new $className($requestObject, $responseObject, $params);
                 $widget->execute();
 
-                if (is_callable($disableSandboxOrCallback)) {
-                    $disableSandboxOrCallback($widget);
+                if ($sandbox && is_callable($disableSandboxOrCallback)) {
+                    call_user_func($disableSandboxOrCallback, $widget);
                 }
             } catch (Terminal $e) {
             } finally {
                 if ($sandbox) {
                     Response::getInstance()->endSandbox();
                     Request::getInstance()->endSandbox();
+                    return $widget;
                 }
-            }
-
-            if ($sandbox) {
-                if (!$widget instanceof self) {
-                    throw new \RuntimeException('Sandbox widget was not initialized');
-                }
-
-                return $widget;
             }
 
             self::$widgetPool[$key] = $widget;
@@ -118,13 +111,13 @@ abstract class Widget
     {
         if (Common::nativeClassName(static::class) == 'Typecho_Widget') {
             if (isset($alias)) {
-                unset(self::$widgetPool[Common::nativeClassName($alias)]);
+                unset(self::$widgetPool[$alias]);
             } else {
                 self::$widgetPool = [];
             }
         } else {
             $alias = static::class . (isset($alias) ? '@' . $alias : '');
-            unset(self::$widgetPool[Common::nativeClassName($alias)]);
+            unset(self::$widgetPool[$alias]);
         }
     }
 
@@ -134,7 +127,11 @@ abstract class Widget
 
     public function on(bool $condition)
     {
-        return $condition ? $this : new EmptyClass();
+        if ($condition) {
+            return $this;
+        } else {
+            return new EmptyClass();
+        }
     }
 
     public function to(&$variable): Widget
@@ -168,9 +165,9 @@ abstract class Widget
                 $item[$key] = $this->{$key};
             }
             return $item;
+        } else {
+            return $this->{$column};
         }
-
-        return $this->{$column};
     }
 
     public function toArray(string|array $column): array

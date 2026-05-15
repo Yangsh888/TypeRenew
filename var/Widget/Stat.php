@@ -40,7 +40,7 @@ class Stat extends Base
      */
     protected function initComponents(int &$components)
     {
-        $components = self::INIT_USER | self::INIT_DB | self::INIT_OPTIONS;
+        $components = self::INIT_USER;
     }
 
     protected function ___publishedPostsNum(): int
@@ -48,8 +48,7 @@ class Stat extends Base
         return $this->db->fetchObject($this->db->select(['COUNT(cid)' => 'num'])
             ->from('table.contents')
             ->where('table.contents.type = ?', 'post')
-            ->where('table.contents.status = ?', 'publish')
-            ->where('table.contents.created < ?', $this->options->time))->num;
+            ->where('table.contents.status = ?', 'publish'))->num;
     }
 
     protected function ___waitingPostsNum(): int
@@ -73,7 +72,6 @@ class Stat extends Base
             ->from('table.contents')
             ->where('table.contents.type = ?', 'post')
             ->where('table.contents.status = ?', 'publish')
-            ->where('table.contents.created < ?', $this->options->time)
             ->where('table.contents.authorId = ?', $this->user->uid))->num;
     }
 
@@ -100,7 +98,6 @@ class Stat extends Base
             ->from('table.contents')
             ->where('table.contents.type = ?', 'post')
             ->where('table.contents.status = ?', 'publish')
-            ->where('table.contents.created < ?', $this->options->time)
             ->where('table.contents.authorId = ?', $this->request->filter('int')->get('uid')))->num;
     }
 
@@ -126,8 +123,7 @@ class Stat extends Base
         return $this->db->fetchObject($this->db->select(['COUNT(cid)' => 'num'])
             ->from('table.contents')
             ->where('table.contents.type = ?', 'page')
-            ->where('table.contents.status = ?', 'publish')
-            ->where('table.contents.created < ?', $this->options->time))->num;
+            ->where('table.contents.status = ?', 'publish'))->num;
     }
 
     protected function ___draftPagesNum(): int

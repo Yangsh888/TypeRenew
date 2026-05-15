@@ -37,25 +37,58 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
  */
 class Users extends Base implements QueryInterface, RowFilterInterface, PrimaryKeyInterface, ParamsDelegateInterface
 {
+    /**
+     * @return string 获取主键
+     */
     public function getPrimaryKey(): string
     {
         return 'uid';
     }
+
+    /**
+     * 将每行的值压入堆栈
+     *
+     * @param array $value 每行的值
+     * @return array
+     */
     public function push(array $value): array
     {
         $value = $this->filter($value);
         return parent::push($value);
     }
+
+    /**
+     * 通用过滤器
+     *
+     * @param array $row 需要过滤的行数据
+     * @return array
+     */
     public function filter(array $row): array
     {
         return Users::pluginHandle()->filter('filter', $row, $this);
     }
 
+    /**
+     * @param string $key
+     * @return string
+     */
     public function getRouterParam(string $key): string
     {
-        return $key === 'uid' ? $this->uid : '{' . $key . '}';
+        switch ($key) {
+            case 'uid':
+                return $this->uid;
+            default:
+                return '{' . $key . '}';
+        }
     }
 
+    /**
+     * 查询方法
+     *
+     * @param mixed $fields
+     * @return Query
+     * @throws Exception
+     */
     public function select(...$fields): Query
     {
         return $this->db->select(...$fields)->from('table.users');
@@ -112,26 +145,44 @@ class Users extends Base implements QueryInterface, RowFilterInterface, PrimaryK
             htmlspecialchars($this->screenName, ENT_QUOTES, 'UTF-8') . '" width="' . $size . '" height="' . $size . '" />';
     }
 
+    /**
+     * @return string
+     */
     protected function ___permalink(): string
     {
         return Router::url('author', $this, $this->options->index);
     }
 
+    /**
+     * @return string
+     */
     protected function ___feedUrl(): string
     {
         return Router::url('author', $this, $this->options->feedUrl);
     }
 
+    /**
+     * @return string
+     */
     protected function ___feedRssUrl(): string
     {
         return Router::url('author', $this, $this->options->feedRssUrl);
     }
 
+    /**
+     * @return string
+     */
     protected function ___feedAtomUrl(): string
     {
         return Router::url('author', $this, $this->options->feedAtomUrl);
     }
 
+    /**
+     * personalOptions
+     *
+     * @return Config
+     * @throws Exception
+     */
     protected function ___personalOptions(): Config
     {
         $rows = $this->db->fetchAll($this->db->select()

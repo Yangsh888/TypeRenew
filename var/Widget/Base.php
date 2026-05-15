@@ -29,7 +29,7 @@ abstract class Base extends Widget
         $components = self::INIT_ALL;
         $this->initComponents($components);
 
-        if ($components & self::INIT_DB) {
+        if ($components != self::INIT_NONE) {
             $this->db = Db::get();
         }
 

@@ -15,12 +15,24 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
+/**
+ * 编辑分类组件
+ *
+ * @package Widget
+ * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
+ * @license GNU General Public License 2.0
+ */
 class Edit extends Metas implements ActionInterface
 {
     use EditTrait;
 
+    /**
+     * 入口函数
+     * @throws \Exception
+     */
     public function execute()
     {
+        /** 编辑以上权限 */
         $this->user->pass('editor');
     }
 
@@ -73,7 +85,8 @@ class Edit extends Metas implements ActionInterface
     public function nameToSlug(string $name): bool
     {
         if (empty($this->request->slug)) {
-            if (empty(Common::slugName($name)) || !$this->slugExists($name)) {
+            $slug = Common::slugName($name);
+            if (empty($slug) || !$this->slugExists($name)) {
                 return false;
             }
         }
@@ -103,13 +116,19 @@ class Edit extends Metas implements ActionInterface
         return !$category;
     }
 
+    /**
+     * 增加分类
+     *
+     * @throws Exception
+     */
     public function insertCategory()
     {
         if ($this->form('insert')->validate()) {
             $this->response->goBack();
         }
 
-        $category = $this->request->fromInput('name', 'slug', 'description', 'parent');
+        /** 取出数据 */
+        $category = $this->request->from('name', 'slug', 'description', 'parent');
 
         $category['slug'] = Common::slugName(Common::strBy($category['slug'] ?? null, $category['name']));
         $category['type'] = 'category';
@@ -218,6 +237,7 @@ class Edit extends Metas implements ActionInterface
             $action = $_action;
         }
 
+        /** 给表单增加规则 */
         if ('insert' == $action || 'update' == $action) {
             $name->addRule('required', _t('必须填写分类名称'));
             $name->addRule([$this, 'nameExists'], _t('分类名称已经存在'));
@@ -235,13 +255,19 @@ class Edit extends Metas implements ActionInterface
         return $form;
     }
 
+    /**
+     * 更新分类
+     *
+     * @throws Exception
+     */
     public function updateCategory()
     {
         if ($this->form('update')->validate()) {
             $this->response->goBack();
         }
 
-        $category = $this->request->fromInput('name', 'slug', 'description', 'parent');
+        /** 取出数据 */
+        $category = $this->request->from('name', 'slug', 'description', 'parent');
         $category['mid'] = $this->request->get('mid');
         $category['parent'] = (int) ($category['parent'] ?? 0);
         $category['slug'] = Common::slugName(Common::strBy($category['slug'] ?? null, $category['name']));
@@ -293,6 +319,11 @@ class Edit extends Metas implements ActionInterface
             . ($category['parent'] ? '?parent=' . $category['parent'] : ''), $this->options->adminUrl));
     }
 
+    /**
+     * 删除分类
+     * @return void
+     * @throws Exception
+     */
     public function deleteCategory()
     {
         $categories = $this->request->filter('int')->getArray('mid');
@@ -323,18 +354,22 @@ class Edit extends Metas implements ActionInterface
         $this->response->goBack();
     }
 
+    /**
+     * 合并分类
+     * @throws Exception
+     */
     public function mergeCategory()
     {
-        $merge = $this->request->filter('int')->get('merge');
         $validator = new Validate();
         $validator->addRule('merge', 'required', _t('分类主键不存在'));
         $validator->addRule('merge', [$this, 'categoryExists'], _t('请选择需要合并的分类'));
 
-        if ($error = $validator->run(['merge' => $merge])) {
+        if ($error = $validator->run($this->request->from('merge'))) {
             Notice::alloc()->set($error, 'error');
             $this->response->goBack();
         }
 
+        $merge = $this->request->get('merge');
         $categories = $this->request->filter('int')->getArray('mid');
 
         if ($categories) {
@@ -349,6 +384,10 @@ class Edit extends Metas implements ActionInterface
         $this->response->goBack();
     }
 
+    /**
+     * 分类排序
+     * @throws Exception
+     */
     public function sortCategory()
     {
         $categories = $this->request->filter('int')->getArray('mid');
@@ -363,6 +402,11 @@ class Edit extends Metas implements ActionInterface
         }
     }
 
+    /**
+     * 刷新分类
+     *
+     * @throws Exception
+     */
     public function refreshCategory()
     {
         $categories = $this->request->filter('int')->getArray('mid');
@@ -381,21 +425,25 @@ class Edit extends Metas implements ActionInterface
         $this->response->goBack();
     }
 
+    /**
+     * 设置默认分类
+     *
+     * @throws Exception
+     */
     public function defaultCategory()
     {
-        $mid = $this->request->filter('int')->get('mid');
         $validator = new Validate();
         $validator->addRule('mid', 'required', _t('分类主键不存在'));
         $validator->addRule('mid', [$this, 'categoryExists'], _t('分类不存在'));
 
-        if ($error = $validator->run(['mid' => $mid])) {
+        if ($error = $validator->run($this->request->from('mid'))) {
             Notice::alloc()->set($error, 'error');
         } else {
             $this->db->query($this->db->update('table.options')
-                ->rows(['value' => $mid])
+                ->rows(['value' => $this->request->get('mid')])
                 ->where('name = ?', 'defaultCategory'));
 
-            $this->db->fetchRow($this->select()->where('mid = ?', $mid)
+            $this->db->fetchRow($this->select()->where('mid = ?', $this->request->get('mid'))
                 ->where('type = ?', 'category')->limit(1), [$this, 'push']);
 
             Notice::alloc()->highlight($this->theId);
@@ -409,6 +457,12 @@ class Edit extends Metas implements ActionInterface
         $this->response->redirect(Common::url('manage-categories.php', $this->options->adminUrl));
     }
 
+    /**
+     * 获取菜单标题
+     *
+     * @return string|null
+     * @throws \Typecho\Widget\Exception|Exception
+     */
     public function getMenuTitle(): ?string
     {
         if ($this->request->is('mid')) {
@@ -434,13 +488,13 @@ class Edit extends Metas implements ActionInterface
         throw new \Typecho\Widget\Exception(_t('分类不存在'), 404);
     }
 
+    /**
+     * 入口函数
+     * @return void
+     * @throws Exception
+     */
     public function action()
     {
-        if (!$this->request->isPost()) {
-            $this->response->setStatus(405)->throwContent(_t('Method Not Allowed'), 'text/plain');
-            return;
-        }
-
         $this->security->protect();
         $this->on($this->request->is('do=insert'))->insertCategory();
         $this->on($this->request->is('do=update'))->updateCategory();

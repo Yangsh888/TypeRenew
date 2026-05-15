@@ -18,8 +18,12 @@ class Edit extends Metas implements ActionInterface
 {
     use EditTrait;
 
+    /**
+     * 入口函数
+     */
     public function execute()
     {
+        /** 编辑以上权限 */
         $this->user->pass('editor');
     }
 
@@ -70,7 +74,8 @@ class Edit extends Metas implements ActionInterface
     public function nameToSlug(string $name): bool
     {
         if (empty($this->request->slug)) {
-            if (empty(Common::slugName($name)) || !$this->slugExists($name)) {
+            $slug = Common::slugName($name);
+            if (empty($slug) || !$this->slugExists($name)) {
                 return false;
             }
         }
@@ -100,16 +105,23 @@ class Edit extends Metas implements ActionInterface
         return !$tag;
     }
 
+    /**
+     * 插入标签
+     *
+     * @throws Exception
+     */
     public function insertTag()
     {
         if ($this->form('insert')->validate()) {
             $this->response->goBack();
         }
 
-        $tag = $this->request->fromInput('name', 'slug');
+        /** 取出数据 */
+        $tag = $this->request->from('name', 'slug');
         $tag['type'] = 'tag';
         $tag['slug'] = Common::slugName(Common::strBy($tag['slug'] ?? null, $tag['name']));
 
+        /** 插入数据 */
         $tag['mid'] = $this->insert($tag);
         $this->push($tag);
         self::pluginHandle()->call('finishInsert', $tag, $this);
@@ -188,6 +200,7 @@ class Edit extends Metas implements ActionInterface
             $action = $_action;
         }
 
+        /** 给表单增加规则 */
         if ('insert' == $action || 'update' == $action) {
             $name->addRule('required', _t('必须填写标签名称'));
             $name->addRule([$this, 'nameExists'], _t('标签名称已经存在'));
@@ -205,13 +218,19 @@ class Edit extends Metas implements ActionInterface
         return $form;
     }
 
+    /**
+     * 更新标签
+     *
+     * @throws Exception
+     */
     public function updateTag()
     {
         if ($this->form('update')->validate()) {
             $this->response->goBack();
         }
 
-        $tag = $this->request->fromInput('name', 'slug', 'mid');
+        /** 取出数据 */
+        $tag = $this->request->from('name', 'slug', 'mid');
         $tag['type'] = 'tag';
         $tag['slug'] = Common::slugName(Common::strBy($tag['slug'] ?? null, $tag['name']));
 
@@ -229,6 +248,11 @@ class Edit extends Metas implements ActionInterface
         $this->response->redirect(Common::url('manage-tags.php', $this->options->adminUrl));
     }
 
+    /**
+     * 删除标签
+     *
+     * @throws Exception
+     */
     public function deleteTag()
     {
         $tags = $this->request->filter('int')->getArray('mid');
@@ -255,6 +279,11 @@ class Edit extends Metas implements ActionInterface
         $this->response->redirect(Common::url('manage-tags.php', $this->options->adminUrl));
     }
 
+    /**
+     * 合并标签
+     *
+     * @throws Exception
+     */
     public function mergeTag()
     {
         if (empty($this->request->merge)) {
@@ -282,6 +311,11 @@ class Edit extends Metas implements ActionInterface
         $this->response->redirect(Common::url('manage-tags.php', $this->options->adminUrl));
     }
 
+    /**
+     * 刷新标签
+     * @return void
+     * @throws Exception
+     */
     public function refreshTag()
     {
         $tags = $this->request->filter('int')->getArray('mid');
@@ -290,6 +324,7 @@ class Edit extends Metas implements ActionInterface
                 $this->refreshCountByTypeAndStatus($tag, 'post');
             }
 
+            // 自动清理标签
             $this->clearTags();
             self::pluginHandle()->call('finishRefresh', $tags, $this);
 
@@ -301,12 +336,19 @@ class Edit extends Metas implements ActionInterface
         $this->response->goBack();
     }
 
+    /**
+     * 清理没有任何内容的标签
+     *
+     * @throws Exception
+     */
     public function clearTags()
     {
+        // 取出count为0的标签
         $tags = array_column($this->db->fetchAll($this->select('mid')
             ->where('type = ? AND count = ?', 'tag', 0)), 'mid');
 
         foreach ($tags as $tag) {
+            // 确认是否已经没有关联了
             $content = $this->db->fetchRow($this->db->select('cid')
                 ->from('table.relationships')->where('mid = ?', $tag)
                 ->limit(1));
@@ -318,13 +360,13 @@ class Edit extends Metas implements ActionInterface
         }
     }
 
+    /**
+     * 入口函数,绑定事件
+     * @return void
+     * @throws Exception
+     */
     public function action()
     {
-        if (!$this->request->isPost()) {
-            $this->response->setStatus(405)->throwContent(_t('Method Not Allowed'), 'text/plain');
-            return;
-        }
-
         $this->security->protect();
         $this->on($this->request->is('do=insert'))->insertTag();
         $this->on($this->request->is('do=update'))->updateTag();

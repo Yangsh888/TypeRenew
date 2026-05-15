@@ -121,57 +121,17 @@ class Request
                 break;
         }
 
-        if (!isset($value)) {
+        if (isset($value) && $value !== '') {
+            $exists = true;
+            if (is_array($default) == is_array($value)) {
+                return $value;
+            } else {
+                return $default;
+            }
+        } else {
             $exists = false;
             return $default;
         }
-
-        $exists = true;
-        return is_array($default) == is_array($value) ? $value : $default;
-    }
-
-    public function getInput(string $key, $default = null, ?bool &$exists = true)
-    {
-        $value = null;
-
-        switch (true) {
-            case isset($this->params) && isset($this->params[$key]):
-                $value = $this->params[$key];
-                break;
-            case isset($this->sandbox):
-                if (isset($this->sandbox[$key])) {
-                    $value = $this->sandbox[$key];
-                }
-                break;
-            case $key === '@json':
-                if ($this->isJson()) {
-                    $value = $this->getJsonBody();
-                    $default = $default ?? $value;
-                }
-                break;
-            case isset($_POST[$key]):
-                $value = $_POST[$key];
-                break;
-            case isset($_GET[$key]):
-                $value = $_GET[$key];
-                break;
-            default:
-                break;
-        }
-
-        if (!isset($value)) {
-            $exists = false;
-            return $default;
-        }
-
-        $exists = true;
-        return is_array($default) == is_array($value) ? $value : $default;
-    }
-
-    public function getAction(string $default = '', ?bool &$exists = true): string
-    {
-        $value = $this->getInput('do', $default, $exists);
-        return is_scalar($value) ? (string) $value : $default;
     }
 
     public function __get(string $key)
@@ -261,18 +221,6 @@ class Request
         return $result;
     }
 
-    public function fromInput(string|array $params): array
-    {
-        $result = [];
-        $args = is_array($params) ? $params : func_get_args();
-
-        foreach ($args as $arg) {
-            $result[$arg] = $this->getInput($arg);
-        }
-
-        return $result;
-    }
-
     /**
      * getRequestRoot
      *
@@ -319,14 +267,11 @@ class Request
             parse_str($parameter, $args);
         } elseif (is_array($parameter)) {
             $args = $parameter;
-        }
-
-        if (!isset($args)) {
+        } else {
             return $requestUri;
         }
 
         if (isset($parts['query'])) {
-            $currentArgs = [];
             parse_str($parts['query'], $currentArgs);
             $args = array_merge($currentArgs, $args);
         }
@@ -396,13 +341,7 @@ class Request
      */
     public function getServer(string $name, ?string $default = null): ?string
     {
-        $value = $_SERVER[$name] ?? $default;
-
-        if ($value === null) {
-            return null;
-        }
-
-        return is_scalar($value) ? (string) $value : $default;
+        return $_SERVER[$name] ?? $default;
     }
 
     /**
@@ -701,7 +640,7 @@ class Request
      */
     public function isCli(): bool
     {
-        return php_sapi_name() === 'cli';
+        return php_sapi_name() == 'cli';
     }
 
     public function isGet(): bool
@@ -721,7 +660,7 @@ class Request
 
     public function isAjax(): bool
     {
-        return 'XMLHttpRequest' === $this->getHeader('X-Requested-With');
+        return 'XMLHttpRequest' == $this->getHeader('X-Requested-With');
     }
 
     public function isJson(): bool
@@ -746,12 +685,8 @@ class Request
         if (!empty($params)) {
             $validated = true;
             foreach ($params as $key => $val) {
-                $param = $this->getInput($key, null, $exists);
-                if (!isset($val) || $val === '') {
-                    $validated = $exists;
-                } else {
-                    $validated = is_scalar($param) ? ((string) $val === (string) $param) : false;
-                }
+                $param = $this->get($key, null, $exists);
+                $validated = empty($val) ? $exists : ($val == $param);
 
                 if (!$validated) {
                     break;
@@ -789,14 +724,13 @@ class Request
             $requestUri = $_SERVER['REQUEST_URI'];
             $parts = parse_url($requestUri);
             $host = $this->getTrustedHost();
-            $query = is_array($parts) ? ($parts['query'] ?? null) : null;
 
             if ($host !== '' && str_contains($requestUri, $host)) {
                 if (false !== $parts) {
                     $requestUri = (empty($parts['path']) ? '' : $parts['path'])
                         . ((empty($parts['query'])) ? '' : '?' . $parts['query']);
                 }
-            } elseif (!empty($_SERVER['QUERY_STRING']) && empty($query)) {
+            } elseif (!empty($_SERVER['QUERY_STRING']) && empty($parts['query'])) {
                 $requestUri .= '?' . $_SERVER['QUERY_STRING'];
             }
         } elseif (isset($_SERVER['ORIG_PATH_INFO'])) { // IIS 5.0, PHP as CGI
@@ -886,6 +820,6 @@ class Request
             $baseUrl = substr($requestUri, 0, $pos + strlen($baseUrl));
         }
 
-        return $this->baseUrl = $finalBaseUrl ?? rtrim($baseUrl, '/');
+        return ($this->baseUrl = (null === $finalBaseUrl) ? rtrim($baseUrl, '/') : $finalBaseUrl);
     }
 }

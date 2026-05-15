@@ -5,12 +5,21 @@ namespace Widget\Options;
 use Typecho\Common;
 use Typecho\Db\Exception;
 use Typecho\Plugin;
+use Typecho\Router\Parser;
 use Typecho\Widget\Helper\Form;
 
 if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
+/**
+ * 文章阅读设置组件
+ *
+ * @author qining
+ * @package Widget
+ * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
+ * @license GNU General Public License 2.0
+ */
 class Reading extends Permalink
 {
     /**
@@ -22,7 +31,7 @@ class Reading extends Permalink
     {
         $this->validateFormOrGoBack($this->form());
 
-        $settings = $this->request->fromInput(
+        $settings = $this->request->from(
             'postDateFormat',
             'frontPage',
             'frontArchive',
@@ -39,12 +48,12 @@ class Reading extends Permalink
             $this->db->fetchRow($this->db->select('cid')
                 ->from('table.contents')->where('type = ?', 'page')
                 ->where('status = ?', 'publish')->where('created < ?', $this->options->time)
-                ->where('cid = ?', $pageId = intval($this->request->getInput('frontPagePage', '0'))))
+                ->where('cid = ?', $pageId = intval($this->request->get('frontPagePage'))))
         ) {
             $settings['frontPage'] = 'page:' . $pageId;
         } elseif ('file' == $settings['frontPage']
             && $this->request->is('frontPageFile')
-            && null !== ($file = $this->resolveFrontPageFile((string) $this->request->getInput('frontPageFile', '')))) {
+            && null !== ($file = $this->resolveFrontPageFile((string) $this->request->get('frontPageFile', '')))) {
             $settings['frontPage'] = 'file:' . $file;
         } else {
             $settings['frontPage'] = 'recent';
@@ -56,7 +65,7 @@ class Reading extends Permalink
             $settings['frontArchive'] = empty($settings['frontArchive']) ? 0 : 1;
 
             if ($settings['frontArchive']) {
-                $archivePattern = $this->normalizeArchivePattern((string) $this->request->getInput('archivePattern', ''));
+                $archivePattern = $this->normalizeArchivePattern((string) $this->request->get('archivePattern', ''));
                 if (null === $archivePattern) {
                     $this->noticeAndGoBack(_t('文章列表页路径格式不正确'), 'error');
                     return;
@@ -85,6 +94,9 @@ class Reading extends Permalink
         $this->saveSuccessAndGoBack();
     }
 
+    /**
+     * @return Form
+     */
     public function form(): Form
     {
         $form = new Form($this->security->getIndex('/action/options-reading'), Form::POST_METHOD);
@@ -132,7 +144,7 @@ class Reading extends Permalink
                 }
 
                 $pagesSelect .= '<option value="' . $page['cid'] . '"' . $selected
-                    . '>' . htmlspecialchars((string) $page['title'], ENT_QUOTES, 'UTF-8') . '</option>';
+                    . '>' . $page['title'] . '</option>';
             }
             $pagesSelect .= '</select>';
             $frontPageOptions['page'] = _t(
@@ -149,14 +161,14 @@ class Reading extends Permalink
             $info = Plugin::parseInfo($file);
             $file = basename($file);
 
-            if ('index.php' != $file && 'index' == ($info['title'] ?? '')) {
+            if ('index.php' != $file && 'index' == $info['title']) {
                 $selected = '';
                 if ('file' == $frontPageType && $file == $frontPageValue) {
                     $selected = ' selected="true"';
                 }
 
-                $filesSelect .= '<option value="' . htmlspecialchars($file, ENT_QUOTES, 'UTF-8') . '"' . $selected
-                    . '>' . htmlspecialchars($file, ENT_QUOTES, 'UTF-8') . '</option>';
+                $filesSelect .= '<option value="' . $file . '"' . $selected
+                    . '>' . $file . '</option>';
             }
         }
 
@@ -222,12 +234,8 @@ class Reading extends Permalink
     public function action()
     {
         $this->user->pass('administrator');
-        if (!$this->request->isPost()) {
-            $this->response->setStatus(405)->throwContent(_t('Method Not Allowed'), 'text/plain');
-            return;
-        }
         $this->security->protect();
-        $this->updateReadingSettings();
+        $this->on($this->request->isPost())->updateReadingSettings();
         $this->response->redirect($this->options->adminUrl);
     }
 
@@ -251,18 +259,27 @@ class Reading extends Permalink
 
     private function archivePatternConflicts(array $routingTable, string $pattern): bool
     {
-        $candidateTable = $routingTable;
-        $candidateTable['archive']['url'] = $pattern;
-        $candidateTable['archive_page']['url'] = rtrim($pattern, '/') . '/page/[page:digital]/';
+        $archivePath = rtrim($pattern, '/');
+        $archivePagePath = $archivePath . '/page/1';
+        $parser = new Parser($routingTable);
 
-        return $this->hasRouteConflict($candidateTable, 'archive', ['archive_page'])
-            || $this->hasRouteConflict($candidateTable, 'archive_page', ['archive']);
+        foreach ($parser->parse() as $name => $route) {
+            if (in_array($name, ['archive', 'archive_page'], true)) {
+                continue;
+            }
+
+            if (preg_match($route['regx'], $archivePath) || preg_match($route['regx'], $archivePagePath)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function resolveFrontPageFile(string $file): ?string
     {
         $file = basename(str_replace('\\', '/', trim($file)));
-        if ($file === '' || str_contains($file, "\0") || !preg_match('/\.php$/iu', $file)) {
+        if ($file === '' || str_contains($file, "\0") || !preg_match('/^[A-Za-z0-9._-]+\.php$/', $file)) {
             return null;
         }
 

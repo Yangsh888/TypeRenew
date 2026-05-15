@@ -10,10 +10,20 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
+/**
+ * 回响归档组件
+ *
+ * @package Widget
+ * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
+ * @license GNU General Public License 2.0
+ */
 class Ping extends Comments
 {
     private bool $customSinglePingCallback = false;
 
+    /**
+     * @param Config $parameter
+     */
     protected function initParameter(Config $parameter)
     {
         $parameter->setDefault('parentId=0');
@@ -25,6 +35,8 @@ class Ping extends Comments
 
     /**
      * 输出文章回响数
+     *
+     * @param mixed ...$args 评论数格式化数据
      */
     public function num(...$args)
     {
@@ -51,6 +63,8 @@ class Ping extends Comments
 
     /**
      * 列出回响
+     *
+     * @param mixed $singlePingOptions 单个回响自定义选项
      */
     public function listPings($singlePingOptions = null)
     {
@@ -102,6 +116,11 @@ class Ping extends Comments
         <?php
     }
 
+    /**
+     * 重载内容获取
+     *
+     * @return array|null
+     */
     protected function ___parentContent(): ?array
     {
         return $this->parameter->parentContent;

@@ -6,7 +6,6 @@ use Typecho\Common;
 use Typecho\Db;
 use Typecho\Mail\Queue;
 use Typecho\Mail\Template;
-use Typecho\Timezone;
 use Utils\PasswordReset;
 use Widget\Base\Users;
 
@@ -18,11 +17,6 @@ class Forgot extends Users implements ActionInterface
 {
     public function action(): void
     {
-        if (!$this->request->isPost()) {
-            $this->response->setStatus(405)->throwContent(_t('Method Not Allowed'), 'text/plain');
-            return;
-        }
-
         $this->security->protect();
 
         if ($this->user->hasLogin()) {
@@ -35,14 +29,14 @@ class Forgot extends Users implements ActionInterface
             $this->response->goBack();
         }
 
-        $mail = $this->request->filter('trim')->getInput('mail', '');
+        $mail = trim((string) $this->request->get('mail'));
 
         if (!filter_var($mail, FILTER_VALIDATE_EMAIL)) {
             Notice::alloc()->set(_t('请输入有效的邮箱地址'), 'error');
             $this->response->goBack();
         }
 
-        PasswordReset::cleanupExpired($this->db);
+        $this->cleanupExpired();
 
         $recent = $this->db->fetchRow(
             $this->db->select('created')
@@ -64,33 +58,36 @@ class Forgot extends Users implements ActionInterface
                 ->limit(1)
         );
 
-        if ($user) {
-            $rawToken = PasswordReset::generateToken();
-            $tokenHash = PasswordReset::hashToken($rawToken);
-            $expires = time() + 1800;
-
-            $this->db->query(
-                $this->db->delete('table.password_resets')
-                    ->where('email = ?', $mail)
-            );
-
-            $this->db->query(
-                $this->db->insert('table.password_resets')->rows([
-                    'email' => $mail,
-                    'token' => $tokenHash,
-                    'created' => time(),
-                    'expires' => $expires,
-                    'used' => 0
-                ])
-            );
-
-            $resetUrl = Common::url(
-                'reset.php?token=' . $rawToken,
-                $this->options->adminUrl
-            );
-
-            $this->sendResetMail($user, $resetUrl, $expires);
+        if (!$user) {
+            Notice::alloc()->set(_t('如果该邮箱已注册，您将收到重置邮件'), 'success');
+            $this->response->goBack();
         }
+
+        $rawToken = PasswordReset::generateToken();
+        $tokenHash = PasswordReset::hashToken($rawToken);
+        $expires = time() + 1800;
+
+        $this->db->query(
+            $this->db->delete('table.password_resets')
+                ->where('email = ?', $mail)
+        );
+
+        $this->db->query(
+            $this->db->insert('table.password_resets')->rows([
+                'email' => $mail,
+                'token' => $tokenHash,
+                'created' => time(),
+                'expires' => $expires,
+                'used' => 0
+            ])
+        );
+
+        $resetUrl = Common::url(
+            'reset.php?token=' . $rawToken,
+            $this->options->adminUrl
+        );
+
+        $this->sendResetMail($user, $resetUrl, $expires);
 
         Notice::alloc()->set(_t('如果该邮箱已注册，您将收到重置邮件'), 'success');
         $this->response->goBack();
@@ -100,7 +97,7 @@ class Forgot extends Users implements ActionInterface
     {
         $siteTitle = (string) ($this->options->title ?? 'TypeRenew');
         $siteUrl = (string) ($this->options->siteUrl ?? '');
-        $expiresAt = Timezone::format($expires, 'Y-m-d H:i:s');
+        $expiresAt = date('Y-m-d H:i:s', $expires);
 
         $vars = [
             'subject' => _t('密码重置请求'),
@@ -117,5 +114,13 @@ class Forgot extends Users implements ActionInterface
         $msg = Queue::buildMessage($this->options, (string) ($user['mail'] ?? ''), $subject, $html);
 
         Queue::enqueue('reset', $msg, Db::get(), $this->options);
+    }
+
+    private function cleanupExpired(): void
+    {
+        $this->db->query(
+            $this->db->delete('table.password_resets')
+                ->where('expires < ?', time())
+        );
     }
 }

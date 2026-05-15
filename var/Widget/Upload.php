@@ -36,18 +36,7 @@ class Upload extends Contents implements ActionInterface
             return $result;
         }
 
-        $attachment = $content['attachment'] ?? null;
-        $relativePath = is_object($attachment) && isset($attachment->path) && is_string($attachment->path)
-            ? $attachment->path
-            : '';
-        if ($relativePath === '') {
-            return false;
-        }
-
-        $path = Common::url(
-            $relativePath,
-            defined('__TYPECHO_UPLOAD_ROOT_DIR__') ? __TYPECHO_UPLOAD_ROOT_DIR__ : __TYPECHO_ROOT_DIR__
-        );
+        $path = __TYPECHO_ROOT_DIR__ . '/' . $content['attachment']->path;
         return is_file($path) && is_writable(dirname($path)) ? unlink($path) : false;
     }
 
@@ -83,22 +72,12 @@ class Upload extends Contents implements ActionInterface
             return $result;
         }
 
-        $attachment = $content['attachment'] ?? null;
-        $relativePath = is_object($attachment) && isset($attachment->path) && is_string($attachment->path)
-            ? $attachment->path
-            : '';
-        if ($relativePath === '') {
-            return '';
-        }
-
-        $data = file_get_contents(
+        return file_get_contents(
             Common::url(
-                $relativePath,
+                $content['attachment']->path,
                 defined('__TYPECHO_UPLOAD_ROOT_DIR__') ? __TYPECHO_UPLOAD_ROOT_DIR__ : __TYPECHO_ROOT_DIR__
             )
         );
-
-        return is_string($data) ? $data : '';
     }
 
     public function action()
@@ -120,12 +99,6 @@ class Upload extends Contents implements ActionInterface
      */
     public function modify()
     {
-        $backupPath = null;
-        $attachmentPath = null;
-        $originalText = null;
-        $replaced = false;
-        $metadataUpdated = false;
-
         try {
             $file = $this->requireUploadFile();
 
@@ -164,28 +137,21 @@ class Upload extends Contents implements ActionInterface
                 $file['name'] = urldecode($file['name']);
             }
 
-            $originalText = isset($this->text) ? (string) $this->text : null;
-            $attachmentPath = self::resolveManagedUploadPath($this->attachment->path ?? null);
-            $backupPath = self::backupManagedUpload($attachmentPath);
             $result = self::modifyHandle($this->toColumn(['cid', 'attachment', 'parent']), $file);
             if (false === $result) {
                 throw new \RuntimeException(_t('附件替换失败，请检查文件类型与目录权限'));
             }
-            $replaced = true;
 
             self::pluginHandle()->call('beforeModify', $result);
 
             $this->update([
                 'text' => Common::jsonEncode($result, 0, '{}')
             ], $this->db->sql()->where('cid = ?', $this->cid));
-            $metadataUpdated = true;
 
             $this->db->fetchRow($this->select()->where('table.contents.cid = ?', $this->cid)
                 ->where('table.contents.type = ?', 'attachment'), [$this, 'push']);
 
             self::pluginHandle()->call('modify', $this);
-
-            self::removeManagedUploadBackup($backupPath);
 
             $this->response->throwJson([$this->attachment->url, [
                 'cid' => $this->cid,
@@ -198,17 +164,6 @@ class Upload extends Contents implements ActionInterface
                 'permalink' => $this->permalink
             ]]);
         } catch (\Throwable $e) {
-            if ($metadataUpdated && $originalText !== null) {
-                $this->update([
-                    'text' => $originalText
-                ], $this->db->sql()->where('cid = ?', $this->cid));
-            }
-
-            if ($replaced) {
-                self::restoreManagedUploadBackup($backupPath, $attachmentPath);
-            } else {
-                self::removeManagedUploadBackup($backupPath);
-            }
             $this->throwUploadError($e->getMessage());
         }
     }
@@ -383,9 +338,6 @@ class Upload extends Contents implements ActionInterface
      */
     public function upload()
     {
-        $result = null;
-        $insertId = 0;
-
         try {
             $file = $this->requireUploadFile();
 
@@ -437,12 +389,6 @@ class Upload extends Contents implements ActionInterface
                 'permalink' => $this->permalink
             ]]);
         } catch (\Throwable $e) {
-            if ($insertId > 0) {
-                $this->delete($this->db->sql()->where('cid = ?', $insertId));
-            }
-            if (is_array($result)) {
-                self::cleanupManagedUpload($result);
-            }
             $this->throwUploadError($e->getMessage());
         }
     }
@@ -517,90 +463,13 @@ class Upload extends Contents implements ActionInterface
 
     public static function checkFileType(string $ext): bool
     {
-        $ext = strtolower($ext);
-
-        if ($ext === '' || !preg_match('/^[a-z0-9]+$/', $ext)) {
+        if ($ext === '' || !preg_match('/^[a-z0-9]+$/i', $ext)) {
             return false;
         }
         if (preg_match("/^(php|php3|php4|php5|php7|php8|phtml|pht|phar|cgi|shtml|asp|aspx|jsp|rb|py|pl|dll|exe|bat|cmd|com)$/i", $ext)) {
             return false;
         }
-        return in_array($ext, Options::alloc()->allowedAttachmentTypes, true);
-    }
-
-    private static function resolveManagedUploadPath($path): ?string
-    {
-        if (!is_string($path) || $path === '' || preg_match('#^[a-z][a-z0-9+\-.]*://#i', $path)) {
-            return null;
-        }
-
-        $root = defined('__TYPECHO_UPLOAD_ROOT_DIR__') ? __TYPECHO_UPLOAD_ROOT_DIR__ : __TYPECHO_ROOT_DIR__;
-        $absolute = Common::url($path, $root);
-        $resolvedRoot = realpath($root);
-        $resolvedPath = realpath($absolute);
-
-        if ($resolvedPath === false || $resolvedRoot === false) {
-            return is_file($absolute) ? $absolute : null;
-        }
-
-        $normalizedRoot = str_replace('\\', '/', $resolvedRoot);
-        $normalizedPath = str_replace('\\', '/', $resolvedPath);
-
-        return strpos($normalizedPath, $normalizedRoot) === 0 ? $resolvedPath : null;
-    }
-
-    private static function cleanupManagedUpload(array $result): void
-    {
-        $path = self::resolveManagedUploadPath($result['path'] ?? null);
-        if ($path !== null && is_file($path) && is_writable(dirname($path))) {
-            unlink($path);
-        }
-    }
-
-    public static function cleanupUploadResult(array $result): void
-    {
-        self::cleanupManagedUpload($result);
-    }
-
-    private static function backupManagedUpload(?string $path): ?string
-    {
-        if ($path === null || !is_file($path)) {
-            return null;
-        }
-
-        $backup = tempnam(dirname($path), 'uplbak');
-        if ($backup === false) {
-            return null;
-        }
-
-        if (!copy($path, $backup)) {
-            if (is_file($backup)) {
-                unlink($backup);
-            }
-            return null;
-        }
-
-        return $backup;
-    }
-
-    private static function restoreManagedUploadBackup(?string $backup, ?string $target): void
-    {
-        if ($backup === null || $target === null || !is_file($backup)) {
-            return;
-        }
-
-        if (is_file($target) || (is_dir(dirname($target)) && is_writable(dirname($target)))) {
-            copy($backup, $target);
-        }
-
-        self::removeManagedUploadBackup($backup);
-    }
-
-    private static function removeManagedUploadBackup(?string $backup): void
-    {
-        if ($backup !== null && is_file($backup)) {
-            unlink($backup);
-        }
+        return in_array($ext, Options::alloc()->allowedAttachmentTypes);
     }
 
     private function requireUploadFile(): array

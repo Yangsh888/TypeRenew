@@ -4,7 +4,6 @@ namespace Widget\Options;
 
 use Typecho\Cache as CacheFacade;
 use Typecho\Widget\Helper\Form;
-use Utils\Cipher;
 use Widget\ActionInterface;
 use Widget\Base\Options;
 
@@ -14,13 +13,11 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
 
 class Cache extends Options implements ActionInterface
 {
-    private const PASS_PLACEHOLDER = '********';
-
     public function updateCacheSettings()
     {
         $this->validateFormOrGoBack($this->form());
 
-        $settings = $this->request->fromInput(
+        $settings = $this->request->from(
             'cacheStatus',
             'cacheDriver',
             'cacheTtl',
@@ -29,7 +26,6 @@ class Cache extends Options implements ActionInterface
             'cacheRedisHost',
             'cacheRedisPort',
             'cacheRedisPassword',
-            'cacheRedisPasswordChanged',
             'cacheRedisDatabase'
         );
 
@@ -48,13 +44,8 @@ class Cache extends Options implements ActionInterface
         }
 
         $settings['cacheRedisPort'] = max(1, min(65535, (int) $settings['cacheRedisPort']));
-        $passChanged = !empty($settings['cacheRedisPasswordChanged']);
-        $password = trim((string) ($settings['cacheRedisPassword'] ?? ''));
-        if ($passChanged) {
-            $settings['cacheRedisPassword'] = ($password !== '' && $password !== self::PASS_PLACEHOLDER)
-                ? Cipher::encrypt($password, (string) $this->options->secret)
-                : '';
-        } else {
+        $settings['cacheRedisPassword'] = (string) ($settings['cacheRedisPassword'] ?? '');
+        if ($settings['cacheRedisPassword'] === '') {
             $settings['cacheRedisPassword'] = (string) ($this->options->cacheRedisPassword ?? '');
         }
         $settings['cacheRedisDatabase'] = max(0, min(15, (int) $settings['cacheRedisDatabase']));
@@ -68,7 +59,7 @@ class Cache extends Options implements ActionInterface
             'prefix' => $settings['cachePrefix'],
             'redisHost' => $settings['cacheRedisHost'],
             'redisPort' => $settings['cacheRedisPort'],
-            'redisPassword' => Cipher::decrypt($settings['cacheRedisPassword'], (string) $this->options->secret),
+            'redisPassword' => $settings['cacheRedisPassword'],
             'redisDatabase' => $settings['cacheRedisDatabase']
         ]);
 
@@ -153,22 +144,14 @@ class Cache extends Options implements ActionInterface
         $cacheRedisPort->input->setAttribute('class', 'w-20');
         $form->addInput($cacheRedisPort->addRule('isInteger', _t('请填入一个数字')));
 
-        $existingPass = trim((string) ($this->options->cacheRedisPassword ?? ''));
-        $passPlaceholder = $existingPass !== '' ? self::PASS_PLACEHOLDER : '';
         $cacheRedisPassword = new Form\Element\Password(
             'cacheRedisPassword',
             null,
-            $passPlaceholder,
-            _t('Redis 密码'),
-            $existingPass !== '' ? _t('已保存密码，修改请输入新密码') : ''
+            '',
+            _t('Redis 密码')
         );
         $cacheRedisPassword->input->setAttribute('class', 'w-100 mono');
-        $cacheRedisPassword->input->setAttribute('autocomplete', 'new-password');
         $form->addInput($cacheRedisPassword);
-
-        $cacheRedisPasswordChanged = new Form\Element\Hidden('cacheRedisPasswordChanged', null, '0');
-        $cacheRedisPasswordChanged->input->setAttribute('id', 'cacheRedisPasswordChanged');
-        $form->addInput($cacheRedisPasswordChanged);
 
         $cacheRedisDatabase = new Form\Element\Number(
             'cacheRedisDatabase',
@@ -189,18 +172,14 @@ class Cache extends Options implements ActionInterface
     public function action()
     {
         $this->user->pass('administrator');
-        if (!$this->request->isPost()) {
-            $this->response->setStatus(405)->throwContent(_t('Method Not Allowed'), 'text/plain');
-            return;
-        }
         $this->security->protect();
 
-        if ($this->request->getAction() === 'flush') {
+        if ($this->request->isPost() && $this->request->get('do') === 'flush') {
             $this->clearCache();
             return;
         }
 
-        $this->updateCacheSettings();
+        $this->on($this->request->isPost())->updateCacheSettings();
         $this->response->redirect($this->options->adminUrl);
     }
 

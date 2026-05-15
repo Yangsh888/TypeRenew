@@ -18,17 +18,17 @@ class Package extends BaseOptions implements ActionInterface
         }
 
         $this->security->protect();
-        $do = $this->request->getAction();
+        $do = (string) $this->request->get('do');
 
         try {
-            if ($do === 'upload' || $do === 'apply') {
+            if ($do === 'upload') {
                 $this->assertEnvironmentReady();
                 $runner = new Runner();
-                if ($do === 'upload') {
-                    $this->upload($runner);
-                } else {
-                    $this->apply($runner);
-                }
+                $this->upload($runner);
+            } elseif ($do === 'apply') {
+                $this->assertEnvironmentReady();
+                $runner = new Runner();
+                $this->apply($runner);
             } elseif ($do === 'clear') {
                 $runner = new Runner();
                 $removed = $runner->clear();
@@ -39,6 +39,8 @@ class Package extends BaseOptions implements ActionInterface
             } else {
                 Notice::alloc()->set(_t('未知升级操作'), 'error');
             }
+        } catch (Exception $e) {
+            Notice::alloc()->set($e->getMessage(), 'error');
         } catch (\Throwable $e) {
             Notice::alloc()->set($e->getMessage(), 'error');
         }

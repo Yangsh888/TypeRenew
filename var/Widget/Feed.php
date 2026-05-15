@@ -177,8 +177,7 @@ class Feed extends Contents
                         : (false !== strpos((string) $archive->text, '<!--more-->') ? $archive->excerpt .
                             "<p class=\"more\"><a href=\"{$archive->permalink}\" title=\"{$archive->title}\">[...]</a></p>"
                             : $archive->content),
-                    'created'         => $archive->created,
-                    'modified'        => max((int) $archive->modified, (int) $archive->created),
+                    'date'            => $archive->created,
                     'link'            => $archive->permalink,
                     'author'          => $archive->author,
                     'excerpt'         => $archive->plainExcerpt,

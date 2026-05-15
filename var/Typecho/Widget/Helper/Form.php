@@ -12,6 +12,14 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
+/**
+ * 表单处理帮手
+ *
+ * @category typecho
+ * @package Widget
+ * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
+ * @license GNU General Public License 2.0
+ */
 class Form extends Layout
 {
     public const POST_METHOD = 'post';
@@ -22,6 +30,7 @@ class Form extends Layout
 
     public const MULTIPART_ENCODE = 'multipart/form-data';
 
+    /** 文本编码 */
     public const TEXT_ENCODE = 'text/plain';
 
     private array $inputs = [];
@@ -37,18 +46,36 @@ class Form extends Layout
         $this->setEncodeType($enctype);
     }
 
+    /**
+     * 设置表单提交目的
+     *
+     * @param string|null $action 表单提交目的
+     * @return $this
+     */
     public function setAction(?string $action): Form
     {
         $this->setAttribute('action', $action);
         return $this;
     }
 
+    /**
+     * 设置表单提交方法
+     *
+     * @param string $method 表单提交方法
+     * @return $this
+     */
     public function setMethod(string $method): Form
     {
         $this->setAttribute('method', $method);
         return $this;
     }
 
+    /**
+     * 设置表单编码方案
+     *
+     * @param string $enctype 编码方法
+     * @return $this
+     */
     public function setEncodeType(string $enctype): Form
     {
         $this->setAttribute('enctype', $enctype);
@@ -62,16 +89,32 @@ class Form extends Layout
         return $this;
     }
 
+    /**
+     * 获取输入项
+     *
+     * @param string $name 输入项名称
+     * @return mixed
+     */
     public function getInput(string $name)
     {
-        return $this->inputs[$name] ?? null;
+        return $this->inputs[$name];
     }
 
+    /**
+     * 获取所有输入项的提交值
+     *
+     * @return array
+     */
     public function getAllRequest(): array
     {
         return $this->getParams(array_keys($this->inputs));
     }
 
+    /**
+     * 获取此表单的所有输入项固有值
+     *
+     * @return array
+     */
     public function getValues(): array
     {
         $values = [];
@@ -82,11 +125,21 @@ class Form extends Layout
         return $values;
     }
 
+    /**
+     * 获取此表单的所有输入项
+     *
+     * @return array
+     */
     public function getInputs(): array
     {
         return $this->inputs;
     }
 
+    /**
+     * 验证表单
+     *
+     * @return array
+     */
     public function validate(): array
     {
         $validator = new Validate();
@@ -110,20 +163,29 @@ class Form extends Layout
         return $error;
     }
 
+    /**
+     * 获取提交数据源
+     *
+     * @param array $params 数据参数集
+     * @return array
+     */
     public function getParams(array $params): array
     {
         $result = [];
         $request = Request::getInstance();
-        $getter = strtolower((string) $this->getAttribute('method')) === self::POST_METHOD ? 'getInput' : 'get';
 
         foreach ($params as $param) {
-            $input = $this->getInput($param);
-            $result[$param] = $request->$getter($param, is_array($input?->value ?? null) ? [] : null);
+            $result[$param] = $request->get($param, is_array($this->getInput($param)->value) ? [] : null);
         }
 
         return $result;
     }
 
+    /**
+     * 显示表单
+     *
+     * @return void
+     */
     public function render()
     {
         $id = md5(implode('"', array_keys($this->inputs)));

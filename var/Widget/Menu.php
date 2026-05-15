@@ -27,60 +27,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
  */
 class Menu extends Base
 {
-    private const TAB_SETTINGS = 'settings';
-    private const TAB_THEME = 'theme';
-    private const PARENT_META = [
-        1 => ['icon' => 'i-home'],
-        2 => ['icon' => 'i-pencil'],
-        3 => ['icon' => 'i-file-text'],
-        4 => ['icon' => 'i-gear'],
-        5 => ['icon' => 'i-puzzle'],
-    ];
-
-    private const PAGE_META = [
-        'index.php' => ['icon' => 'i-home'],
-        'write-post.php' => ['icon' => 'i-pencil'],
-        'write-page.php' => ['icon' => 'i-file'],
-        'manage-posts.php' => ['icon' => 'i-file-text'],
-        'manage-pages.php' => ['icon' => 'i-files'],
-        'manage-comments.php' => ['icon' => 'i-message'],
-        'manage-medias.php' => ['icon' => 'i-image'],
-        'manage-categories.php' => ['icon' => 'i-folder'],
-        'manage-tags.php' => ['icon' => 'i-tag'],
-        'manage-users.php' => ['icon' => 'i-users'],
-        'plugins.php' => ['icon' => 'i-puzzle'],
-        'themes.php' => ['icon' => 'i-monitor', 'tabGroup' => self::TAB_THEME],
-        'theme-editor.php' => ['icon' => 'i-code', 'tabGroup' => self::TAB_THEME],
-        'options-theme.php' => ['icon' => 'i-monitor', 'tabGroup' => self::TAB_THEME],
-        'backup.php' => ['icon' => 'i-download'],
-        'upgrade.php' => ['icon' => 'i-upload'],
-        'options-general.php' => ['icon' => 'i-gear', 'tabGroup' => self::TAB_SETTINGS],
-        'options-discussion.php' => ['icon' => 'i-bell', 'tabGroup' => self::TAB_SETTINGS],
-        'options-reading.php' => ['icon' => 'i-book', 'tabGroup' => self::TAB_SETTINGS],
-        'options-permalink.php' => ['icon' => 'i-link', 'tabGroup' => self::TAB_SETTINGS],
-        'options-cache.php' => ['icon' => 'i-spark', 'tabGroup' => self::TAB_SETTINGS],
-        'options-mail.php' => ['icon' => 'i-mail', 'tabGroup' => self::TAB_SETTINGS],
-        'profile.php' => ['icon' => 'i-user'],
-        'extending.php' => ['icon' => 'i-puzzle'],
-    ];
-
-    private static function normalizeQueryParams(array $params): array
-    {
-        $normalized = [];
-
-        foreach ($params as $name => $value) {
-            if (!is_scalar($name)) {
-                continue;
-            }
-
-            if (is_scalar($value)) {
-                $normalized[(string) $name] = (string) $value;
-            }
-        }
-
-        return $normalized;
-    }
-
     /**
      * 当前菜单标题
      * @var string
@@ -139,13 +85,6 @@ class Menu extends Base
      * @var string
      */
     private string $currentMenuUrl = '';
-
-    /**
-     * 插件面板附加元数据
-     *
-     * @var array<string, array>
-     */
-    private array $panelMeta = [];
 
     public function execute()
     {
@@ -209,7 +148,6 @@ class Menu extends Base
         $panelTable = $this->options->panelTable;
         $extendingParentMenu = empty($panelTable['parent']) ? [] : $panelTable['parent'];
         $extendingChildMenu = empty($panelTable['child']) ? [] : $panelTable['child'];
-        $this->panelMeta = empty($panelTable['meta']) || !is_array($panelTable['meta']) ? [] : $panelTable['meta'];
         $currentUrl = $this->request->getRequestUrl();
         $adminUrl = $this->options->adminUrl;
         $menu = [];
@@ -219,7 +157,6 @@ class Menu extends Base
         $currentUrlParams = [];
         if (!empty($currentUrlParts['query'])) {
             parse_str($currentUrlParts['query'], $currentUrlParams);
-            $currentUrlParams = self::normalizeQueryParams($currentUrlParams);
         }
 
         $currentPath = (string) ($currentUrlParts['path'] ?? '');
@@ -233,7 +170,9 @@ class Menu extends Base
 
         foreach ($extendingChildMenu as $key => $val) {
             foreach ($val as $child) {
-                $targetKey = (int) $key;
+                $menuUrl = (string) ($child[2] ?? '');
+                $path = parse_url($menuUrl, PHP_URL_PATH);
+                $targetKey = basename((string) $path) === 'extending.php' ? 5 : (int) $key;
                 $childNodes[$targetKey] = array_merge($childNodes[$targetKey] ?? [], [$child]);
             }
         }
@@ -259,15 +198,14 @@ class Menu extends Base
                 $urlParams = [];
                 if (!empty($urlParts['query'])) {
                     parse_str($urlParts['query'], $urlParams);
-                    $urlParams = self::normalizeQueryParams($urlParams);
                 }
 
                 $validate = true;
-                if (($urlParts['path'] ?? null) !== ($currentUrlParts['path'] ?? null)) {
+                if (($urlParts['path'] ?? null) != ($currentUrlParts['path'] ?? null)) {
                     $validate = false;
                 } else {
                     foreach ($urlParams as $paramName => $paramValue) {
-                        if (!isset($currentUrlParams[$paramName]) || $currentUrlParams[$paramName] !== $paramValue) {
+                        if (!isset($currentUrlParams[$paramName])) {
                             $validate = false;
                             break;
                         }
@@ -276,9 +214,9 @@ class Menu extends Base
 
                 if (
                     $validate
-                    && basename((string) ($urlParts['path'] ?? '')) === 'extending.php'
+                    && basename((string) ($urlParts['path'] ?? '')) == 'extending.php'
                     && !empty($currentUrlParams['panel']) && !empty($urlParams['panel'])
-                    && $urlParams['panel'] !== $currentUrlParams['panel']
+                    && $urlParams['panel'] != $currentUrlParams['panel']
                 ) {
                     $validate = false;
                 }
@@ -315,7 +253,7 @@ class Menu extends Base
                 }
 
                 if ($validate) {
-                    if ('visitor' !== $access) {
+                    if ('visitor' != $access) {
                         $this->user->pass($access);
                     }
 
@@ -333,8 +271,7 @@ class Menu extends Base
                     $access,
                     $hidden,
                     $addLink,
-                    $orgHidden,
-                    $this->resolveMenuMeta($menuUrl)
+                    $orgHidden
                 ];
             }
 
@@ -386,6 +323,14 @@ class Menu extends Base
         return $this->menu[$this->currentParent][0] ?? null;
     }
 
+    public function getCurrentParentUrl(): ?string
+    {
+        if ($this->currentParent <= 0 || !isset($this->menu[$this->currentParent])) {
+            return null;
+        }
+        return $this->menu[$this->currentParent][2] ?? null;
+    }
+
     public function getMenuTree(): array
     {
         $tree = [];
@@ -394,38 +339,38 @@ class Menu extends Base
                 continue;
             }
 
-            $parentActive = $parentId === $this->currentParent;
-            $children = $this->exportChildren($node, $parentActive);
+            $parentActive = $parentId == $this->currentParent;
+            $children = [];
+            foreach ($node[3] as $childId => $child) {
+                if ($child[4]) {
+                    continue;
+                }
+
+                $active = $parentActive && $childId == $this->currentChild;
+                if (!$active && $child[6]) {
+                    continue;
+                }
+
+                $children[] = [
+                    'id' => $childId,
+                    'name' => $child[0],
+                    'title' => $child[1],
+                    'url' => $active ? $this->currentUrl : $child[2],
+                    'active' => $active,
+                    'originalHidden' => (bool) $child[6],
+                ];
+            }
 
             $tree[] = [
                 'id' => $parentId,
                 'name' => $node[0],
                 'url' => $node[2],
                 'active' => $parentActive,
-                'meta' => $this->resolveParentMeta($parentId, $children),
                 'children' => $children,
             ];
         }
 
         return $tree;
-    }
-
-    public function getTabs(string $group, bool $includeOriginalHidden = false): array
-    {
-        $tabs = [];
-
-        foreach ($this->menu as $parentId => $node) {
-            if (!$node[1] || !$parentId) {
-                continue;
-            }
-
-            $tabs = array_merge(
-                $tabs,
-                $this->exportChildren($node, $parentId === $this->currentParent, $group, $includeOriginalHidden)
-            );
-        }
-
-        return $tabs;
     }
 
     /**
@@ -438,10 +383,8 @@ class Menu extends Base
                 continue;
             }
 
-            $parentHref = htmlspecialchars((string) $node[2], ENT_QUOTES, 'UTF-8');
-            $parentLabel = htmlspecialchars((string) $node[0], ENT_QUOTES, 'UTF-8');
-            echo "<li" . ($key === $this->currentParent ? " class=\"{$class}\"" : '')
-                . "><a href=\"{$parentHref}\">{$parentLabel}</a>"
+            echo "<li" . ($key == $this->currentParent ? " class=\"{$class}\"" : '')
+                . "><a href=\"{$node[2]}\">{$node[0]}</a>"
                 . "<menu>";
 
             foreach ($node[3] as $inKey => $inNode) {
@@ -450,130 +393,18 @@ class Menu extends Base
                 }
 
                 $focus = false;
-                if ($key === $this->currentParent && $inKey === $this->currentChild) {
+                if ($key == $this->currentParent && $inKey == $this->currentChild) {
                     $focus = true;
                 } elseif ($inNode[6]) {
                     continue;
                 }
 
-                $childHref = htmlspecialchars(
-                    (string) ($key === $this->currentParent && $inKey === $this->currentChild ? $this->currentUrl : $inNode[2]),
-                    ENT_QUOTES,
-                    'UTF-8'
-                );
-                $childLabel = htmlspecialchars((string) $inNode[0], ENT_QUOTES, 'UTF-8');
                 echo "<li" . ($focus ? " class=\"{$childClass}\"" : '') . "><a href=\""
-                    . $childHref
-                    . "\">{$childLabel}</a></li>";
+                    . ($key == $this->currentParent && $inKey == $this->currentChild ? $this->currentUrl : $inNode[2])
+                    . "\">{$inNode[0]}</a></li>";
             }
 
             echo '</menu></li>';
         }
-    }
-
-    private function exportChildren(
-        array $node,
-        bool $parentActive,
-        ?string $group = null,
-        bool $includeOriginalHidden = false
-    ): array {
-        $children = [];
-
-        foreach ($node[3] as $childId => $child) {
-            if ($child[4] && !($includeOriginalHidden && !empty($child[6]))) {
-                continue;
-            }
-
-            $active = $parentActive && $childId === $this->currentChild;
-            if (!$active && $child[6] && !$includeOriginalHidden) {
-                continue;
-            }
-
-            $meta = (array) ($child[7] ?? []);
-            if ($group !== null && (($meta['tabGroup'] ?? null) !== $group)) {
-                continue;
-            }
-
-            $children[] = [
-                'id' => $childId,
-                'name' => $child[0],
-                'title' => $child[1],
-                'url' => $active ? $this->currentUrl : $child[2],
-                'active' => $active,
-                'meta' => $meta,
-            ];
-        }
-
-        return $children;
-    }
-
-    private function resolveParentMeta(int $parentId, array $children): array
-    {
-        if (isset(self::PARENT_META[$parentId])) {
-            return self::PARENT_META[$parentId];
-        }
-
-        foreach ($children as $child) {
-            if (!empty($child['active']) && !empty($child['meta'])) {
-                return (array) $child['meta'];
-            }
-        }
-
-        foreach ($children as $child) {
-            if (!empty($child['meta'])) {
-                return (array) $child['meta'];
-            }
-        }
-
-        return [];
-    }
-
-    public static function menuMeta(string $menuUrl, array $panelMeta = []): array
-    {
-        $parts = Common::parseUrl($menuUrl);
-        $path = (string) ($parts['path'] ?? '');
-        $base = $path !== '' ? basename($path) : basename($menuUrl);
-        $meta = self::PAGE_META[$base] ?? [];
-
-        if ($base !== 'extending.php') {
-            return $meta;
-        }
-
-        $query = (string) ($parts['query'] ?? '');
-        if ($query === '') {
-            return $meta;
-        }
-
-        parse_str($query, $params);
-        $params = self::normalizeQueryParams($params);
-        $panel = trim($params['panel'] ?? '');
-        if ($panel === '') {
-            return $meta;
-        }
-
-        $encodedPanel = urlencode($panel);
-        $panelOverride = [];
-        if (isset($panelMeta[$panel]) && is_array($panelMeta[$panel])) {
-            $panelOverride = $panelMeta[$panel];
-        } elseif (isset($panelMeta[$encodedPanel]) && is_array($panelMeta[$encodedPanel])) {
-            $panelOverride = $panelMeta[$encodedPanel];
-        }
-
-        return array_merge($meta, $panelOverride);
-    }
-
-    public static function paletteCategory(string $menuUrl, array $panelMeta = []): ?string
-    {
-        $meta = self::menuMeta($menuUrl, $panelMeta);
-        return match ($meta['tabGroup'] ?? null) {
-            self::TAB_THEME => 'appearance',
-            self::TAB_SETTINGS => 'settings',
-            default => null,
-        };
-    }
-
-    private function resolveMenuMeta(string $menuUrl): array
-    {
-        return self::menuMeta($menuUrl, $this->panelMeta);
     }
 }

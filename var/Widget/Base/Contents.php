@@ -76,12 +76,15 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
  */
 class Contents extends Base implements QueryInterface, RowFilterInterface, PrimaryKeyInterface, ParamsDelegateInterface
 {
-    protected const INTERNAL_FIELD_NAMES = ['_tr_page_parent'];
-
     public function getPrimaryKey(): string
     {
         return 'cid';
     }
+
+    /**
+     * @param string $key
+     * @return string
+     */
     public function getRouterParam(string $key): string
     {
         switch ($key) {
@@ -104,6 +107,12 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
         }
     }
 
+    /**
+     * 获取查询对象
+     *
+     * @param mixed $fields
+     * @return Query
+     */
     public function select(...$fields): Query
     {
         return $this->db->select(...$fields)->from('table.contents');
@@ -181,13 +190,15 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
         }
 
         $count = 1;
-        $row = $this->db->fetchObject($this->db->select(['COUNT(cid)' => 'num'])
-            ->from('table.contents')->where('slug = ? AND cid <> ?', $result, $cid));
-        while ((int) ($row->num ?? 0) > 0) {
-            $result = $slug . '-' . $count;
-            $count++;
+        while (true) {
             $row = $this->db->fetchObject($this->db->select(['COUNT(cid)' => 'num'])
                 ->from('table.contents')->where('slug = ? AND cid <> ?', $result, $cid));
+            if ((int) ($row->num ?? 0) <= 0) {
+                break;
+            }
+
+            $result = $slug . '-' . $count;
+            $count++;
         }
 
         $this->db->query($this->db->update('table.contents')->rows(['slug' => $result])
@@ -307,12 +318,24 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
         return $result;
     }
 
+    /**
+     * 将每行的值压入堆栈
+     *
+     * @param array $value 每行的值
+     * @return array
+     */
     public function push(array $value): array
     {
         $value = $this->filter($value);
         return parent::push($value);
     }
 
+    /**
+     * 通用过滤器
+     *
+     * @param array $row 需要过滤的行数据
+     * @return array
+     */
     public function filter(array $row): array
     {
         $row['title'] = $row['title'] ?? '';
@@ -662,10 +685,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
             ->where('cid = ?', $this->cid));
 
         foreach ($rows as $row) {
-            if ($this->isInternalFieldName((string) ($row['name'] ?? ''))) {
-                continue;
-            }
-
             $value = 'json' == $row['type'] ? json_decode($row['str_value'], true) : $row[$row['type'] . '_value'];
             $fields[$row['name']] = $value;
         }
@@ -673,11 +692,11 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
         return new Config($fields);
     }
 
-    protected function isInternalFieldName(string $name): bool
-    {
-        return in_array($name, self::INTERNAL_FIELD_NAMES, true);
-    }
-
+    /**
+     * 获取文章内容摘要
+     *
+     * @return string|null
+     */
     protected function ___excerpt(): ?string
     {
         if ($this->hidden) {
@@ -690,6 +709,11 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
         return Common::fixHtml(Contents::pluginHandle()->filter('excerptEx', $excerpt, $this));
     }
 
+    /**
+     * 对文章的简短纯文本描述
+     *
+     * @return string|null
+     */
     protected function ___plainExcerpt(): ?string
     {
         $plainText = str_replace("\n", '', trim(strip_tags($this->excerpt)));
@@ -725,6 +749,11 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
         return $html;
     }
 
+    /**
+     * 获取文章内容
+     *
+     * @return string|null
+     */
     protected function ___content(): ?string
     {
         if ($this->hidden) {
@@ -741,6 +770,11 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
         return Contents::pluginHandle()->filter('contentEx', $content, $this);
     }
 
+    /**
+     * 输出文章的第一行作为摘要
+     *
+     * @return string|null
+     */
     protected function ___summary(): ?string
     {
         $content = $this->content;
@@ -752,16 +786,31 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
         return $content;
     }
 
+    /**
+     * 锚点id
+     *
+     * @return string
+     */
     protected function ___theId(): string
     {
         return $this->type . '-' . $this->cid;
     }
 
+    /**
+     * 回复框id
+     *
+     * @return string
+     */
     protected function ___respondId(): string
     {
         return 'respond-' . $this->theId;
     }
 
+    /**
+     * 评论地址
+     *
+     * @return string
+     */
     protected function ___commentUrl(): string
     {
         return Router::url(
@@ -771,6 +820,11 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
         );
     }
 
+    /**
+     * trackback地址
+     *
+     * @return string
+     */
     protected function ___trackbackUrl(): string
     {
         return Router::url(
@@ -780,6 +834,11 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
         );
     }
 
+    /**
+     * 回复地址
+     *
+     * @return string
+     */
     protected function ___responseUrl(): string
     {
         return $this->permalink . '#' . $this->respondId;

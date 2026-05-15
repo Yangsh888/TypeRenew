@@ -4,11 +4,8 @@ namespace Utils\Migration;
 
 use Typecho\Common;
 use Typecho\Db;
-use Typecho\Timezone;
-use Utils\Cipher;
 use Utils\Comment;
 use Utils\Defaults;
-use Utils\Rewrite\Manager;
 use Utils\Schema;
 use Widget\Options;
 
@@ -21,16 +18,10 @@ class SchemaManager
     public static function syncCurrentRelease(Db $db, array $activatedPlugins = []): array
     {
         $messages = [_t('当前版本所需的数据库结构已同步')];
-        self::ensureEncryptedCachePassword($db);
         self::ensureMailInfrastructure($db);
-        self::ensureRewriteOptions($db);
-        $timezoneMigrated = self::ensureTimezoneOptions($db);
         Schema::ensureCoreIndexes($db);
         Schema::ensureUserPasswordStorage($db);
         $syncedComments = self::syncCommentAuthors($db);
-        if ($timezoneMigrated) {
-            $messages[] = _t('已完成时区配置兼容迁移');
-        }
         if ($syncedComments > 0) {
             $messages[] = _t('已同步 %d 条历史评论的作者昵称', $syncedComments);
         }
@@ -60,7 +51,7 @@ class SchemaManager
         $tables = Schema::criticalSchema();
 
         foreach ($tables as $key => $meta) {
-            $exists = Schema::tableExists($db, 'table.' . $key);
+            $exists = self::tableExists($db, 'table.' . $key);
             $missingColumns = $exists
                 ? self::missingColumns($db, $prefix . $key, Schema::criticalColumns($key))
                 : [];
@@ -105,24 +96,6 @@ class SchemaManager
             }
         }
 
-        $coreIndexesItem = self::inspectCoreIndexes($db);
-        $items[] = $coreIndexesItem;
-        if (($coreIndexesItem['status'] ?? 'ok') !== 'ok') {
-            $missing[] = $coreIndexesItem;
-        }
-
-        $passwordItem = self::inspectUserPasswordStorage($db);
-        $items[] = $passwordItem;
-        if (($passwordItem['status'] ?? 'ok') !== 'ok') {
-            $missing[] = $passwordItem;
-        }
-
-        $rewriteItem = self::inspectRewriteOptions($db);
-        $items[] = $rewriteItem;
-        if (($rewriteItem['status'] ?? 'ok') !== 'ok') {
-            $missing[] = $rewriteItem;
-        }
-
         return [
             'healthy' => empty($missing),
             'items' => $items,
@@ -132,15 +105,10 @@ class SchemaManager
 
     public static function repairCriticalSchema(Db $db): array
     {
-        self::ensureTimezoneOptions($db);
-        self::ensureEncryptedCachePassword($db);
         self::ensureMailInfrastructure($db);
-        self::ensureRewriteOptions($db);
-        Schema::ensureCoreIndexes($db);
-        Schema::ensureUserPasswordStorage($db);
         Schema::repairMailInfra($db);
-        $syncedComments = self::syncCommentAuthors($db);
         $after = self::inspectCriticalSchema($db);
+        $syncedComments = self::syncCommentAuthors($db);
 
         return [
             'healthy' => $after['healthy'],
@@ -182,7 +150,7 @@ class SchemaManager
         ];
 
         $mailUnsubTable = $db->getPrefix() . 'mail_unsub';
-        $mailUnsubExists = Schema::tableExists($db, 'table.mail_unsub');
+        $mailUnsubExists = self::tableExists($db, 'table.mail_unsub');
         $mailUnsubCollation = $mailUnsubExists ? Schema::mysqlTableCollation($db, $mailUnsubTable) : '';
         $mailUnsubMismatch = $mailUnsubExists && $mailUnsubCollation !== '' && strtolower($mailUnsubCollation) !== strtolower($collation);
         $items[] = [
@@ -201,8 +169,8 @@ class SchemaManager
             'key' => 'mail_unsub_duplicates',
             'label' => 'mail_unsub 唯一值冲突',
             'status' => $mailUnsubDuplicates['error'] !== null
-                ? 'blocking'
-                : ($mailUnsubDuplicates['rows'] === [] ? 'ok' : 'blocking'),
+                ? 'warning'
+                : ($mailUnsubDuplicates['rows'] === [] ? 'ok' : 'warning'),
             'detail' => $mailUnsubDuplicates['error'] !== null
                 ? '重复值检查失败：' . $mailUnsubDuplicates['error']
                 : ($mailUnsubDuplicates['rows'] === []
@@ -216,8 +184,8 @@ class SchemaManager
             'key' => 'users_mail_duplicates',
             'label' => 'users 邮箱唯一值冲突',
             'status' => $userDuplicates['error'] !== null
-                ? 'blocking'
-                : ($userDuplicates['rows'] === [] ? 'ok' : 'blocking'),
+                ? 'warning'
+                : ($userDuplicates['rows'] === [] ? 'ok' : 'warning'),
             'detail' => $userDuplicates['error'] !== null
                 ? '重复值检查失败：' . $userDuplicates['error']
                 : ($userDuplicates['rows'] === []
@@ -228,7 +196,7 @@ class SchemaManager
 
         $healthy = true;
         foreach ($items as $item) {
-            if (($item['status'] ?? 'ok') === 'blocking') {
+            if (($item['status'] ?? 'ok') !== 'ok') {
                 $healthy = false;
                 break;
             }
@@ -270,156 +238,6 @@ class SchemaManager
         ]);
     }
 
-    private static function ensureRewriteOptions(Db $db): void
-    {
-        [$existing, $rewriteEnabled, $state] = self::rewriteOptionState($db);
-        if ($rewriteEnabled && !array_key_exists('rewriteMessage', $existing)) {
-            $state['rewriteMessage'] = _t('已沿用旧站地址重写设置，请确认服务器已部署对应规则。');
-        }
-
-        foreach ($state as $name => $value) {
-            self::upsertOption($db, $name, $value, $existing);
-        }
-
-        Manager::cleanupLegacyOptions($db);
-    }
-
-    private static function inspectRewriteOptions(Db $db): array
-    {
-        [$existing, , $normalized] = self::rewriteOptionState($db);
-        $legacyOptions = self::legacyRewriteOptions($db);
-        $missingColumns = [];
-        $typeMismatches = [];
-        foreach ($normalized as $name => $value) {
-            if (!array_key_exists($name, $existing)) {
-                $missingColumns[] = $name;
-                continue;
-            }
-
-            if ($name === 'rewriteMessage') {
-                continue;
-            }
-
-            if ((string) $existing[$name] !== (string) $value) {
-                $typeMismatches[] = $name;
-            }
-        }
-
-        if ($legacyOptions !== []) {
-            $typeMismatches = array_merge($typeMismatches, $legacyOptions);
-        }
-
-        $healthy = $missingColumns === [] && $typeMismatches === [];
-
-        return [
-            'key' => 'rewrite_options',
-            'label' => _t('地址重写配置'),
-            'table' => $db->getPrefix() . 'options',
-            'exists' => true,
-            'missingColumns' => $missingColumns,
-            'missingIndexes' => [],
-            'typeMismatches' => $typeMismatches,
-            'tableCollation' => '',
-            'expectedCollation' => '',
-            'collationOk' => true,
-            'status' => $healthy
-                ? 'ok'
-                : ($missingColumns === [] ? 'schema_mismatch' : 'missing_columns'),
-        ];
-    }
-
-    private static function rewriteOptionState(Db $db): array
-    {
-        $rows = $db->fetchAll(
-            $db->select('name', 'value')
-                ->from('table.options')
-                ->where('user = ? AND name IN ?', 0, [
-                    'rewrite',
-                    'rewriteStatus',
-                    'rewriteVerifiedAt',
-                    'rewriteMessage',
-                ])
-        );
-        $existing = [];
-        foreach ($rows as $row) {
-            $name = (string) ($row['name'] ?? '');
-            if ($name === '') {
-                continue;
-            }
-            $existing[$name] = (string) ($row['value'] ?? '');
-        }
-
-        $rewriteEnabled = (string) ($existing['rewrite'] ?? '0') === '1';
-        return [$existing, $rewriteEnabled, Manager::normalizeStoredState($existing, $rewriteEnabled)];
-    }
-
-    private static function legacyRewriteOptions(Db $db): array
-    {
-        $rows = $db->fetchAll(
-            $db->select('name')
-                ->from('table.options')
-                ->where('user = ? AND name IN ?', 0, ['rewriteServer', 'rewriteMode'])
-        );
-
-        return array_values(array_map(
-            static fn(array $row): string => (string) ($row['name'] ?? ''),
-            array_filter($rows, static fn(array $row): bool => !empty($row['name']))
-        ));
-    }
-
-    private static function ensureTimezoneOptions(Db $db): bool
-    {
-        $rows = $db->fetchAll(
-            $db->select('name', 'value')
-                ->from('table.options')
-                ->where('user = ? AND name IN ?', 0, ['timezone', 'timezoneName'])
-        );
-        $options = [];
-        foreach ($rows as $row) {
-            $options[(string) ($row['name'] ?? '')] = $row['value'] ?? null;
-        }
-
-        $legacyOffset = is_numeric($options['timezone'] ?? null) ? (int) $options['timezone'] : 28800;
-        $hasTimezoneName = is_string($options['timezoneName'] ?? null) && trim((string) $options['timezoneName']) !== '';
-
-        $timezoneName = Timezone::resolve(
-            $hasTimezoneName ? (string) $options['timezoneName'] : '',
-            $legacyOffset
-        );
-        $timezoneOffset = (string) Timezone::offsetFromName($timezoneName);
-
-        $changed = false;
-        $changed = self::upsertOption($db, 'timezoneName', $timezoneName, $options) || $changed;
-        $changed = self::upsertOption($db, 'timezone', $timezoneOffset, $options) || $changed;
-
-        return $changed || !$hasTimezoneName;
-    }
-
-    private static function upsertOption(Db $db, string $name, string $value, array $existing): bool
-    {
-        if (array_key_exists($name, $existing)) {
-            if ((string) $existing[$name] === $value) {
-                return false;
-            }
-
-            $db->query(
-                $db->update('table.options')
-                    ->rows(['value' => $value])
-                    ->where('name = ? AND user = ?', $name, 0)
-            );
-
-            return true;
-        }
-
-        $db->query($db->insert('table.options')->rows([
-            'name' => $name,
-            'user' => 0,
-            'value' => $value,
-        ]));
-
-        return true;
-    }
-
     private static function updateGenerator(Db $db, string $version): void
     {
         $db->query(
@@ -431,11 +249,21 @@ class SchemaManager
 
     public static function syncCommentAuthors(Db $db): int
     {
-        if (!Schema::tableExists($db, 'table.users') || !Schema::tableExists($db, 'table.comments')) {
+        if (!self::tableExists($db, 'table.users') || !self::tableExists($db, 'table.comments')) {
             return 0;
         }
 
         return Comment::syncAllAuthors($db, self::commentCacheFlush());
+    }
+
+    private static function tableExists(Db $db, string $tableAlias): bool
+    {
+        try {
+            $db->fetchRow($db->select('1')->from($tableAlias)->limit(1));
+            return true;
+        } catch (\Typecho\Db\Adapter\SQLException $e) {
+            return false;
+        }
     }
 
     private static function commentCacheFlush(): int
@@ -473,141 +301,10 @@ class SchemaManager
         return $missing;
     }
 
-    private static function inspectCoreIndexes(Db $db): array
-    {
-        $missing = [];
-
-        foreach (Schema::coreIndexes($db) as $table => $indexes) {
-            if (!Schema::tableExists($db, self::tableAlias($db, $table))) {
-                $missing[] = $table;
-                continue;
-            }
-
-            foreach ($indexes as $index) {
-                $name = (string) ($index['name'] ?? '');
-                if ($name !== '' && !Schema::indexExists($db, $table, $name)) {
-                    $missing[] = $name;
-                }
-            }
-        }
-
-        return [
-            'key' => 'core_indexes',
-            'label' => '核心查询索引',
-            'status' => $missing === [] ? 'ok' : 'missing_indexes',
-            'missingIndexes' => $missing,
-            'detail' => $missing === []
-                ? '核心内容、评论与分类关系索引完整'
-                : '缺失索引：' . implode(', ', $missing),
-        ];
-    }
-
-    private static function ensureEncryptedCachePassword(Db $db): void
-    {
-        $passwordRow = $db->fetchRow(
-            $db->select('value')
-                ->from('table.options')
-                ->where('name = ? AND user = 0', 'cacheRedisPassword')
-                ->limit(1)
-        );
-        $password = (string) ($passwordRow['value'] ?? '');
-        if ($password === '' || str_starts_with($password, 'enc:v1:')) {
-            return;
-        }
-
-        $secretRow = $db->fetchRow(
-            $db->select('value')
-                ->from('table.options')
-                ->where('name = ? AND user = 0', 'secret')
-                ->limit(1)
-        );
-        $secret = (string) ($secretRow['value'] ?? '');
-        if ($secret === '') {
-            return;
-        }
-
-        $encrypted = Cipher::encrypt($password, $secret);
-        if ($encrypted === '') {
-            return;
-        }
-
-        $db->query(
-            $db->update('table.options')
-                ->rows(['value' => $encrypted])
-                ->where('name = ? AND user = 0', 'cacheRedisPassword'),
-            Db::WRITE
-        );
-    }
-
-    private static function inspectUserPasswordStorage(Db $db): array
-    {
-        $table = $db->getPrefix() . 'users';
-        if (!Schema::tableExists($db, 'table.users')) {
-            return [
-                'key' => 'users_password',
-                'label' => '用户密码字段',
-                'status' => 'missing_table',
-                'detail' => 'users 表不存在',
-            ];
-        }
-
-        $dialect = Schema::dialect($db);
-        $healthy = true;
-        $detail = '密码字段长度已兼容现代哈希存储';
-
-        if ($dialect === 'mysql') {
-            $columns = Schema::mysqlColumns($db, $table);
-            $passwordType = strtolower((string) (($columns['password']['Type'] ?? '')));
-            $healthy = str_contains($passwordType, 'varchar(255)');
-            $detail = $healthy
-                ? 'password 字段长度为 varchar(255)'
-                : ('当前定义为 ' . ($passwordType !== '' ? $passwordType : '未知'));
-        } elseif ($dialect === 'pgsql') {
-            try {
-                $row = $db->fetchRow(
-                    'SELECT data_type, character_maximum_length FROM information_schema.columns'
-                    . ' WHERE table_schema = ANY (current_schemas(false))'
-                    . ' AND table_name = ' . self::sqlString($table)
-                    . ' AND column_name = \'password\' LIMIT 1'
-                );
-            } catch (\Throwable) {
-                $row = null;
-            }
-
-            $length = (int) ($row['character_maximum_length'] ?? 0);
-            $healthy = $length >= 255;
-            $detail = $healthy
-                ? 'password 字段长度已达到 255'
-                : ($length > 0 ? '当前长度为 ' . $length : '无法识别 password 字段长度');
-        }
-
-        return [
-            'key' => 'users_password',
-            'label' => '用户密码字段',
-            'status' => $healthy ? 'ok' : 'schema_mismatch',
-            'detail' => $detail,
-        ];
-    }
-
-    private static function tableAlias(Db $db, string $table): string
-    {
-        $prefix = (string) $db->getPrefix();
-        if ($prefix !== '' && str_starts_with($table, $prefix)) {
-            return 'table.' . substr($table, strlen($prefix));
-        }
-
-        return $table;
-    }
-
-    private static function sqlString(string $value): string
-    {
-        return '\'' . str_replace('\'', '\'\'', $value) . '\'';
-    }
-
 
     private static function mailUnsubDuplicateGroups(Db $db, string $collation): array
     {
-        if (!Schema::tableExists($db, 'table.mail_unsub')) {
+        if (!self::tableExists($db, 'table.mail_unsub')) {
             return ['rows' => [], 'error' => null];
         }
 
@@ -640,7 +337,7 @@ class SchemaManager
 
     private static function usersMailDuplicateGroups(Db $db, string $collation): array
     {
-        if (!Schema::tableExists($db, 'table.users')) {
+        if (!self::tableExists($db, 'table.users')) {
             return ['rows' => [], 'error' => null];
         }
 

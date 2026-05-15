@@ -3,6 +3,7 @@ include 'common.php';
 include 'header.php';
 include 'menu.php';
 
+$stat = \Widget\Stat::alloc();
 $attachments = \Widget\Contents\Attachment\Admin::alloc();
 $mediaAction = htmlspecialchars($options->index . '/action/contents-attachment-edit', ENT_QUOTES, 'UTF-8');
 $mediaToken = htmlspecialchars($security->getToken($options->index . '/action/contents-attachment-edit'), ENT_QUOTES, 'UTF-8');
@@ -84,7 +85,7 @@ $mediaToken = htmlspecialchars($security->getToken($options->index . '/action/co
                                     <td class="kit-hidden-mb">
                                         <?php $parentPost = $attachments->parentPost; ?>
                                         <?php if ($parentPost->cid): ?>
-                                            <a href="<?php $options->adminUrl('write-' . $attachments->parentEditor . '.php?cid=' . $attachments->parentEditorCid); ?>"><?php echo htmlspecialchars((string) $parentPost->title, ENT_QUOTES, 'UTF-8'); ?></a>
+                                            <a href="<?php $options->adminUrl('write-' . (0 === strpos((string) $parentPost->type, 'post') ? 'post' : 'page') . '.php?cid=' . $parentPost->cid); ?>"><?php echo htmlspecialchars((string) $parentPost->title, ENT_QUOTES, 'UTF-8'); ?></a>
                                         <?php else: ?>
                                             <span class="description"><?php _e('未归档'); ?></span>
                                         <?php endif; ?>

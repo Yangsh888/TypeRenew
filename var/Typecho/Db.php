@@ -51,7 +51,7 @@ class Db
 
         $adapterName = '\Typecho\Db\Adapter\\' . str_replace('_', '\\', $adapterName);
 
-        if (!$adapterName::isAvailable()) {
+        if (!call_user_func([$adapterName, 'isAvailable'])) {
             throw new DbException("Adapter {$adapterName} is not available");
         }
 
@@ -153,7 +153,7 @@ class Db
     {
         $this->selectDb(self::READ);
 
-        return $this->sql()->select(...($ags ?: ['*']));
+        return call_user_func_array([$this->sql(), 'select'], $ags ?: ['*']);
     }
 
     public function update(string $table): Query
@@ -223,14 +223,19 @@ class Db
                 case self::INSERT:
                     Cache::getInstance()->invalidate($table);
                     return $this->adapter->lastInsertId($resource, $handle);
+                case self::SELECT:
+                default:
+                    if ($isWriteSql) {
+                        Cache::getInstance()->invalidate($table);
+                    }
+                    return $resource;
             }
+        } else {
+            if ($isWriteSql) {
+                Cache::getInstance()->invalidate($table);
+            }
+            return $resource;
         }
-
-        if ($isWriteSql) {
-            Cache::getInstance()->invalidate($table);
-        }
-
-        return $resource;
     }
 
     private function parseWriteTable(string $sql): ?string
@@ -341,7 +346,7 @@ class Db
                     return null;
                 }
                 if (is_array($cached)) {
-                    return $filter ? $filter($cached) : $cached;
+                    return ($filter ? call_user_func($filter, $cached) : $cached);
                 }
             }
 
@@ -353,7 +358,7 @@ class Db
                         return null;
                     }
                     if (is_array($waited)) {
-                        return $filter ? $filter($waited) : $waited;
+                        return ($filter ? call_user_func($filter, $waited) : $waited);
                     }
                 }
             }
@@ -371,7 +376,9 @@ class Db
             }
         }
 
-        return $rows ? ($filter ? $filter($rows) : $rows) : null;
+        return ($rows) ?
+            ($filter ? call_user_func($filter, $rows) : $rows) :
+            null;
     }
 
     public function fetchObject($query, ?callable $filter = null): ?\stdClass
@@ -387,7 +394,7 @@ class Db
                     return null;
                 }
                 if ($cached instanceof \stdClass) {
-                    return $filter ? $filter($cached) : $cached;
+                    return ($filter ? call_user_func($filter, $cached) : $cached);
                 }
             }
 
@@ -399,7 +406,7 @@ class Db
                         return null;
                     }
                     if ($waited instanceof \stdClass) {
-                        return $filter ? $filter($waited) : $waited;
+                        return ($filter ? call_user_func($filter, $waited) : $waited);
                     }
                 }
             }
@@ -417,6 +424,8 @@ class Db
             }
         }
 
-        return $rows ? ($filter ? $filter($rows) : $rows) : null;
+        return ($rows) ?
+            ($filter ? call_user_func($filter, $rows) : $rows) :
+            null;
     }
 }

@@ -62,12 +62,4 @@ class PasswordReset
 
         return null;
     }
-
-    public static function cleanupExpired(Db $db): void
-    {
-        $db->query(
-            $db->delete('table.password_resets')
-                ->where('expires < ?', time())
-        );
-    }
 }

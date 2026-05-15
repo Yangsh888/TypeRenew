@@ -57,12 +57,12 @@ class Edit extends Options implements ActionInterface
                 throw new Exception(_t('无法启用插件'), 500);
             }
 
-            $activateAttempted = false;
+            $activated = false;
             $persisted = false;
 
             try {
-                $activateAttempted = true;
                 $result = call_user_func([$className, 'activate']);
+                $activated = true;
 
                 $form = new Form();
                 call_user_func([$className, 'config'], $form);
@@ -89,17 +89,6 @@ class Edit extends Options implements ActionInterface
                 );
             } catch (\Throwable $e) {
                 $rollbackErrors = [];
-
-                if ($activateAttempted && method_exists($className, 'deactivate')) {
-                    $this->rollbackActivateStep(
-                        _t('执行插件停用回滚'),
-                        function () use ($className): void {
-                            call_user_func([$className, 'deactivate']);
-                        },
-                        $rollbackErrors
-                    );
-                }
-
                 $this->rollbackActivateStep(
                     _t('删除全局配置'),
                     function () use ($pluginName): void {
@@ -110,14 +99,20 @@ class Edit extends Options implements ActionInterface
                 $this->rollbackActivateStep(
                     _t('删除个人配置'),
                     function () use ($pluginName): void {
-                        $this->db->query(
-                            $this->db->delete('table.options')
-                                ->where('name = ?', '_plugin:' . $pluginName)
-                                ->where('user = ?', 0)
-                        );
+                        $this->db->query($this->db->delete('table.options')->where('name = ?', '_plugin:' . $pluginName));
                     },
                     $rollbackErrors
                 );
+
+                if ($activated) {
+                    $this->rollbackActivateStep(
+                        _t('执行插件停用回滚'),
+                        function () use ($className): void {
+                            call_user_func([$className, 'deactivate']);
+                        },
+                        $rollbackErrors
+                    );
+                }
 
                 if ($persisted) {
                     $this->rollbackActivateStep(
@@ -132,8 +127,6 @@ class Edit extends Options implements ActionInterface
                         $rollbackErrors
                     );
                 }
-
-                Plugin::rollbackTemporaryHandles();
 
                 $message = $e->getMessage();
                 if ($rollbackErrors !== []) {
@@ -193,27 +186,20 @@ class Edit extends Options implements ActionInterface
      * @param string $pluginName 插件名称
      * @param array $settings 变量键值对
      * @param bool $isPersonal 是否为私人变量
-     * @param int $userId 目标用户
      * @throws Db\Exception
      */
-    public static function configPlugin(string $pluginName, array $settings, bool $isPersonal = false, int $userId = 0)
+    public static function configPlugin(string $pluginName, array $settings, bool $isPersonal = false)
     {
         $db = Db::get();
         $pluginName = ($isPersonal ? '_' : '') . 'plugin:' . $pluginName;
-        $targetUser = $isPersonal ? max(0, $userId) : 0;
 
         $select = $db->select()->from('table.options')
-            ->where('name = ?', $pluginName)
-            ->where('user = ?', $targetUser);
+            ->where('name = ?', $pluginName);
 
         $options = $db->fetchAll($select);
 
         if (empty($settings)) {
-            $db->query(
-                $db->delete('table.options')
-                    ->where('name = ?', $pluginName)
-                    ->where('user = ?', $targetUser)
-            );
+            $db->query($db->delete('table.options')->where('name = ?', $pluginName));
         } else {
             $encodedSettings = Common::jsonEncode($settings, 0, '{}');
             if (empty($options)) {
@@ -222,7 +208,7 @@ class Edit extends Options implements ActionInterface
                         ->rows([
                             'name'  => $pluginName,
                             'value' => $encodedSettings,
-                            'user'  => $targetUser
+                            'user'  => 0
                         ]));
                 } catch (SQLException $e) {
                     if (!self::isDuplicateOptionInsert($e)) {
@@ -232,19 +218,22 @@ class Edit extends Options implements ActionInterface
                     $db->query($db->update('table.options')
                         ->rows(['value' => $encodedSettings])
                         ->where('name = ?', $pluginName)
-                        ->where('user = ?', $targetUser));
+                        ->where('user = ?', 0));
                 }
             } else {
                 foreach ($options as $option) {
+                    $value = json_decode($option['value'], true);
+                    $value = is_array($value) ? $value : [];
+                    $value = array_merge($value, $settings);
+                    $encodedValue = Common::jsonEncode($value, 0, '{}');
+
                     $db->query($db->update('table.options')
-                        ->rows(['value' => $encodedSettings])
+                        ->rows(['value' => $encodedValue])
                         ->where('name = ?', $pluginName)
                         ->where('user = ?', $option['user']));
                 }
             }
         }
-
-        \Widget\Options::destroy();
     }
 
     private static function isDuplicateOptionInsert(\Throwable $e): bool
@@ -281,7 +270,7 @@ class Edit extends Options implements ActionInterface
     public function personalConfigHandle(string $className, array $settings): bool
     {
         if (method_exists($className, 'personalConfigHandle')) {
-            $className::personalConfigHandle($settings, true);
+            call_user_func([$className, 'personalConfigHandle'], $settings, true);
             return true;
         }
 
@@ -322,7 +311,7 @@ class Edit extends Options implements ActionInterface
             require_once $pluginFileName;
 
             if (
-                !class_exists($className)
+                !array_key_exists($pluginName, $activatedPlugins) || !class_exists($className)
                 || !method_exists($className, 'deactivate')
             ) {
                 throw new Exception(_t('无法禁用插件'), 500);
@@ -388,23 +377,23 @@ class Edit extends Options implements ActionInterface
     {
         $this->user->pass('administrator');
         if (!$this->request->isPost()) {
-            $this->response->setStatus(405)->throwContent(_t('Method Not Allowed'), 'text/plain');
-            return;
+            $this->response->setStatus(405);
+            $this->response->goBack();
         }
         $this->security->protect();
 
         if ($this->request->is('activate')) {
-            $this->activate((string) $this->request->get('activate'));
+            $this->activate(Plugin::normalizeName((string) $this->request->get('activate')));
             return;
         }
 
         if ($this->request->is('deactivate')) {
-            $this->deactivate((string) $this->request->get('deactivate'));
+            $this->deactivate(Plugin::normalizeName((string) $this->request->get('deactivate')));
             return;
         }
 
         if ($this->request->is('config')) {
-            $this->config((string) $this->request->get('config'));
+            $this->config(Plugin::normalizeName((string) $this->request->get('config')));
             return;
         }
 

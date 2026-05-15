@@ -211,6 +211,11 @@ class Cache
             return;
         }
 
+        if ($this->namespaceVersion >= 100000) {
+            $this->rotateNamespace();
+            return;
+        }
+
         $this->rotateNamespace();
     }
 

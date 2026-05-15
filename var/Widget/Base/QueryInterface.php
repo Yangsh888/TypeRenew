@@ -4,6 +4,9 @@ namespace Widget\Base;
 
 use Typecho\Db\Query;
 
+/**
+ * Base Query Interface
+ */
 interface QueryInterface
 {
     public function select(...$fields): Query;

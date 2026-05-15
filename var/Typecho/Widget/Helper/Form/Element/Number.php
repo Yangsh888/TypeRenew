@@ -8,6 +8,9 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
 
 class Number extends Text
 {
+    /**
+     * @return string
+     */
     protected function getType(): string
     {
         return 'number';

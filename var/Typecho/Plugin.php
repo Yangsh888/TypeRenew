@@ -47,35 +47,6 @@ class Plugin
         self::$tmp = [];
     }
 
-    public static function rollbackTemporaryHandles(): void
-    {
-        if (
-            !isset(self::$tmp['handles'])
-            || !is_array(self::$tmp['handles'])
-            || self::$tmp['handles'] === []
-        ) {
-            self::$tmp = [];
-            return;
-        }
-
-        foreach (self::$tmp['handles'] as $handle => $handles) {
-            if (!isset(self::$plugin['handles'][$handle]) || !is_array(self::$plugin['handles'][$handle])) {
-                continue;
-            }
-
-            self::$plugin['handles'][$handle] = self::pluginHandlesDiff(
-                self::$plugin['handles'][$handle],
-                is_array($handles) ? $handles : []
-            );
-
-            if (empty(self::$plugin['handles'][$handle])) {
-                unset(self::$plugin['handles'][$handle]);
-            }
-        }
-
-        self::$tmp = [];
-    }
-
     public static function deactivate(string $pluginName)
     {
         if (
@@ -99,7 +70,7 @@ class Plugin
     private static function pluginHandlesDiff(array $pluginHandles, array $otherPluginHandles): array
     {
         foreach ($otherPluginHandles as $handle) {
-            while (false !== ($index = array_search($handle, $pluginHandles, true))) {
+            while (false !== ($index = array_search($handle, $pluginHandles))) {
                 unset($pluginHandles[$index]);
             }
         }
@@ -134,6 +105,15 @@ class Plugin
 
     public static function parseInfo(string $pluginFile): array
     {
+        $tokens = token_get_all(file_get_contents($pluginFile));
+        $isDoc = false;
+        $isFunction = false;
+        $isClass = false;
+        $isInClass = false;
+        $isInFunction = false;
+        $isDefined = false;
+        $current = null;
+
         $info = [
             'description' => '',
             'title' => '',
@@ -147,24 +127,6 @@ class Plugin
             'personalConfig' => false
         ];
 
-        if (!is_file($pluginFile) || !is_readable($pluginFile)) {
-            return $info;
-        }
-
-        $source = file_get_contents($pluginFile);
-        if (!is_string($source) || $source === '') {
-            return $info;
-        }
-
-        $tokens = token_get_all($source);
-        $isDoc = false;
-        $isFunction = false;
-        $isClass = false;
-        $isInClass = false;
-        $isInFunction = false;
-        $isDefined = false;
-        $current = null;
-
         $map = [
             'package' => 'title',
             'author' => 'author',
@@ -177,7 +139,7 @@ class Plugin
             if (!$isDoc && is_array($token) && T_DOC_COMMENT == $token[0]) {
 
                 $described = false;
-                $lines = preg_split('/\R/u', $token[1]) ?: [$token[1]];
+                $lines = preg_split("([\r\n])", $token[1]);
                 foreach ($lines as $line) {
                     $line = trim($line);
                     if (!empty($line) && '*' == $line[0]) {
@@ -376,7 +338,7 @@ class Plugin
         $this->signal = true;
 
         foreach (self::$plugin['handles'][$componentKey] as $callback) {
-            $return = $callback(...$args);
+            $return = call_user_func_array($callback, $args);
         }
 
         return $return;
@@ -395,7 +357,7 @@ class Plugin
 
         foreach (self::$plugin['handles'][$componentKey] as $callback) {
             $currentArgs = array_merge([$result], $args, [$result]);
-            $result = $callback(...$currentArgs);
+            $result = call_user_func_array($callback, $currentArgs);
         }
 
         return $result;

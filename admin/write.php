@@ -4,10 +4,17 @@ if (!defined('__TYPECHO_ADMIN__')) {
 }
 
 $content = $write['content'];
-$editorHook = 'admin/' . $write['hook'];
 $draftAction = $options->index . '/action/' . $write['draftAction'];
 $draftToken = $security->getToken($draftAction);
-$vditorForceMarkdown = (bool) \Typecho\Plugin::factory($editorHook)->filter('forceMarkdown', false, $content);
+$vditorForceMarkdown = false;
+if (class_exists('VditorRenew_Plugin')) {
+    $vditorSettings = \VditorRenew_Plugin::getSettings();
+    $vditorEnabled = !empty($vditorSettings['enabled']);
+    $vditorLegacy = ($content->have() && !$content->isMarkdown)
+        ? (string) ($vditorSettings['legacy'] ?? 'convert')
+        : 'raw';
+    $vditorForceMarkdown = $vditorEnabled && (!$content->have() || $content->isMarkdown || $vditorLegacy === 'convert');
+}
 ?>
 <div class="col-mb-12 col-tb-9 tr-write-main" role="main">
     <?php if ($content->draft): ?>
@@ -42,12 +49,11 @@ $vditorForceMarkdown = (bool) \Typecho\Plugin::factory($editorHook)->filter('for
             <label for="slug" class="sr-only"><?php _e('网址缩略名'); ?></label>
             <?php echo $write['permalink']; ?>
         </p>
-        <?php if ($content->have() && $content->isFuturePublish()): ?>
+        <?php if ($content->have() && method_exists($content, 'isFuturePublish') && $content->isFuturePublish()): ?>
             <?php $previewCid = !empty($content->draft['cid']) ? (int) $content->draft['cid'] : (int) $content->cid; ?>
-            <?php $scheduleDate = (new \Typecho\Date((int) $content->created))->format('Y-m-d H:i'); ?>
             <cite class="edit-draft-notice is-schedule">
                 <span class="edit-draft-notice-tag"><?php _e('定时发布'); ?></span>
-                <span class="edit-draft-notice-text"><?php _e('当前内容将于 %s 定时发布，前台链接届时才可访问。', $scheduleDate); ?></span>
+                <span class="edit-draft-notice-text"><?php _e('当前内容将于 %s 定时发布，前台链接届时才可访问。', $content->date('Y-m-d H:i')); ?></span>
                 <?php if ($previewCid > 0): ?>
                     <a href="<?php $options->adminUrl('preview.php?cid=' . $previewCid); ?>" target="_blank" rel="noopener noreferrer"><?php _e('立即预览'); ?></a>
                 <?php endif; ?>
@@ -84,5 +90,5 @@ $vditorForceMarkdown = (bool) \Typecho\Plugin::factory($editorHook)->filter('for
         </span>
     </p>
 
-    <?php \Typecho\Plugin::factory($editorHook)->call('content', $content); ?>
+    <?php \Typecho\Plugin::factory('admin/' . $write['hook'])->call('content', $content); ?>
 </div>

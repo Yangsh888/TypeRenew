@@ -13,7 +13,7 @@ class Palette
         'create' => ['id' => 'create', 'name' => '创建', 'order' => 20, 'icon' => 'i-plus'],
         'manage' => ['id' => 'manage', 'name' => '管理', 'order' => 30, 'icon' => 'i-folder'],
         'settings' => ['id' => 'settings', 'name' => '设置', 'order' => 40, 'icon' => 'i-gear'],
-        'appearance' => ['id' => 'appearance', 'name' => '外观', 'order' => 50, 'icon' => 'i-monitor'],
+        'appearance' => ['id' => 'appearance', 'name' => '外观', 'order' => 50, 'icon' => 'i-palette'],
         'tools' => ['id' => 'tools', 'name' => '工具', 'order' => 60, 'icon' => 'i-zap'],
         'interface' => ['id' => 'interface', 'name' => '界面', 'order' => 70, 'icon' => 'i-monitor'],
         'help' => ['id' => 'help', 'name' => '帮助', 'order' => 80, 'icon' => 'i-info']
@@ -400,7 +400,7 @@ class Palette
                 'id' => 'themes',
                 'title' => _t('主题管理'),
                 'category' => 'settings',
-                'icon' => 'i-monitor',
+                'icon' => 'i-palette',
                 'shortcut' => 'T',
                 'keywords' => [_t('主题'), 'themes', _t('外观')],
                 'access' => 'administrator',
@@ -415,16 +415,6 @@ class Palette
                 'keywords' => [_t('主题'), _t('编辑器'), 'editor', 'code'],
                 'access' => 'administrator',
                 'url' => $adminUrl . 'theme-editor.php'
-            ],
-            [
-                'id' => 'options-theme',
-                'title' => _t('主题设置'),
-                'category' => 'settings',
-                'icon' => 'i-monitor',
-                'shortcut' => 'T O',
-                'keywords' => [_t('主题'), _t('设置'), 'theme', 'appearance'],
-                'access' => 'administrator',
-                'url' => $adminUrl . 'options-theme.php'
             ],
             [
                 'id' => 'backup',
@@ -485,110 +475,8 @@ class Palette
             ]
         ];
 
-        $panelTable = is_array($options->panelTable ?? null) ? $options->panelTable : [];
-        $panelMeta = is_array($panelTable['meta'] ?? null) ? $panelTable['meta'] : [];
-        $commands = self::syncMenuCommands($commands, $panelMeta);
-        $commands = array_merge($commands, self::extendingCommands($panelTable, $adminUrl, $panelMeta));
         self::registerAll($commands);
         self::$initialized = true;
-    }
-
-    private static function syncMenuCommands(array $commands, array $panelMeta): array
-    {
-        foreach ($commands as $index => $command) {
-            $url = $command['url'] ?? null;
-            if (!is_string($url) || $url === '') {
-                continue;
-            }
-
-            $meta = \Widget\Menu::menuMeta($url, $panelMeta);
-            if (!empty($meta['icon'])) {
-                $commands[$index]['icon'] = $meta['icon'];
-            }
-
-            $category = \Widget\Menu::paletteCategory($url, $panelMeta);
-            if (is_string($category) && $category !== '') {
-                $commands[$index]['category'] = $category;
-            }
-        }
-
-        return $commands;
-    }
-
-    private static function extendingCommands(array $panelTable, string $adminUrl, array $panelMeta): array
-    {
-        $commands = [];
-        $children = is_array($panelTable['child'] ?? null) ? $panelTable['child'] : [];
-
-        foreach ($children as $parentIndex => $items) {
-            if (!is_array($items)) {
-                continue;
-            }
-
-            foreach ($items as $item) {
-                if (!is_array($item)) {
-                    continue;
-                }
-
-                $title = trim((string) ($item[0] ?? ''));
-                $menuUrl = trim((string) ($item[2] ?? ''));
-                if ($title === '' || $menuUrl === '' || !str_starts_with($menuUrl, 'extending.php?panel=')) {
-                    continue;
-                }
-
-                if (!empty($item[4])) {
-                    continue;
-                }
-
-                $meta = \Widget\Menu::menuMeta($menuUrl, $panelMeta);
-                $panel = self::panelName($menuUrl);
-                $commands[] = [
-                    'id' => 'panel-' . self::slug($panel !== '' ? $panel : $menuUrl),
-                    'title' => $title,
-                    'category' => \Widget\Menu::paletteCategory($menuUrl, $panelMeta) ?? self::panelCategory((int) $parentIndex),
-                    'icon' => (string) ($meta['icon'] ?? 'i-puzzle'),
-                    'keywords' => array_values(array_filter([
-                        $title,
-                        trim((string) ($item[1] ?? '')),
-                        _t('插件'),
-                        _t('扩展'),
-                        str_replace(['/', '.php'], [' ', ''], $panel),
-                    ])),
-                    'access' => (string) ($item[3] ?? 'administrator'),
-                    'url' => Common::url($menuUrl, $adminUrl),
-                ];
-            }
-        }
-
-        return $commands;
-    }
-
-    private static function panelCategory(int $parentIndex): string
-    {
-        return match ($parentIndex) {
-            2 => 'create',
-            3 => 'manage',
-            4, 5 => 'settings',
-            default => 'tools',
-        };
-    }
-
-    private static function panelName(string $menuUrl): string
-    {
-        $parts = Common::parseUrl($menuUrl);
-        $query = (string) ($parts['query'] ?? '');
-        if ($query === '') {
-            return '';
-        }
-
-        parse_str($query, $params);
-        return trim((string) ($params['panel'] ?? ''));
-    }
-
-    private static function slug(string $value): string
-    {
-        $slug = strtolower(trim((string) preg_replace('/[^a-z0-9]+/i', '-', urldecode($value)), '-'));
-        return $slug !== '' ? $slug : sha1($value);
     }
 
     /**

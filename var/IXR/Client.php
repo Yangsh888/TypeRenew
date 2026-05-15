@@ -10,6 +10,7 @@ use Typecho\Http\Client as HttpClient;
  *
  * @package IXR
  */
+#[\AllowDynamicProperties]
 class Client
 {
     /** 默认客户端 */
@@ -27,7 +28,7 @@ class Client
      *
      * @var Message
      */
-    private ?Message $message = null;
+    private Message $message;
 
     /**
      * 请求前缀
@@ -39,7 +40,7 @@ class Client
     /**
      * @var Error
      */
-    private ?Error $error = null;
+    private Error $error;
 
     /**
      * 客户端构造函数
@@ -65,7 +66,6 @@ class Client
      */
     private function rpcCall(string $method, array $args): bool
     {
-        $this->error = null;
         $request = new Request($method, $args);
         $xml = $request->getXml();
 
@@ -81,7 +81,7 @@ class Client
                 ->setData($xml)
                 ->send($this->url);
         } catch (HttpClient\Exception $e) {
-            $this->error = new Error(-32300, $e->getMessage());
+            $this->error = new Error(-32700, $e->getMessage());
             return false;
         }
 
@@ -90,9 +90,8 @@ class Client
         // Now parse what we've got back
         $this->message = new Message($contents);
         if (!$this->message->parse()) {
-            $detail = $this->message->parseError !== '' ? $this->message->parseError : 'parse error. not well formed';
-            $code = $detail === Message::ERROR_XML_EXTENSION ? -32603 : -32700;
-            $this->error = new Error($code, $detail);
+            // XML error
+            $this->error = new Error(-32700, 'parse error. not well formed');
             return false;
         }
 

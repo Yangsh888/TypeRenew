@@ -16,25 +16,19 @@ class Reset extends Users implements ActionInterface
 {
     public function action(): void
     {
-        if (!$this->request->isPost()) {
-            $this->response->setStatus(405)->throwContent(_t('Method Not Allowed'), 'text/plain');
-            return;
-        }
-
         $this->security->protect();
 
         if ($this->user->hasLogin()) {
             $this->response->redirect($this->options->adminUrl);
         }
 
-        $forgotUrl = Common::url('forgot.php', $this->options->adminUrl);
-        $token = $this->request->filter('trim')->getInput('token', '');
-        $password = $this->request->getInput('password', '');
-        $confirm = $this->request->getInput('confirm', '');
+        $token = trim((string) $this->request->get('token'));
+        $password = (string) $this->request->get('password');
+        $confirm = (string) $this->request->get('confirm');
 
         if (!PasswordReset::isValidRawToken($token)) {
             Notice::alloc()->set(_t('重置链接无效或已过期，请重新获取'), 'error');
-            $this->response->redirect($forgotUrl);
+            $this->response->redirect(Common::url('forgot.php', $this->options->adminUrl));
         }
 
         if (!Password::validateLength($password)) {
@@ -50,13 +44,13 @@ class Reset extends Users implements ActionInterface
             $this->response->goBack();
         }
 
-        PasswordReset::cleanupExpired($this->db);
+        $this->cleanupExpired();
 
         $record = PasswordReset::findActiveRecordByToken($this->db, $token);
 
         if (!$record) {
             Notice::alloc()->set(_t('重置链接无效或已过期，请重新获取'), 'error');
-            $this->response->redirect($forgotUrl);
+            $this->response->redirect(Common::url('forgot.php', $this->options->adminUrl));
         }
 
         $recordId = (int) ($record['id'] ?? 0);
@@ -70,13 +64,15 @@ class Reset extends Users implements ActionInterface
 
         if (!$locked) {
             Notice::alloc()->set(_t('重置链接已被使用，请重新获取'), 'error');
-            $this->response->redirect($forgotUrl);
+            $this->response->redirect(Common::url('forgot.php', $this->options->adminUrl));
         }
 
         $hashedPassword = Password::hash($password);
-        $authCode = bin2hex(random_bytes(16));
+        $authCode = function_exists('openssl_random_pseudo_bytes')
+            ? bin2hex(openssl_random_pseudo_bytes(16))
+            : sha1(Common::randString(20));
 
-        $updatedRows = $this->db->query(
+        $this->db->query(
             $this->db->update('table.users')
                 ->rows([
                     'password' => $hashedPassword,
@@ -84,11 +80,6 @@ class Reset extends Users implements ActionInterface
                 ])
                 ->where('mail = ?', $recordEmail)
         );
-
-        if (!$updatedRows) {
-            Notice::alloc()->set(_t('用户不存在或已被删除，请重新获取重置链接'), 'error');
-            $this->response->redirect($forgotUrl);
-        }
 
         $this->db->query(
             $this->db->delete('table.password_resets')
@@ -98,5 +89,13 @@ class Reset extends Users implements ActionInterface
 
         Notice::alloc()->set(_t('密码已重置，请使用新密码登录'), 'success');
         $this->response->redirect(Common::url('login.php', $this->options->adminUrl));
+    }
+
+    private function cleanupExpired(): void
+    {
+        $this->db->query(
+            $this->db->delete('table.password_resets')
+                ->where('expires < ?', time())
+        );
     }
 }

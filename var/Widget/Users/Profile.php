@@ -17,6 +17,13 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
+/**
+ * 编辑用户组件
+ *
+ * @package Widget
+ * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
+ * @license GNU General Public License 2.0
+ */
 class Profile extends Users implements ActionInterface
 {
     use EditTrait;
@@ -27,6 +34,9 @@ class Profile extends Users implements ActionInterface
         $this->request->setParam('uid', $this->user->uid);
     }
 
+    /**
+     * @return Form
+     */
     public function optionsForm(): Form
     {
         $form = new Form($this->security->getIndex('/action/users-profile'), Form::POST_METHOD);
@@ -136,25 +146,7 @@ class Profile extends Users implements ActionInterface
         $group = call_user_func([$className, 'personalConfig'], $form);
         $group = $group ?: 'subscriber';
 
-        $options = [];
-        try {
-            $options = $this->options->personalPlugin($pluginName)->toArray();
-        } catch (\Typecho\Plugin\Exception) {
-        }
-
-        $userOption = $this->db->fetchRow(
-            $this->db->select('value')
-                ->from('table.options')
-                ->where('name = ? AND user = ?', '_plugin:' . $pluginName, (int) $this->user->uid)
-                ->limit(1)
-        );
-        if (is_array($userOption) && array_key_exists('value', $userOption)) {
-            $userSettings = is_string($userOption['value']) ? json_decode($userOption['value'], true) : null;
-            $options = array_merge(
-                $options,
-                is_array($userSettings) ? $userSettings : []
-            );
-        }
+        $options = $this->options->personalPlugin($pluginName);
 
         foreach ($options as $key => $val) {
             $input = $form->getInput($key);
@@ -183,7 +175,7 @@ class Profile extends Users implements ActionInterface
         }
 
         $currentScreenName = (string) $this->user->screenName;
-        $user = $this->request->fromInput('mail', 'screenName', 'url');
+        $user = $this->request->from('mail', 'screenName', 'url');
         $user['screenName'] = Common::strBy($user['screenName'] ?? null, $this->user->name);
 
         try {
@@ -208,6 +200,11 @@ class Profile extends Users implements ActionInterface
         $this->response->goBack();
     }
 
+    /**
+     * 生成表单
+     *
+     * @return Form
+     */
     public function profileForm(): Form
     {
         $form = new Form($this->security->getIndex('/action/users-profile'), Form::POST_METHOD);
@@ -248,6 +245,11 @@ class Profile extends Users implements ActionInterface
         return $form;
     }
 
+    /**
+     * 执行更新动作
+     *
+     * @throws Exception
+     */
     public function updateOptions()
     {
         $settings['autoSave'] = $this->request->is('autoSave=1') ? 1 : 0;
@@ -290,7 +292,7 @@ class Profile extends Users implements ActionInterface
             $this->response->goBack();
         }
 
-        $password = Password::hash((string) $this->request->get('password'));
+        $password = Password::hash($this->request->password);
 
         $this->update(
             ['password' => $password],
@@ -304,6 +306,11 @@ class Profile extends Users implements ActionInterface
         $this->response->goBack();
     }
 
+    /**
+     * 生成表单
+     *
+     * @return Form
+     */
     public function passwordForm(): Form
     {
         $form = new Form($this->security->getIndex('/action/users-profile'), Form::POST_METHOD);
@@ -399,20 +406,19 @@ class Profile extends Users implements ActionInterface
     public function personalConfigHandle(string $className, array $settings): bool
     {
         if (method_exists($className, 'personalConfigHandle')) {
-            $className::personalConfigHandle($settings, false);
+            call_user_func([$className, 'personalConfigHandle'], $settings, false);
             return true;
         }
 
         return false;
     }
 
+    /**
+     * 入口函数
+     * @return void
+     */
     public function action()
     {
-        $this->user->pass('subscriber');
-        if (!$this->request->isPost()) {
-            $this->response->setStatus(405)->throwContent(_t('Method Not Allowed'), 'text/plain');
-            return;
-        }
         $this->security->protect();
         $this->on($this->request->is('do=profile'))->updateProfile();
         $this->on($this->request->is('do=options'))->updateOptions();

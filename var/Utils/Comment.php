@@ -45,8 +45,7 @@ class Comment
                 $db,
                 (int) ($user['uid'] ?? 0),
                 isset($user['screenName']) ? (string) $user['screenName'] : null,
-                isset($user['name']) ? (string) $user['name'] : null,
-                true
+                isset($user['name']) ? (string) $user['name'] : null
             );
         }
 
@@ -81,13 +80,7 @@ class Comment
         }
     }
 
-    private static function updateUserAuthor(
-        Db $db,
-        int $uid,
-        ?string $screenName,
-        ?string $fallbackName = null,
-        bool $onlyMissing = false
-    ): int
+    private static function updateUserAuthor(Db $db, int $uid, ?string $screenName, ?string $fallbackName = null): int
     {
         if ($uid <= 0) {
             return 0;
@@ -98,16 +91,11 @@ class Comment
             return 0;
         }
 
-        $query = $db->update('table.comments')
-            ->rows(['author' => $author])
-            ->where('authorId = ?', $uid);
-
-        if ($onlyMissing) {
-            $query->where('(author IS NULL OR author = ?)', '');
-        } else {
-            $query->where('(author IS NULL OR author <> ?)', $author);
-        }
-
-        return (int) $db->query($query);
+        return (int) $db->query(
+            $db->update('table.comments')
+                ->rows(['author' => $author])
+                ->where('authorId = ?', $uid)
+                ->where('(author IS NULL OR author <> ?)', $author)
+        );
     }
 }

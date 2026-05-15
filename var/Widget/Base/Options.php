@@ -13,8 +13,22 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
+/**
+ * 全局选项组件
+ *
+ * @package Widget
+ * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
+ * @license GNU General Public License 2.0
+ */
 class Options extends Base implements QueryInterface
 {
+    /**
+     * 获取原始查询对象
+     *
+     * @param mixed ...$fields
+     * @return Query
+     * @throws Exception
+     */
     public function select(...$fields): Query
     {
         return $this->db->select(...$fields)->from('table.options');

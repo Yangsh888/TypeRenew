@@ -11,6 +11,14 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
+/**
+ * 评论设置组件
+ *
+ * @author qining
+ * @package Widget
+ * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
+ * @license GNU General Public License 2.0
+ */
 class Discussion extends Options implements ActionInterface
 {
     use EditTrait;
@@ -24,7 +32,7 @@ class Discussion extends Options implements ActionInterface
     {
         $this->validateFormOrGoBack($this->form());
 
-        $settings = $this->request->fromInput(
+        $settings = $this->request->from(
             'commentDateFormat',
             'commentsListSize',
             'commentsPageSize',
@@ -42,8 +50,8 @@ class Discussion extends Options implements ActionInterface
             'commentsRequireUrl',
             'commentsHTMLTagAllowed'
         );
-        $settings['commentsShow'] = $this->request->getInput('commentsShow', []);
-        $settings['commentsPost'] = $this->request->getInput('commentsPost', []);
+        $settings['commentsShow'] = $this->request->getArray('commentsShow');
+        $settings['commentsPost'] = $this->request->getArray('commentsPost');
 
         $settings['commentsShowCommentOnly'] = $this->isEnableByCheckbox(
             $settings['commentsShow'],
@@ -61,8 +69,8 @@ class Discussion extends Options implements ActionInterface
         $settings['commentsMaxNestingLevels'] = min(7, max(2, intval($settings['commentsMaxNestingLevels'])));
         $settings['commentsPageDisplay'] = ('first' == $settings['commentsPageDisplay']) ? 'first' : 'last';
         $settings['commentsOrder'] = ('DESC' == $settings['commentsOrder']) ? 'DESC' : 'ASC';
-        $settings['commentsAvatarRating'] = in_array((string) $settings['commentsAvatarRating'], ['G', 'PG', 'R', 'X'], true)
-            ? (string) $settings['commentsAvatarRating'] : 'G';
+        $settings['commentsAvatarRating'] = in_array($settings['commentsAvatarRating'], ['G', 'PG', 'R', 'X'])
+            ? $settings['commentsAvatarRating'] : 'G';
 
         $settings['commentsRequireModeration'] = $this->isEnableByCheckbox(
             $settings['commentsPost'],
@@ -83,7 +91,7 @@ class Discussion extends Options implements ActionInterface
         );
 
         $settings['commentsPostTimeout'] = intval($settings['commentsPostTimeout']) * 24 * 3600;
-        $settings['commentsPostInterval'] = round((float) $settings['commentsPostInterval'], 1) * 60;
+        $settings['commentsPostInterval'] = round($settings['commentsPostInterval'], 1) * 60;
 
         unset($settings['commentsShow']);
         unset($settings['commentsPost']);
@@ -93,6 +101,9 @@ class Discussion extends Options implements ActionInterface
         $this->saveSuccessAndGoBack();
     }
 
+    /**
+     * @return Form
+     */
     public function form(): Form
     {
         $form = new Form($this->security->getIndex('/action/options-discussion'), Form::POST_METHOD);
@@ -106,7 +117,7 @@ class Discussion extends Options implements ActionInterface
             . _t('具体写法请参考 <a href="https://www.php.net/manual/zh/function.date.php">PHP 日期格式写法</a>')
         );
         $commentDateFormat->input->setAttribute('class', 'w-40 mono');
-        $form->addInput($commentDateFormat->addRule('xssCheck', _t('请不要在评论日期格式中使用特殊字符')));
+        $form->addInput($commentDateFormat);
 
         /** 评论列表数目 */
         $commentsListSize = new Form\Element\Number(
@@ -219,12 +230,8 @@ class Discussion extends Options implements ActionInterface
     public function action()
     {
         $this->user->pass('administrator');
-        if (!$this->request->isPost()) {
-            $this->response->setStatus(405)->throwContent(_t('Method Not Allowed'), 'text/plain');
-            return;
-        }
         $this->security->protect();
-        $this->updateDiscussionSettings();
+        $this->on($this->request->isPost())->updateDiscussionSettings();
         $this->response->redirect($this->options->adminUrl);
     }
 }
