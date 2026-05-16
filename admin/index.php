@@ -9,6 +9,30 @@ $db = \Typecho\Db::get();
 $postsData = [];
 $commentsData = [];
 $dayCount = 14;
+$securityWarnings = [];
+
+if ((int) ($options->allowXmlRpc ?? 0) > 0) {
+    $securityWarnings[] = [
+        'title' => _t('XML-RPC 已启用'),
+        'detail' => (int) $options->allowXmlRpc === 2
+            ? _t('当前同时开放 XML-RPC 与 Pingback；如无明确业务需求，建议至少关闭 Pingback，或直接关闭 XML-RPC。')
+            : _t('当前保留 XML-RPC，已关闭 Pingback；如无远程写作或客户端同步需求，建议直接关闭。')
+    ];
+}
+
+if (defined('__TYPECHO_ALLOW_LEGACY_TOKEN__') && __TYPECHO_ALLOW_LEGACY_TOKEN__) {
+    $securityWarnings[] = [
+        'title' => _t('旧版表单令牌兼容已开启'),
+        'detail' => _t('当前仍接受旧版 Token 校验，建议仅在兼容老链接或老插件时短期启用，完成过渡后尽快关闭。')
+    ];
+}
+
+if (defined('__TYPECHO_ALLOW_MD5_PASSWORD__') && __TYPECHO_ALLOW_MD5_PASSWORD__) {
+    $securityWarnings[] = [
+        'title' => _t('MD5 密码兼容已开启'),
+        'detail' => _t('当前允许校验旧版 MD5 密码哈希，这会明显降低安全边界。建议仅在迁移过渡期短期启用。')
+    ];
+}
 
 for ($i = $dayCount - 1; $i >= 0; $i--) {
     $currentDay = $options->getDateTime()->setTime(0, 0, 0)->modify("-{$i} days");
@@ -102,6 +126,23 @@ $donut = function (int $posts, int $pages, int $comments, int $total): string {
 ?>
 <main class="main">
     <div class="body container">
+        <?php if (!empty($securityWarnings)): ?>
+            <div class="tr-card tr-mb-16">
+                <div class="tr-card-b">
+                    <div class="tr-section-head">
+                        <div class="tr-section-title"><?php _e('安全与兼容提醒'); ?></div>
+                        <a class="tr-pill" href="<?php $options->adminUrl('options-general.php'); ?>"><?php _e('前往设置'); ?></a>
+                    </div>
+                    <div class="tr-help tr-tone-warning tr-mt-8"><?php _e('以下项目不会阻断站点运行，但建议尽快确认是否仍有保留必要。'); ?></div>
+                    <ul class="tr-help tr-mt-8">
+                        <?php foreach ($securityWarnings as $warning): ?>
+                            <li><strong><?php echo htmlspecialchars((string) $warning['title'], ENT_QUOTES, 'UTF-8'); ?></strong> - <?php echo htmlspecialchars((string) $warning['detail'], ENT_QUOTES, 'UTF-8'); ?></li>
+                        <?php endforeach; ?>
+                    </ul>
+                </div>
+            </div>
+        <?php endif; ?>
+
         <div class="tr-grid cols-2">
             <div class="tr-card">
                 <div class="tr-card-b">

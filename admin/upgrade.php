@@ -66,7 +66,7 @@ $mysqlRiskItems = array_values(array_filter(
 $mysqlRiskCount = count($mysqlRiskItems);
 $repairMysqlRiskItems = array_values(array_filter(
     $mysqlRiskItems,
-    static fn(array $item): bool => (string) ($item['key'] ?? '') !== 'users_mail_duplicates'
+    static fn(array $item): bool => !empty($item['repairRelated'])
 ));
 $repairMysqlRiskCount = count($repairMysqlRiskItems);
 $dbDiagnosticsUrl = $options->adminUrl('upgrade.php?dbdiag=1', true);
@@ -361,6 +361,10 @@ $dbOverviewUrl = $options->adminUrl('upgrade.php', true);
                                                                                     $samples[] = (string) $sample['email'] . ' / ' . (string) $sample['scope'] . ' x' . (int) ($sample['count'] ?? 0);
                                                                                 } elseif (isset($sample['mail'])) {
                                                                                     $samples[] = (string) $sample['mail'] . ' x' . (int) ($sample['count'] ?? 0);
+                                                                                } elseif (isset($sample['slug'])) {
+                                                                                    $samples[] = (string) $sample['slug'] . ' x' . (int) ($sample['count'] ?? 0);
+                                                                                } elseif (isset($sample['name'])) {
+                                                                                    $samples[] = (string) $sample['name'] . ' x' . (int) ($sample['count'] ?? 0);
                                                                                 }
                                                                             }
                                                                             echo htmlspecialchars(implode('；', $samples), ENT_QUOTES, 'UTF-8');

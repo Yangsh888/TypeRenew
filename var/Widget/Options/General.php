@@ -55,7 +55,8 @@ class General extends Options implements ActionInterface
      */
     public function removeShell(string $ext): bool
     {
-        return !preg_match("/^(php|php3|php4|php5|php7|php8|phtml|pht|phar|cgi|shtml|sh|asp|aspx|jsp|rb|py|pl|dll|exe|bat|cmd|com)$/i", $ext);
+        return preg_match('/^[a-z0-9]+$/i', $ext) === 1
+            && !preg_match("/^(php|php3|php4|php5|php7|php8|phtml|pht|phar|cgi|shtml|html|htm|sh|asp|aspx|jsp|rb|py|pl|dll|exe|bat|cmd|com)$/i", $ext);
     }
 
     public function updateGeneralSettings()
@@ -91,6 +92,10 @@ class General extends Options implements ActionInterface
         }
 
         $attachmentTypes = [];
+        $settings['allowXmlRpc'] = in_array((string) ($settings['allowXmlRpc'] ?? '0'), ['0', '1', '2'], true)
+            ? (int) $settings['allowXmlRpc']
+            : 0;
+
         if ($this->isEnableByCheckbox($settings['attachmentTypes'], '@image@')) {
             $attachmentTypes[] = '@image@';
         }
@@ -177,7 +182,8 @@ class General extends Options implements ActionInterface
             'allowXmlRpc',
             ['0' => _t('关闭'), '1' => _t('仅关闭 Pingback 接口'), '2' => _t('打开')],
             $this->options->allowXmlRpc,
-            _t('XMLRPC 接口')
+            _t('XMLRPC 接口'),
+            _t('如无远程写作、离线客户端或第三方同步需求，建议保持关闭；“仅关闭 Pingback 接口”可保留常规 XML-RPC，同时避免站点接收 Pingback。')
         );
         $form->addInput($allowXmlRpc);
 
@@ -240,7 +246,8 @@ class General extends Options implements ActionInterface
             $attachmentTypesOptions,
             $attachmentTypesOptionsValue,
             _t('允许上传的文件类型'),
-            _t('用逗号 "," 将后缀名隔开, 例如: %s', '<code>cpp, h, mak</code>')
+            _t('用逗号 "," 将后缀名隔开, 例如: %s', '<code>cpp,h,mak</code>') . '<br />'
+            . _t('核心会校验扩展名，并对明显危险内容类型与图片扩展名不匹配的文件做基础拦截；如需更严格策略，建议配合独立安全插件。')
         );
         $form->addInput($attachmentTypes->multiMode());
 

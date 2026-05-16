@@ -84,8 +84,14 @@ class Comments extends Base implements QueryInterface, RowFilterInterface, Prima
             'mail'   => Common::strBy($rows['mail'] ?? null),
             'url'    => Common::strBy($rows['url'] ?? null),
             'text'   => Common::strBy($rows['text'] ?? null),
-            'status' => Common::strBy($rows['status'] ?? null, 'approved'),
         ];
+
+        if (array_key_exists('status', $rows)) {
+            $status = Common::strBy($rows['status'] ?? null);
+            if ($status !== '') {
+                $preUpdateStruct['status'] = $status;
+            }
+        }
 
         $updateStruct = [];
         foreach ($rows as $key => $val) {
@@ -96,6 +102,10 @@ class Comments extends Base implements QueryInterface, RowFilterInterface, Prima
 
         if (!empty($rows['created'])) {
             $updateStruct['created'] = $rows['created'];
+        }
+
+        if ($updateStruct === []) {
+            return 0;
         }
 
         $updateRows = $this->db->query($updateCondition->update('table.comments')->rows($updateStruct));

@@ -137,6 +137,7 @@ class SchemaManager
             'label' => '数据库版本',
             'status' => $version !== '' ? 'ok' : 'warning',
             'detail' => $rawVersion !== '' ? $rawVersion : '无法识别当前版本',
+            'repairRelated' => false,
         ];
 
         $legacyIndexLimit = $version !== '' && version_compare($version, '5.7.7', '<');
@@ -147,6 +148,7 @@ class SchemaManager
             'detail' => $legacyIndexLimit
                 ? '当前版本可能仍受 767-byte 索引长度限制，邮件退订表唯一索引需重点确认'
                 : '当前版本不受旧 767-byte 索引长度限制影响',
+            'repairRelated' => true,
         ];
 
         $mailUnsubTable = $db->getPrefix() . 'mail_unsub';
@@ -162,6 +164,7 @@ class SchemaManager
                 : ($mailUnsubMismatch
                     ? '当前为 ' . $mailUnsubCollation . '，目标推荐为 ' . $collation
                     : '当前已与目标排序规则一致'),
+            'repairRelated' => true,
         ];
 
         $mailUnsubDuplicates = self::mailUnsubDuplicateGroups($db, $collation);
@@ -177,6 +180,7 @@ class SchemaManager
                 ? '未发现按目标排序规则归一后的 email + scope 冲突'
                 : '发现 ' . count($mailUnsubDuplicates['rows']) . ' 组按目标排序规则归一后的 email + scope 重复，修复索引前需先清理'),
             'samples' => $mailUnsubDuplicates['rows'],
+            'repairRelated' => true,
         ];
 
         $userDuplicates = self::usersMailDuplicateGroups($db, $collation);
@@ -192,6 +196,39 @@ class SchemaManager
                 ? '未发现按目标排序规则归一后的 users.mail 重复'
                 : '发现 ' . count($userDuplicates['rows']) . ' 组按目标排序规则归一后的重复邮箱，排序规则升级后可能触发唯一键冲突'),
             'samples' => $userDuplicates['rows'],
+            'repairRelated' => false,
+        ];
+
+        $slugDuplicates = self::contentsSlugDuplicateGroups($db, $collation);
+        $items[] = [
+            'key' => 'contents_slug_duplicates',
+            'label' => 'contents 缩略名唯一值冲突',
+            'status' => $slugDuplicates['error'] !== null
+                ? 'warning'
+                : ($slugDuplicates['rows'] === [] ? 'ok' : 'warning'),
+            'detail' => $slugDuplicates['error'] !== null
+                ? '重复值检查失败：' . $slugDuplicates['error']
+                : ($slugDuplicates['rows'] === []
+                ? '未发现按目标排序规则归一后的 contents.slug 重复'
+                : '发现 ' . count($slugDuplicates['rows']) . ' 组按目标排序规则归一后的重复缩略名，升级后可能触发唯一键冲突'),
+            'samples' => $slugDuplicates['rows'],
+            'repairRelated' => false,
+        ];
+
+        $userNameDuplicates = self::usersNameDuplicateGroups($db, $collation);
+        $items[] = [
+            'key' => 'users_name_duplicates',
+            'label' => 'users 用户名唯一值冲突',
+            'status' => $userNameDuplicates['error'] !== null
+                ? 'warning'
+                : ($userNameDuplicates['rows'] === [] ? 'ok' : 'warning'),
+            'detail' => $userNameDuplicates['error'] !== null
+                ? '重复值检查失败：' . $userNameDuplicates['error']
+                : ($userNameDuplicates['rows'] === []
+                ? '未发现按目标排序规则归一后的 users.name 重复'
+                : '发现 ' . count($userNameDuplicates['rows']) . ' 组按目标排序规则归一后的重复用户名，升级后可能触发唯一键冲突'),
+            'samples' => $userNameDuplicates['rows'],
+            'repairRelated' => false,
         ];
 
         $healthy = true;
@@ -360,6 +397,70 @@ class SchemaManager
             'rows' => array_map(static function (array $row): array {
                 return [
                     'mail' => (string) ($row['mail'] ?? ''),
+                    'count' => (int) ($row['num'] ?? 0),
+                ];
+            }, $rows),
+            'error' => null,
+        ];
+    }
+
+    private static function contentsSlugDuplicateGroups(Db $db, string $collation): array
+    {
+        if (!self::tableExists($db, 'table.contents')) {
+            return ['rows' => [], 'error' => null];
+        }
+
+        try {
+            $normalizedSlug = self::mysqlNormalizedText('slug', $collation);
+            $rows = $db->fetchAll(
+                'SELECT MIN(slug) AS slug, COUNT(*) AS num'
+                . ' FROM ' . $db->getPrefix() . 'contents'
+                . ' WHERE slug IS NOT NULL AND slug <> \'\''
+                . ' GROUP BY ' . $normalizedSlug
+                . ' HAVING COUNT(*) > 1'
+                . ' ORDER BY num DESC, slug ASC'
+                . ' LIMIT 5'
+            );
+        } catch (\Throwable $e) {
+            return ['rows' => [], 'error' => $e->getMessage()];
+        }
+
+        return [
+            'rows' => array_map(static function (array $row): array {
+                return [
+                    'slug' => (string) ($row['slug'] ?? ''),
+                    'count' => (int) ($row['num'] ?? 0),
+                ];
+            }, $rows),
+            'error' => null,
+        ];
+    }
+
+    private static function usersNameDuplicateGroups(Db $db, string $collation): array
+    {
+        if (!self::tableExists($db, 'table.users')) {
+            return ['rows' => [], 'error' => null];
+        }
+
+        try {
+            $normalizedName = self::mysqlNormalizedText('name', $collation);
+            $rows = $db->fetchAll(
+                'SELECT MIN(name) AS name, COUNT(*) AS num'
+                . ' FROM ' . $db->getPrefix() . 'users'
+                . ' WHERE name IS NOT NULL AND name <> \'\''
+                . ' GROUP BY ' . $normalizedName
+                . ' HAVING COUNT(*) > 1'
+                . ' ORDER BY num DESC, name ASC'
+                . ' LIMIT 5'
+            );
+        } catch (\Throwable $e) {
+            return ['rows' => [], 'error' => $e->getMessage()];
+        }
+
+        return [
+            'rows' => array_map(static function (array $row): array {
+                return [
+                    'name' => (string) ($row['name'] ?? ''),
                     'count' => (int) ($row['num'] ?? 0),
                 ];
             }, $rows),

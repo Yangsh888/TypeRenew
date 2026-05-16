@@ -215,7 +215,7 @@ class Defaults
             'cacheRedisPort' => 6379,
             'cacheRedisPassword' => '',
             'cacheRedisDatabase' => 0,
-            'allowXmlRpc' => 1,
+            'allowXmlRpc' => 0,
         ];
     }
 

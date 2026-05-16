@@ -5,6 +5,7 @@ namespace Widget;
 use Typecho\Common;
 use Typecho\Config;
 use Typecho\Date;
+use Typecho\MimeTypes;
 use Typecho\Plugin;
 use Widget\Base\Contents;
 
@@ -15,6 +16,19 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
 class Upload extends Contents implements ActionInterface
 {
     public const UPLOAD_DIR = '/usr/uploads';
+    private const IMAGE_TYPES = ['gif', 'jpg', 'jpeg', 'png', 'tiff', 'bmp', 'webp', 'avif'];
+    private const DANGEROUS_MIMES = [
+        'application/x-dosexec',
+        'application/x-executable',
+        'application/x-httpd-php',
+        'application/x-httpd-php-source',
+        'application/x-msdownload',
+        'application/x-sh',
+        'text/html',
+        'text/x-php',
+        'text/x-script',
+        'text/x-shellscript',
+    ];
 
     public static function deleteHandle(array $content): bool
     {
@@ -222,7 +236,7 @@ class Upload extends Contents implements ActionInterface
             $content['attachment']->path,
             defined('__TYPECHO_UPLOAD_ROOT_DIR__') ? __TYPECHO_UPLOAD_ROOT_DIR__ : __TYPECHO_ROOT_DIR__
         );
-        self::replaceUploadedFile($file, $path);
+        $mime = self::replaceUploadedFile($file, $path, $ext);
 
         if (!isset($file['size'])) {
             $file['size'] = filesize($path);
@@ -233,7 +247,7 @@ class Upload extends Contents implements ActionInterface
             'path' => $content['attachment']->path,
             'size' => $file['size'],
             'type' => $content['attachment']->type,
-            'mime' => $content['attachment']->mime
+            'mime' => $mime
         ];
     }
 
@@ -274,7 +288,7 @@ class Upload extends Contents implements ActionInterface
         return self::makeUploadDir($path);
     }
 
-    public static function replaceUploadedFile(array $file, string $target): void
+    public static function replaceUploadedFile(array $file, string $target, ?string $ext = null)
     {
         $dir = dirname($target);
         if (!is_dir($dir)) {
@@ -292,6 +306,7 @@ class Upload extends Contents implements ActionInterface
             throw new \RuntimeException(_t('附件写入失败，请检查上传目录权限'));
         }
 
+        $mime = '';
         try {
             if (isset($file['tmp_name'])) {
                 if (!move_uploaded_file((string) $file['tmp_name'], $temp)) {
@@ -309,7 +324,12 @@ class Upload extends Contents implements ActionInterface
                 throw new \RuntimeException(_t('附件上传数据无效'));
             }
 
+            if (is_string($ext) && $ext !== '') {
+                $mime = self::validateStoredFile($temp, $ext);
+            }
+
             self::swapUploadedFile($temp, $target);
+            return $mime !== '' ? $mime : Common::mimeContentType($target);
         } catch (\Throwable $e) {
             if (is_file($temp)) {
                 unlink($temp);
@@ -454,20 +474,14 @@ class Upload extends Contents implements ActionInterface
         $fileName = sprintf('%u', crc32(uniqid())) . '.' . $ext;
         $path = $path . '/' . $fileName;
 
-        if (isset($file['tmp_name'])) {
-            if (!move_uploaded_file($file['tmp_name'], $path)) {
-                throw new \RuntimeException(_t('附件写入失败，请检查上传目录权限'));
+        try {
+            $mime = self::replaceUploadedFile($file, $path, $ext);
+        } catch (\Throwable $e) {
+            if (is_file($path)) {
+                unlink($path);
             }
-        } elseif (isset($file['bytes'])) {
-            if (file_put_contents($path, $file['bytes']) === false) {
-                throw new \RuntimeException(_t('附件写入失败，请检查上传目录权限'));
-            }
-        } elseif (isset($file['bits'])) {
-            if (file_put_contents($path, $file['bits']) === false) {
-                throw new \RuntimeException(_t('附件写入失败，请检查上传目录权限'));
-            }
-        } else {
-            throw new \RuntimeException(_t('附件上传数据无效'));
+
+            throw $e;
         }
 
         if (!isset($file['size'])) {
@@ -480,7 +494,7 @@ class Upload extends Contents implements ActionInterface
                 . '/' . $date->year . '/' . $date->month . '/' . $fileName,
             'size' => $file['size'],
             'type' => $ext,
-            'mime' => Common::mimeContentType($path)
+            'mime' => $mime
         ];
     }
 
@@ -493,6 +507,29 @@ class Upload extends Contents implements ActionInterface
             return false;
         }
         return in_array($ext, Options::alloc()->allowedAttachmentTypes);
+    }
+
+    private static function validateStoredFile(string $path, string $ext): string
+    {
+        $mime = strtolower(trim(Common::mimeContentType($path)));
+        if ($mime === '' || $mime === 'application/octet-stream') {
+            $fallback = MimeTypes::get();
+            $mime = strtolower((string) ($fallback[$ext] ?? $mime));
+        }
+
+        if ($mime === '') {
+            $mime = 'application/octet-stream';
+        }
+
+        if (in_array($mime, self::DANGEROUS_MIMES, true)) {
+            throw new \RuntimeException(_t('检测到不安全的附件内容类型'));
+        }
+
+        if (in_array($ext, self::IMAGE_TYPES, true) && !str_starts_with($mime, 'image/')) {
+            throw new \RuntimeException(_t('上传文件内容与扩展名不一致'));
+        }
+
+        return $mime;
     }
 
     private function requireUploadFile(): array

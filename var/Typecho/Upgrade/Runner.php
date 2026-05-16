@@ -388,19 +388,22 @@ class Runner
 
                 if ($stageDir !== '' && file_exists($stageDir)) {
                     $this->store->removeTree($stageDir);
-                    $removed++;
+                    if (!file_exists($stageDir)) {
+                        $removed++;
+                    }
                 }
 
                 if ($packagePath !== '' && is_file($packagePath)) {
-                    if (is_writable(dirname($packagePath))) {
-                        unlink($packagePath);
+                    if (is_writable(dirname($packagePath)) && unlink($packagePath)) {
+                        $removed++;
                     }
-                    $removed++;
                 }
 
                 if (!$preserveRecovery && is_dir($backupPath)) {
                     $this->store->removeTree($backupPath);
-                    $removed++;
+                    if (!file_exists($backupPath)) {
+                        $removed++;
+                    }
                 }
             }
 
@@ -815,8 +818,11 @@ class Runner
                 continue;
             }
 
-            $this->store->removeTree($dir . '/' . $item);
-            $removed++;
+            $path = $dir . '/' . $item;
+            $this->store->removeTree($path);
+            if (!file_exists($path)) {
+                $removed++;
+            }
         }
 
         return $removed;

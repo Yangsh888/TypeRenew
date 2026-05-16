@@ -49,6 +49,7 @@ class MimeTypes
             'jpeg'     => 'image/jpeg',
             'png'      => 'image/png',
             'gif'      => 'image/gif',
+            'avif'     => 'image/avif',
             'svg'      => 'image/svg+xml',
             'txt'      => 'text/plain',
             'css'      => 'text/css',
