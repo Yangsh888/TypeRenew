@@ -27,9 +27,6 @@ class General extends Options implements ActionInterface
         return Zone::normalizeId($timezoneId) !== null;
     }
 
-    /**
-     * 获取语言列表
-     */
     public static function getLangs(): array
     {
         $dir = defined('__TYPECHO_LANG_DIR__') ? __TYPECHO_LANG_DIR__ : __TYPECHO_ROOT_DIR__ . '/usr/langs';
@@ -50,9 +47,6 @@ class General extends Options implements ActionInterface
         return $langs;
     }
 
-    /**
-     * 过滤掉可执行的后缀名
-     */
     public function removeShell(string $ext): bool
     {
         return preg_match('/^[a-z0-9]+$/i', $ext) === 1

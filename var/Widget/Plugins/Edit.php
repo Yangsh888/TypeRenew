@@ -46,7 +46,12 @@ class Edit extends Options implements ActionInterface
             $persisted = false;
 
             try {
-                $result = call_user_func([$className, 'activate']);
+                Plugin::beginActivation($pluginName);
+                try {
+                    $result = call_user_func([$className, 'activate']);
+                } finally {
+                    Plugin::endActivation($pluginName);
+                }
                 $activated = true;
 
                 $form = new Form();

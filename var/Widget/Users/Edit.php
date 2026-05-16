@@ -37,11 +37,6 @@ class Edit extends Users implements ActionInterface
         return _t('编辑用户 %s', $this->name);
     }
 
-    /**
-     * 判断用户是否存在
-     *
-     * @param integer $uid 用户主键
-     */
     public function userExists(int $uid): bool
     {
         $user = $this->db->fetchRow($this->db->select()

@@ -58,22 +58,12 @@ class Metas extends Base implements QueryInterface, RowFilterInterface, PrimaryK
         return $this->db->fetchObject($condition->select(['COUNT(mid)' => 'num'])->from('table.metas'))->num;
     }
 
-    /**
-     * 将每行的值压入堆栈
-     *
-     * @param array $value 每行的值
-     */
     public function push(array $value): array
     {
         $value = $this->filter($value);
         return parent::push($value);
     }
 
-    /**
-     * 通用过滤器
-     *
-     * @param array $row 需要过滤的行数据
-     */
     public function filter(array $row): array
     {
         return Metas::pluginHandle()->filter('filter', $row, $this);
@@ -99,11 +89,6 @@ class Metas extends Base implements QueryInterface, RowFilterInterface, PrimaryK
         return $this->db->query($this->db->insert('table.metas')->rows($rows));
     }
 
-    /**
-     * 根据tag获取ID
-     *
-     * @param mixed $inputTags 标签名
-     */
     public function scanTags($inputTags)
     {
         $tags = is_array($inputTags) ? $inputTags : [$inputTags];
@@ -138,9 +123,6 @@ class Metas extends Base implements QueryInterface, RowFilterInterface, PrimaryK
         return is_array($inputTags) ? $result : current($result);
     }
 
-    /**
-     * 锚点id
-     */
     protected function ___theId(): string
     {
         return $this->type . '-' . $this->mid;

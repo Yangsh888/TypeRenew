@@ -107,9 +107,6 @@ class Permalink extends Options implements ActionInterface
         return $routingTable;
     }
 
-    /**
-     * 检查pagePattern里是否含有必要参数
-     */
     public function checkPagePattern($value): bool
     {
         if (!is_scalar($value)) {
@@ -123,9 +120,6 @@ class Permalink extends Options implements ActionInterface
             || strpos($value, '{directory}') !== false;
     }
 
-    /**
-     * 检查categoryPattern里是否含有必要参数
-     */
     public function checkCategoryPattern($value): bool
     {
         if (!is_scalar($value)) {
@@ -139,9 +133,6 @@ class Permalink extends Options implements ActionInterface
             || strpos($value, '{directory}') !== false;
     }
 
-    /**
-     * 检测是否可以rewrite
-     */
     public function checkRewrite(string $value): bool
     {
         if ($value) {
@@ -356,9 +347,6 @@ RewriteRule . {$basePath}index.php [L]
         return $form;
     }
 
-    /**
-     * 解析自定义的路径
-     */
     protected function decodeRule(string $rule): string
     {
         return preg_replace("/\[([_a-z0-9-]+)[^\]]*\]/i", "{\\1}", $rule);
@@ -379,9 +367,6 @@ RewriteRule . {$basePath}index.php [L]
         return 200 == $client->getResponseStatus() && 'OK' == $client->getResponseBody();
     }
 
-    /**
-     * 检验规则是否冲突
-     */
     public function checkRule(string $value): bool
     {
         if ('custom' != $value) {
@@ -412,9 +397,6 @@ RewriteRule . {$basePath}index.php [L]
         return true;
     }
 
-    /**
-     * 编码自定义的路径
-     */
     protected function encodeRule(string $rule): string
     {
         return str_replace(

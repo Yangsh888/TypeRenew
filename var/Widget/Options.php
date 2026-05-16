@@ -5,6 +5,7 @@ namespace Widget;
 use Typecho\Common;
 use Typecho\Config;
 use Typecho\Db;
+use Typecho\Plugin;
 use Typecho\Plugin\Exception as PluginException;
 use Typecho\Date;
 use Typecho\Router;
@@ -172,6 +173,8 @@ class Options extends Base
             if (array_key_exists($name, $this->row)) {
                 $options = $this->decodeArrayOption($name, $this->row[$name], [], true);
                 $this->pluginConfig[$pluginName] = new Config($options);
+            } elseif (Plugin::isActivating((string) $pluginName)) {
+                $this->pluginConfig[$pluginName] = new Config([]);
             } else {
                 throw new PluginException(_t('插件%s的配置信息没有找到', $pluginName), 500);
             }
@@ -194,6 +197,8 @@ class Options extends Base
             if (array_key_exists($name, $this->row)) {
                 $options = $this->decodeArrayOption($name, $this->row[$name], [], true);
                 $this->personalPluginConfig[$pluginName] = new Config($options);
+            } elseif (Plugin::isActivating((string) $pluginName)) {
+                $this->personalPluginConfig[$pluginName] = new Config([]);
             } else {
                 throw new PluginException(_t('插件%s的配置信息没有找到', $pluginName), 500);
             }

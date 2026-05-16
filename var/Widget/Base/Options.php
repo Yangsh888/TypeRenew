@@ -14,11 +14,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
 
 class Options extends Base implements QueryInterface
 {
-    /**
-     * 获取原始查询对象
-     *
-     * @param mixed ...$fields
-     */
     public function select(...$fields): Query
     {
         return $this->db->select(...$fields)->from('table.options');

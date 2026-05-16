@@ -8,14 +8,6 @@ use Widget\Metas\From as MetasFrom;
 
 trait PrepareEditTrait
 {
-
-    /**
-     * 准备编辑
-     *
-     * @param string $type
-     * @param bool $hasDraft
-     * @param string $notFoundMessage
-     */
     protected function prepareEdit(string $type, bool $hasDraft, string $notFoundMessage): self
     {
         if ($this->request->is('cid')) {

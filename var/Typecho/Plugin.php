@@ -12,6 +12,8 @@ class Plugin
 
     private static array $tmp = [];
 
+    private static ?string $activatingPlugin = null;
+
     private string $handle;
 
     private $component;
@@ -45,6 +47,25 @@ class Plugin
     {
         self::$plugin['activated'][$pluginName] = self::$tmp;
         self::$tmp = [];
+    }
+
+    public static function beginActivation(string $pluginName): void
+    {
+        self::$activatingPlugin = $pluginName;
+    }
+
+    public static function endActivation(?string $pluginName = null): void
+    {
+        if ($pluginName === null || self::$activatingPlugin === $pluginName) {
+            self::$activatingPlugin = null;
+        }
+    }
+
+    public static function isActivating(?string $pluginName = null): bool
+    {
+        return $pluginName === null
+            ? self::$activatingPlugin !== null
+            : self::$activatingPlugin === $pluginName;
     }
 
     public static function deactivate(string $pluginName)

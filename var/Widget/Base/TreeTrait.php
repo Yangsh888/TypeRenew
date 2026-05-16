@@ -17,21 +17,11 @@ trait TreeTrait
 
     private array $parents = [];
 
-    /**
-     * 根据深度余数输出
-     *
-     * @param ...$args
-     */
     public function levelsAlt(...$args)
     {
         $this->altBy($this->levels, ...$args);
     }
 
-    /**
-     * 获取某个节点所有父级节点缩略名
-     *
-     * @param int $id
-     */
     public function getAllParentsSlug(int $id): array
     {
         $parents = [];
@@ -47,31 +37,16 @@ trait TreeTrait
         return $parents;
     }
 
-    /**
-     * 获取某个节点下的所有子节点
-     *
-     * @param int $id
-     */
     public function getAllChildIds(int $id): array
     {
         return $this->childNodes[$id] ?? [];
     }
 
-    /**
-     * 获取某个节点下的子节点
-     *
-     * @param int $id
-     */
     public function getChildIds(int $id): array
     {
         return $id > 0 ? ($this->treeRows[$id] ?? []) : $this->top;
     }
 
-    /**
-     * 获取某个节点所有父级节点
-     *
-     * @param int $id
-     */
     public function getAllParents(int $id): array
     {
         $parents = [];
@@ -87,12 +62,6 @@ trait TreeTrait
         return $parents;
     }
 
-    /**
-     * 获取多个节点
-     *
-     * @param array $ids
-     * @param integer $ignore
-     */
     public function getRows(array $ids, int $ignore = 0): array
     {
         $result = [];
@@ -113,12 +82,6 @@ trait TreeTrait
         return $this->map[$id] ?? null;
     }
 
-    /**
-     * 是否拥有某个父级节点
-     *
-     * @param mixed $id
-     * @param mixed $parentId
-     */
     public function hasParent($id, $parentId): bool
     {
         if (isset($this->parents[$id])) {
@@ -159,7 +122,6 @@ trait TreeTrait
             $this->map[$row[$pk]] = $row;
         }
 
-        // 读取数据
         foreach ($this->map as $id => $row) {
             $parent = $row['parent'];
 
@@ -170,7 +132,6 @@ trait TreeTrait
             }
         }
 
-        // 预处理深度
         $this->levelWalkCallback($this->top);
         $this->map = array_map([$this, 'filter'], $this->map);
     }
@@ -182,21 +143,12 @@ trait TreeTrait
         return $directory;
     }
 
-    /**
-     * 获取所有子节点
-     */
     protected function ___children(): array
     {
         $id = $this->{$this->getPrimaryKey()};
         return $this->getRows($this->getChildIds($id));
     }
 
-    /**
-     * 预处理节点迭代
-     *
-     * @param array $rows
-     * @param array $parents
-     */
     private function levelWalkCallback(array $rows, array $parents = [])
     {
         foreach ($parents as $parent) {

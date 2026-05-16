@@ -41,22 +41,12 @@ class Users extends Base implements QueryInterface, RowFilterInterface, PrimaryK
         return 'uid';
     }
 
-    /**
-     * 将每行的值压入堆栈
-     *
-     * @param array $value 每行的值
-     */
     public function push(array $value): array
     {
         $value = $this->filter($value);
         return parent::push($value);
     }
 
-    /**
-     * 通用过滤器
-     *
-     * @param array $row 需要过滤的行数据
-     */
     public function filter(array $row): array
     {
         return Users::pluginHandle()->filter('filter', $row, $this);
@@ -72,11 +62,6 @@ class Users extends Base implements QueryInterface, RowFilterInterface, PrimaryK
         }
     }
 
-    /**
-     * 查询方法
-     *
-     * @param mixed $fields
-     */
     public function select(...$fields): Query
     {
         return $this->db->select(...$fields)->from('table.users');
@@ -116,14 +101,6 @@ class Users extends Base implements QueryInterface, RowFilterInterface, PrimaryK
         return $this->db->query($condition->delete('table.users'));
     }
 
-    /**
-     * 调用gravatar输出用户头像
-     *
-     * @param integer $size 头像尺寸
-     * @param string $rating 头像评级
-     * @param string|null $default 默认输出头像
-     * @param string|null $class 默认css class
-     */
     public function gravatar(int $size = 40, string $rating = 'X', ?string $default = null, ?string $class = null)
     {
         $url = Common::gravatarUrl($this->mail, $size, $rating, $default, $this->request->isSecure());

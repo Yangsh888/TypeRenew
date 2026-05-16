@@ -140,13 +140,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
         return $insertId;
     }
 
-    /**
-     * 为内容应用缩略名
-     *
-     * @param string|null $slug 缩略名
-     * @param mixed $cid 内容id
-     * @param string $title 标题
-     */
     public function applySlug(?string $slug, $cid, string $title = ''): string
     {
         if ($cid instanceof Query) {
@@ -231,11 +224,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
         return $updateRows;
     }
 
-    /**
-     * 内容是否可以被修改
-     *
-     * @param Query $condition 条件
-     */
     public function isWriteable(Query $condition): bool
     {
         $post = $this->db->fetchRow($condition->select('authorId')->from('table.contents')->limit(1));
@@ -272,22 +260,12 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
         return $result;
     }
 
-    /**
-     * 将每行的值压入堆栈
-     *
-     * @param array $value 每行的值
-     */
     public function push(array $value): array
     {
         $value = $this->filter($value);
         return parent::push($value);
     }
 
-    /**
-     * 通用过滤器
-     *
-     * @param array $row 需要过滤的行数据
-     */
     public function filter(array $row): array
     {
         $row['title'] = $row['title'] ?? '';
@@ -328,11 +306,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
         }
     }
 
-    /**
-     * 输出文章评论数
-     *
-     * @param ...$args
-     */
     public function commentsNum(...$args)
     {
         if (empty($args)) {
@@ -343,11 +316,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
         echo sprintf($args[$num] ?? array_pop($args), $num);
     }
 
-    /**
-     * 获取文章权限
-     *
-     * @param ...$permissions
-     */
     public function allow(...$permissions): bool
     {
         $allow = true;
@@ -374,13 +342,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
         return $allow;
     }
 
-    /**
-     * 输出文章分类
-     *
-     * @param string $split 多个分类之间分隔符
-     * @param boolean $link 是否输出链接
-     * @param string|null $default 如果没有则输出
-     */
     public function category(string $split = ',', bool $link = true, ?string $default = null)
     {
         if (!empty($this->categories)) {
@@ -398,13 +359,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
         }
     }
 
-    /**
-     * 输出文章多级分类
-     *
-     * @param string $split 多个分类之间分隔符
-     * @param boolean $link 是否输出链接
-     * @param string|null $default 如果没有则输出
-     */
     public function directory(string $split = '/', bool $link = true, ?string $default = null)
     {
         if (empty($this->categories)) {
@@ -432,13 +386,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
         }
     }
 
-    /**
-     * 输出文章标签
-     *
-     * @param string $split 多个标签之间分隔符
-     * @param boolean $link 是否输出链接
-     * @param string|null $default 如果没有则输出
-     */
     public function tags(string $split = ',', bool $link = true, ?string $default = null)
     {
         if (!empty($this->tags)) {
@@ -456,11 +403,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
         }
     }
 
-    /**
-     * 输出当前作者
-     *
-     * @param string $item 需要输出的项目
-     */
     public function author(string $item = 'screenName')
     {
         if ($this->have()) {
@@ -501,9 +443,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
         return isset($this->row['text']) && 0 === strpos($this->row['text'], '<!--markdown-->');
     }
 
-    /**
-     * 是否为隐藏文章
-     */
     protected function ___hidden(): bool
     {
         if (
@@ -548,9 +487,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
         return Router::url($this->type, $this, $this->options->feedAtomUrl);
     }
 
-    /**
-     * 多级目录结构
-     */
     protected function ___directory(): array
     {
         $directory = [];
@@ -624,9 +560,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
         return new Config($fields);
     }
 
-    /**
-     * 获取文章内容摘要
-     */
     protected function ___excerpt(): ?string
     {
         if ($this->hidden) {
@@ -639,9 +572,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
         return Common::fixHtml(Contents::pluginHandle()->filter('excerptEx', $excerpt, $this));
     }
 
-    /**
-     * 对文章的简短纯文本描述
-     */
     protected function ___plainExcerpt(): ?string
     {
         $plainText = str_replace("\n", '', trim(strip_tags($this->excerpt)));
@@ -677,9 +607,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
         return $html;
     }
 
-    /**
-     * 获取文章内容
-     */
     protected function ___content(): ?string
     {
         if ($this->hidden) {
@@ -696,9 +623,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
         return Contents::pluginHandle()->filter('contentEx', $content, $this);
     }
 
-    /**
-     * 输出文章的第一行作为摘要
-     */
     protected function ___summary(): ?string
     {
         $content = $this->content;
@@ -710,25 +634,16 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
         return $content;
     }
 
-    /**
-     * 锚点id
-     */
     protected function ___theId(): string
     {
         return $this->type . '-' . $this->cid;
     }
 
-    /**
-     * 回复框id
-     */
     protected function ___respondId(): string
     {
         return 'respond-' . $this->theId;
     }
 
-    /**
-     * 评论地址
-     */
     protected function ___commentUrl(): string
     {
         return Router::url(
@@ -738,9 +653,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
         );
     }
 
-    /**
-     * trackback地址
-     */
     protected function ___trackbackUrl(): string
     {
         return Router::url(
@@ -750,9 +662,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
         );
     }
 
-    /**
-     * 回复地址
-     */
     protected function ___responseUrl(): string
     {
         return $this->permalink . '#' . $this->respondId;

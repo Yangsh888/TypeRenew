@@ -25,17 +25,10 @@ class CommentPage extends Base implements ActionInterface
             'commentPage'   =>  $page
         ], $this->options->index);
 
-        $this->checkPermalink($currentCommentUrl);
-        $archive->render();
-    }
-
-    /**
-     * @param string $commentUrl
-     */
-    private function checkPermalink(string $commentUrl)
-    {
-        if ($commentUrl != $this->request->getRequestUrl()) {
-            $this->response->redirect($commentUrl, true);
+        if ($currentCommentUrl != $this->request->getRequestUrl()) {
+            $this->response->redirect($currentCommentUrl, true);
         }
+
+        $archive->render();
     }
 }

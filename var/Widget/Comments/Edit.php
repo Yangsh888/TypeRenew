@@ -36,11 +36,6 @@ class Edit extends Comments implements ActionInterface
         $this->response->goBack();
     }
 
-    /**
-     * 评论是否可以被修改
-     *
-     * @param Query|null $condition 条件
-     */
     public function commentIsWriteable(?Query $condition = null): bool
     {
         if (empty($condition)) {
@@ -58,12 +53,6 @@ class Edit extends Comments implements ActionInterface
         return false;
     }
 
-    /**
-     * 标记评论状态
-     *
-     * @param integer $coid 评论主键
-     * @param string $status 状态
-     */
     private function mark(int $coid, string $status): bool
     {
         $comment = $this->db->fetchRow($this->select()

@@ -19,11 +19,6 @@ class Feedback extends Comments implements ActionInterface
 {
     private $content;
 
-    /**
-     * 对已注册用户的保护性检测
-     *
-     * @param string $userName 用户名
-     */
     public function requireUserLogin(string $userName): bool
     {
         if ($this->user->hasLogin() && $this->user->screenName != $userName) {
@@ -38,9 +33,6 @@ class Feedback extends Comments implements ActionInterface
         return true;
     }
 
-    /**
-     * 处理反馈请求
-     */
     public function action()
     {
         $callback = $this->request->get('type');
@@ -61,7 +53,10 @@ class Feedback extends Comments implements ActionInterface
                     throw new Exception(_t('对不起,此内容的反馈被禁止.'), 403);
                 }
 
-                if ($this->options->commentsCheckReferer && $this->shouldCheckReferer()) {
+                if (
+                    $this->options->commentsCheckReferer
+                    && !in_array($this->parameter->checkReferer, [false, 'false', 0, '0'], true)
+                ) {
                     $referer = $this->request->getReferer();
 
                     if (empty($referer)) {
@@ -114,7 +109,6 @@ class Feedback extends Comments implements ActionInterface
 
     private function comment()
     {
-        // 使用安全模块保护
         $this->security->enable($this->options->commentsAntiSpam);
         $this->security->protect();
 
@@ -315,7 +309,10 @@ class Feedback extends Comments implements ActionInterface
         $refererPath = $this->normalizeRefererPath($refererPart);
         $currentPath = $this->normalizeRefererPath($currentPart);
 
-        return $refererPath === $currentPath || $this->normalizeCommentPagePath($refererPath) === $currentPath;
+        $refererCommentPagePath = preg_replace('~/comment-page-\d+$~', '', $refererPath) ?? $refererPath;
+        $refererCommentPagePath = $refererCommentPagePath === '' ? '/' : $refererCommentPagePath;
+
+        return $refererPath === $currentPath || $refererCommentPagePath === $currentPath;
     }
 
     private function normalizeRefererPath(array $parts): string
@@ -327,18 +324,6 @@ class Feedback extends Comments implements ActionInterface
 
         $path = '/' . ltrim($path, '/');
         return $path === '/' ? '/' : rtrim($path, '/');
-    }
-
-    private function normalizeCommentPagePath(string $path): string
-    {
-        $path = preg_replace('~/comment-page-\d+$~', '', $path) ?? $path;
-
-        return $path === '' ? '/' : $path;
-    }
-
-    private function shouldCheckReferer(): bool
-    {
-        return !in_array($this->parameter->checkReferer, [false, 'false', 0, '0'], true);
     }
 
     private function purgeCommentCache(): void

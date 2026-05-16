@@ -24,14 +24,6 @@ trait TreeViewTrait
         $this->stack = $this->map;
     }
 
-    /**
-     * 列出分类回调
-     *
-     * @param Config $rowOptions 输出选项
-     * @param string $type 类型
-     * @param string $func 回调函数
-     * @param int $current 当前项
-     */
     private function treeViewRowsCallback(Config $rowOptions, string $type, string $func, int $current): void
     {
         if (function_exists($func)) {
