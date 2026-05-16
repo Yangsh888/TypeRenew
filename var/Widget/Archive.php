@@ -807,7 +807,6 @@ EOF;
             }
         }
 
-        /** 反垃圾设置 */
         if ($this->options->commentsAntiSpam && $this->is('single')) {
             if ('' != $allows['antiSpam']) {
                 if (1 == $allows['antiSpam']) {

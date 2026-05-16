@@ -645,21 +645,40 @@ EOF;
                 }
                 return $result;
             } catch (\Throwable $e) {
+                $bytes = self::secureRandomBytes($length);
                 for ($i = 0; $i < $length; $i++) {
-                    $result .= $chars[mt_rand(0, $max)];
+                    $result .= $chars[ord($bytes[$i]) % ($max + 1)];
                 }
             }
             return $result;
         }
 
+        public static function secureRandomBytes(int $length): string
+        {
+            if ($length < 1) {
+                throw new \InvalidArgumentException('Random byte length must be greater than 0.');
+            }
+
+            try {
+                return random_bytes($length);
+            } catch (\Throwable $e) {
+                if (function_exists('openssl_random_pseudo_bytes')) {
+                    $strong = false;
+                    $bytes = openssl_random_pseudo_bytes($length, $strong);
+
+                    if ($bytes !== false && $strong) {
+                        return $bytes;
+                    }
+                }
+
+                throw new \RuntimeException(_t('当前环境缺少安全随机源，无法继续执行敏感操作。'), 0, $e);
+            }
+        }
+
         public static function timeToken(string $secret): string
         {
             $ts = time();
-            try {
-                $nonce = bin2hex(random_bytes(6));
-            } catch (\Throwable $e) {
-                $nonce = self::randString(12, false);
-            }
+            $nonce = bin2hex(self::secureRandomBytes(6));
             $sig = hash_hmac('sha256', $ts . '|' . $nonce, $secret);
             return 'v2:' . $ts . ':' . $nonce . ':' . $sig;
         }

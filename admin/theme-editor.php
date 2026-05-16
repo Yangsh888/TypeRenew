@@ -12,8 +12,8 @@ include 'menu.php';
         <div class="row typecho-page-main typecho-edit-theme" role="main">
             <div class="col-mb-12 col-tb-8 col-9 content">
                 <?php
-                $currentTheme = htmlspecialchars($files->currentTheme(), ENT_QUOTES, 'UTF-8');
-                $currentFile = htmlspecialchars($files->currentFile(), ENT_QUOTES, 'UTF-8');
+                $currentTheme = htmlspecialchars((string) $files->currentTheme(), ENT_QUOTES, 'UTF-8');
+                $currentFile = htmlspecialchars((string) $files->currentFile(), ENT_QUOTES, 'UTF-8');
                 ?>
                 <form method="post" name="theme" id="theme"
                       action="<?php $security->index('/action/themes-edit'); ?>">
@@ -38,7 +38,8 @@ include 'menu.php';
                     $file = (string) $files->file;
                     $href = htmlspecialchars(
                         $options->adminUrl(
-                            'theme-editor.php?theme=' . rawurlencode($files->currentTheme()) . '&file=' . rawurlencode($file)
+                            'theme-editor.php?theme=' . rawurlencode((string) $files->currentTheme()) . '&file=' . rawurlencode($file),
+                            true
                         ),
                         ENT_QUOTES,
                         'UTF-8'

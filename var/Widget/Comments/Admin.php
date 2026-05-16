@@ -44,7 +44,6 @@ class Admin extends Comments
             $select->where('table.comments.text LIKE ?', '%' . $keywords . '%');
         }
 
-        /** 如果具有贡献者以上权限,可以查看所有评论,反之只能查看自己的评论 */
         if (!$this->user->pass('editor', true)) {
             $select->where('table.comments.ownerId = ?', $this->user->uid);
         } elseif (!$this->request->is('cid')) {
@@ -94,9 +93,6 @@ class Admin extends Comments
         $nav->render(_t('&laquo;'), _t('&raquo;'));
     }
 
-    /**
-     * 获取当前内容结构
-     */
     protected function ___parentContent(): Contents
     {
         $cid = $this->request->is('cid') ? $this->request->filter('int')->get('cid') : $this->cid;

@@ -14,9 +14,50 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
 
 class Upgrade extends BaseOptions implements ActionInterface
 {
+    private function blockingMysqlRisks(): array
+    {
+        $status = SchemaManager::inspectMysqlUpgradeRisks($this->db);
+        if (empty($status['supported'])) {
+            return [];
+        }
+
+        return array_values(array_filter(
+            (array) ($status['items'] ?? []),
+            static function (array $item): bool {
+                if ((string) ($item['status'] ?? 'ok') === 'ok') {
+                    return false;
+                }
+
+                return in_array((string) ($item['key'] ?? ''), ['mysql_version', 'legacy_index_limit', 'mail_unsub_duplicates'], true);
+            }
+        ));
+    }
+
+    private function assertMysqlSchemaActionAllowed(string $actionLabel): void
+    {
+        $blocking = $this->blockingMysqlRisks();
+        if ($blocking === []) {
+            return;
+        }
+
+        $labels = array_values(array_filter(array_map(
+            static fn(array $item): string => (string) ($item['label'] ?? ''),
+            $blocking
+        )));
+
+        throw new \RuntimeException(
+            _t(
+                '当前数据库环境仍有未处理风险，暂不能执行%s：%s。请先在升级页查看数据库诊断并处理后重试。',
+                $actionLabel,
+                implode('、', $labels)
+            )
+        );
+    }
+
     public function upgrade()
     {
         try {
+            $this->assertMysqlSchemaActionAllowed(_t('数据库升级'));
             $activated = is_array($this->options->plugins['activated'] ?? null)
                 ? array_keys($this->options->plugins['activated'])
                 : [];
@@ -40,6 +81,7 @@ class Upgrade extends BaseOptions implements ActionInterface
     public function repairCriticalSchema(): void
     {
         try {
+            $this->assertMysqlSchemaActionAllowed(_t('关键数据库结构修复'));
             $result = SchemaManager::repairCriticalSchema($this->db);
         } catch (\Throwable $e) {
             Notice::alloc()->set($e->getMessage(), 'error');

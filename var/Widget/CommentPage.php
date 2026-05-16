@@ -2,7 +2,6 @@
 
 namespace Widget;
 
-use Exception;
 use Typecho\Router;
 use Typecho\Widget\Exception as WidgetException;
 

@@ -34,7 +34,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
 
 class XmlRpc extends Contents implements ActionInterface, Hook
 {
-    /** WordPress 风格的系统选项。 */
     private array $wpOptions;
 
     /**
@@ -50,7 +49,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         $this->security->enable(false);
 
         $this->wpOptions = [
-            // Read only options
             'software_name'    => [
                 'desc'     => _t('软件名称'),
                 'readonly' => true,
@@ -88,7 +86,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
                 'value'    => false
             ],
 
-            // Updatable options
             'time_zone'          => [
                 'desc'     => _t('时区'),
                 'readonly' => false,
@@ -123,7 +120,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
     }
 
     /**
-     * 获取pageId指定的page
      * about wp xmlrpc api, you can see http://codex.wordpress.org/XML-RPC
      */
     public function wpGetPage(int $blogId, int $pageId, string $userName, string $password): array
@@ -204,9 +200,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         Widget::destroy();
     }
 
-    /**
-     * 获取所有的page
-     */
     public function wpGetPages(int $blogId, string $userName, string $password): array
     {
         $pages = PageAdmin::alloc(null, 'status=all');
@@ -249,9 +242,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         return $pageStructs;
     }
 
-    /**
-     * 撰写一个新page
-     */
     public function wpNewPage(int $blogId, string $userName, string $password, array $content, bool $publish): int
     {
         $content['post_type'] = 'page';
@@ -259,7 +249,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
     }
 
     /**
-     * MetaWeblog API
      * about MetaWeblog API, you can see http://www.xmlrpc.com/metaWeblogApi
      */
     public function mwNewPost(int $blogId, string $userName, string $password, array $content, bool $publish): int
@@ -332,7 +321,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         $input['do'] = $publish ? 'publish' : 'save';
         $input['markdown'] = $this->options->xmlrpcMarkdown;
 
-        /** 调整状态 */
         if (isset($content["{$type}_status"])) {
             $status = $this->wordpressToTypechoStatus($content["{$type}_status"], $type);
             $input['visibility'] = $content["visibility"] ?? $status;
@@ -347,7 +335,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
             }
         }
 
-        /** 对未归档附件进行归档 */
         $unattached = Unattached::alloc();
 
         if ($unattached->have()) {
@@ -375,9 +362,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         return $widget->cid;
     }
 
-    /**
-     * 添加一个新的分类
-     */
     public function wpNewCategory(int $blogId, string $userName, string $password, array $category): int
     {
         $input['name'] = $category['name'];
@@ -447,9 +431,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         return $this->mwEditPost($postId, $userName, $password, $content) > 0;
     }
 
-    /**
-     * 获取page列表，没有wpGetPages获得的详细
-     */
     public function wpGetPageList(int $blogId, string $userName, string $password): array
     {
         $pages = PageAdmin::alloc(null, 'status=all');
@@ -468,9 +449,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         return $pageStructs;
     }
 
-    /**
-     * 获得一个由blog所有作者的信息组成的数组
-     */
     public function wpGetAuthors(int $blogId, string $userName, string $password): array
     {
         $select = $this->db->select('table.users.uid', 'table.users.name', 'table.users.screenName')
@@ -489,9 +467,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         return $authorStructs;
     }
 
-    /**
-     * 获取由给定的string开头的链接组成的数组
-     */
     public function wpSuggestCategories(
         int $blogId,
         string $userName,
@@ -527,9 +502,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         return $categoryStructs;
     }
 
-    /**
-     * 获取用户博客列表
-     */
     public function wpGetUsersBlogs(string $userName, string $password): array
     {
         return [
@@ -543,9 +515,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         ];
     }
 
-    /**
-     * 获取用户资料
-     */
     public function wpGetProfile(int $blogId, string $userName, string $password): array
     {
         return [
@@ -563,9 +532,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         ];
     }
 
-    /**
-     * 获取标签列表
-     */
     public function wpGetTags(int $blogId, string $userName, string $password): array
     {
         $struct = [];
@@ -594,9 +560,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         return true;
     }
 
-    /**
-     * 获取评论数目
-     */
     public function wpGetCommentCount(int $blogId, string $userName, string $password, int $postId): array
     {
         $stat = Stat::alloc(null, ['cid' => $postId]);
@@ -609,9 +572,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         ];
     }
 
-    /**
-     * 获取文章类型列表
-     */
     public function wpGetPostFormats(int $blogId, string $userName, string $password): array
     {
         return [
@@ -619,9 +579,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         ];
     }
 
-    /**
-     * 获取文章状态列表
-     */
     public function wpGetPostStatusList(int $blogId, string $userName, string $password): array
     {
         return [
@@ -631,9 +588,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         ];
     }
 
-    /**
-     * 获取页面状态列表
-     */
     public function wpGetPageStatusList(int $blogId, string $userName, string $password): array
     {
         return [
@@ -642,9 +596,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         ];
     }
 
-    /**
-     * 获取评论状态列表
-     */
     public function wpGetCommentStatusList(int $blogId, string $userName, string $password): array
     {
         return [
@@ -654,9 +605,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         ];
     }
 
-    /**
-     * 获取页面模板
-     */
     public function wpGetPageTemplates(int $blogId, string $userName, string $password): array
     {
         $templates = array_flip($this->getTemplates());
@@ -665,9 +613,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         return $templates;
     }
 
-    /**
-     * 获取系统选项
-     */
     public function wpGetOptions(int $blogId, string $userName, string $password, array $options = []): array
     {
         $struct = [];
@@ -688,9 +633,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         return $struct;
     }
 
-    /**
-     * 设置系统选项
-     */
     public function wpSetOptions(int $blogId, string $userName, string $password, array $options = []): array
     {
         $struct = [];
@@ -736,9 +678,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         return $struct;
     }
 
-    /**
-     * 获取评论详情
-     */
     public function wpGetComment(int $blogId, string $userName, string $password, int $commentId): array
     {
         $comment = CommentsEdit::alloc(null, ['coid' => $commentId], function (CommentsEdit $comment) {
@@ -771,9 +710,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         ];
     }
 
-    /**
-     * 获取评论列表
-     */
     public function wpGetComments(int $blogId, string $userName, string $password, array $struct): array
     {
         $input = [];
@@ -882,9 +818,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         return is_array($updatedComment);
     }
 
-    /**
-     * 新增评论
-     */
     public function wpNewComment(int $blogId, string $userName, string $password, $path, array $struct): int
     {
         if (is_numeric($path)) {
@@ -928,9 +861,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         return $comment->have() ? $comment->coid : 0;
     }
 
-    /**
-     * 获取媒体文件
-     */
     public function wpGetMediaLibrary(int $blogId, string $userName, string $password, array $struct): array
     {
         $input = [];
@@ -975,9 +905,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         return $attachmentsStruct;
     }
 
-    /**
-     * 获取媒体文件
-     */
     public function wpGetMediaItem(int $blogId, string $userName, string $password, int $attachmentId): array
     {
         $attachment = AttachmentEdit::alloc(null, ['cid' => $attachmentId]);
@@ -998,9 +925,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         ];
     }
 
-    /**
-     * 获取指定id的post
-     */
     public function mwGetPost(int $postId, string $userName, string $password): array
     {
         $post = PostEdit::alloc(null, ['cid' => $postId], false);
@@ -1035,9 +959,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         ];
     }
 
-    /**
-     * 获取前$postsNum个post
-     */
     public function mwGetRecentPosts(int $blogId, string $userName, string $password, int $postsNum): array
     {
         $posts = PostAdmin::alloc('pageSize=' . $postsNum, 'status=all');
@@ -1085,9 +1006,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         return $postStructs;
     }
 
-    /**
-     * 获取所有的分类
-     */
     public function mwGetCategories(int $blogId, string $userName, string $password): array
     {
         $categories = CategoryRows::alloc();
@@ -1138,9 +1056,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         }
     }
 
-    /**
-     * 获取 $postNum个post title
-     */
     public function mtGetRecentPostTitles(int $blogId, string $userName, string $password, int $postsNum): array
     {
         $posts = PostAdmin::alloc('pageSize=' . $postsNum, 'status=all');
@@ -1158,9 +1073,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         return $postTitleStructs;
     }
 
-    /**
-     * 获取分类列表
-     */
     public function mtGetCategoryList(int $blogId, string $userName, string $password): array
     {
         $categories = CategoryRows::alloc();
@@ -1175,9 +1087,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         return $categoryStructs;
     }
 
-    /**
-     * 获取指定post的分类
-     */
     public function mtGetPostCategories(int $postId, string $userName, string $password): array
     {
         $post = PostEdit::alloc(null, ['cid' => $postId], false);
@@ -1194,9 +1103,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         return $categories;
     }
 
-    /**
-     * 修改post的分类
-     */
     public function mtSetPostCategories(int $postId, string $userName, string $password, array $categories): bool
     {
         PostEdit::alloc(null, ['cid' => $postId], function (PostEdit $post) use ($postId, $categories) {
@@ -1206,9 +1112,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         return true;
     }
 
-    /**
-     * 发布(重建)数据
-     */
     public function mtPublishPost(int $postId, string $userName, string $password): bool
     {
         PostEdit::alloc(null, ['cid' => $postId, 'status' => 'publish'], function (PostEdit $post) {
@@ -1218,9 +1121,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         return true;
     }
 
-    /**
-     * 取得当前用户的所有blog
-     */
     public function bloggerGetUsersBlogs(int $blogId, string $userName, string $password): array
     {
         return [
@@ -1234,9 +1134,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         ];
     }
 
-    /**
-     * 返回当前用户的信息
-     */
     public function bloggerGetUserInfo(int $blogId, string $userName, string $password): array
     {
         return [
@@ -1249,9 +1146,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         ];
     }
 
-    /**
-     * 获取当前作者的一个指定id的post的详细信息
-     */
     public function bloggerGetPost(int $blogId, int $postId, string $userName, string $password): array
     {
         $post = PostEdit::alloc(null, ['cid' => $postId]);
@@ -1277,9 +1171,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         return true;
     }
 
-    /**
-     * 获取当前作者前postsNum个post
-     */
     public function bloggerGetRecentPosts(int $blogId, string $userName, string $password, int $postsNum): array
     {
         $posts = PostAdmin::alloc('pageSize=' . $postsNum, 'status=all');
@@ -1547,7 +1438,6 @@ EOF;
             }, 'text/xml');
         } else {
             $api = [
-                /** WordPress API */
                 'wp.getPage'                => [$this, 'wpGetPage'],
                 'wp.getPages'               => [$this, 'wpGetPages'],
                 'wp.newPage'                => [$this, 'wpNewPage'],
@@ -1560,7 +1450,6 @@ EOF;
                 'wp.suggestCategories'      => [$this, 'wpSuggestCategories'],
                 'wp.uploadFile'             => [$this, 'mwNewMediaObject'],
 
-                /** New WordPress API since 2.9.2 */
                 'wp.getUsersBlogs'          => [$this, 'wpGetUsersBlogs'],
                 'wp.getTags'                => [$this, 'wpGetTags'],
                 'wp.deleteCategory'         => [$this, 'wpDeleteCategory'],
@@ -1577,14 +1466,12 @@ EOF;
                 'wp.newComment'             => [$this, 'wpNewComment'],
                 'wp.getCommentStatusList'   => [$this, 'wpGetCommentStatusList'],
 
-                /** New Wordpress API after 2.9.2 */
                 'wp.getProfile'             => [$this, 'wpGetProfile'],
                 'wp.getPostFormats'         => [$this, 'wpGetPostFormats'],
                 'wp.getMediaLibrary'        => [$this, 'wpGetMediaLibrary'],
                 'wp.getMediaItem'           => [$this, 'wpGetMediaItem'],
                 'wp.editPost'               => [$this, 'wpEditPost'],
 
-                /** Blogger API */
                 'blogger.getUsersBlogs'     => [$this, 'bloggerGetUsersBlogs'],
                 'blogger.getUserInfo'       => [$this, 'bloggerGetUserInfo'],
                 'blogger.getPost'           => [$this, 'bloggerGetPost'],
@@ -1611,7 +1498,6 @@ EOF;
                 'mt.setPostCategories'      => [$this, 'mtSetPostCategories'],
                 'mt.publishPost'            => [$this, 'mtPublishPost'],
 
-                /** PingBack */
                 'pingback.ping'             => [$this, 'pingbackPing'],
             ];
 
@@ -1625,9 +1511,6 @@ EOF;
         }
     }
 
-    /**
-     * 获取扩展字段
-     */
     private function getPostExtended(Contents $content): array
     {
         //根据客户端显示来判断是否显示html代码
@@ -1652,9 +1535,6 @@ EOF;
         ];
     }
 
-    /**
-     * 将typecho的状态类型转换为wordperss的风格
-     */
     private function typechoToWordpressStatus(string $status, string $type = 'post'): string
     {
         if ('post' == $type) {
@@ -1693,9 +1573,6 @@ EOF;
         return '';
     }
 
-    /**
-     * 将wordpress的状态类型转换为typecho的风格
-     */
     private function wordpressToTypechoStatus(string $status, string $type = 'post'): string
     {
         if ('post' == $type) {

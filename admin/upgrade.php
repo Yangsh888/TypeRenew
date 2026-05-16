@@ -12,12 +12,16 @@ $packageActionUrl = $security->getTokenUrl(
 );
 $needDbUpgrade = version_compare(\Typecho\Common::VERSION, $options->version, '>');
 $showDbDiagnostics = (int) $request->get('dbdiag', 0) === 1;
+$shouldInspectMysqlRisks = $showDbDiagnostics || $needDbUpgrade;
 $schemaStatus = ['healthy' => true, 'items' => [], 'missing' => []];
 $needSchemaRepair = false;
 $mysqlRiskStatus = ['supported' => false, 'healthy' => true, 'items' => []];
 if ($showDbDiagnostics) {
     $schemaStatus = \Utils\Migration\SchemaManager::inspectCriticalSchema(\Typecho\Db::get());
     $needSchemaRepair = !$schemaStatus['healthy'];
+}
+
+if ($shouldInspectMysqlRisks) {
     $mysqlRiskStatus = \Utils\Migration\SchemaManager::inspectMysqlUpgradeRisks(\Typecho\Db::get());
 }
 $upgradeReport = \Typecho\Upgrade\Runner::inspect();
@@ -50,12 +54,7 @@ $statusMap = [
 ];
 $statusLabel = $statusMap[$status] ?? ($status !== '' ? $status : _t('无'));
 $packageActionLocked = !$upgradeAvailable;
-$upgradeBlockedCount = 0;
-foreach ($upgradeItems as $item) {
-    if (strtolower((string) ($item['status'] ?? '')) === 'blocked') {
-        $upgradeBlockedCount++;
-    }
-}
+$upgradeBlockedCount = count($upgradeBlocking);
 $upgradeWarningCount = count($upgradeWarning);
 $schemaIssues = array_values($schemaStatus['missing'] ?? []);
 $schemaIssueCount = count($schemaIssues);
@@ -69,6 +68,11 @@ $repairMysqlRiskItems = array_values(array_filter(
     static fn(array $item): bool => !empty($item['repairRelated'])
 ));
 $repairMysqlRiskCount = count($repairMysqlRiskItems);
+$blockingMysqlRiskItems = array_values(array_filter(
+    $mysqlRiskItems,
+    static fn(array $item): bool => in_array((string) ($item['key'] ?? ''), ['mysql_version', 'legacy_index_limit', 'mail_unsub_duplicates'], true)
+));
+$blockingMysqlRiskCount = count($blockingMysqlRiskItems);
 $dbDiagnosticsUrl = $options->adminUrl('upgrade.php?dbdiag=1', true);
 $dbOverviewUrl = $options->adminUrl('upgrade.php', true);
 ?>
@@ -254,12 +258,19 @@ $dbOverviewUrl = $options->adminUrl('upgrade.php', true);
                                             <?php if ($showDbDiagnostics && $schemaIssueCount > 0): ?>
                                                 <?php _e('另有 %d 项关键结构异常待处理。', $schemaIssueCount); ?>
                                             <?php endif; ?>
+                                            <?php if ($blockingMysqlRiskCount > 0): ?>
+                                                <?php _e('当前另有 %d 项 MySQL 风险会阻断结构操作。', $blockingMysqlRiskCount); ?>
+                                            <?php endif; ?>
                                         </div>
                                         <form action="<?php echo $dbUpgradeUrl; ?>" method="post" class="tr-mt-12">
-                                            <button class="tr-btn primary tr-block" type="submit"><?php _e('完成数据库升级'); ?></button>
+                                            <button class="tr-btn primary tr-block" type="submit"<?php echo $blockingMysqlRiskCount > 0 ? ' disabled' : ''; ?>><?php _e('完成数据库升级'); ?></button>
                                         </form>
                                         <div class="tr-help tr-mt-12">
-                                            <?php _e('数据库升级会执行结构迁移，建议在低峰期操作并保持页面不刷新，直到完成。'); ?>
+                                            <?php if ($blockingMysqlRiskCount > 0): ?>
+                                                <?php _e('请先处理会阻断结构操作的 MySQL 风险，再执行数据库升级。'); ?>
+                                            <?php else: ?>
+                                                <?php _e('数据库升级会执行结构迁移，建议在低峰期操作并保持页面不刷新，直到完成。'); ?>
+                                            <?php endif; ?>
                                         </div>
                                     <?php elseif ($showDbDiagnostics && $needSchemaRepair): ?>
                                         <div class="tr-help tr-tone-warning tr-mt-12">
@@ -270,13 +281,20 @@ $dbOverviewUrl = $options->adminUrl('upgrade.php', true);
                                             <?php if (!empty($mysqlRiskStatus['supported']) && $repairMysqlRiskCount > 0): ?>
                                                 <?php _e('另有 %d 项 MySQL 风险与结构修复直接相关。', $repairMysqlRiskCount); ?>
                                             <?php endif; ?>
+                                            <?php if ($blockingMysqlRiskCount > 0): ?>
+                                                <?php _e('其中 %d 项会阻断当前结构修复。', $blockingMysqlRiskCount); ?>
+                                            <?php endif; ?>
                                         </div>
                                         <form action="<?php echo $dbUpgradeUrl; ?>" method="post" class="tr-mt-12">
                                             <input type="hidden" name="do" value="repairCriticalSchema">
-                                            <button class="tr-btn primary tr-block" type="submit"><?php _e('修复关键数据库结构'); ?></button>
+                                            <button class="tr-btn primary tr-block" type="submit"<?php echo $blockingMysqlRiskCount > 0 ? ' disabled' : ''; ?>><?php _e('修复关键数据库结构'); ?></button>
                                         </form>
                                         <div class="tr-help tr-mt-12">
-                                            <?php _e('该操作会补齐邮件通知与密码找回依赖的关键表、索引、字段类型和排序规则，并同步历史评论作者昵称，不会覆盖已有业务数据。'); ?>
+                                            <?php if ($blockingMysqlRiskCount > 0): ?>
+                                                <?php _e('请先处理数据库版本或 mail_unsub 重复值等阻断项，再执行结构修复。'); ?>
+                                            <?php else: ?>
+                                                <?php _e('该操作会补齐邮件通知与密码找回依赖的关键表、索引、字段类型和排序规则，并同步历史评论作者昵称，不会覆盖已有业务数据。'); ?>
+                                            <?php endif; ?>
                                         </div>
                                     <?php elseif ($showDbDiagnostics): ?>
                                         <div class="tr-help tr-mt-12"><?php _e('数据库结构已是最新状态'); ?></div>

@@ -2,7 +2,6 @@
 
 namespace Widget;
 
-use Exception;
 use Typecho\Common;
 use Typecho\Config;
 use Typecho\Router;

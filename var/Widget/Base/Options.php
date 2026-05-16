@@ -102,18 +102,12 @@ class Options extends Base implements QueryInterface
             $rows[(string) $name] = [
                 'name' => (string) $name,
                 'user' => $user,
-                'value' => $this->normalizeOptionValue($value)
+                'value' => is_array($value) ? Common::jsonEncode($value, 0, '{}') : (string) $value
             ];
         }
 
         return $rows;
     }
-
-    private function normalizeOptionValue($value): string
-    {
-        return is_array($value) ? Common::jsonEncode($value, 0, '{}') : (string) $value;
-    }
-
     private function fetchExistingOptionNames(array $names, int $user): array
     {
         if (empty($names)) {

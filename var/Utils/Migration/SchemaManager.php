@@ -130,6 +130,8 @@ class SchemaManager
         $rawVersion = $db->getVersion(Db::READ);
         $version = \Utils\DbInfo::extractVersion($rawVersion);
         $collation = Schema::detectMysqlCollation($db);
+        $minimum = \Utils\DbInfo::minimumMysqlVersion($rawVersion);
+        $label = \Utils\DbInfo::mysqlLabel($rawVersion);
         $items = [];
 
         $items[] = [
@@ -140,14 +142,14 @@ class SchemaManager
             'repairRelated' => false,
         ];
 
-        $legacyIndexLimit = $version !== '' && version_compare($version, '5.7.7', '<');
+        $legacyIndexLimit = $version !== '' && version_compare($version, $minimum, '<');
         $items[] = [
             'key' => 'legacy_index_limit',
-            'label' => '旧 InnoDB 索引长度限制',
+            'label' => '数据库版本不满足结构修复要求',
             'status' => $legacyIndexLimit ? 'warning' : 'ok',
             'detail' => $legacyIndexLimit
-                ? '当前版本可能仍受 767-byte 索引长度限制，邮件退订表唯一索引需重点确认'
-                : '当前版本不受旧 767-byte 索引长度限制影响',
+                ? '当前 ' . $label . ' 版本为 ' . $rawVersion . '，低于结构修复建议的最低版本 ' . $minimum
+                : '当前版本满足结构修复的最低要求',
             'repairRelated' => true,
         ];
 
