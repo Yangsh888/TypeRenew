@@ -5,7 +5,6 @@ namespace Widget\Users;
 use Typecho\Common;
 use Typecho\Db;
 use Typecho\Db\Query;
-use Typecho\Widget\Exception;
 use Typecho\Widget\Helper\PageNavigator\Box;
 use Widget\Base\Users;
 
@@ -28,11 +27,26 @@ class Admin extends Users
         $this->currentPage = $this->request->filter('int')->get('page', 1);
 
         if (null != ($keywords = $this->request->get('keywords'))) {
-            $select->where(
-                'name LIKE ? OR screenName LIKE ?',
-                '%' . Common::filterSearchQuery($keywords) . '%',
-                '%' . Common::filterSearchQuery($keywords) . '%'
-            );
+            $op = $this->db->getAdapter()->getDriver() == 'pgsql' ? 'ILIKE' : 'LIKE';
+            $filteredKeywords = Common::filterSearchQuery($keywords);
+            $mailKeywords = trim((string) $keywords);
+            $conditions = [];
+            $values = [];
+
+            if ($filteredKeywords !== '') {
+                $conditions[] = "name {$op} ? OR screenName {$op} ?";
+                $values[] = '%' . $filteredKeywords . '%';
+                $values[] = '%' . $filteredKeywords . '%';
+            }
+
+            if ($mailKeywords !== '') {
+                $conditions[] = "mail {$op} ?";
+                $values[] = '%' . $mailKeywords . '%';
+            }
+
+            if ($conditions !== []) {
+                $select->where(implode(' OR ', $conditions), ...$values);
+            }
         }
 
         $this->countSql = clone $select;
@@ -40,12 +54,33 @@ class Admin extends Users
         $select->order('table.users.uid')
             ->page($this->currentPage, $this->parameter->pageSize);
 
-        $this->db->fetchAll($select, [$this, 'push']);
+        $rows = $this->db->fetchAll($select);
+        if (empty($rows)) {
+            return;
+        }
+
+        $uids = array_map('intval', array_column($rows, 'uid'));
+        $counts = [];
+
+        if ($uids !== []) {
+            $result = $this->db->fetchAll($this->db->select('authorId', ['COUNT(cid)' => 'num'])
+                ->from('table.contents')
+                ->where('table.contents.type = ?', 'post')
+                ->where('table.contents.status = ?', 'publish')
+                ->where('table.contents.authorId IN ?', $uids)
+                ->group('table.contents.authorId'));
+
+            foreach ($result as $row) {
+                $counts[(int) $row['authorId']] = (int) $row['num'];
+            }
+        }
+
+        foreach ($rows as $row) {
+            $row['postsNum'] = $counts[(int) $row['uid']] ?? 0;
+            $this->push($row);
+        }
     }
 
-    /**
-     * 输出分页
-     */
     public function pageNav()
     {
         $query = $this->request->makeUriByRequest('page={page}');
@@ -73,10 +108,15 @@ class Admin extends Users
      */
     protected function ___postsNum(): int
     {
+        if (isset($this->row['postsNum'])) {
+            return (int) $this->row['postsNum'];
+        }
+
         return $this->db->fetchObject($this->db->select(['COUNT(cid)' => 'num'])
             ->from('table.contents')
             ->where('table.contents.type = ?', 'post')
             ->where('table.contents.status = ?', 'publish')
             ->where('table.contents.authorId = ?', $this->uid))->num;
     }
+
 }

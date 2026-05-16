@@ -3,7 +3,6 @@
 namespace Widget\Users;
 
 use Typecho\Common;
-use Typecho\Db\Exception;
 use Typecho\Plugin;
 use Typecho\Widget\Helper\Form;
 use Utils\Password;
@@ -17,13 +16,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-/**
- * 编辑用户组件
- *
- * @package Widget
- * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
- * @license GNU General Public License 2.0
- */
 class Profile extends Users implements ActionInterface
 {
     use EditTrait;
@@ -34,9 +26,6 @@ class Profile extends Users implements ActionInterface
         $this->request->setParam('uid', $this->user->uid);
     }
 
-    /**
-     * @return Form
-     */
     public function optionsForm(): Form
     {
         $form = new Form($this->security->getIndex('/action/users-profile'), Form::POST_METHOD);
@@ -102,9 +91,6 @@ class Profile extends Users implements ActionInterface
         return $form;
     }
 
-    /**
-     * 自定义设置列表
-     */
     public function personalFormList()
     {
         $plugins = Rows::alloc('activated=1');
@@ -126,13 +112,6 @@ class Profile extends Users implements ActionInterface
         }
     }
 
-    /**
-     * 输出自定义设置选项
-     * @param string $pluginName 插件名称
-     * @param string $className 类名称
-     * @param string $pluginFileName 插件文件名
-     * @param string|null $group 用户组
-     */
     public function personalForm(string $pluginName, string $className, string $pluginFileName, ?string &$group): Form
     {
         $form = new Form($this->security->getIndex('/action/users-profile'), Form::POST_METHOD);
@@ -143,7 +122,7 @@ class Profile extends Users implements ActionInterface
         $group = call_user_func([$className, 'personalConfig'], $form);
         $group = $group ?: 'subscriber';
 
-        $options = $this->options->personalPlugin($pluginName);
+        $options = $this->personalPluginSettings($pluginName);
 
         foreach ($options as $key => $val) {
             $input = $form->getInput($key);
@@ -160,9 +139,29 @@ class Profile extends Users implements ActionInterface
         return $form;
     }
 
-    /**
-     * 更新用户
-     */
+    private function personalPluginSettings(string $pluginName): array
+    {
+        return array_merge(
+            $this->pluginOptionSettings('_plugin:' . $pluginName, 0),
+            $this->pluginOptionSettings('_plugin:' . $pluginName, $this->user->uid)
+        );
+    }
+
+    private function pluginOptionSettings(string $name, int $userId): array
+    {
+        $row = $this->db->fetchRow($this->db->select('value')
+            ->from('table.options')
+            ->where('name = ? AND user = ?', $name, $userId)
+            ->limit(1));
+
+        if (!isset($row['value'])) {
+            return [];
+        }
+
+        $settings = json_decode((string) $row['value'], true);
+        return is_array($settings) ? $settings : [];
+    }
+
     public function updateProfile()
     {
         if ($this->profileForm()->validate()) {
@@ -195,11 +194,6 @@ class Profile extends Users implements ActionInterface
         $this->response->goBack();
     }
 
-    /**
-     * 生成表单
-     *
-     * @return Form
-     */
     public function profileForm(): Form
     {
         $form = new Form($this->security->getIndex('/action/users-profile'), Form::POST_METHOD);
@@ -270,9 +264,6 @@ class Profile extends Users implements ActionInterface
         $this->response->goBack();
     }
 
-    /**
-     * 更新密码
-     */
     public function updatePassword()
     {
         if ($this->passwordForm()->validate()) {
@@ -293,11 +284,6 @@ class Profile extends Users implements ActionInterface
         $this->response->goBack();
     }
 
-    /**
-     * 生成表单
-     *
-     * @return Form
-     */
     public function passwordForm(): Form
     {
         $form = new Form($this->security->getIndex('/action/users-profile'), Form::POST_METHOD);
@@ -329,9 +315,6 @@ class Profile extends Users implements ActionInterface
         return $form;
     }
 
-    /**
-     * 更新个人设置
-     */
     public function updatePersonal()
     {
         $pluginName = Plugin::normalizeName((string) $this->request->get('plugin'));
@@ -358,6 +341,7 @@ class Profile extends Users implements ActionInterface
 
         $settings = $form->getAllRequest();
         unset($settings['do'], $settings['plugin']);
+        $settings = array_merge($this->pluginOptionSettings('_plugin:' . $pluginName, $this->user->uid), $settings);
         $name = '_plugin:' . $pluginName;
 
         if (!$this->personalConfigHandle($className, $settings)) {
@@ -382,12 +366,6 @@ class Profile extends Users implements ActionInterface
         $this->response->redirect(Common::url('profile.php', $this->options->adminUrl));
     }
 
-    /**
-     * 用自有函数处理自定义配置信息
-     *
-     * @param string $className 类名
-     * @param array $settings 配置值
-     */
     public function personalConfigHandle(string $className, array $settings): bool
     {
         if (method_exists($className, 'personalConfigHandle')) {

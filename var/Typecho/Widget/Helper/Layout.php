@@ -188,9 +188,6 @@ class Layout
         $this->end();
     }
 
-    /**
-     * 开始标签
-     */
     public function start()
     {
         echo $this->tagName ? "<{$this->tagName}" : null;
@@ -226,11 +223,6 @@ class Layout
         }
     }
 
-    /**
-     * 结束标签
-     *
-     * @return void
-     */
     public function end()
     {
         if ($this->tagName) {

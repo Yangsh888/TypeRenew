@@ -27,35 +27,16 @@ class Ajax extends BaseOptions implements ActionInterface
 
     private const OFFICIAL_PLUGIN_VERSION_TIMEOUT = 4;
 
-    private function decodeFeedText(string $text): string
-    {
-        $text = html_entity_decode($text, ENT_QUOTES | ENT_XML1, 'UTF-8');
-        $text = strip_tags($text);
-        return trim(preg_replace("/\s+/u", ' ', $text));
-    }
-
     private function extractFeedTag(string $entry, string $tag): ?string
     {
         if (!preg_match('/<' . preg_quote($tag, '/') . '>\s*([\s\S]*?)\s*<\/' . preg_quote($tag, '/') . '>/i', $entry, $match)) {
             return null;
         }
 
-        $value = $this->decodeFeedText((string) ($match[1] ?? ''));
+        $value = html_entity_decode((string) ($match[1] ?? ''), ENT_QUOTES | ENT_XML1, 'UTF-8');
+        $value = strip_tags($value);
+        $value = trim((string) preg_replace("/\s+/u", ' ', $value));
         return $value === '' ? null : $value;
-    }
-
-    private function extractFeedLink(string $entry): ?string
-    {
-        if (
-            preg_match('/<link>\s*([\s\S]*?)\s*<\/link>/i', $entry, $match)
-        ) {
-            $link = trim(html_entity_decode((string) ($match[1] ?? ''), ENT_QUOTES | ENT_XML1, 'UTF-8'));
-            if ($link !== '' && preg_match('#^https://www\.typerenew\.com/#i', $link)) {
-                return $link;
-            }
-        }
-
-        return null;
     }
 
     private function parseOfficialFeedEntries(string $response): array
@@ -67,7 +48,13 @@ class Ajax extends BaseOptions implements ActionInterface
 
         foreach ($entries[0] as $entry) {
             $title = $this->extractFeedTag($entry, 'title');
-            $link = $this->extractFeedLink($entry);
+            $link = null;
+            if (preg_match('/<link>\s*([\s\S]*?)\s*<\/link>/i', $entry, $match)) {
+                $link = trim(html_entity_decode((string) ($match[1] ?? ''), ENT_QUOTES | ENT_XML1, 'UTF-8'));
+                if ($link === '' || !preg_match('#^https://www\.typerenew\.com/#i', $link)) {
+                    $link = null;
+                }
+            }
             $dateText = $this->extractFeedTag($entry, 'pubDate');
 
             if (empty($title) || empty($link) || empty($dateText)) {

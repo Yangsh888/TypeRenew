@@ -4,7 +4,6 @@ namespace Widget\Options;
 
 use Typecho\Common;
 use Typecho\Cookie;
-use Typecho\Db\Exception;
 use Typecho\Http\Client;
 use Typecho\Router\Parser;
 use Typecho\Widget\Helper\Form;
@@ -25,17 +24,10 @@ class Permalink extends Options implements ActionInterface
         return rtrim($basePath, '/') . '/';
     }
 
-    private function rewriteEntry(): string
-    {
-        $basePath = $this->rewriteBasePath();
-
-        return '/' === $basePath ? '/index.php' : rtrim($basePath, '/') . '/index.php';
-    }
-
     public function rewriteExamples(): array
     {
         $basePath = $this->rewriteBasePath();
-        $entry = $this->rewriteEntry();
+        $entry = '/' === $basePath ? '/index.php' : rtrim($basePath, '/') . '/index.php';
         $location = '/' === $basePath ? '/' : $basePath;
 
         return [
@@ -117,9 +109,6 @@ class Permalink extends Options implements ActionInterface
 
     /**
      * 检查pagePattern里是否含有必要参数
-     *
-     * @param mixed $value
-     * @return bool
      */
     public function checkPagePattern($value): bool
     {
@@ -136,9 +125,6 @@ class Permalink extends Options implements ActionInterface
 
     /**
      * 检查categoryPattern里是否含有必要参数
-     *
-     * @param mixed $value
-     * @return bool
      */
     public function checkCategoryPattern($value): bool
     {
@@ -155,9 +141,6 @@ class Permalink extends Options implements ActionInterface
 
     /**
      * 检测是否可以rewrite
-     *
-     * @param string $value 是否打开rewrite
-     * @return bool
      */
     public function checkRewrite(string $value): bool
     {
@@ -271,9 +254,6 @@ RewriteRule . {$basePath}index.php [L]
         }
     }
 
-    /**
-     * @return Form
-     */
     public function form(): Form
     {
         $form = new Form($this->security->getRootUrl('index.php/action/options-permalink'), Form::POST_METHOD);
@@ -378,9 +358,6 @@ RewriteRule . {$basePath}index.php [L]
 
     /**
      * 解析自定义的路径
-     *
-     * @param string $rule 待解码的路径
-     * @return string
      */
     protected function decodeRule(string $rule): string
     {
@@ -404,8 +381,6 @@ RewriteRule . {$basePath}index.php [L]
 
     /**
      * 检验规则是否冲突
-     *
-     * @param string $value 路由规则
      */
     public function checkRule(string $value): bool
     {
@@ -439,9 +414,6 @@ RewriteRule . {$basePath}index.php [L]
 
     /**
      * 编码自定义的路径
-     *
-     * @param string $rule 待编码的路径
-     * @return string
      */
     protected function encodeRule(string $rule): string
     {

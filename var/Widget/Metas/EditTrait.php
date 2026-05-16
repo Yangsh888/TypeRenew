@@ -2,32 +2,15 @@
 
 namespace Widget\Metas;
 
-use Typecho\Db\Exception;
-
 trait EditTrait
 {
 
-    /**
-     * 获取最大排序
-     *
-     * @param string $type
-     * @param int $parent
-     * @return integer
-     * @throws Exception
-     */
     public function getMaxOrder(string $type, int $parent = 0): int
     {
         return $this->db->fetchObject($this->select(['MAX(order)' => 'maxOrder'])
             ->where('type = ? AND parent = ?', $type, $parent))->maxOrder ?? 0;
     }
 
-    /**
-     * 对数据按照sort字段排序
-     *
-     * @param array $metas
-     * @param string $type
-     * @throws Exception
-     */
     public function sort(array $metas, string $type)
     {
         foreach ($metas as $sort => $mid) {
@@ -38,14 +21,6 @@ trait EditTrait
         }
     }
 
-    /**
-     * 合并数据
-     *
-     * @param integer $mid 数据主键
-     * @param string $type 数据类型
-     * @param array $metas 需要合并的数据集
-     * @throws Exception
-     */
     public function merge(int $mid, string $type, array $metas)
     {
         $contents = array_column($this->db->fetchAll($this->db->select('cid')
@@ -81,21 +56,19 @@ trait EditTrait
         $this->update(['count' => $num], $this->db->sql()->where('mid = ?', $mid));
     }
 
-    /**
-     * 根据内容的指定类别和状态更新相关meta的计数信息
-     *
-     * @param int $mid meta id
-     * @param string $type 类别
-     * @param string $status 状态
-     * @throws Exception
-     */
     protected function refreshCountByTypeAndStatus(int $mid, string $type, string $status = 'publish')
     {
-        $num = $this->db->fetchObject($this->db->select(['COUNT(table.contents.cid)' => 'num'])->from('table.contents')
+        $select = $this->db->select(['COUNT(table.contents.cid)' => 'num'])->from('table.contents')
             ->join('table.relationships', 'table.contents.cid = table.relationships.cid')
             ->where('table.relationships.mid = ?', $mid)
             ->where('table.contents.type = ?', $type)
-            ->where('table.contents.status = ?', $status))->num;
+            ->where('table.contents.status = ?', $status);
+
+        if ($status === 'publish') {
+            $select->where('table.contents.created < ?', $this->options->time);
+        }
+
+        $num = $this->db->fetchObject($select)->num;
 
         $this->db->query($this->db->update('table.metas')->rows(['count' => $num])
             ->where('mid = ?', $mid));

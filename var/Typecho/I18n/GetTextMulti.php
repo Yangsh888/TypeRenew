@@ -5,10 +5,6 @@ namespace Typecho\I18n;
 /**
  * 用于解决一个多个mo文件带来的读写问题
  * 我们重写了一个文件读取类
- *
- * @author qining
- * @category typecho
- * @package I18n
  */
 class GetTextMulti
 {

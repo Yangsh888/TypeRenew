@@ -86,8 +86,6 @@ class Files extends Base
 
     /**
      * 判断是否拥有写入权限
-     *
-     * @return bool
      */
     public static function isWriteable(): bool
     {
@@ -95,21 +93,11 @@ class Files extends Base
             && !Options::alloc()->missingTheme;
     }
 
-    /**
-     * 获取菜单标题
-     *
-     * @return string
-     */
     public function getMenuTitle(): string
     {
         return _t('编辑文件 %s', $this->currentFile);
     }
 
-    /**
-     * 获取文件内容
-     *
-     * @return string
-     */
     public function currentContent(): string
     {
         $themeRoot = Options::alloc()->themeFile($this->currentTheme);
@@ -118,11 +106,6 @@ class Files extends Base
         return htmlspecialchars($content !== false ? $content : '', ENT_QUOTES, 'UTF-8');
     }
 
-    /**
-     * 获取文件是否可写
-     *
-     * @return bool
-     */
     public function currentIsWriteable(): bool
     {
         $themeRoot = Options::alloc()->themeFile($this->currentTheme);
@@ -130,21 +113,11 @@ class Files extends Base
         return $path !== null && is_writable($path) && self::isWriteable();
     }
 
-    /**
-     * 获取当前文件
-     *
-     * @return string
-     */
     public function currentFile(): string
     {
         return $this->currentFile;
     }
 
-    /**
-     * 获取当前风格
-     *
-     * @return string
-     */
     public function currentTheme(): string
     {
         return $this->currentTheme;

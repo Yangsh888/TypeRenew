@@ -8,7 +8,7 @@ use Typecho\Router\Exception as RouterException;
 
 class Router
 {
-    public static string $current;
+    public static string $current = '';
 
     private static array $routingTable = [];
 
@@ -25,27 +25,35 @@ class Router
      */
     public static function match(string $pathInfo, $parameter = null, bool $once = true)
     {
+        $previousMatched = self::$matched;
+        $previousCurrent = self::$current;
+
         if ($once && self::$matched) {
             throw new RouterException("Path '{$pathInfo}' not found", 404);
         }
 
         self::$matched = true;
 
-        foreach (self::route($pathInfo) as $result) {
-            [$route, $params] = $result;
-            try {
-                return Widget::widget($route['widget'], $parameter, $params);
-            } catch (\Throwable $e) {
-                if (404 == $e->getCode()) {
-                    Widget::destroy($route['widget']);
-                    continue;
+        try {
+            foreach (self::route($pathInfo) as $result) {
+                [$route, $params] = $result;
+                try {
+                    return Widget::widget($route['widget'], $parameter, $params);
+                } catch (\Throwable $e) {
+                    if (404 == $e->getCode()) {
+                        Widget::destroy($route['widget']);
+                        continue;
+                    }
+
+                    throw $e;
                 }
-
-                throw $e;
             }
-        }
 
-        return false;
+            return false;
+        } finally {
+            self::$matched = $previousMatched;
+            self::$current = $previousCurrent;
+        }
     }
 
     /**

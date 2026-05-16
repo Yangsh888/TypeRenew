@@ -3,7 +3,6 @@
 namespace Widget\Options;
 
 use Typecho\Common;
-use Typecho\Db\Exception;
 use Typecho\Plugin;
 use Typecho\Router\Parser;
 use Typecho\Widget\Helper\Form;
@@ -81,9 +80,6 @@ class Reading extends Permalink
         $this->saveSuccessAndGoBack();
     }
 
-    /**
-     * @return Form
-     */
     public function form(): Form
     {
         $form = new Form($this->security->getIndex('/action/options-reading'), Form::POST_METHOD);
@@ -130,8 +126,9 @@ class Reading extends Permalink
                     $selected = ' selected="true"';
                 }
 
+                $pageTitle = htmlspecialchars((string) $page['title'], ENT_QUOTES, 'UTF-8');
                 $pagesSelect .= '<option value="' . $page['cid'] . '"' . $selected
-                    . '>' . $page['title'] . '</option>';
+                    . '>' . $pageTitle . '</option>';
             }
             $pagesSelect .= '</select>';
             $frontPageOptions['page'] = _t(
@@ -154,8 +151,10 @@ class Reading extends Permalink
                     $selected = ' selected="true"';
                 }
 
-                $filesSelect .= '<option value="' . $file . '"' . $selected
-                    . '>' . $file . '</option>';
+                $fileValue = htmlspecialchars($file, ENT_QUOTES, 'UTF-8');
+                $fileLabel = $fileValue;
+                $filesSelect .= '<option value="' . $fileValue . '"' . $selected
+                    . '>' . $fileLabel . '</option>';
             }
         }
 
@@ -266,7 +265,7 @@ class Reading extends Permalink
     private function resolveFrontPageFile(string $file): ?string
     {
         $file = basename(str_replace('\\', '/', trim($file)));
-        if ($file === '' || str_contains($file, "\0") || !preg_match('/^[A-Za-z0-9._-]+\.php$/', $file)) {
+        if ($file === '' || str_contains($file, "\0") || !preg_match('/\.php$/iu', $file)) {
             return null;
         }
 

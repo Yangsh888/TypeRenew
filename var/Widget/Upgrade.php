@@ -71,10 +71,14 @@ class Upgrade extends BaseOptions implements ActionInterface
         $this->user->pass('administrator');
         $this->security->protect();
         if ($this->request->isPost()) {
-            if ('repairCriticalSchema' === $this->request->get('do')) {
+            $action = (string) $this->request->get('do');
+
+            if ($action === '' || $action === 'upgrade') {
+                $this->upgrade();
+            } elseif ($action === 'repairCriticalSchema') {
                 $this->repairCriticalSchema();
             } else {
-                $this->upgrade();
+                Notice::alloc()->set(_t('未知升级操作'), 'error');
             }
         }
         $this->response->redirect(Common::url('upgrade.php', $this->options->adminUrl));

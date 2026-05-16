@@ -117,6 +117,10 @@ class Response
             return;
         }
 
+        if (headers_sent()) {
+            return;
+        }
+
         $sentHeaders = [];
         foreach (headers_list() as $header) {
             [$key] = explode(':', $header, 2);
@@ -197,7 +201,6 @@ class Response
 
                 $length = ob_get_length();
                 $this->setHeader('Connection', 'close');
-                $this->setHeader('Content-Encoding', 'none');
                 $this->setHeader('Content-Length', (string) max(0, (int) ($length === false ? 0 : $length)));
             } else {
                 while (ob_get_level() > 0) {
@@ -206,7 +209,6 @@ class Response
 
                 ob_start();
                 $this->setHeader('Connection', 'close');
-                $this->setHeader('Content-Encoding', 'none');
                 $this->setHeader('Content-Length', '0');
             }
         }

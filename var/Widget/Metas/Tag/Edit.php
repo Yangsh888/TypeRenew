@@ -3,7 +3,6 @@
 namespace Widget\Metas\Tag;
 
 use Typecho\Common;
-use Typecho\Db\Exception;
 use Typecho\Widget\Helper\Form;
 use Widget\Base\Metas;
 use Widget\ActionInterface;
@@ -97,9 +96,6 @@ class Edit extends Metas implements ActionInterface
         return !$tag;
     }
 
-    /**
-     * 插入标签
-     */
     public function insertTag()
     {
         if ($this->form('insert')->validate()) {
@@ -124,12 +120,6 @@ class Edit extends Metas implements ActionInterface
         $this->response->redirect(Common::url('manage-tags.php', $this->options->adminUrl));
     }
 
-    /**
-     * 生成表单
-     *
-     * @param string|null $action 表单动作
-     * @return Form
-     */
     public function form(?string $action = null): Form
     {
         $form = new Form($this->security->getIndex('/action/metas-tag-edit'), Form::POST_METHOD);
@@ -204,9 +194,6 @@ class Edit extends Metas implements ActionInterface
         return $form;
     }
 
-    /**
-     * 更新标签
-     */
     public function updateTag()
     {
         if ($this->form('update')->validate()) {
@@ -231,9 +218,6 @@ class Edit extends Metas implements ActionInterface
         $this->response->redirect(Common::url('manage-tags.php', $this->options->adminUrl));
     }
 
-    /**
-     * 删除标签
-     */
     public function deleteTag()
     {
         $tags = $this->request->filter('int')->getArray('mid');
@@ -260,9 +244,6 @@ class Edit extends Metas implements ActionInterface
         $this->response->redirect(Common::url('manage-tags.php', $this->options->adminUrl));
     }
 
-    /**
-     * 合并标签
-     */
     public function mergeTag()
     {
         if (empty($this->request->merge)) {
@@ -290,9 +271,6 @@ class Edit extends Metas implements ActionInterface
         $this->response->redirect(Common::url('manage-tags.php', $this->options->adminUrl));
     }
 
-    /**
-     * 刷新标签
-     */
     public function refreshTag()
     {
         $tags = $this->request->filter('int')->getArray('mid');
@@ -301,7 +279,6 @@ class Edit extends Metas implements ActionInterface
                 $this->refreshCountByTypeAndStatus($tag, 'post');
             }
 
-            // 自动清理标签
             $this->clearTags();
             self::pluginHandle()->call('finishRefresh', $tags, $this);
 
@@ -313,12 +290,8 @@ class Edit extends Metas implements ActionInterface
         $this->response->goBack();
     }
 
-    /**
-     * 清理没有任何内容的标签
-     */
     public function clearTags()
     {
-        // 取出count为0的标签
         $tags = array_column($this->db->fetchAll($this->select('mid')
             ->where('type = ? AND count = ?', 'tag', 0)), 'mid');
 

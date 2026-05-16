@@ -2,7 +2,6 @@
 
 namespace Widget\Options;
 
-use Typecho\Db\Exception;
 use Typecho\I18n\GetText;
 use Typecho\Widget\Helper\Form;
 use Utils\Zone;
@@ -30,8 +29,6 @@ class General extends Options implements ActionInterface
 
     /**
      * 获取语言列表
-     *
-     * @return array
      */
     public static function getLangs(): array
     {
@@ -55,8 +52,6 @@ class General extends Options implements ActionInterface
 
     /**
      * 过滤掉可执行的后缀名
-     *
-     * @param string $ext
      */
     public function removeShell(string $ext): bool
     {
@@ -127,9 +122,6 @@ class General extends Options implements ActionInterface
         $this->saveSuccessAndGoBack();
     }
 
-    /**
-     * @return Form
-     */
     public function form(): Form
     {
         $form = new Form($this->security->getIndex('/action/options-general'), Form::POST_METHOD);

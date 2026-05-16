@@ -22,9 +22,6 @@ class Edit extends Options implements ActionInterface
 
     /**
      * 启用插件
-     *
-     * @param $pluginName
-     * @throws Exception|Db\Exception|Plugin\Exception
      */
     public function activate($pluginName)
     {
@@ -91,6 +88,13 @@ class Edit extends Options implements ActionInterface
                     },
                     $rollbackErrors
                 );
+                $this->rollbackActivateStep(
+                    _t('回滚临时插件句柄'),
+                    static function (): void {
+                        Plugin::rollbackTemporaryHandles();
+                    },
+                    $rollbackErrors
+                );
 
                 if ($activated) {
                     $this->rollbackActivateStep(
@@ -141,11 +145,6 @@ class Edit extends Options implements ActionInterface
 
     /**
      * 用自有函数处理配置信息
-     * @param string $pluginName 插件名称
-     * @param array $settings 配置值
-     * @param boolean $isInit 是否为初始化
-     * @return boolean
-     * @throws Plugin\Exception
      */
     public function configHandle(string $pluginName, array $settings, bool $isInit): bool
     {
@@ -170,11 +169,6 @@ class Edit extends Options implements ActionInterface
 
     /**
      * 手动配置插件变量
-     *
-     * @param string $pluginName 插件名称
-     * @param array $settings 变量键值对
-     * @param bool $isPersonal 是否为私人变量
-     * @throws Db\Exception
      */
     public static function configPlugin(string $pluginName, array $settings, bool $isPersonal = false)
     {
@@ -250,10 +244,6 @@ class Edit extends Options implements ActionInterface
 
     /**
      * 用自有函数处理自定义配置信息
-     *
-     * @param string $className 类名
-     * @param array $settings 配置值
-     * @return boolean
      */
     public function personalConfigHandle(string $className, array $settings): bool
     {
@@ -267,11 +257,6 @@ class Edit extends Options implements ActionInterface
 
     /**
      * 禁用插件
-     *
-     * @param string $pluginName
-     * @throws Db\Exception
-     * @throws Exception
-     * @throws Plugin\Exception
      */
     public function deactivate(string $pluginName)
     {
@@ -330,14 +315,6 @@ class Edit extends Options implements ActionInterface
         $this->response->goBack();
     }
 
-    /**
-     * 配置插件
-     *
-     * @param string $pluginName
-     * @throws Db\Exception
-     * @throws Exception
-     * @throws Plugin\Exception
-     */
     public function config(string $pluginName)
     {
         $form = Config::alloc()->config();

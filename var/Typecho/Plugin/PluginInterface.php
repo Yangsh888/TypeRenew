@@ -4,12 +4,6 @@ namespace Typecho\Plugin;
 
 use Typecho\Widget\Helper\Form;
 
-/**
- * 插件接口
- *
- * @package Plugin
- * @abstract
- */
 interface PluginInterface
 {
     public static function activate();

@@ -13,13 +13,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-/**
- * 评论归档组件
- *
- * @package Widget
- * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
- * @license GNU General Public License 2.0
- */
 class Archive extends Comments
 {
     private int $currentPage;
@@ -44,8 +37,6 @@ class Archive extends Comments
 
     /**
      * 输出文章评论数
-     *
-     * @param ...$args
      */
     public function num(...$args)
     {
@@ -80,31 +71,24 @@ class Archive extends Comments
         $select->order('table.comments.coid', 'ASC');
         $this->db->fetchAll($select, [$this, 'push']);
 
-        /** 需要输出的评论列表 */
         $outputComments = [];
 
-        /** 如果开启评论回复 */
         if ($this->options->commentsThreaded) {
             foreach ($this->stack as $coid => &$comment) {
 
-                /** 取出父节点 */
                 $parent = $comment['parent'];
 
-                /** 如果存在父节点 */
                 if (0 != $parent && isset($this->stack[$parent])) {
 
-                    /** 如果当前节点深度大于最大深度, 则将其挂接在父节点上 */
                     if ($comment['levels'] >= $this->options->commentsMaxNestingLevels) {
                         $comment['levels'] = $this->stack[$parent]['levels'];
                         $parent = $this->stack[$parent]['parent'];     // 上上层节点
                         $comment['parent'] = $parent;
                     }
 
-                    /** 计算子节点顺序 */
                     $comment['order'] = isset($this->threadedComments[$parent])
                         ? count($this->threadedComments[$parent]) + 1 : 1;
 
-                    /** 如果是子节点 */
                     $this->threadedComments[$parent][$coid] = $comment;
                 } else {
                     $outputComments[$coid] = $comment;
@@ -115,16 +99,13 @@ class Archive extends Comments
             $this->stack = $outputComments;
         }
 
-        /** 评论排序 */
         if ('DESC' == $this->options->commentsOrder) {
             $this->stack = array_reverse($this->stack, true);
             $this->threadedComments = array_map('array_reverse', $this->threadedComments);
         }
 
-        /** 评论总数 */
         $this->total = count($this->stack);
 
-        /** 对评论进行分页 */
         if ($this->options->commentsPageBreak) {
             $pageSize = max(1, (int) $this->options->commentsPageSize);
             if ('last' == $this->options->commentsPageDisplay && !$this->parameter->commentPage) {
@@ -133,7 +114,6 @@ class Archive extends Comments
                 $this->currentPage = $this->parameter->commentPage ? $this->parameter->commentPage : 1;
             }
 
-            /** 截取评论 */
             $this->stack = array_slice(
                 $this->stack,
                 ($this->currentPage - 1) * $pageSize,
@@ -141,7 +121,6 @@ class Archive extends Comments
             );
         }
 
-        /** 评论置位 */
         $this->length = count($this->stack);
         $this->row = $this->length > 0 ? current($this->stack) : [];
         reset($this->stack);
@@ -149,9 +128,6 @@ class Archive extends Comments
 
     /**
      * 将每行的值压入堆栈
-     *
-     * @param array $value 每行的值
-     * @return array
      */
     public function push(array $value): array
     {
@@ -208,7 +184,6 @@ class Archive extends Comments
             );
 
             if (!$hasNav && $this->total > $this->options->commentsPageSize) {
-                /** 使用盒状分页 */
                 $nav = new Box($this->total, $this->currentPage, $this->options->commentsPageSize, $query);
                 $nav->setPageHolder('commentPage');
                 $nav->setAnchor('comments');
@@ -373,11 +348,9 @@ class Archive extends Comments
     {
         $children = $this->children;
         if ($children) {
-            //缓存变量便于还原
             $tmp = $this->row;
             $this->sequence ++;
 
-            //在子评论之前输出
             echo $this->singleCommentOptions->before;
 
             foreach ($children as $child) {
@@ -386,7 +359,6 @@ class Archive extends Comments
                 $this->row = $tmp;
             }
 
-            //在子评论之后输出
             echo $this->singleCommentOptions->after;
 
             $this->sequence --;
@@ -412,11 +384,6 @@ class Archive extends Comments
         }
     }
 
-    /**
-     * 子评论
-     *
-     * @return array
-     */
     protected function ___children(): array
     {
         return $this->options->commentsThreaded && !$this->isTopLevel && isset($this->threadedComments[$this->coid])
@@ -430,8 +397,6 @@ class Archive extends Comments
 
     /**
      * 重载评论页码获取
-     *
-     * @return int
      */
     protected function ___commentPage(): int
     {
@@ -440,8 +405,6 @@ class Archive extends Comments
 
     /**
      * 重载内容获取
-     *
-     * @return Contents
      */
     protected function ___parentContent(): Contents
     {

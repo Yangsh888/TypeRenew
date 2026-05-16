@@ -32,17 +32,11 @@ class Config extends Options
         $this->info = Plugin::parseInfo($this->pluginFileName);
     }
 
-    /**
-     * 获取菜单标题
-     */
     public function getMenuTitle(): string
     {
         return _t('设置插件 %s', $this->info['title']);
     }
 
-    /**
-     * 配置插件
-     */
     public function config(): Form
     {
         $pluginName = Plugin::normalizeName((string) $this->request->get('config'));

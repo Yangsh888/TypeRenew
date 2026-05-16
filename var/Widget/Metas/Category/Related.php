@@ -2,7 +2,6 @@
 
 namespace Widget\Metas\Category;
 
-use Typecho\Db\Exception;
 use Widget\Base\Metas;
 use Widget\Base\TreeTrait;
 
@@ -15,10 +14,6 @@ class Related extends Metas
     use InitTreeRowsTrait;
     use TreeTrait;
 
-    /**
-     * @return void
-     * @throws Exception
-     */
     public function execute()
     {
         $ids = array_column($this->db->fetchAll($this->select('table.metas.mid')

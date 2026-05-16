@@ -3,7 +3,6 @@
 namespace Widget\Base;
 
 use Typecho\Common;
-use Typecho\Db\Exception;
 use Typecho\Db\Query;
 use Typecho\Widget\Helper\Form;
 use Widget\Base;
@@ -13,13 +12,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-/**
- * 全局选项组件
- *
- * @package Widget
- * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
- * @license GNU General Public License 2.0
- */
 class Options extends Base implements QueryInterface
 {
     /**

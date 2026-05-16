@@ -124,8 +124,6 @@ class Backup extends BaseOptions implements ActionInterface
 
     /**
      * 导出数据
-     *
-     * @throws \Typecho\Db\Exception
      */
     private function export()
     {

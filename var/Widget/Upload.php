@@ -5,7 +5,6 @@ namespace Widget;
 use Typecho\Common;
 use Typecho\Config;
 use Typecho\Date;
-use Typecho\Db\Exception;
 use Typecho\Plugin;
 use Widget\Base\Contents;
 
@@ -17,12 +16,6 @@ class Upload extends Contents implements ActionInterface
 {
     public const UPLOAD_DIR = '/usr/uploads';
 
-    /**
-     * 删除文件
-     *
-     * @param array $content 文件相关信息
-     * @return bool
-     */
     public static function deleteHandle(array $content): bool
     {
         $result = Plugin::factory(Upload::class)->trigger($hasDeleted)->call('deleteHandle', $content);
@@ -30,7 +23,45 @@ class Upload extends Contents implements ActionInterface
             return $result;
         }
 
-        $path = __TYPECHO_ROOT_DIR__ . '/' . $content['attachment']->path;
+        $attachment = $content['attachment'] ?? null;
+        $relativePath = '';
+
+        if (is_array($attachment)) {
+            $relativePath = (string) ($attachment['path'] ?? '');
+        } elseif (is_object($attachment) && isset($attachment->path)) {
+            $relativePath = (string) $attachment->path;
+        }
+
+        $relativePath = str_replace('\\', '/', trim($relativePath));
+        if ($relativePath === '' || str_contains($relativePath, "\0") || str_contains($relativePath, '..')) {
+            return false;
+        }
+
+        $uploadDir = str_replace('\\', '/', (string) (defined('__TYPECHO_UPLOAD_DIR__') ? __TYPECHO_UPLOAD_DIR__ : self::UPLOAD_DIR));
+        $uploadDir = '/' . trim($uploadDir, '/');
+        if ($relativePath !== $uploadDir && !str_starts_with($relativePath, $uploadDir . '/')) {
+            return false;
+        }
+
+        $uploadRoot = defined('__TYPECHO_UPLOAD_ROOT_DIR__') ? __TYPECHO_UPLOAD_ROOT_DIR__ : __TYPECHO_ROOT_DIR__;
+        $uploadRoot = realpath($uploadRoot);
+        if ($uploadRoot === false) {
+            return false;
+        }
+
+        $uploadRoot = rtrim(str_replace('\\', '/', $uploadRoot), '/');
+        $path = Common::url($relativePath, $uploadRoot);
+        $directory = realpath(dirname($path));
+
+        if ($directory === false) {
+            return false;
+        }
+
+        $directory = rtrim(str_replace('\\', '/', $directory), '/');
+        if ($directory !== $uploadRoot && !str_starts_with($directory, $uploadRoot . '/')) {
+            return false;
+        }
+
         return is_file($path) && is_writable(dirname($path)) ? unlink($path) : false;
     }
 
@@ -38,13 +69,12 @@ class Upload extends Contents implements ActionInterface
      * 获取实际文件绝对访问路径
      *
      * @param Config $attachment 文件相关信息
-     * @return string
      */
     public static function attachmentHandle(Config $attachment): string
     {
         $result = Plugin::factory(Upload::class)->trigger($hasPlugged)->call('attachmentHandle', $attachment);
         if ($hasPlugged) {
-            return $result;
+            return is_string($result) ? $result : '';
         }
 
         return Common::url(
@@ -57,21 +87,30 @@ class Upload extends Contents implements ActionInterface
      * 获取实际文件数据
      *
      * @param array $content
-     * @return string
      */
     public static function attachmentDataHandle(array $content): string
     {
         $result = Plugin::factory(Upload::class)->trigger($hasPlugged)->call('attachmentDataHandle', $content);
         if ($hasPlugged) {
-            return $result;
+            return is_string($result) ? $result : '';
         }
 
-        return file_get_contents(
-            Common::url(
-                $content['attachment']->path,
-                defined('__TYPECHO_UPLOAD_ROOT_DIR__') ? __TYPECHO_UPLOAD_ROOT_DIR__ : __TYPECHO_ROOT_DIR__
-            )
+        $attachment = $content['attachment'] ?? null;
+        $path = is_object($attachment) ? ($attachment->path ?? null) : (is_array($attachment) ? ($attachment['path'] ?? null) : null);
+        if (!is_string($path) || $path === '') {
+            return '';
+        }
+
+        $file = Common::url(
+            $path,
+            defined('__TYPECHO_UPLOAD_ROOT_DIR__') ? __TYPECHO_UPLOAD_ROOT_DIR__ : __TYPECHO_ROOT_DIR__
         );
+        if (!is_file($file)) {
+            return '';
+        }
+
+        $data = file_get_contents($file);
+        return is_string($data) ? $data : '';
     }
 
     public function action()

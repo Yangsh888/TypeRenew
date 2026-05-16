@@ -14,13 +14,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-/**
- * 编辑用户组件
- *
- * @package Widget
- * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
- * @license GNU General Public License 2.0
- */
 class Edit extends Users implements ActionInterface
 {
     use EditTrait;
@@ -39,9 +32,6 @@ class Edit extends Users implements ActionInterface
         }
     }
 
-    /**
-     * 获取菜单标题
-     */
     public function getMenuTitle(): string
     {
         return _t('编辑用户 %s', $this->name);
@@ -61,9 +51,6 @@ class Edit extends Users implements ActionInterface
         return !empty($user);
     }
 
-    /**
-     * 增加用户
-     */
     public function insertUser()
     {
         if ($this->form('insert')->validate()) {
@@ -94,10 +81,6 @@ class Edit extends Users implements ActionInterface
         $this->response->redirect(Common::url('manage-users.php', $this->options->adminUrl));
     }
 
-    /**
-     * 生成表单
-     * @param string|null $action 表单动作
-     */
     public function form(?string $action = null): Form
     {
         $form = new Form($this->security->getIndex('/action/users-edit'), Form::POST_METHOD);
@@ -203,9 +186,6 @@ class Edit extends Users implements ActionInterface
         return $form;
     }
 
-    /**
-     * 更新用户
-     */
     public function updateUser()
     {
         if ($this->form('update')->validate()) {
@@ -244,32 +224,80 @@ class Edit extends Users implements ActionInterface
             'page=' . $this->getPageOffset('uid', (int) $this->request->get('uid')), $this->options->adminUrl));
     }
 
-    /**
-     * 删除用户
-     */
     public function deleteUser()
     {
         $users = $this->request->filter('int')->getArray('uid');
         $row = $this->db->fetchObject($this->db->select(['MIN(uid)' => 'num'])->from('table.users'));
         $masterUserId = (int) ($row->num ?? 0);
         $deleteCount = 0;
+        $protectedCount = 0;
+        $ownedContentCount = 0;
 
         foreach ($users as $user) {
-            if ($masterUserId == $user || $user == $this->user->uid) {
+            if ($masterUserId === $user || $user === $this->user->uid) {
+                $protectedCount++;
+                continue;
+            }
+
+            if ($this->ownsPostsOrPages($user)) {
+                $ownedContentCount++;
                 continue;
             }
 
             if ($this->delete($this->db->sql()->where('uid = ?', $user))) {
+                $this->cleanupUserReferences($user);
                 $deleteCount++;
             }
         }
 
-        Notice::alloc()->set(
-            $deleteCount > 0 ? _t('用户已经删除') : _t('没有用户被删除'),
-            $deleteCount > 0 ? 'success' : 'notice'
-        );
+        $skippedCount = $protectedCount + $ownedContentCount;
+        if ($deleteCount > 0 && $skippedCount > 0) {
+            Notice::alloc()->set(
+                _t('已删除 %d 个用户，跳过 %d 个受保护或仍拥有文章/页面的用户', $deleteCount, $skippedCount),
+                'success'
+            );
+        } elseif ($deleteCount > 0) {
+            Notice::alloc()->set(_t('用户已经删除'), 'success');
+        } elseif ($ownedContentCount > 0) {
+            Notice::alloc()->set(_t('仍拥有文章或页面的用户无法删除'), 'notice');
+        } else {
+            Notice::alloc()->set(_t('没有用户被删除'), 'notice');
+        }
 
         $this->response->redirect(Common::url('manage-users.php', $this->options->adminUrl));
+    }
+
+    private function ownsPostsOrPages(int $uid): bool
+    {
+        $row = $this->db->fetchObject(
+            $this->db->select(['COUNT(cid)' => 'num'])
+                ->from('table.contents')
+                ->where('authorId = ?', $uid)
+                ->where('type IN ?', ['post', 'page'])
+        );
+
+        return (int) ($row->num ?? 0) > 0;
+    }
+
+    private function cleanupUserReferences(int $uid): void
+    {
+        $this->db->query(
+            $this->db->update('table.contents')
+                ->rows(['authorId' => 0])
+                ->where('authorId = ?', $uid)
+                ->where('type NOT IN ?', ['post', 'page'])
+        );
+
+        $this->db->query(
+            $this->db->update('table.comments')
+                ->rows(['authorId' => 0])
+                ->where('authorId = ?', $uid)
+        );
+
+        $this->db->query(
+            $this->db->delete('table.options')
+                ->where('user = ?', $uid)
+        );
     }
 
     public function action()

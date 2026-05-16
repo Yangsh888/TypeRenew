@@ -2,7 +2,6 @@
 
 namespace Widget\Comments;
 
-use Typecho\Db\Exception;
 use Typecho\Db\Query;
 use Utils\Comment;
 use Widget\Base\Comments;
@@ -15,9 +14,8 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
 
 class Edit extends Comments implements ActionInterface
 {
-    /**
-     * 标记为待审核
-     */
+    private const EDITABLE_STATUSES = ['approved', 'waiting', 'spam'];
+
     public function waitingComment()
     {
         $comments = $this->request->filter('int')->getArray('coid');
@@ -102,9 +100,6 @@ class Edit extends Comments implements ActionInterface
         return false;
     }
 
-    /**
-     * 标记为垃圾
-     */
     public function spamComment()
     {
         $comments = $this->request->filter('int')->getArray('coid');
@@ -125,9 +120,6 @@ class Edit extends Comments implements ActionInterface
         $this->response->goBack();
     }
 
-    /**
-     * 标记为展现
-     */
     public function approvedComment()
     {
         $comments = $this->request->filter('int')->getArray('coid');
@@ -148,9 +140,6 @@ class Edit extends Comments implements ActionInterface
         $this->response->goBack();
     }
 
-    /**
-     * 删除评论
-     */
     public function deleteComment()
     {
         $comments = $this->request->filter('int')->getArray('coid');
@@ -162,6 +151,7 @@ class Edit extends Comments implements ActionInterface
 
             if ($comment && $this->commentIsWriteable()) {
                 self::pluginHandle()->call('delete', $comment, $this);
+                $this->reparentChildren((int) $coid, (int) ($comment['parent'] ?? 0));
 
                 $this->db->query($this->db->delete('table.comments')->where('coid = ?', $coid));
 
@@ -201,21 +191,46 @@ class Edit extends Comments implements ActionInterface
         }
     }
 
-    /**
-     * 删除所有垃圾评论
-     */
     public function deleteSpamComment()
     {
+        $select = $this->select()->where('status = ?', 'spam');
+
         $deleteQuery = $this->db->delete('table.comments')->where('status = ?', 'spam');
         if (!$this->request->is('__typecho_all_comments=on') || !$this->user->pass('editor', true)) {
+            $select->where('ownerId = ?', $this->user->uid);
             $deleteQuery->where('ownerId = ?', $this->user->uid);
         }
 
         if ($this->request->is('cid')) {
+            $select->where('cid = ?', $this->request->get('cid'));
             $deleteQuery->where('cid = ?', $this->request->get('cid'));
         }
 
+        $comments = $this->db->fetchAll($select);
+        $deletedParents = [];
+        foreach ($comments as $comment) {
+            $deletedParents[(int) ($comment['coid'] ?? 0)] = (int) ($comment['parent'] ?? 0);
+        }
+
+        foreach ($comments as $comment) {
+            $coid = (int) ($comment['coid'] ?? 0);
+            if ($coid <= 0) {
+                continue;
+            }
+
+            self::pluginHandle()->call('delete', $comment, $this);
+            $this->reparentChildren($coid, $this->resolveReparentTarget((int) ($comment['parent'] ?? 0), $deletedParents));
+        }
+
         $deleteRows = $this->db->query($deleteQuery);
+
+        if ($deleteRows > 0) {
+            foreach ($comments as $comment) {
+                self::pluginHandle()->call('finishDelete', $comment, $this);
+            }
+
+            $this->purgeCommentCache();
+        }
 
         Notice::alloc()->set(
             $deleteRows > 0 ? _t('所有垃圾评论已经被删除') : _t('没有垃圾评论被删除'),
@@ -225,9 +240,6 @@ class Edit extends Comments implements ActionInterface
         $this->response->goBack();
     }
 
-    /**
-     * 获取可编辑的评论
-     */
     public function getComment()
     {
         $coid = $this->request->filter('int')->get('coid');
@@ -247,36 +259,30 @@ class Edit extends Comments implements ActionInterface
         }
     }
 
-    /**
-     * 编辑评论
-     */
     public function editComment(): bool
     {
         $coid = $this->request->filter('int')->get('coid');
-        $commentSelect = $this->db->fetchRow($this->select()
-            ->where('coid = ?', $coid)->limit(1), [$this, 'push']);
+        $comment = [
+            'text' => $this->request->get('text'),
+            'author' => $this->request->filter('strip_tags', 'trim', 'xss')->get('author'),
+            'mail' => $this->request->filter('strip_tags', 'trim', 'xss')->get('mail'),
+            'url' => $this->request->filter('url')->get('url'),
+        ];
 
-        if ($commentSelect && $this->commentIsWriteable()) {
-            $comment['text'] = $this->request->get('text');
-            $comment['author'] = $this->request->filter('strip_tags', 'trim', 'xss')->get('author');
-            $comment['mail'] = $this->request->filter('strip_tags', 'trim', 'xss')->get('mail');
-            $comment['url'] = $this->request->filter('url')->get('url');
+        if ($this->request->is('created')) {
+            $comment['created'] = $this->request->filter('int')->get('created');
+        }
 
-            if ($this->request->is('created')) {
-                $comment['created'] = $this->request->filter('int')->get('created');
+        if ($this->request->is('status')) {
+            $status = $this->normalizeEditableStatus($this->request->get('status'));
+            if ($status !== null) {
+                $comment['status'] = $status;
             }
+        }
 
-            $comment = self::pluginHandle()->filter('edit', $comment, $this);
+        $updatedComment = $this->editCommentData($coid, $comment);
 
-            $this->update($comment, $this->db->sql()->where('coid = ?', $coid));
-
-            $updatedComment = $this->db->fetchRow($this->select()
-                ->where('coid = ?', $coid)->limit(1), [$this, 'push']);
-            $updatedComment['content'] = $this->content;
-
-            self::pluginHandle()->call('finishEdit', $this);
-            $this->purgeCommentCacheForTransition((string) ($commentSelect['status'] ?? ''), (string) ($commentSelect['status'] ?? ''));
-
+        if ($updatedComment !== null) {
             $this->response->throwJson([
                 'success' => 1,
                 'comment' => $updatedComment
@@ -291,9 +297,45 @@ class Edit extends Comments implements ActionInterface
         return false;
     }
 
-    /**
-     * 回复评论
-     */
+    public function editCommentData(int $coid, array $comment): ?array
+    {
+        $commentSelect = $this->db->fetchRow($this->select()
+            ->where('coid = ?', $coid)->limit(1), [$this, 'push']);
+
+        if (!$commentSelect || !$this->commentIsWriteable()) {
+            return null;
+        }
+
+        $comment = self::pluginHandle()->filter('edit', $comment, $this);
+
+        if (isset($comment['status'])) {
+            $status = $this->normalizeEditableStatus($comment['status']);
+            if ($status === null) {
+                unset($comment['status']);
+            } else {
+                $comment['status'] = $status;
+            }
+        }
+
+        $this->update($comment, $this->db->sql()->where('coid = ?', $coid));
+
+        $updatedComment = $this->db->fetchRow($this->select()
+            ->where('coid = ?', $coid)->limit(1), [$this, 'push']);
+        $updatedComment['content'] = $this->content;
+
+        self::pluginHandle()->call('finishEdit', $this);
+        $beforeStatus = (string) ($commentSelect['status'] ?? '');
+        $afterStatus = (string) ($updatedComment['status'] ?? $beforeStatus);
+
+        if ($beforeStatus !== 'approved' && $afterStatus === 'approved') {
+            \Typecho\Mail\Queue::enqueueComment($this, 'approved', $this->options);
+        }
+
+        $this->purgeCommentCacheForTransition($beforeStatus, $afterStatus);
+
+        return $updatedComment;
+    }
+
     public function replyComment()
     {
         $coid = $this->request->filter('int')->get('coid');
@@ -384,5 +426,38 @@ class Edit extends Comments implements ActionInterface
 
         $this->status = $after !== '' ? $after : $before;
         $this->purgeCommentCache();
+    }
+
+    private function reparentChildren(int $coid, int $parent): void
+    {
+        if ($coid <= 0) {
+            return;
+        }
+
+        $this->db->query(
+            $this->db->update('table.comments')
+                ->rows(['parent' => max(0, $parent)])
+                ->where('parent = ?', $coid)
+        );
+    }
+
+    private function resolveReparentTarget(int $parent, array $deletedParents): int
+    {
+        while ($parent > 0 && isset($deletedParents[$parent])) {
+            $parent = (int) $deletedParents[$parent];
+        }
+
+        return max(0, $parent);
+    }
+
+    private function normalizeEditableStatus($status): ?string
+    {
+        if (!is_string($status) && !is_scalar($status)) {
+            return null;
+        }
+
+        $status = strtolower(trim((string) $status));
+
+        return in_array($status, self::EDITABLE_STATUSES, true) ? $status : null;
     }
 }

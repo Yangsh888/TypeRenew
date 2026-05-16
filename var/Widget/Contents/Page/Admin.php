@@ -21,10 +21,6 @@ class Admin extends Contents
 
     private int $parentId = 0;
 
-    /**
-     * @return void
-     * @throws Db\Exception
-     */
     public function execute()
     {
         $this->parameter->setDefault('ignoreRequest=0');
@@ -67,10 +63,6 @@ class Admin extends Contents
         }
     }
 
-    /**
-     * @return string|null
-     * @throws Db\Exception|Exception
-     */
     public function getMenuTitle(): ?string
     {
         if ($this->parentId) {
@@ -86,18 +78,11 @@ class Admin extends Contents
         throw new Exception(_t('页面不存在'), 404);
     }
 
-    /**
-     * @return string
-     */
     public function getAddLink(): string
     {
         return 'write-page.php' . ($this->parentId ? '?parent=' . $this->parentId : '');
     }
 
-    /**
-     * @return array
-     * @throws Db\Exception
-     */
     protected function initTreeRows(): array
     {
         $select = $this->select(

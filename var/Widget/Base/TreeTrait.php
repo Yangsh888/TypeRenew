@@ -3,11 +3,6 @@
 namespace Widget\Base;
 
 use Typecho\Config;
-use Typecho\Db\Exception;
-
-/**
- * 处理树状数据结构
- */
 trait TreeTrait
 {
     private array $treeRows = [];

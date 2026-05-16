@@ -3,7 +3,6 @@
 namespace Widget\Base;
 
 use Typecho\Common;
-use Typecho\Db\Exception;
 use Typecho\Db\Query;
 use Typecho\Router;
 use Typecho\Router\ParamsDelegateInterface;

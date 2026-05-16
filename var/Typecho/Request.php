@@ -606,27 +606,27 @@ class Request
 
     public function isCli(): bool
     {
-        return php_sapi_name() == 'cli';
+        return php_sapi_name() === 'cli';
     }
 
     public function isGet(): bool
     {
-        return 'GET' == $this->getServer('REQUEST_METHOD');
+        return 'GET' === $this->getServer('REQUEST_METHOD');
     }
 
     public function isPost(): bool
     {
-        return 'POST' == $this->getServer('REQUEST_METHOD');
+        return 'POST' === $this->getServer('REQUEST_METHOD');
     }
 
     public function isPut(): bool
     {
-        return 'PUT' == $this->getServer('REQUEST_METHOD');
+        return 'PUT' === $this->getServer('REQUEST_METHOD');
     }
 
     public function isAjax(): bool
     {
-        return 'XMLHttpRequest' == $this->getHeader('X-Requested-With');
+        return 'XMLHttpRequest' === $this->getHeader('X-Requested-With');
     }
 
     public function isJson(): bool

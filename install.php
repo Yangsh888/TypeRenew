@@ -1034,6 +1034,12 @@ function install_step_2_perform()
             $config['dbPrefix'] . 'relationships',
             $config['dbPrefix'] . 'users'
         ];
+        $sequences = [
+            $config['dbPrefix'] . 'comments_seq',
+            $config['dbPrefix'] . 'contents_seq',
+            $config['dbPrefix'] . 'metas_seq',
+            $config['dbPrefix'] . 'users_seq'
+        ];
 
         try {
             foreach ($tables as $table) {
@@ -1042,9 +1048,17 @@ function install_step_2_perform()
                         $installDb->query("DROP TABLE IF EXISTS `{$table}`");
                         break;
                     case 'Pgsql':
+                        $installDb->query("DROP TABLE IF EXISTS \"{$table}\"");
+                        break;
                     case 'SQLite':
                         $installDb->query("DROP TABLE IF EXISTS {$table}");
                         break;
+                }
+            }
+
+            if ($type == 'Pgsql') {
+                foreach ($sequences as $sequence) {
+                    $installDb->query("DROP SEQUENCE IF EXISTS \"{$sequence}\"");
                 }
             }
         } catch (\Typecho\Db\Exception $e) {

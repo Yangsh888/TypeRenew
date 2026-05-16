@@ -3,7 +3,6 @@
 namespace Widget\Metas\Category;
 
 use Typecho\Common;
-use Typecho\Db\Exception;
 use Typecho\Validate;
 use Typecho\Widget\Helper\Form;
 use Widget\Base\Metas;
@@ -15,20 +14,10 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-/**
- * 编辑分类组件
- *
- * @package Widget
- * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
- * @license GNU General Public License 2.0
- */
 class Edit extends Metas implements ActionInterface
 {
     use EditTrait;
 
-    /**
-     * 入口函数
-     */
     public function execute()
     {
         $this->user->pass('editor');
@@ -110,9 +99,6 @@ class Edit extends Metas implements ActionInterface
         return !$category;
     }
 
-    /**
-     * 增加分类
-     */
     public function insertCategory()
     {
         if ($this->form('insert')->validate()) {
@@ -140,12 +126,6 @@ class Edit extends Metas implements ActionInterface
             . ($category['parent'] ? '?parent=' . $category['parent'] : ''), $this->options->adminUrl));
     }
 
-    /**
-     * 生成表单
-     *
-     * @param string|null $action 表单动作
-     * @return Form
-     */
     public function form(?string $action = null): Form
     {
         $form = new Form($this->security->getIndex('/action/metas-category-edit'), Form::POST_METHOD);
@@ -244,9 +224,6 @@ class Edit extends Metas implements ActionInterface
         return $form;
     }
 
-    /**
-     * 更新分类
-     */
     public function updateCategory()
     {
         if ($this->form('update')->validate()) {
@@ -305,9 +282,6 @@ class Edit extends Metas implements ActionInterface
             . ($category['parent'] ? '?parent=' . $category['parent'] : ''), $this->options->adminUrl));
     }
 
-    /**
-     * 删除分类
-     */
     public function deleteCategory()
     {
         $categories = $this->request->filter('int')->getArray('mid');
@@ -338,9 +312,6 @@ class Edit extends Metas implements ActionInterface
         $this->response->goBack();
     }
 
-    /**
-     * 合并分类
-     */
     public function mergeCategory()
     {
         $validator = new Validate();
@@ -367,9 +338,6 @@ class Edit extends Metas implements ActionInterface
         $this->response->goBack();
     }
 
-    /**
-     * 分类排序
-     */
     public function sortCategory()
     {
         $categories = $this->request->filter('int')->getArray('mid');
@@ -384,9 +352,6 @@ class Edit extends Metas implements ActionInterface
         }
     }
 
-    /**
-     * 刷新分类
-     */
     public function refreshCategory()
     {
         $categories = $this->request->filter('int')->getArray('mid');
@@ -405,9 +370,6 @@ class Edit extends Metas implements ActionInterface
         $this->response->goBack();
     }
 
-    /**
-     * 设置默认分类
-     */
     public function defaultCategory()
     {
         $validator = new Validate();
@@ -435,11 +397,6 @@ class Edit extends Metas implements ActionInterface
         $this->response->redirect(Common::url('manage-categories.php', $this->options->adminUrl));
     }
 
-    /**
-     * 获取菜单标题
-     *
-     * @return string|null
-     */
     public function getMenuTitle(): ?string
     {
         if ($this->request->is('mid')) {

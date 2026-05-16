@@ -23,8 +23,6 @@ class Feedback extends Comments implements ActionInterface
      * 对已注册用户的保护性检测
      *
      * @param string $userName 用户名
-     * @return bool
-     * @throws Db\Exception
      */
     public function requireUserLogin(string $userName): bool
     {
@@ -42,8 +40,6 @@ class Feedback extends Comments implements ActionInterface
 
     /**
      * 处理反馈请求
-     *
-     * @throws \Exception
      */
     public function action()
     {

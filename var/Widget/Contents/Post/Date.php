@@ -20,8 +20,6 @@ class Date extends Base
 
     public function execute()
     {
-        $this->parameter->setDefault('format=Y-m&type=month&limit=0');
-
         $resource = $this->db->query($this->db->select('created')->from('table.contents')
             ->where('type = ?', 'post')
             ->where('table.contents.status = ?', 'publish')

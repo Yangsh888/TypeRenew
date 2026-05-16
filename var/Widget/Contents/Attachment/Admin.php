@@ -4,7 +4,6 @@ namespace Widget\Contents\Attachment;
 
 use Typecho\Config;
 use Typecho\Db;
-use Typecho\Db\Exception;
 use Widget\Base\Contents;
 use Widget\Contents\AdminTrait;
 

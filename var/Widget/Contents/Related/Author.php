@@ -3,7 +3,6 @@
 namespace Widget\Contents\Related;
 
 use Typecho\Db;
-use Typecho\Db\Exception;
 use Widget\Base\Contents;
 
 if (!defined('__TYPECHO_ROOT_DIR__')) {

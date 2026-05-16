@@ -165,9 +165,6 @@ class Feed extends Contents
         $this->response->setContentType($contentType);
     }
 
-    /**
-     * @return void
-     */
     public function render()
     {
         echo $this->feed;

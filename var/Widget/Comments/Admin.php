@@ -23,9 +23,6 @@ class Admin extends Comments
 
     private ?int $total;
 
-    /**
-     * 获取菜单标题
-     */
     public function getMenuTitle(): string
     {
         $content = $this->parentContent;
@@ -72,7 +69,6 @@ class Admin extends Comments
             $select->where('table.comments.status = ?', 'approved');
         }
 
-        //增加按文章归档功能
         if ($this->request->is('cid')) {
             $select->where('table.comments.cid = ?', $this->request->filter('int')->get('cid'));
         }
@@ -85,14 +81,10 @@ class Admin extends Comments
         $this->db->fetchAll($select, [$this, 'push']);
     }
 
-    /**
-     * 输出分页
-     */
     public function pageNav()
     {
         $query = $this->request->makeUriByRequest('page={page}');
 
-        /** 使用盒状分页 */
         $nav = new Box(
             !isset($this->total) ? $this->total = $this->size($this->countSql) : $this->total,
             $this->currentPage,

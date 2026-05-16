@@ -4,7 +4,6 @@ namespace Widget\Comments;
 
 use Typecho\Config;
 use Typecho\Db;
-use Typecho\Db\Exception;
 use Widget\Base\Comments;
 
 if (!defined('__TYPECHO_ROOT_DIR__')) {

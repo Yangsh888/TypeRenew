@@ -117,18 +117,27 @@ class Edit extends Contents implements ActionInterface
             self::pluginHandle()->call('mark', $status, $post, $this);
 
             $condition = $this->db->sql()->where('cid = ?', $post);
-            $postObject = $this->db->fetchObject($this->db->select('status', 'type')
+            $postObject = $this->db->fetchObject($this->db->select('status', 'type', 'created')
                 ->from('table.contents')->where('cid = ? AND (type = ? OR type = ?)', $post, 'post', 'post_draft'));
 
             if ($this->isWriteable(clone $condition) && count((array)$postObject)) {
-                $this->db->query($condition->update('table.contents')->rows(['status' => $status]));
+                $rows = ['status' => $status];
+                $isDraftToPublish = $status == 'publish' && $postObject->type == 'post_draft';
+                if ($isDraftToPublish) {
+                    $rows['type'] = 'post';
+                }
 
-                if ($postObject->type == 'post') {
+                $this->db->query($condition->update('table.contents')->rows($rows));
+
+                if ($postObject->type == 'post' || $isDraftToPublish) {
                     $op = null;
+                    $beforeCountable = $postObject->type == 'post'
+                        && $this->isCountablePublishedPost((string) $postObject->status, (int) ($postObject->created ?? 0));
+                    $afterCountable = $this->isCountablePublishedPost($status, (int) ($postObject->created ?? 0));
 
-                    if ($status == 'publish' && $postObject->status != 'publish') {
+                    if ($afterCountable && !$beforeCountable) {
                         $op = '+';
-                    } elseif ($status != 'publish' && $postObject->status == 'publish') {
+                    } elseif (!$afterCountable && $beforeCountable) {
                         $op = '-';
                     }
 
@@ -175,15 +184,15 @@ class Edit extends Contents implements ActionInterface
             self::pluginHandle()->call('delete', $post, $this);
 
             $condition = $this->db->sql()->where('cid = ?', $post);
-            $postObject = $this->db->fetchObject($this->db->select('status', 'type')
+            $postObject = $this->db->fetchObject($this->db->select('status', 'type', 'created')
                 ->from('table.contents')->where('cid = ? AND (type = ? OR type = ?)', $post, 'post', 'post_draft'));
 
             if ($this->isWriteable(clone $condition) && count((array)$postObject) && $this->delete($condition)) {
-                $this->setCategories($post, [], 'publish' == $postObject->status
-                    && 'post' == $postObject->type);
+                $isCountable = 'post' == $postObject->type
+                    && $this->isCountablePublishedPost((string) $postObject->status, (int) ($postObject->created ?? 0));
+                $this->setCategories($post, [], $isCountable);
 
-                $this->setTags($post, null, 'publish' == $postObject->status
-                    && 'post' == $postObject->type);
+                $this->setTags($post, null, $isCountable);
 
                 $this->db->query($this->db->delete('table.comments')
                     ->where('cid = ?', $post));

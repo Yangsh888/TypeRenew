@@ -6,12 +6,10 @@ use Typecho\Common;
 use Typecho\Config;
 use Typecho\Cookie;
 use Typecho\Date;
-use Typecho\Db\Exception;
 use Typecho\Db\Query;
 use Typecho\Plugin;
 use Typecho\Router;
 use Typecho\Router\ParamsDelegateInterface;
-use Typecho\Widget;
 use Utils\AutoP;
 use Utils\Markdown;
 use Widget\Base;
@@ -103,17 +101,11 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
         }
     }
 
-    /**
-     * 获取查询对象
-     */
     public function select(...$fields): Query
     {
         return $this->db->select(...$fields)->from('table.contents');
     }
 
-    /**
-     * 插入内容
-     */
     public function insert(array $rows): int
     {
         $insertStruct = [
@@ -195,9 +187,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
         return $result;
     }
 
-    /**
-     * 更新内容
-     */
     public function update(array $rows, Query $condition): int
     {
         if (!$this->isWriteable(clone $condition)) {
@@ -253,17 +242,11 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
         return $post && ($this->user->pass('editor', true) || $post['authorId'] == $this->user->uid);
     }
 
-    /**
-     * 删除内容
-     */
     public function delete(Query $condition): int
     {
         return $this->db->query($condition->delete('table.contents'));
     }
 
-    /**
-     * 按照条件计算内容数量
-     */
     public function size(Query $condition): int
     {
         return $this->db->fetchObject($condition
@@ -272,9 +255,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
             ->cleanAttribute('group'))->num;
     }
 
-    /**
-     * 获取当前所有自定义模板
-     */
     public function getTemplates(): array
     {
         $files = glob($this->options->themeFile($this->options->theme, '*.php')) ?: [];
@@ -594,26 +574,17 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
             ->toArray(['mid', 'name', 'slug', 'description', 'order', 'parent', 'count', 'permalink']);
     }
 
-    /**
-     * 将tags取出
-     */
     protected function ___tags(): array
     {
         return TagRelated::allocWithAlias($this->cid, ['cid' => $this->cid])
             ->toArray(['mid', 'name', 'slug', 'description', 'count', 'permalink']);
     }
 
-    /**
-     * 文章作者
-     */
     protected function ___author(): Users
     {
         return Author::allocWithAlias($this->cid, ['uid' => $this->authorId]);
     }
 
-    /**
-     * 获取词义化日期
-     */
     protected function ___dateWord(): string
     {
         return $this->date->word();

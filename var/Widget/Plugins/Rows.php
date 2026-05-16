@@ -17,13 +17,14 @@ class Rows extends Widget
     {
         $pluginDirs = $this->getPlugins();
         $this->parameter->setDefault(['activated' => null]);
+        $activated = $this->normalizeActivatedFilter($this->parameter->activated);
 
         $plugins = Plugin::export();
         $this->activatedPlugins = $plugins['activated'];
 
         if (!empty($pluginDirs)) {
-            foreach ($pluginDirs as $key => $pluginDir) {
-                $parts = $this->getPlugin($pluginDir, $key);
+            foreach ($pluginDirs as $pluginDir) {
+                $parts = $this->getPlugin($pluginDir);
                 if (empty($parts)) {
                     continue;
                 }
@@ -45,7 +46,7 @@ class Rows extends Widget
                         }
                     }
 
-                    if ($info['activated'] == $this->parameter->activated) {
+                    if ($activated === null || $info['activated'] === $activated) {
                         $this->push($info);
                     }
                 }
@@ -53,18 +54,15 @@ class Rows extends Widget
         }
     }
 
-    /**
-     * @return array
-     */
     protected function getPlugins(): array
     {
-        return glob(__TYPECHO_ROOT_DIR__ . '/' . __TYPECHO_PLUGIN_DIR__ . '/*') ?: [];
+        $plugins = glob(__TYPECHO_ROOT_DIR__ . '/' . __TYPECHO_PLUGIN_DIR__ . '/*');
+        $plugins = is_array($plugins) ? $plugins : [];
+        natcasesort($plugins);
+
+        return array_values($plugins);
     }
 
-    /**
-     * @param string $plugin
-     * @return array|null
-     */
     protected function getPlugin(string $plugin): ?array
     {
         if (is_dir($plugin)) {
@@ -84,5 +82,14 @@ class Rows extends Widget
         }
 
         return [$pluginName, $pluginFileName];
+    }
+
+    private function normalizeActivatedFilter(mixed $activated): ?bool
+    {
+        if ($activated === null || $activated === '') {
+            return null;
+        }
+
+        return filter_var($activated, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
     }
 }

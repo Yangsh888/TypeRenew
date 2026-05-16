@@ -3,7 +3,6 @@
 namespace Widget\Contents;
 
 use Typecho\Config;
-use Typecho\Db\Exception as DbException;
 use Typecho\Db\Query;
 use Typecho\Widget\Exception;
 use Typecho\Widget\Helper\PageNavigator\Box;
@@ -47,12 +46,6 @@ trait AdminTrait
         $this->total = $this->size($countSql);
     }
 
-    /**
-     * 输出分页
-     *
-     * @throws Exception
-     * @throws DbException
-     */
     public function pageNav()
     {
         $query = $this->request->makeUriByRequest('page={page}');
@@ -67,10 +60,6 @@ trait AdminTrait
         $nav->render('&laquo;', '&raquo;');
     }
 
-    /**
-     * @return array|null
-     * @throws DbException
-     */
     protected function ___revision(): ?array
     {
         return $this->db->fetchRow(

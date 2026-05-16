@@ -3,7 +3,6 @@ include 'common.php';
 include 'header.php';
 include 'menu.php';
 
-$stat = \Widget\Stat::alloc();
 $pages = \Widget\Contents\Page\Admin::alloc();
 $pageAction = htmlspecialchars($options->index . '/action/contents-page-edit', ENT_QUOTES, 'UTF-8');
 $pageToken = htmlspecialchars($security->getToken($options->index . '/action/contents-page-edit'), ENT_QUOTES, 'UTF-8');

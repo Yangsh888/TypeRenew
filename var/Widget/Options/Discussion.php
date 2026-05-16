@@ -2,7 +2,6 @@
 
 namespace Widget\Options;
 
-use Typecho\Db\Exception;
 use Typecho\Widget\Helper\Form;
 use Widget\ActionInterface;
 use Widget\Base\Options;
@@ -11,14 +10,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-/**
- * 评论设置组件
- *
- * @author qining
- * @package Widget
- * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
- * @license GNU General Public License 2.0
- */
 class Discussion extends Options implements ActionInterface
 {
     use EditTrait;
@@ -96,9 +87,6 @@ class Discussion extends Options implements ActionInterface
         $this->saveSuccessAndGoBack();
     }
 
-    /**
-     * @return Form
-     */
     public function form(): Form
     {
         $form = new Form($this->security->getIndex('/action/options-discussion'), Form::POST_METHOD);
@@ -114,7 +102,6 @@ class Discussion extends Options implements ActionInterface
         $commentDateFormat->input->setAttribute('class', 'w-40 mono');
         $form->addInput($commentDateFormat);
 
-        /** 评论列表数目 */
         $commentsListSize = new Form\Element\Number(
             'commentsListSize',
             null,

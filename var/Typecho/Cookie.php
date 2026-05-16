@@ -71,7 +71,19 @@ class Cookie
      */
     public static function setOptions(array $options)
     {
-        self::$domain = $options['domain'] ?: self::$domain;
+        if (array_key_exists('domain', $options)) {
+            $domain = $options['domain'];
+
+            if ($domain === null || $domain === '') {
+                self::$domain = '';
+            } elseif (!is_array($domain) && !is_object($domain)) {
+                $domain = trim((string) $domain);
+                if ($domain !== '' && !preg_match('/[\s\/\\\\\x00]/', $domain)) {
+                    self::$domain = $domain;
+                }
+            }
+        }
+
         if (array_key_exists('secure', $options)) {
             self::$secure = (bool) $options['secure'];
         }
@@ -96,7 +108,12 @@ class Cookie
     {
         $key = self::$prefix . $key;
         $value = $_COOKIE[$key] ?? $default;
-        return is_array($value) ? $default : $value;
+
+        if (is_array($value) || (!is_string($value) && $value !== null)) {
+            return $default;
+        }
+
+        return $value;
     }
 
     /**
@@ -130,10 +147,6 @@ class Cookie
     public static function delete(string $key)
     {
         $key = self::$prefix . $key;
-        if (!isset($_COOKIE[$key])) {
-            return;
-        }
-
         Response::getInstance()->setCookie($key, '', -1, self::$path, self::$domain, self::$secure, self::$httponly, self::$sameSite);
         unset($_COOKIE[$key]);
     }

@@ -74,8 +74,6 @@ class Edit extends Options implements ActionInterface
 
     /**
      * 解析主题内文件真实路径，阻止目录穿越到主题目录外
-     *
-     * @throws Exception
      */
     private function resolveThemePath(string $theme, ?string $file = null): string
     {
@@ -100,10 +98,6 @@ class Edit extends Options implements ActionInterface
 
     /**
      * 更换外观
-     *
-     * @param string $theme 外观名称
-     * @throws Exception
-     * @throws \Typecho\Db\Exception
      */
     public function changeTheme(string $theme)
     {
@@ -147,9 +141,6 @@ class Edit extends Options implements ActionInterface
 
     /**
      * 用自有函数处理配置信息
-     *
-     * @param array $settings 配置值
-     * @param boolean $isInit 是否为初始化
      */
     public function configHandle(array $settings, bool $isInit): bool
     {
@@ -163,10 +154,6 @@ class Edit extends Options implements ActionInterface
 
     /**
      * 编辑外观文件
-     *
-     * @param string $theme 外观名称
-     * @param string $file 文件名
-     * @throws Exception
      */
     public function editThemeFile(string $theme, string $file)
     {
@@ -190,9 +177,6 @@ class Edit extends Options implements ActionInterface
 
     /**
      * 配置外观
-     *
-     * @param string $theme 外观名
-     * @throws \Typecho\Db\Exception
      */
     public function config(string $theme)
     {

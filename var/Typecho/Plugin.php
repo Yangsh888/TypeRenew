@@ -21,7 +21,7 @@ class Plugin
     public function __construct(string $handle)
     {
         if (defined('__TYPECHO_CLASS_ALIASES__')) {
-            $alias = array_search('\\' . ltrim($handle, '\\'), __TYPECHO_CLASS_ALIASES__);
+            $alias = array_search('\\' . ltrim($handle, '\\'), __TYPECHO_CLASS_ALIASES__, true);
             $handle = $alias ?: $handle;
         }
 
@@ -67,10 +67,44 @@ class Plugin
         unset(self::$plugin['activated'][$pluginName]);
     }
 
+    public static function rollbackTemporaryHandles(): void
+    {
+        if (
+            empty(self::$tmp['handles'])
+            || !is_array(self::$tmp['handles'])
+        ) {
+            self::$tmp = [];
+            return;
+        }
+
+        foreach (self::$tmp['handles'] as $component => $callbacks) {
+            if (
+                empty(self::$plugin['handles'][$component])
+                || !is_array(self::$plugin['handles'][$component])
+            ) {
+                continue;
+            }
+
+            foreach ($callbacks as $callback) {
+                foreach (self::$plugin['handles'][$component] as $weight => $registered) {
+                    if ($registered === $callback) {
+                        unset(self::$plugin['handles'][$component][$weight]);
+                    }
+                }
+            }
+
+            if (empty(self::$plugin['handles'][$component])) {
+                unset(self::$plugin['handles'][$component]);
+            }
+        }
+
+        self::$tmp = [];
+    }
+
     private static function pluginHandlesDiff(array $pluginHandles, array $otherPluginHandles): array
     {
         foreach ($otherPluginHandles as $handle) {
-            while (false !== ($index = array_search($handle, $pluginHandles))) {
+            while (false !== ($index = array_search($handle, $pluginHandles, true))) {
                 unset($pluginHandles[$index]);
             }
         }
@@ -102,15 +136,6 @@ class Plugin
 
     public static function parseInfo(string $pluginFile): array
     {
-        $tokens = token_get_all(file_get_contents($pluginFile));
-        $isDoc = false;
-        $isFunction = false;
-        $isClass = false;
-        $isInClass = false;
-        $isInFunction = false;
-        $isDefined = false;
-        $current = null;
-
         $info = [
             'description' => '',
             'title' => '',
@@ -123,6 +148,24 @@ class Plugin
             'config' => false,
             'personalConfig' => false
         ];
+
+        if (!is_readable($pluginFile)) {
+            return $info;
+        }
+
+        $source = file_get_contents($pluginFile);
+        if (!is_string($source) || $source === '') {
+            return $info;
+        }
+
+        $tokens = token_get_all($source);
+        $isDoc = false;
+        $isFunction = false;
+        $isClass = false;
+        $isInClass = false;
+        $isInFunction = false;
+        $isDefined = false;
+        $current = null;
 
         $map = [
             'package' => 'title',

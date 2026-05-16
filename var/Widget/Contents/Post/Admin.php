@@ -4,7 +4,6 @@ namespace Widget\Contents\Post;
 
 use Typecho\Cookie;
 use Typecho\Db;
-use Typecho\Db\Exception as DbException;
 use Typecho\Widget\Exception;
 use Widget\Base\Contents;
 use Widget\Contents\AdminTrait;

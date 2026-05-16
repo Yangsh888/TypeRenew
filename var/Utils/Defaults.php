@@ -5,26 +5,31 @@ namespace Utils;
 use Typecho\Common;
 use Typecho\Cookie;
 use Typecho\Request;
+use Widget\Options\General;
 
 class Defaults
 {
     public static function language(): string
     {
-        $serverLang = Request::getInstance()->getServer('TYPECHO_LANG');
+        $request = Request::getInstance();
+        $serverLang = self::normalizeLanguage($request->getServer('TYPECHO_LANG'));
 
-        if (!empty($serverLang)) {
+        if ($serverLang !== null) {
             return $serverLang;
         }
 
-        $lang = 'zh_CN';
-        $request = Request::getInstance();
+        self::initializeLanguageCookie();
 
         if ($request->is('lang')) {
-            $lang = $request->get('lang');
-            Cookie::set('lang', $lang);
+            $requestLang = self::normalizeLanguage($request->get('lang'));
+
+            if ($requestLang !== null) {
+                Cookie::set('lang', $requestLang, $request->getServer('REQUEST_TIME', time()) + 31536000);
+                return $requestLang;
+            }
         }
 
-        return Cookie::get('lang', $lang);
+        return self::normalizeLanguage(Cookie::get('lang')) ?? 'zh_CN';
     }
 
     public static function siteUrl(): string
@@ -221,6 +226,58 @@ class Defaults
             'actionTable' => \Typecho\Common::jsonEncode([], 0, '[]'),
             'panelTable' => \Typecho\Common::jsonEncode([], 0, '[]'),
         ];
+    }
+
+    private static function normalizeLanguage(mixed $lang): ?string
+    {
+        if (!is_string($lang)) {
+            return null;
+        }
+
+        $lang = trim($lang);
+        if ($lang === '') {
+            return null;
+        }
+
+        return isset(self::availableLanguages()[$lang]) ? $lang : null;
+    }
+
+    private static function availableLanguages(): array
+    {
+        static $langs;
+
+        if (!is_array($langs)) {
+            $langs = General::getLangs();
+        }
+
+        return $langs;
+    }
+
+    private static function initializeLanguageCookie(): void
+    {
+        if (Cookie::getPrefix() !== '') {
+            return;
+        }
+
+        Cookie::setPrefix(self::rootUrl());
+        if (defined('__TYPECHO_COOKIE_OPTIONS__')) {
+            Cookie::setOptions(__TYPECHO_COOKIE_OPTIONS__);
+        }
+    }
+
+    private static function rootUrl(): string
+    {
+        $request = Request::getInstance();
+        $rootUrl = defined('__TYPECHO_ROOT_URL__') ? __TYPECHO_ROOT_URL__ : $request->getRequestRoot();
+
+        if (defined('__TYPECHO_ADMIN__')) {
+            $adminDir = '/' . trim(defined('__TYPECHO_ADMIN_DIR__') ? __TYPECHO_ADMIN_DIR__ : '/admin/', '/');
+            if ($adminDir !== '/' && str_ends_with($rootUrl, $adminDir)) {
+                $rootUrl = substr($rootUrl, 0, -strlen($adminDir));
+            }
+        }
+
+        return $rootUrl;
     }
 
 }

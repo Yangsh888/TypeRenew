@@ -3,7 +3,6 @@
 namespace Widget\Contents\Page;
 
 use Typecho\Config;
-use Typecho\Db\Exception;
 use Widget\Base\Contents;
 use Widget\Base\TreeViewTrait;
 
@@ -11,31 +10,15 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-/**
- * 独立页面列表组件
- *
- * @author qining
- * @package Widget
- * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
- * @license GNU General Public License 2.0
- */
 class Rows extends Contents
 {
     use TreeViewTrait;
 
-    /**
-     * @return void
-     * @throws Exception
-     */
     public function execute()
     {
         $this->pushAll($this->getRows($this->orders, $this->parameter->ignore));
     }
 
-    /**
-     * @return array
-     * @throws Exception
-     */
     protected function initTreeRows(): array
     {
         $select = $this->select(
@@ -59,7 +42,6 @@ class Rows extends Contents
             ->where('table.contents.status = ?', 'publish')
             ->where('table.contents.created < ?', $this->options->time);
 
-        //去掉自定义首页
         $frontPage = explode(':', $this->options->frontPage);
         if (2 == count($frontPage) && 'page' == $frontPage[0]) {
             $select->where('table.contents.cid <> ?', $frontPage[1]);
@@ -68,11 +50,6 @@ class Rows extends Contents
         return $this->db->fetchAll($select);
     }
 
-    /**
-     * treeViewPages
-     *
-     * @param mixed $pageOptions 输出选项
-     */
     public function listPages($pageOptions = null)
     {
         $pageOptions = Config::factory($pageOptions);
@@ -87,7 +64,6 @@ class Rows extends Contents
             'feedTemplate'  => '<a href="%s">RSS</a>'
         ]);
 
-        // 插件接口
         self::pluginHandle()->trigger($plugged)->call('listPages', $pageOptions, $this);
 
         if (!$plugged) {

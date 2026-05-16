@@ -9,135 +9,12 @@ use Typecho\Plugin\Exception as PluginException;
 use Typecho\Date;
 use Typecho\Router;
 use Typecho\Router\Parser;
-use Typecho\Widget;
 use Utils\Zone;
 
 if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-/**
- * 全局选项组件
- *
- * @property string $feedUrl
- * @property string $feedRssUrl
- * @property string $feedAtomUrl
- * @property string $commentsFeedUrl
- * @property string $commentsFeedRssUrl
- * @property string $commentsFeedAtomUrl
- * @property string $themeUrl
- * @property string $xmlRpcUrl
- * @property string $index
- * @property string $siteUrl
- * @property string $siteDomain
- * @property array $routingTable
- * @property string $rootUrl
- * @property string $pluginUrl
- * @property string $pluginDir
- * @property string $adminUrl
- * @property string $loginUrl
- * @property string $originalSiteUrl
- * @property string $loginAction
- * @property string $registerUrl
- * @property string $registerAction
- * @property string $profileUrl
- * @property string $logoutUrl
- * @property string $title
- * @property string $description
- * @property string $keywords
- * @property string $lang
- * @property string $theme
- * @property string|null $missingTheme
- * @property int $pageSize
- * @property int $serverTimezone
- * @property int $timezone
- * @property string|null $timezoneId
- * @property string $charset
- * @property string $contentType
- * @property string $generator
- * @property string $software
- * @property string $version
- * @property bool $markdown
- * @property bool $xmlrpcMarkdown
- * @property array $allowedAttachmentTypes
- * @property string $attachmentTypes
- * @property int $time
- * @property string $frontPage
- * @property int $commentsListSize
- * @property bool $commentsShowCommentOnly
- * @property array $actionTable
- * @property array $panelTable
- * @property bool $commentsThreaded
- * @property bool $defaultAllowComment
- * @property bool $defaultAllowPing
- * @property bool $defaultAllowFeed
- * @property string $commentDateFormat
- * @property string $commentsAvatarRating
- * @property string $commentsPageDisplay
- * @property int $commentsPageSize
- * @property string $commentsOrder
- * @property bool $commentsMarkdown
- * @property bool $commentsShowUrl
- * @property bool $commentsUrlNofollow
- * @property bool $commentsAvatar
- * @property bool $commentsPageBreak
- * @property bool $commentsRequireModeration
- * @property bool $commentsWhitelist
- * @property bool $commentsRequireMail
- * @property bool $commentsRequireUrl
- * @property bool $commentsCheckReferer
- * @property bool $commentsAntiSpam
- * @property bool $commentsAutoClose
- * @property bool $commentsPostIntervalEnable
- * @property int $commentsMaxNestingLevels
- * @property int $commentsPostTimeout
- * @property int $commentsPostInterval
- * @property string $commentsHTMLTagAllowed
- * @property bool $allowRegister
- * @property int $allowXmlRpc
- * @property int $postsListSize
- * @property bool $feedFullText
- * @property int $defaultCategory
- * @property int $cacheStatus
- * @property string $cacheDriver
- * @property int $cacheTtl
- * @property string $cachePrefix
- * @property int $cacheCommentFlush
- * @property string $cacheRedisHost
- * @property int $cacheRedisPort
- * @property string $cacheRedisPassword
- * @property int $cacheRedisDatabase
- * @property int $mailEnable
- * @property string $mailTransport
- * @property string $mailAdmin
- * @property string $mailFrom
- * @property string $mailFromName
- * @property string $mailSmtpHost
- * @property int $mailSmtpPort
- * @property string $mailSmtpUser
- * @property string $mailSmtpPass
- * @property string $mailSmtpSecure
- * @property string $mailQueueMode
- * @property int $mailBatchSize
- * @property int $mailMaxAttempts
- * @property int $mailKeepDays
- * @property int $mailNotifyOwner
- * @property int $mailNotifyGuest
- * @property int $mailNotifyPending
- * @property int $mailNotifyMe
- * @property string $mailSubjectOwner
- * @property string $mailSubjectGuest
- * @property string $mailSubjectPending
- * @property string $mailCronKey
- * @property string $mailRuntimeError
- * @property int $mailRuntimeErrorAt
- * @property bool $frontArchive
- * @property array $plugins
- * @property string $secret
- * @property bool $installed
- * @property bool $rewrite
- * @property string $postDateFormat
- */
 class Options extends Base
 {
     private array $pluginConfig = [];
@@ -190,33 +67,16 @@ class Options extends Base
         $this->push($options);
     }
 
-    /**
-     * 获取皮肤文件
-     *
-     * @param string $theme
-     * @param string $file
-     * @return string
-     */
     public function themeFile(string $theme, string $file = ''): string
     {
         return __TYPECHO_ROOT_DIR__ . __TYPECHO_THEME_DIR__ . '/' . trim($theme, './') . '/' . trim($file, './');
     }
 
-    /**
-     * 输出网站路径
-     *
-     * @param string|null $path 子路径
-     */
     public function siteUrl(?string $path = null)
     {
         echo Common::url($path, $this->siteUrl);
     }
 
-    /**
-     * 输出解析地址
-     *
-     * @param string|null $path 子路径
-     */
     public function index(?string $path = null)
     {
         echo Common::url($path, $this->index);
@@ -241,22 +101,11 @@ class Options extends Base
         }
     }
 
-    /**
-     * 输出插件路径
-     *
-     * @param string|null $path 子路径
-     */
     public function pluginUrl(?string $path = null)
     {
         echo Common::url($path, $this->pluginUrl);
     }
 
-    /**
-     * 获取插件目录
-     *
-     * @param string|null $plugin
-     * @return string
-     */
     public function pluginDir(?string $plugin = null): string
     {
         return Common::url($plugin, $this->pluginDir);
@@ -305,9 +154,6 @@ class Options extends Base
         echo $url;
     }
 
-    /**
-     * 编码输出允许出现在评论中的html标签
-     */
     public function commentsHTMLTagAllowed()
     {
         echo htmlspecialchars((string) ($this->commentsHTMLTagAllowed ?? ''), ENT_QUOTES, 'UTF-8');
@@ -385,11 +231,6 @@ class Options extends Base
         return $this->decodeArrayOption('plugins', $this->row['plugins'] ?? null, [], true);
     }
 
-    /**
-     * 动态判断皮肤目录
-     *
-     * @return string|null
-     */
     protected function ___missingTheme(): ?string
     {
         return !is_dir($this->themeFile($this->row['theme'])) ? $this->row['theme'] : null;
@@ -400,11 +241,6 @@ class Options extends Base
         return $this->missingTheme ? 'default' : $this->row['theme'];
     }
 
-    /**
-     * 动态获取根目录
-     *
-     * @return string
-     */
     protected function ___rootUrl(): string
     {
         $rootUrl = defined('__TYPECHO_ROOT_URL__') ? __TYPECHO_ROOT_URL__ : $this->request->getRequestRoot();
@@ -446,102 +282,52 @@ class Options extends Base
         return (string) (parse_url($this->siteUrl, PHP_URL_HOST) ?: '');
     }
 
-    /**
-     * RSS2.0
-     *
-     * @return string
-     */
     protected function ___feedUrl(): string
     {
         return Router::url('feed', ['feed' => '/'], $this->index);
     }
 
-    /**
-     * RSS1.0
-     *
-     * @return string
-     */
     protected function ___feedRssUrl(): string
     {
         return Router::url('feed', ['feed' => '/rss/'], $this->index);
     }
 
-    /**
-     * ATOM1.0
-     *
-     * @return string
-     */
     protected function ___feedAtomUrl(): string
     {
         return Router::url('feed', ['feed' => '/atom/'], $this->index);
     }
 
-    /**
-     * 评论RSS2.0聚合
-     *
-     * @return string
-     */
     protected function ___commentsFeedUrl(): string
     {
         return Router::url('feed', ['feed' => '/comments/'], $this->index);
     }
 
-    /**
-     * 评论RSS1.0聚合
-     *
-     * @return string
-     */
     protected function ___commentsFeedRssUrl(): string
     {
         return Router::url('feed', ['feed' => '/rss/comments/'], $this->index);
     }
 
-    /**
-     * 评论ATOM1.0聚合
-     *
-     * @return string
-     */
     protected function ___commentsFeedAtomUrl(): string
     {
         return Router::url('feed', ['feed' => '/atom/comments/'], $this->index);
     }
 
-    /**
-     * xmlrpc api地址
-     *
-     * @return string
-     */
     protected function ___xmlRpcUrl(): string
     {
         return Router::url('do', ['action' => 'xmlrpc'], $this->index);
     }
 
-    /**
-     * 获取解析路径前缀
-     *
-     * @return string
-     */
     protected function ___index(): string
     {
         return ($this->rewrite || (defined('__TYPECHO_REWRITE__') && __TYPECHO_REWRITE__))
             ? $this->rootUrl : Common::url('index.php', $this->rootUrl);
     }
 
-    /**
-     * 获取模板路径
-     *
-     * @return string
-     */
     protected function ___themeUrl(): string
     {
         return $this->themeUrl(null, $this->theme);
     }
 
-    /**
-     * 获取插件路径
-     *
-     * @return string
-     */
     protected function ___pluginUrl(): string
     {
         return defined('__TYPECHO_PLUGIN_URL__') ? __TYPECHO_PLUGIN_URL__ :
@@ -553,32 +339,17 @@ class Options extends Base
         return Common::url(__TYPECHO_PLUGIN_DIR__, __TYPECHO_ROOT_DIR__);
     }
 
-    /**
-     * 获取后台路径
-     *
-     * @return string
-     */
     protected function ___adminUrl(): string
     {
         return Common::url(defined('__TYPECHO_ADMIN_DIR__') ?
             __TYPECHO_ADMIN_DIR__ : '/admin/', $this->rootUrl);
     }
 
-    /**
-     * 获取登录地址
-     *
-     * @return string
-     */
     protected function ___loginUrl(): string
     {
         return Common::url('login.php', $this->adminUrl);
     }
 
-    /**
-     * 获取登录提交地址
-     *
-     * @return string
-     */
     protected function ___loginAction(): string
     {
         return Security::alloc()->getTokenUrl(
@@ -590,22 +361,11 @@ class Options extends Base
         );
     }
 
-    /**
-     * 获取注册地址
-     *
-     * @return string
-     */
     protected function ___registerUrl(): string
     {
         return Common::url('register.php', $this->adminUrl);
     }
 
-    /**
-     * 获取注册提交地址
-     *
-     * @return string
-     * @throws Widget\Exception
-     */
     protected function ___registerAction(): string
     {
         return Security::alloc()->getTokenUrl(
@@ -613,21 +373,11 @@ class Options extends Base
         );
     }
 
-    /**
-     * 获取个人档案地址
-     *
-     * @return string
-     */
     protected function ___profileUrl(): string
     {
         return Common::url('profile.php', $this->adminUrl);
     }
 
-    /**
-     * 获取登出地址
-     *
-     * @return string
-     */
     protected function ___logoutUrl(): string
     {
         return Security::alloc()->getTokenUrl(
@@ -731,7 +481,7 @@ class Options extends Base
 
     protected function ___contentType(): string
     {
-        return $this->contentType ?? 'text/html';
+        return (string) ($this->row['contentType'] ?? 'text/html');
     }
 
     protected function ___software(): string
@@ -753,11 +503,6 @@ class Options extends Base
         return $version;
     }
 
-    /**
-     * 允许上传的文件类型
-     *
-     * @return array
-     */
     protected function ___allowedAttachmentTypes(): array
     {
         $attachmentTypesResult = [];
@@ -811,12 +556,6 @@ class Options extends Base
         }
     }
 
-    /**
-     * Try to deserialize a value
-     *
-     * @param string $value
-     * @return mixed
-     */
     private function tryDeserialize(string $value)
     {
         $value = trim($value);

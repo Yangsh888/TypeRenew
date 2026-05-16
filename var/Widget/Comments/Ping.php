@@ -3,20 +3,12 @@
 namespace Widget\Comments;
 
 use Typecho\Config;
-use Typecho\Db\Exception;
 use Widget\Base\Comments;
 
 if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-/**
- * 回响归档组件
- *
- * @package Widget
- * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
- * @license GNU General Public License 2.0
- */
 class Ping extends Comments
 {
     private bool $customSinglePingCallback = false;
@@ -118,8 +110,6 @@ class Ping extends Comments
 
     /**
      * 重载内容获取
-     *
-     * @return array|null
      */
     protected function ___parentContent(): ?array
     {

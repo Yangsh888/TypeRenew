@@ -4,7 +4,6 @@ namespace Widget;
 
 use Typecho\Common;
 use Typecho\Cookie;
-use Typecho\Db\Exception as DbException;
 use Typecho\Widget;
 use Utils\Password;
 use Widget\Base\Users;
@@ -50,11 +49,6 @@ class User extends Users
         }
     }
 
-    /**
-     * 判断用户是否已经登录
-     *
-     * @return boolean
-     */
     public function hasLogin(): ?bool
     {
         if (null !== $this->hasLogin) {
@@ -62,7 +56,6 @@ class User extends Users
         } else {
             $cookieUid = Cookie::get('__typecho_uid');
             if (null !== $cookieUid) {
-                /** 验证登录 */
                 $user = $this->db->fetchRow($this->db->select()->from('table.users')
                     ->where('uid = ?', intval($cookieUid))
                     ->limit(1));
@@ -93,13 +86,11 @@ class User extends Users
 
     public function login(string $name, string $password, bool $temporarily = false, int $expire = 0): bool
     {
-        //插件接口
         $result = self::pluginHandle()->trigger($loginPluggable)->call('login', $name, $password, $temporarily, $expire);
         if ($loginPluggable) {
             return $result;
         }
 
-        /** 开始验证用户 **/
         $user = $this->db->fetchRow($this->db->select()
             ->from('table.users')
             ->where('name = ?', $name)
@@ -145,10 +136,6 @@ class User extends Users
         return false;
     }
 
-    /**
-     * @param $user
-     * @param int $expire
-     */
     public function commitLogin(&$user, int $expire = 0)
     {
         $authCode = function_exists('openssl_random_pseudo_bytes') ?
@@ -158,7 +145,6 @@ class User extends Users
         Cookie::set('__typecho_uid', $user['uid'], $expire);
         Cookie::set('__typecho_authCode', Common::hash($authCode), $expire);
 
-        //更新最后登录时间以及验证码
         $this->db->query($this->db
             ->update('table.users')
             ->expression('logged', 'activated')
@@ -172,7 +158,6 @@ class User extends Users
      * @param int | array $uid 用户id或者用户数据数组
      * @param boolean $temporarily 是否为临时登录，默认为临时登录以兼容以前的方法
      * @param integer $expire 过期时间
-     * @return boolean
      */
     public function simpleLogin($uid, bool $temporarily = true, int $expire = 0): bool
     {

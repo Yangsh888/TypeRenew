@@ -64,6 +64,11 @@ $mysqlRiskItems = array_values(array_filter(
     static fn(array $item): bool => (string) ($item['status'] ?? 'ok') !== 'ok'
 ));
 $mysqlRiskCount = count($mysqlRiskItems);
+$repairMysqlRiskItems = array_values(array_filter(
+    $mysqlRiskItems,
+    static fn(array $item): bool => (string) ($item['key'] ?? '') !== 'users_mail_duplicates'
+));
+$repairMysqlRiskCount = count($repairMysqlRiskItems);
 $dbDiagnosticsUrl = $options->adminUrl('upgrade.php?dbdiag=1', true);
 $dbOverviewUrl = $options->adminUrl('upgrade.php', true);
 ?>
@@ -262,6 +267,9 @@ $dbOverviewUrl = $options->adminUrl('upgrade.php', true);
                                         </div>
                                         <div class="tr-help tr-mt-12">
                                             <?php _e('当前发现 %d 项关键结构异常。', $schemaIssueCount); ?>
+                                            <?php if (!empty($mysqlRiskStatus['supported']) && $repairMysqlRiskCount > 0): ?>
+                                                <?php _e('另有 %d 项 MySQL 风险与结构修复直接相关。', $repairMysqlRiskCount); ?>
+                                            <?php endif; ?>
                                         </div>
                                         <form action="<?php echo $dbUpgradeUrl; ?>" method="post" class="tr-mt-12">
                                             <input type="hidden" name="do" value="repairCriticalSchema">

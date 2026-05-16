@@ -3,7 +3,6 @@
 namespace Widget\Contents;
 
 use Typecho\Config;
-use Typecho\Db\Exception;
 use Widget\Base\Contents;
 use Widget\Base\TreeTrait;
 
@@ -11,9 +10,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-/**
- * 单个内容组件
- */
 class From extends Contents
 {
     use TreeTrait {
@@ -21,10 +17,6 @@ class From extends Contents
         ___directory as ___treeDirectory;
     }
 
-    /**
-     * @param Config $parameter
-     * @return void
-     */
     protected function initParameter(Config $parameter)
     {
         $parameter->setDefault([
@@ -33,10 +25,6 @@ class From extends Contents
         ]);
     }
 
-    /**
-     * @return void
-     * @throws Exception
-     */
     public function execute()
     {
         $query = null;
@@ -56,18 +44,11 @@ class From extends Contents
         }
     }
 
-    /**
-     * @return array
-     */
     protected function ___directory(): array
     {
         return $this->type == 'page' ? $this->___treeDirectory() : parent::___directory();
     }
 
-    /**
-     * @return array
-     * @throws Exception
-     */
     protected function initTreeRows(): array
     {
         return $this->db->fetchAll($this->select(

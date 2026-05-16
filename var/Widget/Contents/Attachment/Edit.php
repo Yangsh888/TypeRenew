@@ -16,14 +16,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-/**
- * 编辑文章组件
- *
- * @author qining
- * @package Widget
- * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
- * @license GNU General Public License 2.0
- */
 class Edit extends Contents implements ActionInterface
 {
     use PrepareEditTrait;
@@ -71,9 +63,6 @@ class Edit extends Contents implements ActionInterface
         return !$attachment;
     }
 
-    /**
-     * 更新文件
-     */
     public function updateAttachment()
     {
         if ($this->form()->validate()) {
@@ -111,11 +100,6 @@ class Edit extends Contents implements ActionInterface
             $this->getPageOffsetQuery($cid, $this->status), $this->options->adminUrl));
     }
 
-    /**
-     * 生成表单
-     *
-     * @return Form
-     */
     public function form(): Form
     {
         $form = new Form($this->security->getIndex('/action/contents-attachment-edit'), Form::POST_METHOD);
@@ -166,12 +150,6 @@ class Edit extends Contents implements ActionInterface
         return $form;
     }
 
-    /**
-     * 获取页面偏移的URL Query
-     *
-     * @param integer $cid 文件id
-     * @param string|null $status 状态
-     */
     protected function getPageOffsetQuery(int $cid, ?string $status = null): string
     {
         return 'page=' . $this->getPageOffset(

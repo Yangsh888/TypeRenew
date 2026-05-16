@@ -324,6 +324,12 @@ trait EditTrait
         return $created > 0 && $created > (int) $this->options->time;
     }
 
+    protected function isCountablePublishedPost(?string $status, ?int $created): bool
+    {
+        return $status === 'publish'
+            && (int) ($created ?? 0) < (int) $this->options->time;
+    }
+
     public function getAdminPreviewUrl(?int $cid = null): string
     {
         $cid = $cid ?? (int) ($this->cid ?? 0);
@@ -501,11 +507,12 @@ trait EditTrait
 
         $isDraftToPublish = false;
         $isBeforePublish = false;
-        $isAfterPublish = 'publish' === $contents['status'];
+        $isAfterPublish = $this->isCountablePublishedPost($contents['status'] ?? null, (int) ($contents['created'] ?? 0));
 
         if ($this->have()) {
             $isDraftToPublish = preg_match("/_draft$/", $this->type);
-            $isBeforePublish = 'publish' === $this->status;
+            $isBeforePublish = !$isDraftToPublish
+                && $this->isCountablePublishedPost((string) ($this->status ?? ''), (int) ($this->created ?? 0));
 
             if (!$isDraftToPublish && $this->draft) {
                 $draftCid = $this->draft['cid'];
@@ -561,13 +568,13 @@ trait EditTrait
                         $realId,
                         !empty($contents['category']) && is_array($contents['category'])
                             ? $contents['category'] : [$this->options->defaultCategory],
-                        !$isDraftToPublish && $isBeforePublish,
+                        $isBeforePublish,
                         $isAfterPublish
                     );
                 }
 
                 if (array_key_exists('tags', $contents)) {
-                    $this->setTags($realId, $contents['tags'], !$isDraftToPublish && $isBeforePublish, $isAfterPublish);
+                    $this->setTags($realId, $contents['tags'], $isBeforePublish, $isAfterPublish);
                 }
             }
 

@@ -396,9 +396,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         return $categoryWidget->mid;
     }
 
-    /**
-     * 删除pageId指定的page
-     */
     public function wpDeletePage(int $blogId, string $userName, string $password, int $pageId): bool
     {
         PageEdit::alloc(null, ['cid' => $pageId], function (PageEdit $page) {
@@ -407,9 +404,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         return true;
     }
 
-    /**
-     * 编辑pageId指定的page
-     */
     public function wpEditPage(
         int $blogId,
         int $pageId,
@@ -423,9 +417,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         return true;
     }
 
-    /**
-     * 编辑post
-     */
     public function mwEditPost(
         int $postId,
         string $userName,
@@ -437,9 +428,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         return $this->mwNewPost(1, $userName, $password, $content, $publish);
     }
 
-    /**
-     * 编辑postId指定的post
-     */
     public function wpEditPost(int $blogId, string $userName, string $password, int $postId, array $content): bool
     {
         $post = Archive::alloc('type=single', ['cid' => $postId], false);
@@ -597,9 +585,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         return $struct;
     }
 
-    /**
-     * 删除分类
-     */
     public function wpDeleteCategory(int $blogId, string $userName, string $password, int $categoryId): bool
     {
         CategoryEdit::alloc(null, ['mid' => $categoryId], function (CategoryEdit $category) {
@@ -804,12 +789,12 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
         $pageSize = 10;
         if (!empty($struct['number'])) {
-            $pageSize = abs(intval($struct['number']));
+            $pageSize = max(1, abs((int) $struct['number']));
         }
 
         if (!empty($struct['offset'])) {
-            $offset = abs(intval($struct['offset']));
-            $input['page'] = ceil($offset / $pageSize);
+            $offset = abs((int) $struct['offset']);
+            $input['page'] = intdiv($offset, $pageSize) + 1;
         }
 
         $comments = CommentsAdmin::alloc('pageSize=' . $pageSize, $input, false);
@@ -837,9 +822,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         return $commentsStruct;
     }
 
-    /**
-     * 删除评论
-     */
     public function wpDeleteComment(int $blogId, string $userName, string $password, int $commentId): bool
     {
         CommentsEdit::alloc(null, ['coid' => $commentId], function (CommentsEdit $comment) {
@@ -848,12 +830,22 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         return true;
     }
 
-    /**
-     * 编辑评论
-     */
     public function wpEditComment(int $blogId, string $userName, string $password, int $commentId, array $struct): bool
     {
-        $input = [];
+        $commentRow = $this->db->fetchRow(
+            $this->db->select()->from('table.comments')->where('coid = ?', $commentId)->limit(1)
+        );
+
+        if (!$commentRow) {
+            return false;
+        }
+
+        $input = [
+            'text' => (string) ($commentRow['text'] ?? ''),
+            'author' => (string) ($commentRow['author'] ?? ''),
+            'mail' => (string) ($commentRow['mail'] ?? ''),
+            'url' => (string) ($commentRow['url'] ?? ''),
+        ];
 
         if (isset($struct['date_created_gmt']) && $struct['date_created_gmt'] instanceof Date) {
             $timestamp = $this->xmlRpcUtcTimestamp($struct['date_created_gmt']);
@@ -871,21 +863,23 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         }
 
         if (isset($struct['author'])) {
-            $input['author'] = $struct['author'];
+            $input['author'] = trim(strip_tags(Common::removeXSS((string) $struct['author'])));
         }
 
         if (isset($struct['author_url'])) {
-            $input['url'] = $struct['author_url'];
+            $input['url'] = Common::safeUrl((string) $struct['author_url']);
         }
 
         if (isset($struct['author_email'])) {
-            $input['mail'] = $struct['author_email'];
+            $input['mail'] = trim(strip_tags(Common::removeXSS((string) $struct['author_email'])));
         }
 
-        $comment = CommentsEdit::alloc(null, $input, function (CommentsEdit $comment) {
-            $comment->editComment();
+        $updatedComment = null;
+        CommentsEdit::alloc(null, ['coid' => $commentId], function (CommentsEdit $comment) use ($commentId, $input, &$updatedComment) {
+            $updatedComment = $comment->editCommentData($commentId, $input);
         });
-        return $comment->have();
+
+        return is_array($updatedComment);
     }
 
     /**
@@ -951,11 +945,12 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
         $pageSize = 10;
         if (!empty($struct['number'])) {
-            $pageSize = abs(intval($struct['number']));
+            $pageSize = max(1, abs((int) $struct['number']));
         }
 
         if (!empty($struct['offset'])) {
-            $input['page'] = abs(intval($struct['offset'])) + 1;
+            $offset = abs((int) $struct['offset']);
+            $input['page'] = intdiv($offset, $pageSize) + 1;
         }
 
         $attachments = AttachmentAdmin::alloc('pageSize=' . $pageSize, $input, false);
@@ -1274,9 +1269,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         ];
     }
 
-    /**
-     * 删除文章
-     */
     public function bloggerDeletePost(int $blogId, int $postId, string $userName, string $password, $publish): bool
     {
         PostEdit::alloc(null, ['cid' => $postId], function (PostEdit $post) {

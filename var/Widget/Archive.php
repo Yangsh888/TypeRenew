@@ -66,10 +66,6 @@ class Archive extends Contents
 
     private string $archiveSlug;
 
-    /**
-     * @param Config $parameter
-     * @throws \Exception
-     */
     protected function initParameter(Config $parameter)
     {
         $parameter->setDefault([

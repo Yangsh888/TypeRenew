@@ -6,16 +6,8 @@ use Exception;
 use Typecho\Router;
 use Typecho\Widget\Exception as WidgetException;
 
-/**
- * Comment Page Widget
- */
 class CommentPage extends Base implements ActionInterface
 {
-    /**
-     * Perform comment page action
-     *
-     * @throws Exception
-     */
     public function action()
     {
         $page = abs($this->request->filter('int')->get('commentPage'));

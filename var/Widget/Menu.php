@@ -238,8 +238,6 @@ class Menu extends Base
 
     /**
      * 获取当前菜单
-     *
-     * @return array
      */
     public function getCurrentMenu(): ?array
     {
@@ -256,8 +254,6 @@ class Menu extends Base
 
     /**
      * 获取当前菜单URL
-     *
-     * @return string
      */
     public function getCurrentMenuUrl(): string
     {

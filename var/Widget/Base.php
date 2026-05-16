@@ -12,7 +12,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
 
 abstract class Base extends Widget
 {
-    protected const INIT_DB = 0b0001;
     protected const INIT_USER = 0b0010;
     protected const INIT_SECURITY = 0b0100;
     protected const INIT_OPTIONS = 0b1000;

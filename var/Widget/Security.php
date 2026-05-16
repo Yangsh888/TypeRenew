@@ -3,8 +3,6 @@
 namespace Widget;
 
 use Typecho\Common;
-use Typecho\Response;
-use Typecho\Widget;
 
 if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
@@ -29,9 +27,6 @@ class Security extends Base
         }
     }
 
-    /**
-     * @param bool $enabled
-     */
     public function enable(bool $enabled = true)
     {
         $this->enabled = $enabled;
@@ -73,7 +68,6 @@ class Security extends Base
      *
      * @param $path
      * @param string|null $url
-     * @return string
      */
     public function getTokenUrl($path, ?string $url = null): string
     {

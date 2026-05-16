@@ -3,7 +3,6 @@
 namespace Widget;
 
 use Typecho\Cookie;
-use Typecho\Db\Exception;
 use Typecho\Validate;
 use Utils\Password;
 use Widget\Base\Users;
