@@ -3,6 +3,7 @@
 namespace Typecho;
 
 use Typecho\I18n\GetTextMulti;
+use Utils\Zone;
 
 class I18n
 {
@@ -30,49 +31,18 @@ class I18n
 
     public static function dateWord(int $from, int $now): string
     {
-        $between = $now - $from;
-
-        if ($between >= 0 && $between < 86400 && date('d', $from) == date('d', $now)) {
-            if ($between < 3600) {
-                if ($between < 60) {
-                    if (0 == $between) {
-                        return _t('刚刚');
-                    } else {
-                        return str_replace('%d', $between, _n('一秒前', '%d秒前', $between));
-                    }
-                }
-
-                $min = floor($between / 60);
-                return str_replace('%d', $min, _n('一分钟前', '%d分钟前', $min));
-            }
-
-            $hour = floor($between / 3600);
-            return str_replace('%d', $hour, _n('一小时前', '%d小时前', $hour));
-        }
-
-        if (
-            $between > 0
-            && $between < 172800
-            && (date('z', $from) + 1 == date('z', $now)
-                || date('z', $from) + 1 == date('L') + 365 + date('z', $now))
-        ) {
-            return _t('昨天 %s', date('H:i', $from));
-        }
-
-        if ($between > 0 && $between < 604800) {
-            $day = floor($between / 86400);
-            return str_replace('%d', $day, _n('一天前', '%d天前', $day));
-        }
-
-        if (date('Y', $from) == date('Y', $now)) {
-            return date(_t('n月j日'), $from);
-        }
-
-        return date(_t('Y年m月d日'), $from);
+        return Zone::word($from, $now, Date::$timezoneId, Date::$timezoneOffset);
     }
 
     public static function addLang(string $lang)
     {
+        self::init();
+
+        if (!self::$loaded) {
+            self::$loaded = new GetTextMulti($lang);
+            return;
+        }
+
         self::$loaded->addFile($lang);
     }
 

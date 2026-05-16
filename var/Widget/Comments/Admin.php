@@ -15,40 +15,16 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-/**
- * 后台评论输出组件
- *
- * @author qining
- * @category typecho
- * @package Widget
- * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
- * @license GNU General Public License 2.0
- */
 class Admin extends Comments
 {
-    /**
-     * 分页计算对象
-     * @var Query
-     */
     private Query $countSql;
 
-    /**
-     * 当前页
-     * @var integer
-     */
     private int $currentPage;
 
-    /**
-     * 所有文章个数
-     * @var integer|null
-     */
     private ?int $total;
 
     /**
      * 获取菜单标题
-     *
-     * @return string
-     * @throws Exception
      */
     public function getMenuTitle(): string
     {
@@ -61,9 +37,6 @@ class Admin extends Comments
         throw new Exception(_t('内容不存在'), 404);
     }
 
-    /**
-     * @throws Db\Exception|Exception
-     */
     public function execute()
     {
         $select = $this->select();
@@ -114,8 +87,6 @@ class Admin extends Comments
 
     /**
      * 输出分页
-     *
-     * @throws Exception|Db\Exception
      */
     public function pageNav()
     {
@@ -133,9 +104,6 @@ class Admin extends Comments
 
     /**
      * 获取当前内容结构
-     *
-     * @return Contents
-     * @throws Db\Exception
      */
     protected function ___parentContent(): Contents
     {
@@ -143,9 +111,6 @@ class Admin extends Comments
         return From::allocWithAlias($cid, ['cid' => $cid]);
     }
 
-    /**
-     * @return string
-     */
     protected function ___permalink(): string
     {
         if ('approved' === $this->status) {

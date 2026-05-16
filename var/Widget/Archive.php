@@ -26,11 +26,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-/**
- * 内容归档组件
- *
- * @package Widget
- */
 class Archive extends Contents
 {
     private string $themeFile;
@@ -341,8 +336,14 @@ class Archive extends Contents
                 $this->parameter->type = 'page';
                 $this->makeSinglePageAsFrontPage = true;
             } elseif (0 === strpos($frontPage, 'file:')) {
-                $this->setThemeFile(substr($frontPage, 5));
-                return;
+                $themeFile = substr($frontPage, 5);
+                if (null !== $this->resolveThemeFilePath($themeFile)) {
+                    $this->setThemeFile($themeFile);
+                    return;
+                }
+
+                Helper::resetFrontPage($this->options->routingTable);
+                $frontPage = 'recent';
             }
         }
 
@@ -868,7 +869,7 @@ EOF;
     public function remember(string $cookieName, bool $return = false)
     {
         $cookieName = strtolower($cookieName);
-        if (!in_array($cookieName, ['author', 'mail', 'url'])) {
+        if (!in_array($cookieName, ['author', 'mail', 'url', 'text'])) {
             return '';
         }
 
@@ -1141,28 +1142,18 @@ EOF;
 
         $year = $this->request->filter('int')->get('year');
 
-        $fromMonth = 1;
-        $toMonth = 12;
-
-        $fromDay = 1;
-        $toDay = 31;
+        $month = null;
+        $day = null;
 
         if ($this->request->is('month')) {
-            $fromMonth = $this->request->filter('int')->get('month');
-            $toMonth = $fromMonth;
-
-            $toDay = date('t', mktime(0, 0, 0, $toMonth, 1, $year));
+            $month = $this->request->filter('int')->get('month');
 
             if ($this->request->is('day')) {
-                $fromDay = $this->request->filter('int')->get('day');
-                $toDay = $fromDay;
+                $day = $this->request->filter('int')->get('day');
             }
         }
 
-        $from = mktime(0, 0, 0, $fromMonth, $fromDay, $year)
-            - $this->options->timezone + $this->options->serverTimezone;
-        $to = mktime(23, 59, 59, $toMonth, $toDay, $year)
-            - $this->options->timezone + $this->options->serverTimezone;
+        [$from, $to] = $this->options->getRange($year, $month, $day);
         $select->where('table.contents.created >= ? AND table.contents.created < ?', $from, $to);
     }
 
@@ -1439,24 +1430,21 @@ EOF;
         $day = $this->request->filter('int')->get('day');
 
         if (!empty($year) && !empty($month) && !empty($day)) {
-            $from = mktime(0, 0, 0, $month, $day, $year);
-            $to = mktime(23, 59, 59, $month, $day, $year);
+            [$from, $to] = $this->options->getRange($year, $month, $day);
             $this->archiveSlug = 'day';
             $this->archiveTitle = _t('%d年%d月%d日', $year, $month, $day);
         } elseif (!empty($year) && !empty($month)) {
-            $from = mktime(0, 0, 0, $month, 1, $year);
-            $to = mktime(23, 59, 59, $month, date('t', $from), $year);
+            [$from, $to] = $this->options->getRange($year, $month);
             $this->archiveSlug = 'month';
             $this->archiveTitle = _t('%d年%d月', $year, $month);
         } elseif (!empty($year)) {
-            $from = mktime(0, 0, 0, 1, 1, $year);
-            $to = mktime(23, 59, 59, 12, 31, $year);
+            [$from, $to] = $this->options->getRange($year);
             $this->archiveSlug = 'year';
             $this->archiveTitle = _t('%d年', $year);
         }
 
-        $select->where('table.contents.created >= ?', $from - $this->options->timezone + $this->options->serverTimezone)
-            ->where('table.contents.created <= ?', $to - $this->options->timezone + $this->options->serverTimezone)
+        $select->where('table.contents.created >= ?', $from)
+            ->where('table.contents.created < ?', $to)
             ->where('table.contents.type = ?', 'post');
 
         $this->archiveType = 'date';

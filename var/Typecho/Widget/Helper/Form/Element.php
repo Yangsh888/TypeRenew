@@ -8,80 +8,28 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-/**
- * 表单元素抽象类
- *
- * @category typecho
- * @package Widget
- * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
- * @license GNU General Public License 2.0
- */
 abstract class Element extends Layout
 {
-    /**
-     * 单例唯一id
-     * @var integer
-     */
     protected static int $uniqueId = 0;
 
-    /**
-     * 表单元素容器
-     * @var Layout
-     */
     public Layout $container;
 
-    /**
-     * 输入栏
-     * @var Layout|null
-     */
     public ?Layout $input;
 
-    /**
-     * inputs
-     * @var array
-     */
     public array $inputs = [];
 
-    /**
-     * 表单标题
-     * @var Layout
-     */
     public Layout $label;
 
-    /**
-     * 表单验证器
-     * @var array
-     */
     public array $rules = [];
 
-    /**
-     * 表单名称
-     * @var string
-     */
     public ?string $name;
 
-    /**
-     * 表单值
-     * @var mixed
-     */
     public $value;
 
-    /**
-     * 表单描述
-     * @var Layout
-     */
     protected Layout $description;
 
-    /**
-     * 表单消息
-     * @var Layout
-     */
     protected Layout $message;
 
-    /**
-     * 多行输入
-     * @var array()
-     */
     protected array $multiline = [];
 
     /**
@@ -139,7 +87,6 @@ abstract class Element extends Layout
      * 创建表单标题
      *
      * @param string $value 标题字符串
-     * @return $this
      */
     public function label(string $value): Element
     {
@@ -156,7 +103,6 @@ abstract class Element extends Layout
      * 在容器里增加元素
      *
      * @param Layout $item 表单元素
-     * @return $this
      */
     public function container(Layout $item): Element
     {
@@ -254,7 +200,6 @@ abstract class Element extends Layout
      * 增加验证器
      *
      * @param mixed ...$rules
-     * @return $this
      */
     public function addRule(...$rules): Element
     {
@@ -282,12 +227,6 @@ abstract class Element extends Layout
      */
     abstract protected function inputValue($value);
 
-    /**
-     * filterValue
-     *
-     * @param string $value
-     * @return string
-     */
     protected function filterValue(string $value): string
     {
         if (preg_match_all('/[_0-9a-z-]+/i', $value, $matches)) {

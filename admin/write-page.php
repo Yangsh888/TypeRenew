@@ -7,19 +7,22 @@ include 'menu.php';
 $page = \Widget\Contents\Page\Edit::alloc()->prepare();
 
 $parentPageId = $page->getParent();
-$parentPages = [0 => _t('不选择')];
+$parentPages = [0 => ['levels' => 0, 'title' => _t('不选择')]];
 $parents = \Widget\Contents\Page\Admin::allocWithAlias(
     'options',
     'ignoreRequest=1' . ($request->is('cid') ? '&ignore=' . $request->get('cid') : '')
 );
 
 while ($parents->next()) {
-    $parentPages[$parents->cid] = str_repeat('&nbsp;&nbsp;&nbsp;&nbsp;', $parents->levels) . $parents->title;
+    $parentPages[$parents->cid] = [
+        'levels' => (int) $parents->levels,
+        'title' => (string) $parents->title,
+    ];
 }
 ?>
 <main class="main">
     <div class="body container">
-        <form class="row typecho-page-main typecho-post-area tr-write-shell" action="<?php $security->index('/action/contents-page-edit'); ?>" method="post" name="write_page">
+        <form class="row typecho-page-main typecho-post-area tr-write-shell" action="<?php echo htmlspecialchars($security->getIndex('/action/contents-page-edit'), ENT_QUOTES, 'UTF-8'); ?>" method="post" name="write_page">
             <?php
             $permalink = \Typecho\Common::url($options->routingTable['page']['url'], $options->index);
             [, $permalink] = explode(':', $permalink, 2);
@@ -83,7 +86,7 @@ while ($parents->next()) {
                                 <?php $templates = $page->getTemplates();
                                 foreach ($templates as $template => $name): ?>
                                     <option
-                                        value="<?php echo $template; ?>"<?php if ($template == $page->template): ?> selected="true"<?php endif; ?>><?php echo $name; ?></option>
+                                        value="<?php echo htmlspecialchars((string) $template, ENT_QUOTES, 'UTF-8'); ?>"<?php if ($template == $page->template): ?> selected="true"<?php endif; ?>><?php echo htmlspecialchars((string) $name, ENT_QUOTES, 'UTF-8'); ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </p>
@@ -94,9 +97,9 @@ while ($parents->next()) {
                         <label for="parent" class="typecho-label"><?php _e('父级页面'); ?></label>
                         <p>
                             <select name="parent" id="parent">
-                                <?php foreach ($parentPages as $pageId => $pageTitle): ?>
+                                <?php foreach ($parentPages as $pageId => $parentPage): ?>
                                     <option
-                                        value="<?php echo $pageId; ?>"<?php if ($pageId == ($page->parent ?? $parentPageId)): ?> selected="true"<?php endif; ?>><?php echo $pageTitle; ?></option>
+                                        value="<?php echo (int) $pageId; ?>"<?php if ($pageId == ($page->parent ?? $parentPageId)): ?> selected="true"<?php endif; ?>><?php echo str_repeat('&nbsp;&nbsp;&nbsp;&nbsp;', (int) $parentPage['levels']) . htmlspecialchars((string) $parentPage['title'], ENT_QUOTES, 'UTF-8'); ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </p>
@@ -142,8 +145,10 @@ while ($parents->next()) {
                         <section class="typecho-post-option">
                             <p class="description">
                                 <br>&mdash;<br>
+                                <?php $authorUrl = htmlspecialchars(\Typecho\Common::url('manage-pages.php?uid=' . $page->author->uid, $options->adminUrl), ENT_QUOTES, 'UTF-8'); ?>
+                                <?php $authorName = htmlspecialchars((string) $page->author->screenName, ENT_QUOTES, 'UTF-8'); ?>
                                 <?php _e('本页面由 <a href="%s">%s</a> 创建',
-                                    \Typecho\Common::url('manage-pages.php?uid=' . $page->author->uid, $options->adminUrl), $page->author->screenName); ?>
+                                    $authorUrl, $authorName); ?>
                                 <br>
                                 <?php _e('最后更新于 %s', $modified->word()); ?>
                             </p>

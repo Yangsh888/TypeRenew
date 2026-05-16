@@ -111,13 +111,13 @@ abstract class Widget
     {
         if (Common::nativeClassName(static::class) == 'Typecho_Widget') {
             if (isset($alias)) {
-                unset(self::$widgetPool[$alias]);
+                unset(self::$widgetPool[Common::nativeClassName($alias)]);
             } else {
                 self::$widgetPool = [];
             }
         } else {
             $alias = static::class . (isset($alias) ? '@' . $alias : '');
-            unset(self::$widgetPool[$alias]);
+            unset(self::$widgetPool[Common::nativeClassName($alias)]);
         }
     }
 

@@ -542,7 +542,7 @@ class Mail extends Options implements ActionInterface
             'permalink' => Common::url('/archives/mail-template-preview/', $index),
             'manageUrl' => Common::url('manage-comments.php', (string) ($this->options->adminUrl ?? '')),
             'resetUrl' => Common::url('reset.php?token=demo', (string) ($this->options->adminUrl ?? '')),
-            'expiresAt' => date('Y-m-d H:i:s', $now + 1800),
+            'expiresAt' => $this->options->formatDateTime($now + 1800, 'Y-m-d H:i:s'),
         ];
     }
 

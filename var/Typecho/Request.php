@@ -24,11 +24,6 @@ class Request
 
     private ?array $jsonBody = null;
 
-    /**
-     * 域名前缀
-     *
-     * @var string|null
-     */
     private ?string $urlPrefix = null;
 
     private ?string $host = null;
@@ -42,45 +37,27 @@ class Request
         return self::$instance;
     }
 
-    /**
-     * 初始化变量
-     *
-     * @return $this
-     */
     public function beginSandbox(Config $sandbox): Request
     {
         $this->sandbox = $sandbox;
         return $this;
     }
 
-    /**
-     * @return $this
-     */
     public function endSandbox(): Request
     {
         $this->sandbox = null;
         return $this;
     }
 
-    /**
-     * @param Config $params
-     * @return $this
-     */
     public function proxy(Config $params): Request
     {
         $this->params = $params;
         return $this;
     }
 
-    /**
-     * @return $this
-     */
     public function endProxy(): Request
     {
-        if (isset($this->params)) {
-            $this->params = null;
-        }
-
+        $this->params = null;
         return $this;
     }
 
@@ -96,29 +73,21 @@ class Request
     {
         $value = null;
 
-        switch (true) {
-            case isset($this->params) && isset($this->params[$key]):
-                $value = $this->params[$key];
-                break;
-            case isset($this->sandbox):
-                if (isset($this->sandbox[$key])) {
-                    $value = $this->sandbox[$key];
-                }
-                break;
-            case $key === '@json':
-                if ($this->isJson()) {
-                    $value = $this->getJsonBody();
-                    $default = $default ?? $value;
-                }
-                break;
-            case isset($_GET[$key]):
-                $value = $_GET[$key];
-                break;
-            case isset($_POST[$key]):
-                $value = $_POST[$key];
-                break;
-            default:
-                break;
+        if (isset($this->params) && isset($this->params[$key])) {
+            $value = $this->params[$key];
+        } elseif (isset($this->sandbox)) {
+            if (isset($this->sandbox[$key])) {
+                $value = $this->sandbox[$key];
+            }
+        } elseif ($key === '@json') {
+            if ($this->isJson()) {
+                $value = $this->getJsonBody();
+                $default = $default ?? $value;
+            }
+        } elseif (isset($_POST[$key])) {
+            $value = $_POST[$key];
+        } elseif (isset($_GET[$key])) {
+            $value = $_GET[$key];
         }
 
         if (isset($value) && $value !== '') {
@@ -635,9 +604,6 @@ class Request
             || (defined('__TYPECHO_SECURE__') && __TYPECHO_SECURE__);
     }
 
-    /**
-     * @return bool
-     */
     public function isCli(): bool
     {
         return php_sapi_name() == 'cli';
@@ -761,11 +727,6 @@ class Request
         return $this->urlPrefix;
     }
 
-    /**
-     * getBaseUrl
-     *
-     * @return string
-     */
     private function getBaseUrl(): ?string
     {
         if (null !== $this->baseUrl) {

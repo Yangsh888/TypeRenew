@@ -25,10 +25,6 @@ class Edit extends Users implements ActionInterface
 {
     use EditTrait;
 
-    /**
-     * @return void
-     * @throws Exception|\Typecho\Db\Exception
-     */
     public function execute()
     {
         $this->user->pass('administrator');
@@ -45,8 +41,6 @@ class Edit extends Users implements ActionInterface
 
     /**
      * 获取菜单标题
-     *
-     * @return string
      */
     public function getMenuTitle(): string
     {
@@ -57,7 +51,6 @@ class Edit extends Users implements ActionInterface
      * 判断用户是否存在
      *
      * @param integer $uid 用户主键
-     * @throws \Typecho\Db\Exception
      */
     public function userExists(int $uid): bool
     {
@@ -70,8 +63,6 @@ class Edit extends Users implements ActionInterface
 
     /**
      * 增加用户
-     *
-     * @throws \Typecho\Db\Exception
      */
     public function insertUser()
     {
@@ -106,7 +97,6 @@ class Edit extends Users implements ActionInterface
     /**
      * 生成表单
      * @param string|null $action 表单动作
-     * @return Form
      */
     public function form(?string $action = null): Form
     {
@@ -215,8 +205,6 @@ class Edit extends Users implements ActionInterface
 
     /**
      * 更新用户
-     *
-     * @throws \Typecho\Db\Exception
      */
     public function updateUser()
     {
@@ -258,8 +246,6 @@ class Edit extends Users implements ActionInterface
 
     /**
      * 删除用户
-     *
-     * @throws \Typecho\Db\Exception
      */
     public function deleteUser()
     {
@@ -289,6 +275,10 @@ class Edit extends Users implements ActionInterface
     public function action()
     {
         $this->user->pass('administrator');
+        if (!$this->request->isPost()) {
+            $this->response->goBack();
+            return;
+        }
         $this->security->protect();
         $this->on($this->request->is('do=insert'))->insertUser();
         $this->on($this->request->is('do=update'))->updateUser();

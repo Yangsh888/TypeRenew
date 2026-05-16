@@ -11,6 +11,10 @@ include 'menu.php';
         <?php include 'theme-tabs.php'; ?>
         <div class="row typecho-page-main typecho-edit-theme" role="main">
             <div class="col-mb-12 col-tb-8 col-9 content">
+                <?php
+                $currentTheme = htmlspecialchars($files->currentTheme(), ENT_QUOTES, 'UTF-8');
+                $currentFile = htmlspecialchars($files->currentFile(), ENT_QUOTES, 'UTF-8');
+                ?>
                 <form method="post" name="theme" id="theme"
                       action="<?php $security->index('/action/themes-edit'); ?>">
                     <label for="content" class="sr-only"><?php _e('编辑源码'); ?></label>
@@ -18,8 +22,8 @@ include 'menu.php';
                               <?php if (!$files->currentIsWriteable()): ?>readonly<?php endif; ?>><?php echo $files->currentContent(); ?></textarea>
                     <p class="typecho-option typecho-option-submit">
                         <?php if ($files->currentIsWriteable()): ?>
-                            <input type="hidden" name="theme" value="<?php echo $files->currentTheme(); ?>"/>
-                            <input type="hidden" name="edit" value="<?php echo $files->currentFile(); ?>"/>
+                            <input type="hidden" name="theme" value="<?php echo $currentTheme; ?>"/>
+                            <input type="hidden" name="edit" value="<?php echo $currentFile; ?>"/>
                             <button type="submit" class="btn primary"><?php _e('保存文件'); ?></button>
                         <?php else: ?>
                             <em><?php _e('此文件无法写入'); ?></em>
@@ -30,8 +34,18 @@ include 'menu.php';
             <ul class="col-mb-12 col-tb-4 col-3">
                 <li><strong>模板文件</strong></li>
                 <?php while ($files->next()): ?>
+                    <?php
+                    $file = (string) $files->file;
+                    $href = htmlspecialchars(
+                        $options->adminUrl(
+                            'theme-editor.php?theme=' . rawurlencode($files->currentTheme()) . '&file=' . rawurlencode($file)
+                        ),
+                        ENT_QUOTES,
+                        'UTF-8'
+                    );
+                    ?>
                     <li<?php if ($files->current): ?> class="current"<?php endif; ?>>
-                        <a href="<?php $options->adminUrl('theme-editor.php?theme=' . $files->currentTheme() . '&file=' . $files->file); ?>"><?php $files->file(); ?></a>
+                        <a href="<?php echo $href; ?>"><?php echo htmlspecialchars($file, ENT_QUOTES, 'UTF-8'); ?></a>
                     </li>
                 <?php endwhile; ?>
             </ul>

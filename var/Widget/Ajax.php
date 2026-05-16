@@ -82,7 +82,7 @@ class Ajax extends BaseOptions implements ActionInterface
             $items[] = [
                 'title' => $title,
                 'link'  => $link,
-                'date'  => date('n.j', $timestamp),
+                'date'  => $this->options->formatDateTime($timestamp, 'n.j'),
                 'ts'    => $timestamp,
             ];
         }

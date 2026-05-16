@@ -36,7 +36,6 @@ trait TreeTrait
      * 获取某个节点所有父级节点缩略名
      *
      * @param int $id
-     * @return array
      */
     public function getAllParentsSlug(int $id): array
     {
@@ -57,7 +56,6 @@ trait TreeTrait
      * 获取某个节点下的所有子节点
      *
      * @param int $id
-     * @return array
      */
     public function getAllChildIds(int $id): array
     {
@@ -68,7 +66,6 @@ trait TreeTrait
      * 获取某个节点下的子节点
      *
      * @param int $id
-     * @return array
      */
     public function getChildIds(int $id): array
     {
@@ -79,7 +76,6 @@ trait TreeTrait
      * 获取某个节点所有父级节点
      *
      * @param int $id
-     * @return array
      */
     public function getAllParents(int $id): array
     {
@@ -101,7 +97,6 @@ trait TreeTrait
      *
      * @param array $ids
      * @param integer $ignore
-     * @return array
      */
     public function getRows(array $ids, int $ignore = 0): array
     {
@@ -118,10 +113,6 @@ trait TreeTrait
         return $result;
     }
 
-    /**
-     * @param int $id
-     * @return array|null
-     */
     public function getRow(int $id): ?array
     {
         return $this->map[$id] ?? null;
@@ -132,7 +123,6 @@ trait TreeTrait
      *
      * @param mixed $id
      * @param mixed $parentId
-     * @return bool
      */
     public function hasParent($id, $parentId): bool
     {
@@ -147,15 +137,8 @@ trait TreeTrait
         return false;
     }
 
-    /**
-     * @return array
-     */
     abstract protected function initTreeRows(): array;
 
-    /**
-     * @param Config $parameter
-     * @throws Exception
-     */
     protected function initParameter(Config $parameter)
     {
         $parameter->setDefault('ignore=0&current=');
@@ -197,9 +180,6 @@ trait TreeTrait
         $this->map = array_map([$this, 'filter'], $this->map);
     }
 
-    /**
-     * @return array
-     */
     protected function ___directory(): array
     {
         $directory = $this->getAllParentsSlug($this->{$this->getPrimaryKey()});
@@ -209,8 +189,6 @@ trait TreeTrait
 
     /**
      * 获取所有子节点
-     *
-     * @return array
      */
     protected function ___children(): array
     {

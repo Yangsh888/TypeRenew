@@ -83,9 +83,6 @@ class Plugin
         return self::$plugin;
     }
 
-    /**
-     * @throws PluginException
-     */
     public static function normalizeName(?string $pluginName): string
     {
         $pluginName = trim((string) $pluginName);
@@ -238,22 +235,16 @@ class Plugin
         return $info;
     }
 
-    /**
-     * @throws PluginException
-     */
     public static function portal(string $pluginName, string $path): array
     {
         $pluginName = self::normalizeName($pluginName);
 
-        switch (true) {
-            case file_exists($pluginFileName = $path . '/' . $pluginName . '/Plugin.php'):
-                $className = "\\" . PLUGIN_NAMESPACE . "\\{$pluginName}\\Plugin";
-                break;
-            case file_exists($pluginFileName = $path . '/' . $pluginName . '.php'):
-                $className = "\\" . PLUGIN_NAMESPACE . "\\" . $pluginName;
-                break;
-            default:
-                throw new PluginException('Missing Plugin ' . $pluginName, 404);
+        if (file_exists($pluginFileName = $path . '/' . $pluginName . '/Plugin.php')) {
+            $className = "\\" . PLUGIN_NAMESPACE . "\\{$pluginName}\\Plugin";
+        } elseif (file_exists($pluginFileName = $path . '/' . $pluginName . '.php')) {
+            $className = "\\" . PLUGIN_NAMESPACE . "\\" . $pluginName;
+        } else {
+            throw new PluginException('Missing Plugin ' . $pluginName, 404);
         }
 
         return [$pluginFileName, $className];

@@ -10,6 +10,14 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
 
 class PasswordReset
 {
+    public static function cleanupExpired(Db $db): void
+    {
+        $db->query(
+            $db->delete('table.password_resets')
+                ->where('expires < ?', time())
+        );
+    }
+
     public static function generateToken(): string
     {
         return bin2hex(random_bytes(32));

@@ -28,11 +28,9 @@ class Edit extends Metas implements ActionInterface
 
     /**
      * 入口函数
-     * @throws \Exception
      */
     public function execute()
     {
-        /** 编辑以上权限 */
         $this->user->pass('editor');
     }
 
@@ -40,7 +38,6 @@ class Edit extends Metas implements ActionInterface
      * 判断分类是否存在
      *
      * @param integer $mid 分类主键
-     * @throws Exception
      */
     public function categoryExists(int $mid): bool
     {
@@ -55,7 +52,6 @@ class Edit extends Metas implements ActionInterface
     /**
      * 判断分类名称是否可用
      * @param string $name 分类名称
-     * @throws Exception
      */
     public function nameExists(string $name): bool
     {
@@ -80,7 +76,6 @@ class Edit extends Metas implements ActionInterface
      * 判断分类名转换到缩略名后是否合法
      *
      * @param string $name 分类名
-     * @throws Exception
      */
     public function nameToSlug(string $name): bool
     {
@@ -98,7 +93,6 @@ class Edit extends Metas implements ActionInterface
      * 判断分类缩略名是否存在
      *
      * @param string $slug 缩略名
-     * @throws Exception
      */
     public function slugExists(string $slug): bool
     {
@@ -118,8 +112,6 @@ class Edit extends Metas implements ActionInterface
 
     /**
      * 增加分类
-     *
-     * @throws Exception
      */
     public function insertCategory()
     {
@@ -127,7 +119,6 @@ class Edit extends Metas implements ActionInterface
             $this->response->goBack();
         }
 
-        /** 取出数据 */
         $category = $this->request->from('name', 'slug', 'description', 'parent');
 
         $category['slug'] = Common::slugName(Common::strBy($category['slug'] ?? null, $category['name']));
@@ -154,7 +145,6 @@ class Edit extends Metas implements ActionInterface
      *
      * @param string|null $action 表单动作
      * @return Form
-     * @throws Exception
      */
     public function form(?string $action = null): Form
     {
@@ -237,7 +227,6 @@ class Edit extends Metas implements ActionInterface
             $action = $_action;
         }
 
-        /** 给表单增加规则 */
         if ('insert' == $action || 'update' == $action) {
             $name->addRule('required', _t('必须填写分类名称'));
             $name->addRule([$this, 'nameExists'], _t('分类名称已经存在'));
@@ -257,8 +246,6 @@ class Edit extends Metas implements ActionInterface
 
     /**
      * 更新分类
-     *
-     * @throws Exception
      */
     public function updateCategory()
     {
@@ -266,7 +253,6 @@ class Edit extends Metas implements ActionInterface
             $this->response->goBack();
         }
 
-        /** 取出数据 */
         $category = $this->request->from('name', 'slug', 'description', 'parent');
         $category['mid'] = $this->request->get('mid');
         $category['parent'] = (int) ($category['parent'] ?? 0);
@@ -321,8 +307,6 @@ class Edit extends Metas implements ActionInterface
 
     /**
      * 删除分类
-     * @return void
-     * @throws Exception
      */
     public function deleteCategory()
     {
@@ -356,7 +340,6 @@ class Edit extends Metas implements ActionInterface
 
     /**
      * 合并分类
-     * @throws Exception
      */
     public function mergeCategory()
     {
@@ -386,7 +369,6 @@ class Edit extends Metas implements ActionInterface
 
     /**
      * 分类排序
-     * @throws Exception
      */
     public function sortCategory()
     {
@@ -404,8 +386,6 @@ class Edit extends Metas implements ActionInterface
 
     /**
      * 刷新分类
-     *
-     * @throws Exception
      */
     public function refreshCategory()
     {
@@ -427,8 +407,6 @@ class Edit extends Metas implements ActionInterface
 
     /**
      * 设置默认分类
-     *
-     * @throws Exception
      */
     public function defaultCategory()
     {
@@ -461,7 +439,6 @@ class Edit extends Metas implements ActionInterface
      * 获取菜单标题
      *
      * @return string|null
-     * @throws \Typecho\Widget\Exception|Exception
      */
     public function getMenuTitle(): ?string
     {
@@ -488,11 +465,6 @@ class Edit extends Metas implements ActionInterface
         throw new \Typecho\Widget\Exception(_t('分类不存在'), 404);
     }
 
-    /**
-     * 入口函数
-     * @return void
-     * @throws Exception
-     */
     public function action()
     {
         $this->security->protect();

@@ -10,11 +10,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-/**
- * 提示框组件
- *
- * @package Widget
- */
 class Notice extends Widget
 {
     /**
@@ -41,12 +36,7 @@ class Notice extends Widget
             $type = $typeFix;
         }
 
-        if (method_exists(Common::class, 'jsonEncode')) {
-            $payload = Common::jsonEncode($notice, 0, '[]');
-        } else {
-            $payload = json_encode($notice);
-            $payload = is_string($payload) ? $payload : '[]';
-        }
+        $payload = Common::jsonEncode($notice, 0, '[]');
 
         Cookie::set(
             '__typecho_notice',

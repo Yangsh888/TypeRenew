@@ -13,12 +13,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-/**
- * 上传组件
- *
- * @author qining
- * @package Widget
- */
 class Upload extends Contents implements ActionInterface
 {
     public const UPLOAD_DIR = '/usr/uploads';
@@ -94,9 +88,6 @@ class Upload extends Contents implements ActionInterface
         }
     }
 
-    /**
-     * @throws Exception
-     */
     public function modify()
     {
         try {
@@ -170,10 +161,6 @@ class Upload extends Contents implements ActionInterface
 
     /**
      * 修改文件处理函数,如果需要实现自己的文件哈希或者特殊的文件系统,请在options表里把modifyHandle改成自己的函数
-     *
-     * @param array $content 老文件
-     * @param array $file 新上传的文件
-     * @return mixed
      */
     public static function modifyHandle(array $content, array $file)
     {
@@ -333,9 +320,6 @@ class Upload extends Contents implements ActionInterface
         }
     }
 
-    /**
-     * @throws Exception
-     */
     public function upload()
     {
         try {

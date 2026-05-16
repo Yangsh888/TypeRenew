@@ -2,42 +2,18 @@
 
 namespace IXR;
 
-/**
- * IXR错误
- *
- * @package IXR
- */
 class Error
 {
-    /**
-     * 错误代码
-     * @var integer
-     */
     public int $code;
 
-    /**
-     * 错误消息
-     * @var string|null
-     */
     public ?string $message;
 
-    /**
-     * 构造函数
-     *
-     * @param integer $code 错误代码
-     * @param string|null $message 错误消息
-     */
     public function __construct(int $code, ?string $message = '')
     {
         $this->code = $code;
         $this->message = (string) $message;
     }
 
-    /**
-     * 获取xml
-     *
-     * @return string
-     */
     public function getXml(): string
     {
         return <<<EOD

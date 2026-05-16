@@ -288,29 +288,27 @@ trait EditTrait
         if ($this->request->is('created')) {
             $created = $this->request->get('created');
         } elseif ($this->request->is('date')) {
-            $dstOffset = $this->request->get('dst', 0);
-            $timezoneSymbol = $this->options->timezone >= 0 ? '+' : '-';
-            $timezoneOffset = abs($this->options->timezone);
-            $timezone = $timezoneSymbol . str_pad($timezoneOffset / 3600, 2, '0', STR_PAD_LEFT) . ':00';
             $dateParts = preg_split('/\s+/', trim((string) $this->request->get('date', '')), 2);
-            $date = $dateParts[0] ?? date('Y-m-d', $created);
-            $time = $dateParts[1] ?? date('H:i:s', $created);
-            $timestamp = strtotime("{$date}T{$time}{$timezone}");
+            $date = $dateParts[0] ?? $this->options->formatDateTime($created, 'Y-m-d');
+            $time = $dateParts[1] ?? $this->options->formatDateTime($created, 'H:i:s');
+            $timestamp = $this->options->parseDateTime($date, $time);
 
-            if (false !== $timestamp) {
-                $created = $timestamp - (int) $dstOffset;
+            if ($timestamp !== null) {
+                $created = $timestamp;
             }
         } elseif ($this->request->is('year&month&day')) {
-            $second = $this->request->filter('int')->get('sec', date('s'));
-            $min = $this->request->filter('int')->get('min', date('i'));
-            $hour = $this->request->filter('int')->get('hour', date('H'));
+            $second = $this->request->filter('int')->get('sec', (int) $this->options->formatDateTime($created, 's'));
+            $min = $this->request->filter('int')->get('min', (int) $this->options->formatDateTime($created, 'i'));
+            $hour = $this->request->filter('int')->get('hour', (int) $this->options->formatDateTime($created, 'H'));
 
             $year = $this->request->filter('int')->get('year');
             $month = $this->request->filter('int')->get('month');
             $day = $this->request->filter('int')->get('day');
 
-            $created = mktime($hour, $min, $second, $month, $day, $year)
-                - $this->options->timezone + $this->options->serverTimezone;
+            $timestamp = $this->options->makeDateTime($year, $month, $day, $hour, $min, $second);
+            if ($timestamp !== null) {
+                $created = $timestamp;
+            }
         } elseif ($this->have() && $this->created > 0) {
             $created = $this->created;
         } elseif ($this->request->is('do=save')) {

@@ -1691,7 +1691,6 @@ class HyperDown
      * @param mixed $type
      * @param mixed $start
      * @param mixed $value
-     * @return $this
      */
     private function startBlock($type, $start, $value = null): HyperDown
     {
@@ -1703,10 +1702,6 @@ class HyperDown
         return $this;
     }
 
-    /**
-     * endBlock
-     * @return $this
-     */
     private function endBlock(): HyperDown
     {
         $this->_current = 'normal';
@@ -1738,7 +1733,6 @@ class HyperDown
      * setBlock
      * @param mixed $to
      * @param mixed $value
-     * @return $this
      */
     private function setBlock($to = null, $value = null): HyperDown
     {
@@ -1758,7 +1752,6 @@ class HyperDown
      * @param mixed $step
      * @param mixed $type
      * @param mixed $value
-     * @return $this
      */
     private function backBlock($step, $type, $value = null): HyperDown
     {
@@ -1781,9 +1774,6 @@ class HyperDown
         return $this;
     }
 
-    /**
-     * @return $this
-     */
     private function combineBlock(): HyperDown
     {
         if ($this->_pos < 1) {

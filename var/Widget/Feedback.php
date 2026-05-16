@@ -48,6 +48,10 @@ class Feedback extends Comments implements ActionInterface
     public function action()
     {
         $callback = $this->request->get('type');
+        if ($callback === 'comment' && !$this->request->isPost()) {
+            $this->response->setStatus(405)->throwContent(_t('Method Not Allowed'));
+            return;
+        }
         $this->content = Router::match($this->request->get('permalink'));
 
         if (
@@ -61,7 +65,7 @@ class Feedback extends Comments implements ActionInterface
                     throw new Exception(_t('对不起,此内容的反馈被禁止.'), 403);
                 }
 
-                if ($this->options->commentsCheckReferer && 'false' != $this->parameter->checkReferer) {
+                if ($this->options->commentsCheckReferer && $this->shouldCheckReferer()) {
                     $referer = $this->request->getReferer();
 
                     if (empty($referer)) {
@@ -112,7 +116,6 @@ class Feedback extends Comments implements ActionInterface
         }
     }
 
-    /** @throws \Exception */
     private function comment()
     {
         // 使用安全模块保护
@@ -134,7 +137,8 @@ class Feedback extends Comments implements ActionInterface
             if (
                 $this->options->commentsThreaded
                 && ($parent = $this->db->fetchRow($this->db->select('coid', 'cid')->from('table.comments')
-                    ->where('coid = ?', $parentId))) && $this->content->cid == $parent['cid']
+                    ->where('coid = ?', $parentId)
+                    ->where('type = ?', 'comment'))) && $this->content->cid == $parent['cid']
             ) {
                 $comment['parent'] = $parentId;
             } else {
@@ -207,8 +211,7 @@ class Feedback extends Comments implements ActionInterface
         }
 
         if ($error = $validator->run($comment)) {
-            $safeText = htmlspecialchars($comment['text'], ENT_QUOTES, 'UTF-8');
-            Cookie::set('__typecho_remember_text', $safeText);
+            Cookie::set('__typecho_remember_text', $comment['text']);
             throw new Exception(implode("\n", $error));
         }
 
@@ -239,7 +242,6 @@ class Feedback extends Comments implements ActionInterface
         $this->response->redirect($this->permalink);
     }
 
-    /** @throws Exception|Db\Exception */
     private function trackback()
     {
         if (!$this->request->isPost() || $this->request->getReferer()) {
@@ -314,7 +316,10 @@ class Feedback extends Comments implements ActionInterface
             return false;
         }
 
-        return $this->normalizeRefererPath($refererPart) === $this->normalizeRefererPath($currentPart);
+        $refererPath = $this->normalizeRefererPath($refererPart);
+        $currentPath = $this->normalizeRefererPath($currentPart);
+
+        return $refererPath === $currentPath || $this->normalizeCommentPagePath($refererPath) === $currentPath;
     }
 
     private function normalizeRefererPath(array $parts): string
@@ -326,6 +331,18 @@ class Feedback extends Comments implements ActionInterface
 
         $path = '/' . ltrim($path, '/');
         return $path === '/' ? '/' : rtrim($path, '/');
+    }
+
+    private function normalizeCommentPagePath(string $path): string
+    {
+        $path = preg_replace('~/comment-page-\d+$~', '', $path) ?? $path;
+
+        return $path === '' ? '/' : $path;
+    }
+
+    private function shouldCheckReferer(): bool
+    {
+        return !in_array($this->parameter->checkReferer, [false, 'false', 0, '0'], true);
     }
 
     private function purgeCommentCache(): void

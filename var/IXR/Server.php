@@ -4,38 +4,17 @@ namespace IXR;
 
 use Typecho\Widget\Exception as WidgetException;
 
-/**
- * IXR服务器
- *
- * @package IXR
- */
 #[\AllowDynamicProperties]
 class Server
 {
-    /**
-     * 回调函数
-     *
-     * @var array
-     */
+    private const DEFAULT_MAX_BODY_SIZE = 8388608;
+
     private array $callbacks;
 
-    /**
-     * 默认参数
-     *
-     * @var array
-     */
     private array $capabilities;
 
-    /**
-     * @var Hook
-     */
     private Hook $hook;
 
-    /**
-     * 构造函数
-     *
-     * @param array $callbacks 回调函数
-     */
     public function __construct(array $callbacks = [])
     {
         $this->setCapabilities();
@@ -43,30 +22,16 @@ class Server
         $this->setCallbacks();
     }
 
-    /**
-     * 获取默认参数
-     * @return array
-     */
     public function getCapabilities(): array
     {
         return $this->capabilities;
     }
 
-    /**
-     * 列出所有方法
-     * @return array
-     */
     public function listMethods(): array
     {
         return array_reverse(array_keys($this->callbacks));
     }
 
-    /**
-     * 一次处理多个请求
-     *
-     * @param array $methodcalls
-     * @return array
-     */
     public function multiCall(array $methodcalls): array
     {
         $return = [];
@@ -78,7 +43,7 @@ class Server
             } else {
                 $result = $this->call($method, $params);
             }
-            if (is_a($result, 'Error')) {
+            if ($result instanceof Error) {
                 $return[] = [
                     'faultCode'   => $result->code,
                     'faultString' => $result->message
@@ -112,9 +77,6 @@ class Server
         }
     }
 
-    /**
-     * @param Hook $hook
-     */
     public function setHook(Hook $hook)
     {
         $this->hook = $hook;
@@ -144,6 +106,13 @@ class Server
         [$object, $objectMethod] = $method;
 
         try {
+            if (!$this->isPositionalArgs($args)) {
+                return new Error(
+                    -32602,
+                    'server error. requested class method "' . $methodName . '" params must be positional.'
+                );
+            }
+
             $ref = new \ReflectionMethod($object, $objectMethod);
             $requiredArgs = $ref->getNumberOfRequiredParameters();
             if (count($args) < $requiredArgs) {
@@ -210,6 +179,11 @@ class Server
         }
     }
 
+    private function isPositionalArgs(array $args): bool
+    {
+        return $args === [] || array_keys($args) === range(0, count($args) - 1);
+    }
+
     /**
      * 抛出错误
      * @param integer|Error $error 错误代码
@@ -240,6 +214,36 @@ class Server
         header('Date: ' . date('r'));
         echo $xml;
         exit;
+    }
+
+    private function maxBodySize(): int
+    {
+        $size = $this->parseIniSize((string) ini_get('post_max_size'));
+
+        return $size >= 0 ? $size : self::DEFAULT_MAX_BODY_SIZE;
+    }
+
+    private function parseIniSize(string $value): int
+    {
+        $value = trim($value);
+        if ($value === '') {
+            return -1;
+        }
+
+        $unit = strtolower(substr($value, -1));
+        if (ctype_alpha($unit)) {
+            $number = (float) substr($value, 0, -1);
+        } else {
+            $number = (float) $value;
+            $unit = '';
+        }
+
+        return (int) match ($unit) {
+            'g' => $number * 1024 * 1024 * 1024,
+            'm' => $number * 1024 * 1024,
+            'k' => $number * 1024,
+            default => $number,
+        };
     }
 
     private function coerceArgument(&$value, \ReflectionType $type): bool
@@ -357,6 +361,16 @@ class Server
      */
     public function serve()
     {
+        if (!function_exists('xml_parser_create')) {
+            $this->error(-32600, 'server error. XML extension is required.');
+        }
+
+        $contentLength = isset($_SERVER['CONTENT_LENGTH']) ? (int) $_SERVER['CONTENT_LENGTH'] : 0;
+        $maxBodySize = $this->maxBodySize();
+        if ($maxBodySize > 0 && $contentLength > 0 && $contentLength > $maxBodySize) {
+            $this->error(-32600, 'server error. request body is too large.');
+        }
+
         $message = new Message(file_get_contents('php://input') ?: '');
 
         if (!$message->parse()) {

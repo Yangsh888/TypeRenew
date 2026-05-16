@@ -64,7 +64,13 @@ class Router
                 $widget = Widget::widget($route['widget'], null, $params);
 
                 if (isset($route['action'])) {
-                    $widget->{$route['action']}();
+                    $action = (string) $route['action'];
+
+                    if (!self::isPublicAction($widget, $action)) {
+                        throw new RouterException("Route action '{$action}' is not callable", 500);
+                    }
+
+                    $widget->{$action}();
                 }
 
                 return;
@@ -162,5 +168,20 @@ class Router
                 yield [$route, $params];
             }
         }
+    }
+
+    private static function isPublicAction(object $widget, string $action): bool
+    {
+        if ($action === '' || !method_exists($widget, $action)) {
+            return false;
+        }
+
+        try {
+            $method = new \ReflectionMethod($widget, $action);
+        } catch (\ReflectionException) {
+            return false;
+        }
+
+        return $method->isPublic();
     }
 }

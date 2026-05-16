@@ -129,6 +129,13 @@ class Helper
         return $routingTable;
     }
 
+    public static function resetFrontPage(array $routingTable): void
+    {
+        self::setOption('frontPage', 'recent');
+        self::setOption('frontArchive', 0);
+        self::setOption('routingTable', self::syncArchiveRoutes($routingTable));
+    }
+
     public static function resolvePathInRoot(string $root, string $relative, bool $mustBeFile = true): ?string
     {
         $rootPath = realpath($root);

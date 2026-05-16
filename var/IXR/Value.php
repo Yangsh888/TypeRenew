@@ -2,21 +2,12 @@
 
 namespace IXR;
 
-/**
- * IXR值
- *
- * @package IXR
- */
 class Value
 {
     private $data;
 
     private ?string $type;
 
-    /**
-     * @param mixed $data
-     * @param string|null $type
-     */
     public function __construct($data, ?string $type = null)
     {
         $this->data = $data;
@@ -70,9 +61,6 @@ class Value
         return '<string>' . $this->escapeString($this->data) . '</string>';
     }
 
-    /**
-     * @return string
-     */
     private function calculateType(): string
     {
         if ($this->data === true || $this->data === false) {
@@ -84,10 +72,10 @@ class Value
         if (is_double($this->data)) {
             return 'double';
         }
-        if (is_object($this->data) && is_a($this->data, 'IXR_Date')) {
+        if ($this->data instanceof Date) {
             return 'date';
         }
-        if (is_object($this->data) && is_a($this->data, 'IXR_Base64')) {
+        if ($this->data instanceof Base64) {
             return 'base64';
         }
         if (is_object($this->data)) {

@@ -18,9 +18,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
  */
 class Recent extends Contents
 {
-    /**
-     * @throws Db\Exception
-     */
     public function execute()
     {
         $this->parameter->setDefault(['pageSize' => $this->options->postsListSize]);

@@ -6,30 +6,26 @@ include 'menu.php';
 $stat = \Widget\Stat::alloc();
 
 $db = \Typecho\Db::get();
-$days = [];
 $postsData = [];
 $commentsData = [];
 $dayCount = 14;
 
 for ($i = $dayCount - 1; $i >= 0; $i--) {
-    $date = date('Y-m-d', strtotime("-{$i} days"));
-    $label = date('m/d', strtotime("-{$i} days"));
-    $days[] = $label;
-
-    $startTime = strtotime($date . ' 00:00:00');
-    $endTime = strtotime($date . ' 23:59:59');
+    $currentDay = $options->getDateTime()->setTime(0, 0, 0)->modify("-{$i} days");
+    $startTime = $currentDay->getTimestamp();
+    $endTime = $currentDay->modify('+1 day')->getTimestamp();
 
     $postCount = $db->fetchObject($db->select(['COUNT(cid)' => 'num'])
         ->from('table.contents')
         ->where('type = ?', 'post')
         ->where('status = ?', 'publish')
         ->where('created >= ?', $startTime)
-        ->where('created <= ?', $endTime))->num;
+        ->where('created < ?', $endTime))->num;
 
     $commentCount = $db->fetchObject($db->select(['COUNT(coid)' => 'num'])
         ->from('table.comments')
         ->where('created >= ?', $startTime)
-        ->where('created <= ?', $endTime))->num;
+        ->where('created < ?', $endTime))->num;
 
     $postsData[] = (int) $postCount;
     $commentsData[] = (int) $commentCount;

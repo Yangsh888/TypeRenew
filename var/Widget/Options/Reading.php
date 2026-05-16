@@ -12,21 +12,8 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-/**
- * 文章阅读设置组件
- *
- * @author qining
- * @package Widget
- * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
- * @license GNU General Public License 2.0
- */
 class Reading extends Permalink
 {
-    /**
-     * 执行更新动作
-     *
-     * @throws Exception
-     */
     public function updateReadingSettings()
     {
         $this->validateFormOrGoBack($this->form());

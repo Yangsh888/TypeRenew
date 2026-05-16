@@ -7,11 +7,5 @@ namespace Widget\Base;
  */
 interface RowFilterInterface
 {
-    /**
-     * 过滤行
-     *
-     * @param array $row
-     * @return array
-     */
     public function filter(array $row): array;
 }

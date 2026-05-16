@@ -12,14 +12,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-/**
- * 表单处理帮手
- *
- * @category typecho
- * @package Widget
- * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
- * @license GNU General Public License 2.0
- */
 class Form extends Layout
 {
     public const POST_METHOD = 'post';
@@ -50,7 +42,6 @@ class Form extends Layout
      * 设置表单提交目的
      *
      * @param string|null $action 表单提交目的
-     * @return $this
      */
     public function setAction(?string $action): Form
     {
@@ -62,7 +53,6 @@ class Form extends Layout
      * 设置表单提交方法
      *
      * @param string $method 表单提交方法
-     * @return $this
      */
     public function setMethod(string $method): Form
     {
@@ -74,7 +64,6 @@ class Form extends Layout
      * 设置表单编码方案
      *
      * @param string $enctype 编码方法
-     * @return $this
      */
     public function setEncodeType(string $enctype): Form
     {
@@ -97,7 +86,7 @@ class Form extends Layout
      */
     public function getInput(string $name)
     {
-        return $this->inputs[$name];
+        return $this->inputs[$name] ?? null;
     }
 
     /**
@@ -175,7 +164,8 @@ class Form extends Layout
         $request = Request::getInstance();
 
         foreach ($params as $param) {
-            $result[$param] = $request->get($param, is_array($this->getInput($param)->value) ? [] : null);
+            $input = $this->getInput($param);
+            $result[$param] = $request->get($param, $input && is_array($input->value) ? [] : null);
         }
 
         return $result;

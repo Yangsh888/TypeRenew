@@ -17,6 +17,77 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
 
 class Permalink extends Options implements ActionInterface
 {
+    private function rewriteBasePath(): string
+    {
+        $parsed = Common::parseUrl((string) $this->options->siteUrl);
+        $basePath = empty($parsed['path']) ? '/' : $parsed['path'];
+
+        return rtrim($basePath, '/') . '/';
+    }
+
+    private function rewriteEntry(): string
+    {
+        $basePath = $this->rewriteBasePath();
+
+        return '/' === $basePath ? '/index.php' : rtrim($basePath, '/') . '/index.php';
+    }
+
+    public function rewriteExamples(): array
+    {
+        $basePath = $this->rewriteBasePath();
+        $entry = $this->rewriteEntry();
+        $location = '/' === $basePath ? '/' : $basePath;
+
+        return [
+            [
+                'title' => _t('Apache 标准规则'),
+                'description' => _t('适用于 Apache + mod_rewrite。当前项目后台自动探测优先使用这一写法。'),
+                'code' => "<IfModule mod_rewrite.c>\n"
+                    . "RewriteEngine On\n"
+                    . "RewriteBase {$basePath}\n"
+                    . "RewriteCond %{REQUEST_FILENAME} !-f\n"
+                    . "RewriteCond %{REQUEST_FILENAME} !-d\n"
+                    . "RewriteRule ^(.*)$ {$basePath}index.php/\$1 [L]\n"
+                    . "</IfModule>",
+            ],
+            [
+                'title' => _t('Apache 兼容回退规则'),
+                'description' => _t('当上面的 PATH_INFO 写法不可用时，可改用这一套回退规则。两者任选其一即可。'),
+                'code' => "<IfModule mod_rewrite.c>\n"
+                    . "RewriteEngine On\n"
+                    . "RewriteBase {$basePath}\n"
+                    . "RewriteCond %{REQUEST_FILENAME} !-f\n"
+                    . "RewriteCond %{REQUEST_FILENAME} !-d\n"
+                    . "RewriteRule . {$basePath}index.php [L]\n"
+                    . "</IfModule>",
+            ],
+            [
+                'title' => _t('Nginx 标准规则'),
+                'description' => _t('适用于 Nginx。建议将请求统一转发到入口脚本，不使用 if + rewrite 的兼容性更稳。'),
+                'code' => "location {$location} {\n"
+                    . "    try_files \$uri \$uri/ {$entry}\$is_args\$args;\n"
+                    . "}",
+            ],
+        ];
+    }
+
+    public function rewriteNotes(): array
+    {
+        $basePath = $this->rewriteBasePath();
+        $notes = [
+            _t('只有在启用“地址重写功能”后，才需要把下列规则写入 Web 服务器配置。'),
+            _t('Apache 可使用上方两套规则中的任意一套；Nginx 使用标准规则即可。'),
+        ];
+
+        if ('/' === $basePath) {
+            $notes[] = _t('当前站点部署在根目录。若以后迁移到子目录，请同步修改 RewriteBase 和入口脚本路径。');
+        } else {
+            $notes[] = _t('当前站点子目录前缀为 %s，下列示例已按该前缀生成。', '<code>' . htmlspecialchars($basePath, ENT_QUOTES, 'UTF-8') . '</code>');
+        }
+
+        return $notes;
+    }
+
     protected function routingTable(): array
     {
         $routingTable = $this->options->routingTable;
@@ -156,11 +227,6 @@ RewriteRule . {$basePath}index.php [L]
         return true;
     }
 
-    /**
-     * 执行更新动作
-     *
-     * @throws Exception
-     */
     public function updatePermalinkSettings()
     {
         $customPattern = $this->request->get('customPattern');

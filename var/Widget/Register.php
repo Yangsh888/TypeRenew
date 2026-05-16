@@ -17,9 +17,6 @@ class Register extends Users implements ActionInterface
 {
     use EditTrait;
 
-    /**
-     * @throws Exception
-     */
     public function action()
     {
         $this->security->protect();

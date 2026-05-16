@@ -2,14 +2,6 @@
 
 namespace Typecho\Widget\Helper;
 
-/**
- * HTML布局帮手类
- *
- * @category typecho
- * @package Widget
- * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
- * @license GNU General Public License 2.0
- */
 class Layout
 {
     private array $items = [];
@@ -49,7 +41,6 @@ class Layout
      *
      * @param string $attributeName 属性名称
      * @param mixed $attributeValue 属性值
-     * @return $this
      */
     public function setAttribute(string $attributeName, $attributeValue): Layout
     {
@@ -61,7 +52,6 @@ class Layout
      * 删除元素
      *
      * @param Layout $item 元素
-     * @return $this
      */
     public function removeItem(Layout $item): Layout
     {
@@ -69,21 +59,11 @@ class Layout
         return $this;
     }
 
-    /**
-     * getItems
-     *
-     * @return array
-     */
     public function getItems(): array
     {
         return $this->items;
     }
 
-    /**
-     * getTagName
-     *
-     * @return string
-     */
     public function getTagName(): string
     {
         return $this->tagName;
@@ -103,7 +83,6 @@ class Layout
      * 移除某个属性
      *
      * @param string $attributeName 属性名称
-     * @return $this
      */
     public function removeAttribute(string $attributeName): Layout
     {
@@ -123,7 +102,6 @@ class Layout
      * 设置是否自闭合
      *
      * @param boolean $close 是否自闭合
-     * @return $this
      */
     public function setClose(bool $close): Layout
     {
@@ -131,11 +109,6 @@ class Layout
         return $this;
     }
 
-    /**
-     * 获取父节点
-     *
-     * @return Layout
-     */
     public function getParent(): Layout
     {
         return $this->parent;
@@ -145,7 +118,6 @@ class Layout
      * 设置父节点
      *
      * @param Layout $parent 父节点
-     * @return $this
      */
     public function setParent(Layout $parent): Layout
     {
@@ -157,7 +129,6 @@ class Layout
      * 增加到某布局元素集合中
      *
      * @param Layout $parent 布局对象
-     * @return $this
      */
     public function appendTo(Layout $parent): Layout
     {
@@ -169,7 +140,6 @@ class Layout
      * 增加元素
      *
      * @param Layout $item 元素
-     * @return $this
      */
     public function addItem(Layout $item): Layout
     {

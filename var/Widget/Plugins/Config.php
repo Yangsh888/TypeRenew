@@ -12,42 +12,14 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-/**
- * 插件配置组件
- *
- * @author qining
- * @category typecho
- * @package Widget
- * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
- * @license GNU General Public License 2.0
- */
 class Config extends Options
 {
-    /**
-     * 获取插件信息
-     *
-     * @var array
-     */
     public array $info;
 
-    /**
-     * 插件文件路径
-     *
-     * @var string
-     */
     private string $pluginFileName;
 
-    /**
-     * 插件类
-     *
-     * @var string
-     */
     private string $className;
 
-    /**
-     * @throws Plugin\Exception
-     * @throws Exception|\Typecho\Db\Exception
-     */
     public function execute()
     {
         $this->user->pass('administrator');
@@ -62,8 +34,6 @@ class Config extends Options
 
     /**
      * 获取菜单标题
-     *
-     * @return string
      */
     public function getMenuTitle(): string
     {
@@ -72,9 +42,6 @@ class Config extends Options
 
     /**
      * 配置插件
-     *
-     * @return Form
-     * @throws Exception|Plugin\Exception
      */
     public function config(): Form
     {

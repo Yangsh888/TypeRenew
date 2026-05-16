@@ -2,8 +2,11 @@
 
 namespace Typecho;
 
+use Utils\Zone;
+
 class Date
 {
+    public static ?string $timezoneId = null;
     public static int $timezoneOffset = 0;
     public static int $serverTimezoneOffset = 0;
     public static int $serverTimeStamp = 0;
@@ -11,6 +14,7 @@ class Date
     public string $year;
     public string $month;
     public string $day;
+    private \DateTimeImmutable $dateTime;
 
     /**
      * 初始化参数
@@ -19,12 +23,12 @@ class Date
      */
     public function __construct(?int $time = null)
     {
-        $this->timeStamp = (null === $time ? self::time() : $time)
-            + (self::$timezoneOffset - self::$serverTimezoneOffset);
+        $this->timeStamp = null === $time ? self::time() : $time;
+        $this->dateTime = Zone::dateTime($this->timeStamp, self::$timezoneId, self::$timezoneOffset);
 
-        $this->year = date('Y', $this->timeStamp);
-        $this->month = date('m', $this->timeStamp);
-        $this->day = date('d', $this->timeStamp);
+        $this->year = $this->dateTime->format('Y');
+        $this->month = $this->dateTime->format('m');
+        $this->day = $this->dateTime->format('d');
     }
 
     /**
@@ -34,8 +38,16 @@ class Date
      */
     public static function setTimezoneOffset(int $offset)
     {
+        self::$timezoneId = null;
         self::$timezoneOffset = $offset;
-        self::$serverTimezoneOffset = idate('Z');
+        self::$serverTimezoneOffset = Zone::serverOffsetAt(self::time());
+    }
+
+    public static function configure(?string $timezoneId, int $offset): void
+    {
+        self::$timezoneId = Zone::normalizeId($timezoneId);
+        self::$timezoneOffset = $offset;
+        self::$serverTimezoneOffset = Zone::serverOffsetAt(self::time());
     }
 
     /**
@@ -46,7 +58,7 @@ class Date
      */
     public function format(string $format): string
     {
-        return date($format, $this->timeStamp);
+        return $this->dateTime->format($format);
     }
 
     /**
@@ -55,7 +67,7 @@ class Date
      */
     public function word(): string
     {
-        return I18n::dateWord($this->timeStamp, self::time() + (self::$timezoneOffset - self::$serverTimezoneOffset));
+        return Zone::word($this->timeStamp, self::time(), self::$timezoneId, self::$timezoneOffset);
     }
 
     /**

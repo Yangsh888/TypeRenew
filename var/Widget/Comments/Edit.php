@@ -13,15 +13,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-/**
- * 评论编辑组件
- *
- * @author qining
- * @category typecho
- * @package Widget
- * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
- * @license GNU General Public License 2.0
- */
 class Edit extends Comments implements ActionInterface
 {
     /**
@@ -51,8 +42,6 @@ class Edit extends Comments implements ActionInterface
      * 评论是否可以被修改
      *
      * @param Query|null $condition 条件
-     * @return bool
-     * @throws Exception|\Typecho\Widget\Exception
      */
     public function commentIsWriteable(?Query $condition = null): bool
     {
@@ -76,7 +65,6 @@ class Edit extends Comments implements ActionInterface
      *
      * @param integer $coid 评论主键
      * @param string $status 状态
-     * @throws Exception
      */
     private function mark(int $coid, string $status): bool
     {
@@ -116,8 +104,6 @@ class Edit extends Comments implements ActionInterface
 
     /**
      * 标记为垃圾
-     *
-     * @throws Exception
      */
     public function spamComment()
     {
@@ -141,8 +127,6 @@ class Edit extends Comments implements ActionInterface
 
     /**
      * 标记为展现
-     *
-     * @throws Exception
      */
     public function approvedComment()
     {
@@ -166,8 +150,6 @@ class Edit extends Comments implements ActionInterface
 
     /**
      * 删除评论
-     *
-     * @throws Exception
      */
     public function deleteComment()
     {
@@ -221,8 +203,6 @@ class Edit extends Comments implements ActionInterface
 
     /**
      * 删除所有垃圾评论
-     *
-     * @throws Exception
      */
     public function deleteSpamComment()
     {
@@ -247,8 +227,6 @@ class Edit extends Comments implements ActionInterface
 
     /**
      * 获取可编辑的评论
-     *
-     * @throws Exception
      */
     public function getComment()
     {
@@ -271,9 +249,6 @@ class Edit extends Comments implements ActionInterface
 
     /**
      * 编辑评论
-     *
-     * @return bool
-     * @throws Exception
      */
     public function editComment(): bool
     {
@@ -318,8 +293,6 @@ class Edit extends Comments implements ActionInterface
 
     /**
      * 回复评论
-     *
-     * @throws Exception
      */
     public function replyComment()
     {

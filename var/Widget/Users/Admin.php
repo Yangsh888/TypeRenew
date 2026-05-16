@@ -13,40 +13,14 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-/**
- * 后台成员列表组件
- *
- * @author qining
- * @package Widget
- * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
- * @license GNU General Public License 2.0
- */
 class Admin extends Users
 {
-    /**
-     * 分页计算对象
-     *
-     * @var Query
-     */
     private Query $countSql;
 
-    /**
-     * 所有文章个数
-     *
-     * @var integer
-     */
     private int $total;
 
-    /**
-     * 当前页
-     *
-     * @var integer
-     */
     private int $currentPage;
 
-    /**
-     * @throws Db\Exception
-     */
     public function execute()
     {
         $this->parameter->setDefault('pageSize=20');
@@ -71,8 +45,6 @@ class Admin extends Users
 
     /**
      * 输出分页
-     *
-     * @throws Exception|Db\Exception
      */
     public function pageNav()
     {
@@ -89,8 +61,6 @@ class Admin extends Users
 
     /**
      * 仅仅输出域名和路径
-     *
-     * @return string
      */
     protected function ___domainPath(): string
     {
@@ -100,8 +70,6 @@ class Admin extends Users
 
     /**
      * 发布文章数
-     *
-     * @throws Db\Exception
      */
     protected function ___postsNum(): int
     {

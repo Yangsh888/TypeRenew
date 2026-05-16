@@ -2,22 +2,10 @@
 
 namespace IXR;
 
-/**
- * IXR请求体
- *
- * @package IXR
- */
 class Request
 {
-    /**
-     * @var string
-     */
     private string $xml;
 
-    /**
-     * @param string $method
-     * @param array $args
-     */
     public function __construct(string $method, array $args)
     {
         $this->xml = <<<EOD
@@ -37,17 +25,11 @@ EOD;
         $this->xml .= '</params></methodCall>';
     }
 
-    /**
-     * @return int
-     */
     public function getLength(): int
     {
         return strlen($this->xml);
     }
 
-    /**
-     * @return string
-     */
     public function getXml(): string
     {
         return $this->xml;

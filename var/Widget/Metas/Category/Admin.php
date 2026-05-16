@@ -12,17 +12,11 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-/**
- * Category Admin
- */
 class Admin extends Metas
 {
     use InitTreeRowsTrait;
     use TreeTrait;
 
-    /**
-     * @var int Parent category
-     */
     private int $parentId = 0;
 
     public function execute()

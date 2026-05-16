@@ -81,10 +81,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
         return 'cid';
     }
 
-    /**
-     * @param string $key
-     * @return string
-     */
     public function getRouterParam(string $key): string
     {
         switch ($key) {
@@ -109,9 +105,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
 
     /**
      * 获取查询对象
-     *
-     * @param mixed $fields
-     * @return Query
      */
     public function select(...$fields): Query
     {
@@ -120,9 +113,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
 
     /**
      * 插入内容
-     *
-     * @param array $rows 内容数组
-     * @throws Exception
      */
     public function insert(array $rows): int
     {
@@ -164,8 +154,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
      * @param string|null $slug 缩略名
      * @param mixed $cid 内容id
      * @param string $title 标题
-     * @return string
-     * @throws Exception
      */
     public function applySlug(?string $slug, $cid, string $title = ''): string
     {
@@ -209,10 +197,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
 
     /**
      * 更新内容
-     *
-     * @param array $rows 内容数组
-     * @param Query $condition 更新条件
-     * @throws Exception
      */
     public function update(array $rows, Query $condition): int
     {
@@ -262,8 +246,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
      * 内容是否可以被修改
      *
      * @param Query $condition 条件
-     * @return bool
-     * @throws Exception
      */
     public function isWriteable(Query $condition): bool
     {
@@ -273,9 +255,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
 
     /**
      * 删除内容
-     *
-     * @param Query $condition 查询对象
-     * @throws Exception
      */
     public function delete(Query $condition): int
     {
@@ -284,9 +263,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
 
     /**
      * 按照条件计算内容数量
-     *
-     * @param Query $condition 查询对象
-     * @throws Exception
      */
     public function size(Query $condition): int
     {
@@ -298,8 +274,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
 
     /**
      * 获取当前所有自定义模板
-     *
-     * @return array
      */
     public function getTemplates(): array
     {
@@ -322,7 +296,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
      * 将每行的值压入堆栈
      *
      * @param array $value 每行的值
-     * @return array
      */
     public function push(array $value): array
     {
@@ -334,7 +307,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
      * 通用过滤器
      *
      * @param array $row 需要过滤的行数据
-     * @return array
      */
     public function filter(array $row): array
     {
@@ -452,7 +424,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
      * @param string $split 多个分类之间分隔符
      * @param boolean $link 是否输出链接
      * @param string|null $default 如果没有则输出
-     * @throws Widget\Exception
      */
     public function directory(string $split = '/', bool $link = true, ?string $default = null)
     {
@@ -552,8 +523,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
 
     /**
      * 是否为隐藏文章
-     *
-     * @return bool
      */
     protected function ___hidden(): bool
     {
@@ -601,8 +570,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
 
     /**
      * 多级目录结构
-     *
-     * @return array
      */
     protected function ___directory(): array
     {
@@ -629,8 +596,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
 
     /**
      * 将tags取出
-     *
-     * @return array
      */
     protected function ___tags(): array
     {
@@ -640,8 +605,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
 
     /**
      * 文章作者
-     *
-     * @return Users
      */
     protected function ___author(): Users
     {
@@ -650,8 +613,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
 
     /**
      * 获取词义化日期
-     *
-     * @return string
      */
     protected function ___dateWord(): string
     {
@@ -694,8 +655,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
 
     /**
      * 获取文章内容摘要
-     *
-     * @return string|null
      */
     protected function ___excerpt(): ?string
     {
@@ -711,8 +670,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
 
     /**
      * 对文章的简短纯文本描述
-     *
-     * @return string|null
      */
     protected function ___plainExcerpt(): ?string
     {
@@ -751,8 +708,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
 
     /**
      * 获取文章内容
-     *
-     * @return string|null
      */
     protected function ___content(): ?string
     {
@@ -772,8 +727,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
 
     /**
      * 输出文章的第一行作为摘要
-     *
-     * @return string|null
      */
     protected function ___summary(): ?string
     {
@@ -788,8 +741,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
 
     /**
      * 锚点id
-     *
-     * @return string
      */
     protected function ___theId(): string
     {
@@ -798,8 +749,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
 
     /**
      * 回复框id
-     *
-     * @return string
      */
     protected function ___respondId(): string
     {
@@ -808,8 +757,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
 
     /**
      * 评论地址
-     *
-     * @return string
      */
     protected function ___commentUrl(): string
     {
@@ -822,8 +769,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
 
     /**
      * trackback地址
-     *
-     * @return string
      */
     protected function ___trackbackUrl(): string
     {
@@ -836,8 +781,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
 
     /**
      * 回复地址
-     *
-     * @return string
      */
     protected function ___responseUrl(): string
     {

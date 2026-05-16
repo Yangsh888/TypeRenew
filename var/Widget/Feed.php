@@ -15,20 +15,10 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-/**
- * Feed handler
- */
 class Feed extends Contents
 {
-    /**
-     * @var FeedGenerator
-     */
     private FeedGenerator $feed;
 
-    /**
-     * @param Config $parameter
-     * @throws Exception
-     */
     protected function initParameter(Config $parameter)
     {
         $parameter->setDefault([
@@ -36,9 +26,6 @@ class Feed extends Contents
         ]);
     }
 
-    /**
-     * @throws Exception
-     */
     public function execute()
     {
         $feedPath = $this->request->get('feed', '/');
@@ -47,24 +34,16 @@ class Feed extends Contents
         $currentFeedUrl = $this->options->feedUrl;
         $isComments = false;
 
-        /** 判断聚合类型 */
-        switch (true) {
-            case preg_match("/^\/rss(\/|$)/", $feedPath):
-                /** 如果是RSS1标准 */
-                $feedPath = substr($feedPath, 4);
-                $feedType = FeedGenerator::RSS1;
-                $currentFeedUrl = $this->options->feedRssUrl;
-                $feedContentType = 'application/rdf+xml';
-                break;
-            case preg_match("/^\/atom(\/|$)/", $feedPath):
-                /** 如果是ATOM标准 */
-                $feedPath = substr($feedPath, 5);
-                $feedType = FeedGenerator::ATOM1;
-                $currentFeedUrl = $this->options->feedAtomUrl;
-                $feedContentType = 'application/atom+xml';
-                break;
-            default:
-                break;
+        if (preg_match("/^\/rss(\/|$)/", $feedPath)) {
+            $feedPath = substr($feedPath, 4);
+            $feedType = FeedGenerator::RSS1;
+            $currentFeedUrl = $this->options->feedRssUrl;
+            $feedContentType = 'application/rdf+xml';
+        } elseif (preg_match("/^\/atom(\/|$)/", $feedPath)) {
+            $feedPath = substr($feedPath, 5);
+            $feedType = FeedGenerator::ATOM1;
+            $currentFeedUrl = $this->options->feedAtomUrl;
+            $feedContentType = 'application/atom+xml';
         }
 
         $feed = new FeedGenerator(
@@ -111,12 +90,6 @@ class Feed extends Contents
         $this->feed = $feed;
     }
 
-    /**
-     * @param FeedGenerator $feed
-     * @param string $contentType
-     * @param bool $isComments
-     * @param Archive|null $archive
-     */
     public function feed(
         FeedGenerator $feed,
         string $contentType,

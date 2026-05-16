@@ -2,14 +2,6 @@
 
 namespace Typecho\Router;
 
-/**
- * 路由器解析器
- *
- * @category typecho
- * @package Router
- * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
- * @license GNU General Public License 2.0
- */
 class Parser
 {
     private array $defaultRegex;

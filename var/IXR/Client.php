@@ -4,51 +4,20 @@ namespace IXR;
 
 use Typecho\Http\Client as HttpClient;
 
-/**
- * IXR客户端
- * reload by typecho team(http://www.typecho.org)
- *
- * @package IXR
- */
 #[\AllowDynamicProperties]
 class Client
 {
     /** 默认客户端 */
     private const DEFAULT_USERAGENT = 'Typecho XML-RPC PHP Library';
 
-    /**
-     * 地址
-     *
-     * @var string
-     */
     private string $url;
 
-    /**
-     * 消息体
-     *
-     * @var Message
-     */
     private Message $message;
 
-    /**
-     * 请求前缀
-     *
-     * @var string|null
-     */
     private ?string $prefix;
 
-    /**
-     * @var Error
-     */
     private Error $error;
 
-    /**
-     * 客户端构造函数
-     *
-     * @param string $url 服务端地址
-     * @param string|null $prefix
-     * @return void
-     */
     public function __construct(
         string $url,
         ?string $prefix = null
@@ -57,13 +26,6 @@ class Client
         $this->prefix = $prefix;
     }
 
-    /**
-     * 执行请求
-     *
-     * @param string $method
-     * @param array $args
-     * @return bool
-     */
     private function rpcCall(string $method, array $args): bool
     {
         $request = new Request($method, $args);
@@ -108,9 +70,6 @@ class Client
      * <code>
      * $rpc->metaWeblog->newPost();
      * </code>
-     *
-     * @param string $prefix 前缀
-     * @return Client
      */
     public function __get(string $prefix): Client
     {
@@ -146,31 +105,16 @@ class Client
         return $this->message->params[0] ?? null;
     }
 
-    /**
-     * 是否为错误
-     *
-     * @return bool
-     */
     public function isError(): bool
     {
         return isset($this->error);
     }
 
-    /**
-     * 获取错误代码
-     *
-     * @return int
-     */
     private function getErrorCode(): int
     {
         return $this->error->code;
     }
 
-    /**
-     * 获取错误消息
-     *
-     * @return string
-     */
     private function getErrorMessage(): string
     {
         return $this->error->message;

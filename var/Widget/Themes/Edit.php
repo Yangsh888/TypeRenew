@@ -13,14 +13,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-/**
- * 编辑风格组件
- *
- * @author qining
- * @package Widget
- * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
- * @license GNU General Public License 2.0
- */
 class Edit extends Options implements ActionInterface
 {
     private function ignoreFsWarning(callable $callback): void
@@ -123,11 +115,7 @@ class Edit extends Options implements ActionInterface
         $this->update(['value' => $theme], $this->db->sql()->where('name = ?', 'theme'));
 
         if (0 === strpos((string) $this->options->frontPage, 'file:')) {
-            $this->persistOptions([
-                'frontPage' => 'recent',
-                'frontArchive' => 0,
-                'routingTable' => \Utils\Helper::syncArchiveRoutes($this->options->routingTable),
-            ]);
+            \Utils\Helper::resetFrontPage($this->options->routingTable);
         }
 
         $this->options->themeUrl = $this->options->themeUrl(null, $theme);
@@ -191,7 +179,7 @@ class Edit extends Options implements ActionInterface
             try {
                 $this->writeThemeFile($path, (string) $this->request->get('content'), $file);
                 Notice::alloc()->set(_t("文件 %s 的更改已经保存", $file), 'success');
-            } catch (Exception $e) {
+            } catch (Exception) {
                 Notice::alloc()->set(_t("文件 %s 无法被写入", $file), 'error');
             }
             $this->response->goBack();
@@ -244,9 +232,6 @@ class Edit extends Options implements ActionInterface
         $this->response->redirect(Common::url('options-theme.php', $this->options->adminUrl));
     }
 
-    /**
-     * @throws Exception|\Typecho\Db\Exception
-     */
     public function action()
     {
         $this->user->pass('administrator');

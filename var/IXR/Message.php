@@ -2,35 +2,18 @@
 
 namespace IXR;
 
-/**
- * IXR消息
- *
- * @package IXR
- */
 class Message
 {
-    /**
-     * @var string
-     */
     public string $message;
 
-    /**
-     * @var string
-     */
     public string $messageType = '';  // methodCall / methodResponse / fault
 
     public int $faultCode = 0;
 
     public string $faultString = '';
 
-    /**
-     * @var string
-     */
     public string $methodName = '';
 
-    /**
-     * @var array
-     */
     public array $params = [];
 
     // Current variable stacks
@@ -40,19 +23,15 @@ class Message
 
     private array $currentStructName = [];  // A stack as well
 
+    private array $valueTypes = [];
+
     private string $currentTagContents = '';
 
-    /**
-     * @param string $message
-     */
     public function __construct(string $message)
     {
         $this->message = $message;
     }
 
-    /**
-     * @return bool
-     */
     public function parse(): bool
     {
         $this->message = preg_replace('/<\?xml(.*)?\?' . '>/', '', $this->message);
@@ -128,13 +107,12 @@ class Message
                 $this->arrayStructsTypes[] = 'struct';
                 $this->arrayStructs[] = [];
                 break;
+            case 'value':
+                $this->valueTypes[] = false;
+                break;
         }
     }
 
-    /**
-     * @param $parser
-     * @param string $cdata
-     */
     private function cdata($parser, string $cdata)
     {
         $this->currentTagContents .= $cdata;
@@ -151,39 +129,48 @@ class Message
             case 'i4':
                 $value = (int) trim($this->currentTagContents);
                 $this->currentTagContents = '';
+                $this->markTypedValue();
                 break;
             case 'double':
                 $value = (double) trim($this->currentTagContents);
                 $this->currentTagContents = '';
+                $this->markTypedValue();
                 break;
             case 'string':
                 $value = trim($this->currentTagContents);
                 $this->currentTagContents = '';
+                $this->markTypedValue();
                 break;
             case 'dateTime.iso8601':
                 $value = new Date(trim($this->currentTagContents));
                 $this->currentTagContents = '';
+                $this->markTypedValue();
                 break;
             case 'value':
                 // "If no type is indicated, the type is string."
-                if (trim($this->currentTagContents) != '') {
+                $typed = array_pop($this->valueTypes);
+                if ($typed === false) {
                     $value = $this->currentTagContents;
                     $this->currentTagContents = '';
                 }
                 break;
             case 'boolean':
-                $value = (bool) trim($this->currentTagContents);
+                $boolean = strtolower(trim($this->currentTagContents));
+                $value = in_array($boolean, ['1', 'true'], true);
                 $this->currentTagContents = '';
+                $this->markTypedValue();
                 break;
             case 'base64':
                 $value = base64_decode($this->currentTagContents);
                 $this->currentTagContents = '';
+                $this->markTypedValue();
                 break;
             /* Deal with stacks of arrays and structs */
             case 'data':
             case 'struct':
                 $value = array_pop($this->arrayStructs);
                 array_pop($this->arrayStructsTypes);
+                $this->markTypedValue();
                 break;
             case 'member':
                 array_pop($this->currentStructName);
@@ -208,6 +195,14 @@ class Message
             } else {
                 $this->params[] = $value;
             }
+        }
+    }
+
+    private function markTypedValue(): void
+    {
+        $index = count($this->valueTypes) - 1;
+        if ($index >= 0) {
+            $this->valueTypes[$index] = true;
         }
     }
 }

@@ -9,26 +9,10 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-/**
- * 插件列表组件
- *
- * @author qining
- * @category typecho
- * @package Widget
- * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
- * @license GNU General Public License 2.0
- */
 class Rows extends Widget
 {
-    /**
-     * 已启用插件
-     * @var array
-     */
     public array $activatedPlugins = [];
 
-    /**
-     * @return void
-     */
     public function execute()
     {
         $pluginDirs = $this->getPlugins();

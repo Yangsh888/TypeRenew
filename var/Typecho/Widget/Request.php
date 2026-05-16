@@ -7,10 +7,6 @@ use Typecho\Request as HttpRequest;
 
 class Request
 {
-    /**
-     * 支持的过滤器列表
-     * @var string
-     */
     private const FILTERS = [
         'int'     => 'intval',
         'integer' => 'intval',
@@ -22,26 +18,12 @@ class Request
         'slug'    => ['\Typecho\Common', 'slugName']
     ];
 
-    /**
-     * 当前过滤器
-     * @var array
-     */
     private array $filter = [];
 
-    /**
-     * @var HttpRequest
-     */
     private HttpRequest $request;
 
-    /**
-     * @var Config
-     */
     private Config $params;
 
-    /**
-     * @param HttpRequest $request
-     * @param Config|null $params
-     */
     public function __construct(HttpRequest $request, ?Config $params = null)
     {
         $this->request = $request;
@@ -61,8 +43,8 @@ class Request
 
     /**
      * 设置多个参数
+     *
      * @param array $params 参数列表
-     * @return void
      */
     public function setParams(array $params): void
     {
@@ -73,7 +55,6 @@ class Request
      * Add filter to request
      *
      * @param string|callable ...$filters
-     * @return $this
      */
     public function filter(...$filters): Request
     {
@@ -231,14 +212,33 @@ class Request
     {
         if ($this->filter) {
             foreach ($this->filter as $filter) {
-                $value = is_array($value) ? array_map($filter, $value) :
-                    call_user_func($filter, $value);
+                $value = $this->applyFilterRecursive($value, $filter);
             }
 
             $this->filter = [];
         }
 
         $this->request->endProxy();
+        return $value;
+    }
+
+    /**
+     * 递归将过滤器应用到数组叶子节点，避免深层值绕过净化链路
+     *
+     * @param mixed $value
+     * @param callable $filter
+     * @return mixed
+     */
+    private function applyFilterRecursive($value, callable $filter)
+    {
+        if (!is_array($value)) {
+            return call_user_func($filter, $value);
+        }
+
+        foreach ($value as $key => $item) {
+            $value[$key] = $this->applyFilterRecursive($item, $filter);
+        }
+
         return $value;
     }
 

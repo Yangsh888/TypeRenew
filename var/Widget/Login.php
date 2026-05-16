@@ -15,6 +15,10 @@ class Login extends Users implements ActionInterface
 {
     public function action()
     {
+        if (!$this->request->isPost()) {
+            $this->response->setStatus(405)->throwContent(_t('Method Not Allowed'));
+            return;
+        }
         $this->security->protect();
 
         if ($this->user->hasLogin()) {

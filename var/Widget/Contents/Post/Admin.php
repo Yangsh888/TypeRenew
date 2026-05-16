@@ -13,22 +13,10 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-/**
- * 文章管理列表组件
- *
- * @category typecho
- * @package Widget
- * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
- * @license GNU General Public License 2.0
- */
 class Admin extends Contents
 {
     use AdminTrait;
 
-    /**
-     * @return string
-     * @throws Exception|DbException
-     */
     public function getMenuTitle(): string
     {
         if ($this->request->is('uid')) {
@@ -39,9 +27,6 @@ class Admin extends Contents
         throw new Exception(_t('用户不存在'), 404);
     }
 
-    /**
-     * @throws DbException
-     */
     public function execute()
     {
         $this->initPage();

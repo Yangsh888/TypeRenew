@@ -18,12 +18,8 @@ class Edit extends Metas implements ActionInterface
 {
     use EditTrait;
 
-    /**
-     * 入口函数
-     */
     public function execute()
     {
-        /** 编辑以上权限 */
         $this->user->pass('editor');
     }
 
@@ -31,7 +27,6 @@ class Edit extends Metas implements ActionInterface
      * 判断标签是否存在
      *
      * @param integer $mid 标签主键
-     * @throws Exception
      */
     public function tagExists(int $mid): bool
     {
@@ -47,7 +42,6 @@ class Edit extends Metas implements ActionInterface
      * 判断标签名称是否可用
      *
      * @param string $name 标签名称
-     * @throws Exception
      */
     public function nameExists(string $name): bool
     {
@@ -69,7 +63,6 @@ class Edit extends Metas implements ActionInterface
      * 判断标签名转换到缩略名后是否合法
      *
      * @param string $name 标签名
-     * @throws Exception
      */
     public function nameToSlug(string $name): bool
     {
@@ -87,7 +80,6 @@ class Edit extends Metas implements ActionInterface
      * 判断标签缩略名是否存在
      *
      * @param string $slug 缩略名
-     * @throws Exception
      */
     public function slugExists(string $slug): bool
     {
@@ -107,8 +99,6 @@ class Edit extends Metas implements ActionInterface
 
     /**
      * 插入标签
-     *
-     * @throws Exception
      */
     public function insertTag()
     {
@@ -116,12 +106,10 @@ class Edit extends Metas implements ActionInterface
             $this->response->goBack();
         }
 
-        /** 取出数据 */
         $tag = $this->request->from('name', 'slug');
         $tag['type'] = 'tag';
         $tag['slug'] = Common::slugName(Common::strBy($tag['slug'] ?? null, $tag['name']));
 
-        /** 插入数据 */
         $tag['mid'] = $this->insert($tag);
         $this->push($tag);
         self::pluginHandle()->call('finishInsert', $tag, $this);
@@ -141,7 +129,6 @@ class Edit extends Metas implements ActionInterface
      *
      * @param string|null $action 表单动作
      * @return Form
-     * @throws Exception
      */
     public function form(?string $action = null): Form
     {
@@ -200,7 +187,6 @@ class Edit extends Metas implements ActionInterface
             $action = $_action;
         }
 
-        /** 给表单增加规则 */
         if ('insert' == $action || 'update' == $action) {
             $name->addRule('required', _t('必须填写标签名称'));
             $name->addRule([$this, 'nameExists'], _t('标签名称已经存在'));
@@ -220,8 +206,6 @@ class Edit extends Metas implements ActionInterface
 
     /**
      * 更新标签
-     *
-     * @throws Exception
      */
     public function updateTag()
     {
@@ -229,7 +213,6 @@ class Edit extends Metas implements ActionInterface
             $this->response->goBack();
         }
 
-        /** 取出数据 */
         $tag = $this->request->from('name', 'slug', 'mid');
         $tag['type'] = 'tag';
         $tag['slug'] = Common::slugName(Common::strBy($tag['slug'] ?? null, $tag['name']));
@@ -250,8 +233,6 @@ class Edit extends Metas implements ActionInterface
 
     /**
      * 删除标签
-     *
-     * @throws Exception
      */
     public function deleteTag()
     {
@@ -281,8 +262,6 @@ class Edit extends Metas implements ActionInterface
 
     /**
      * 合并标签
-     *
-     * @throws Exception
      */
     public function mergeTag()
     {
@@ -313,8 +292,6 @@ class Edit extends Metas implements ActionInterface
 
     /**
      * 刷新标签
-     * @return void
-     * @throws Exception
      */
     public function refreshTag()
     {
@@ -338,8 +315,6 @@ class Edit extends Metas implements ActionInterface
 
     /**
      * 清理没有任何内容的标签
-     *
-     * @throws Exception
      */
     public function clearTags()
     {
@@ -360,11 +335,6 @@ class Edit extends Metas implements ActionInterface
         }
     }
 
-    /**
-     * 入口函数,绑定事件
-     * @return void
-     * @throws Exception
-     */
     public function action()
     {
         $this->security->protect();

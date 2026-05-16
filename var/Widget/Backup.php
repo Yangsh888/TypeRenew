@@ -14,11 +14,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-/**
- * 备份工具
- *
- * @package Widget
- */
 class Backup extends BaseOptions implements ActionInterface
 {
     public const HEADER = '%TYPECHO_BACKUP_XXXX%';
@@ -80,11 +75,6 @@ class Backup extends BaseOptions implements ActionInterface
 
     private ?bool $transactionSupported = null;
 
-    /**
-     * 列出已有备份文件
-     *
-     * @return array
-     */
     public function listFiles(): array
     {
         if (!is_dir(__TYPECHO_BACKUP_DIR__)) {

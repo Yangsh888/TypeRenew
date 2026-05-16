@@ -36,7 +36,7 @@ class Defaults
     public static function installSeedOptions(array $context = []): array
     {
         return array_merge(
-            self::baseOptions(),
+            self::baseOptions($context),
             self::routingOptions(),
             self::mailOptions(),
             [
@@ -59,6 +59,7 @@ class Defaults
                 'charset' => 'UTF-8',
                 'contentType' => 'text/html',
                 'timezone' => '28800',
+                'timezoneId' => $context['timezoneId'] ?? 'Asia/Shanghai',
                 'installed' => (int) ($context['installed'] ?? 0),
                 'generator' => $context['generator'] ?? Common::generator(),
                 'siteUrl' => $context['siteUrl'] ?? self::siteUrl(),
@@ -135,7 +136,7 @@ class Defaults
         ];
     }
 
-    private static function baseOptions(): array
+    private static function baseOptions(array $context = []): array
     {
         return [
             'theme' => 'default',
@@ -150,6 +151,7 @@ class Defaults
                 ],
             ]),
             'timezone' => '28800',
+            'timezoneId' => $context['timezoneId'] ?? 'Asia/Shanghai',
             'charset' => 'UTF-8',
             'contentType' => 'text/html',
             'gzip' => 0,

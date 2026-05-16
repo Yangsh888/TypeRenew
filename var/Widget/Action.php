@@ -8,11 +8,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-/**
- * 执行模块
- *
- * @package Widget
- */
 class Action extends Widget
 {
     private array $map = [
@@ -47,7 +42,6 @@ class Action extends Widget
         'mail'                     => '\Widget\Mail'
     ];
 
-    /** @throws Widget\Exception */
     public function execute()
     {
         $action = $this->request->get('action');

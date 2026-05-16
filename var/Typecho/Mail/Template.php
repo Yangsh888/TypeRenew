@@ -9,6 +9,30 @@ class Template
 {
     private const ALLOWED = ['owner', 'guest', 'notice', 'reset'];
 
+    private static function roots(Options $options): array
+    {
+        return [
+            $options->themeFile((string) $options->theme, 'mail'),
+            __TYPECHO_ROOT_DIR__ . '/usr/mail',
+            __TYPECHO_ROOT_DIR__ . '/var/Typecho/Mail/tpl',
+        ];
+    }
+
+    private static function themeRoot(Options $options): string|false
+    {
+        return realpath($options->themeFile((string) $options->theme));
+    }
+
+    private static function overrideFile(string $name, Options $options): ?string
+    {
+        $themeRoot = self::themeRoot($options);
+        if ($themeRoot === false) {
+            return null;
+        }
+
+        return rtrim(str_replace('\\', '/', $themeRoot), '/') . '/mail/' . $name . '.html';
+    }
+
     public static function render(string $name, array $vars, Options $options): string
     {
         $content = self::load($name, $options);
@@ -18,7 +42,7 @@ class Template
     public static function load(string $name, Options $options): string
     {
         $file = self::resolve($name, $options);
-        if (!self::validatePath($file) || !is_readable($file)) {
+        if ($file === '' || !self::validatePath($file, $options) || !is_readable($file)) {
             return '';
         }
 
@@ -26,12 +50,9 @@ class Template
         return is_string($content) ? $content : '';
     }
 
-    private static function validatePath(string $path): bool
+    private static function validatePath(string $path, Options $options): bool
     {
-        return Helper::isPathInsideRoots($path, [
-            __TYPECHO_ROOT_DIR__ . '/usr/mail',
-            __TYPECHO_ROOT_DIR__ . '/var/Typecho/Mail/tpl',
-        ]);
+        return Helper::isPathInsideRoots($path, self::roots($options));
     }
 
     public static function resolve(string $name, Options $options): string
@@ -60,17 +81,15 @@ class Template
             return 'Invalid template name';
         }
 
-        $theme = (string) $options->theme;
-        $dir = $options->themeFile($theme, 'mail');
-        $dir = rtrim(str_replace(['\\', '//'], ['/', '/'], $dir), '/');
-        $themeRoot = rtrim(str_replace(['\\', '//'], ['/', '/'], $options->themeFile($theme)), '/');
-
-        if (strpos($dir, $themeRoot) !== 0) {
+        $themeRoot = self::themeRoot($options);
+        $file = self::overrideFile($name, $options);
+        if ($themeRoot === false || $file === null) {
             return 'Invalid theme path';
         }
 
+        $dir = dirname($file);
         if (!is_dir($dir)) {
-            if (!is_dir($themeRoot) || !is_writable($themeRoot)) {
+            if (!is_writable($themeRoot)) {
                 return 'Cannot create directory';
             }
 
@@ -79,7 +98,10 @@ class Template
             }
         }
 
-        $file = $dir . '/' . $name . '.html';
+        if (!Helper::isPathInsideRoots($dir, [$themeRoot], false)) {
+            return 'Invalid theme path';
+        }
+
         if (file_exists($file) && !is_writable($file)) {
             return 'File not writable';
         }
@@ -99,10 +121,17 @@ class Template
             return 'Invalid template name';
         }
 
-        $theme = (string) $options->theme;
-        $file = $options->themeFile($theme, 'mail/' . $name . '.html');
+        $file = self::overrideFile($name, $options);
+        if ($file === null) {
+            return 'Invalid theme path';
+        }
+
         if (!file_exists($file)) {
             return true;
+        }
+
+        if (!Helper::isPathInsideRoots($file, [self::themeRoot($options)])) {
+            return 'Invalid theme path';
         }
 
         if (!is_writable($file)) {

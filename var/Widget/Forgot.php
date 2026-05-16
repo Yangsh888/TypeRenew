@@ -17,6 +17,10 @@ class Forgot extends Users implements ActionInterface
 {
     public function action(): void
     {
+        if (!$this->request->isPost()) {
+            $this->response->setStatus(405)->throwContent(_t('Method Not Allowed'));
+            return;
+        }
         $this->security->protect();
 
         if ($this->user->hasLogin()) {
@@ -36,7 +40,7 @@ class Forgot extends Users implements ActionInterface
             $this->response->goBack();
         }
 
-        $this->cleanupExpired();
+        PasswordReset::cleanupExpired($this->db);
 
         $recent = $this->db->fetchRow(
             $this->db->select('created')
@@ -97,7 +101,7 @@ class Forgot extends Users implements ActionInterface
     {
         $siteTitle = (string) ($this->options->title ?? 'TypeRenew');
         $siteUrl = (string) ($this->options->siteUrl ?? '');
-        $expiresAt = date('Y-m-d H:i:s', $expires);
+        $expiresAt = $this->options->formatDateTime($expires, 'Y-m-d H:i:s');
 
         $vars = [
             'subject' => _t('密码重置请求'),
@@ -114,13 +118,5 @@ class Forgot extends Users implements ActionInterface
         $msg = Queue::buildMessage($this->options, (string) ($user['mail'] ?? ''), $subject, $html);
 
         Queue::enqueue('reset', $msg, Db::get(), $this->options);
-    }
-
-    private function cleanupExpired(): void
-    {
-        $this->db->query(
-            $this->db->delete('table.password_resets')
-                ->where('expires < ?', time())
-        );
     }
 }

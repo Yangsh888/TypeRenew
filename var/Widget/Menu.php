@@ -20,70 +20,24 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-/**
- * 后台菜单显示
- *
- * @package Widget
- */
 class Menu extends Base
 {
-    /**
-     * 当前菜单标题
-     * @var string
-     */
     public string $title = '';
 
-    /**
-     * 当前增加项目链接
-     * @var string|null
-     */
     public ?string $addLink = null;
 
-    /**
-     * 顶部操作按钮文案
-     * @var string|null
-     */
     public ?string $addText = null;
 
-    /**
-     * 顶部操作按钮打开方式
-     * @var string|null
-     */
     public ?string $addTarget = null;
 
-    /**
-     * 父菜单列表
-     *
-     * @var array
-     */
     private array $menu = [];
 
-    /**
-     * 当前父菜单
-     *
-     * @var integer
-     */
     private int $currentParent = 1;
 
-    /**
-     * 当前子菜单
-     *
-     * @var integer
-     */
     private int $currentChild = 0;
 
-    /**
-     * 当前页面
-     *
-     * @var string
-     */
     private string $currentUrl = '';
 
-    /**
-     * 当前菜单URL
-     *
-     * @var string
-     */
     private string $currentMenuUrl = '';
 
     public function execute()

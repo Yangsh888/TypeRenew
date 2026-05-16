@@ -22,7 +22,7 @@ class Validate
 
     public static function maxLength(string $str, int $length): bool
     {
-        return (Common::strLen($str) < $length);
+        return (Common::strLen($str) <= $length);
     }
 
     public static function email(string $str): bool

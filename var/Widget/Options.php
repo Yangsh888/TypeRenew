@@ -10,6 +10,7 @@ use Typecho\Date;
 use Typecho\Router;
 use Typecho\Router\Parser;
 use Typecho\Widget;
+use Utils\Zone;
 
 if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
@@ -50,6 +51,7 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
  * @property int $pageSize
  * @property int $serverTimezone
  * @property int $timezone
+ * @property string|null $timezoneId
  * @property string $charset
  * @property string $contentType
  * @property string $generator
@@ -635,12 +637,96 @@ class Options extends Base
 
     protected function ___serverTimezone(): int
     {
-        return Date::$serverTimezoneOffset;
+        return Zone::serverOffsetAt(Date::time());
+    }
+
+    protected function ___timezone(): int
+    {
+        return $this->getTimezoneOffset();
+    }
+
+    protected function ___timezoneId(): ?string
+    {
+        $timezoneId = $this->row['timezoneId'] ?? null;
+        if (is_scalar($timezoneId)) {
+            $normalized = Zone::normalizeId((string) $timezoneId);
+            if ($normalized !== null) {
+                return $normalized;
+            }
+        }
+
+        return Zone::legacyId((int) ($this->row['timezone'] ?? 0));
     }
 
     protected function ___time(): int
     {
         return Date::time();
+    }
+
+    public function getTimezoneId(): string
+    {
+        return (string) $this->timezoneId;
+    }
+
+    public function getStoredTimezoneId(): ?string
+    {
+        $timezoneId = $this->row['timezoneId'] ?? null;
+        return is_scalar($timezoneId) ? Zone::normalizeStoredId((string) $timezoneId) : null;
+    }
+
+    public function getTimezoneZone(): \DateTimeZone
+    {
+        return Zone::zone($this->getTimezoneId(), (int) ($this->row['timezone'] ?? 0));
+    }
+
+    public function getTimezoneOffset(?int $timestamp = null): int
+    {
+        return Zone::offsetAt($this->getTimezoneId(), (int) ($this->row['timezone'] ?? 0), $timestamp);
+    }
+
+    public function getDateTime(?int $timestamp = null): \DateTimeImmutable
+    {
+        return Zone::dateTime($timestamp, $this->getTimezoneId(), (int) ($this->row['timezone'] ?? 0));
+    }
+
+    public function getUtcDateTime(?int $timestamp = null): \DateTimeImmutable
+    {
+        return Zone::utcDateTime($timestamp);
+    }
+
+    public function formatDateTime(?int $timestamp, string $format): string
+    {
+        return $this->getDateTime($timestamp)->format($format);
+    }
+
+    public function parseDateTime(string $date, string $time = '00:00:00'): ?int
+    {
+        return Zone::fromString($date, $time, $this->getTimezoneId(), (int) ($this->row['timezone'] ?? 0));
+    }
+
+    public function makeDateTime(
+        int $year,
+        int $month,
+        int $day,
+        int $hour = 0,
+        int $minute = 0,
+        int $second = 0
+    ): ?int {
+        return Zone::fromParts(
+            $year,
+            $month,
+            $day,
+            $hour,
+            $minute,
+            $second,
+            $this->getTimezoneId(),
+            (int) ($this->row['timezone'] ?? 0)
+        );
+    }
+
+    public function getRange(int $year, ?int $month = null, ?int $day = null): array
+    {
+        return Zone::range($year, $month, $day, $this->getTimezoneId(), (int) ($this->row['timezone'] ?? 0));
     }
 
     protected function ___contentType(): string

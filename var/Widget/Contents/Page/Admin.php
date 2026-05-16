@@ -14,22 +14,11 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-/**
- * 独立页面管理列表组件
- *
- * @category typecho
- * @package Widget
- * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
- * @license GNU General Public License 2.0
- */
 class Admin extends Contents
 {
     use AdminTrait;
     use TreeTrait;
 
-    /**
-     * @var int 父级页面
-     */
     private int $parentId = 0;
 
     /**
@@ -55,9 +44,6 @@ class Admin extends Contents
         }
     }
 
-    /**
-     * @throws Db\Exception
-     */
     public function backLink()
     {
         if ($this->parentId) {

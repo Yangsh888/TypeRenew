@@ -4,53 +4,18 @@ namespace Typecho\Widget\Helper;
 
 use Typecho\Widget\Exception;
 
-/**
- * 内容分页抽象类
- *
- * @package Widget
- */
 abstract class PageNavigator
 {
-    /**
-     * 记录总数
-     *
-     * @var integer
-     */
     protected int $total;
 
-    /**
-     * 页面总数
-     *
-     * @var integer
-     */
     protected int $totalPage;
 
-    /**
-     * 当前页面
-     *
-     * @var integer
-     */
     protected int $currentPage;
 
-    /**
-     * 每页内容数
-     *
-     * @var integer
-     */
     protected int $pageSize;
 
-    /**
-     * 页面链接模板
-     *
-     * @var string
-     */
     protected string $pageTemplate;
 
-    /**
-     * 链接锚点
-     *
-     * @var string
-     */
     protected string $anchor = '';
 
     /**

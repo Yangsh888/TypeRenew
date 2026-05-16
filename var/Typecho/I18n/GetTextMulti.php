@@ -26,6 +26,8 @@ class GetTextMulti
 
     public function translate(string $string): string
     {
+        $count = -1;
+
         foreach ($this->handlers as $handle) {
             $string = $handle->translate($string, $count);
             if (- 1 != $count) {

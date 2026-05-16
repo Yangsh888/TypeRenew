@@ -80,18 +80,12 @@ class Response
         return self::$instance;
     }
 
-    /**
-     * @return $this
-     */
     public function beginSandbox(): Response
     {
         $this->sandbox = true;
         return $this;
     }
 
-    /**
-     * @return $this
-     */
     public function endSandbox(): Response
     {
         $this->sandbox = false;
@@ -158,9 +152,6 @@ class Response
         }
     }
 
-    /**
-     * @throws Terminal
-     */
     public function respond()
     {
         if ($this->sandbox) {
@@ -249,7 +240,6 @@ class Response
      *
      * @param string $name 名称
      * @param string $value 对应值
-     * @return $this
      */
     public function setHeader(string $name, string $value): Response
     {
@@ -272,7 +262,6 @@ class Response
      * @param bool $secure 是否仅可通过安全的 HTTPS 连接传给客户端
      * @param bool $httponly 是否仅可通过 HTTP 协议访问
      * @param string $sameSite 同站策略
-     * @return $this
      */
     public function setCookie(
         string $key,
@@ -299,7 +288,6 @@ class Response
      * 在http头部请求中声明类型和字符集
      *
      * @param string $contentType 文档类型
-     * @return $this
      */
     public function setContentType(string $contentType): Response
     {
@@ -311,11 +299,6 @@ class Response
         return $this;
     }
 
-    /**
-     * 获取字符集
-     *
-     * @return string
-     */
     public function getCharset(): string
     {
         return $this->charset;
@@ -325,7 +308,6 @@ class Response
      * 设置默认回执编码
      *
      * @param string $charset 字符集
-     * @return $this
      */
     public function setCharset(string $charset): Response
     {
@@ -339,7 +321,6 @@ class Response
 
     /**
      * @param callable $responder
-     * @return $this
      */
     public function addResponder(callable $responder): Response
     {

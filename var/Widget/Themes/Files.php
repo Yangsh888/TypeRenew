@@ -11,27 +11,10 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-/**
- * 风格文件列表组件
- *
- * @author qining
- * @category typecho
- * @package Widget
- * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
- * @license GNU General Public License 2.0
- */
 class Files extends Base
 {
-    /**
-     * 当前风格
-     * @var string
-     */
     private string $currentTheme;
 
-    /**
-     * 当前文件
-     * @var string
-     */
     private string $currentFile;
 
     private function listEditableFiles(string $themeRoot): array
@@ -68,9 +51,6 @@ class Files extends Base
         return Helper::resolvePathInRoot($themeRoot, $file);
     }
 
-    /**
-     * @throws Widget\Exception
-     */
     public function execute()
     {
         $this->user->pass('administrator');

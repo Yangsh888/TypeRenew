@@ -5,11 +5,6 @@ namespace Typecho\Http;
 use Typecho\Common;
 use Typecho\Http\Client\Exception;
 
-/**
- * Http客户端
- *
- * @package Http
- */
 class Client
 {
     public const METHOD_POST = 'POST';
@@ -20,101 +15,34 @@ class Client
 
     public const METHOD_DELETE = 'DELETE';
 
-    /**
-     * 方法名
-     *
-     * @var string
-     */
     private string $method = self::METHOD_GET;
 
-    /**
-     * User-Agent
-     *
-     * @var string
-     */
     public string $agent;
 
-    /**
-     * 传递参数
-     *
-     * @var string
-     */
     private string $query = '';
 
-    /**
-     * 设置超时
-     *
-     * @var integer
-     */
     private int $timeout = 3;
 
-    /**
-     * @var bool
-     */
     private bool $multipart = true;
 
-    /**
-     * 需要在body中传递的值
-     *
-     * @var array|string
-     */
-    private $data = [];
+    private array|string $data = [];
 
-    /**
-     * 头信息参数
-     * @var array
-     */
     private array $headers = [];
 
-    /**
-     * cookies
-     *
-     * @var array
-     */
     private array $cookies = [];
 
-    /**
-     * @var array
-     */
     private array $options = [];
 
-    /**
-     * 回执头部信息
-     *
-     * @var array
-     */
     private array $responseHeader = [];
 
-    /**
-     * 回执代码
-     *
-     * @var integer
-     */
     private int $responseStatus = 0;
 
-    /**
-     * 回执身体
-     *
-     * @var string
-     */
     private string $responseBody = '';
 
-    /**
-     * 回执最终地址
-     *
-     * @var string
-     */
     private string $responseUrl = '';
 
     private bool $useCurl = true;
 
-    /**
-     * 设置指定的COOKIE值
-     *
-     * @param string $key 指定的参数
-     * @param mixed $value 设置的值
-     * @return $this
-     */
     public function setCookie(string $key, $value): Client
     {
         $this->cookies[$key] = $value;
@@ -122,12 +50,6 @@ class Client
         return $this;
     }
 
-    /**
-     * 设置传递参数
-     *
-     * @param mixed $query 传递参数
-     * @return $this
-     */
     public function setQuery($query): Client
     {
         $query = is_array($query) ? http_build_query($query) : (string) $query;
@@ -135,13 +57,6 @@ class Client
         return $this;
     }
 
-    /**
-     * 设置需要POST的数据
-     *
-     * @param array|string $data 需要POST的数据
-     * @param string $method
-     * @return $this
-     */
     public function setData($data, string $method = self::METHOD_POST): Client
     {
         if (is_array($data) && is_array($this->data)) {
@@ -154,12 +69,6 @@ class Client
         return $this;
     }
 
-    /**
-     * 设置需要请求的Json数据
-     *
-     * @param string $method
-     * @return $this
-     */
     public function setJson($data, string $method = self::METHOD_POST): Client
     {
         $this->setData(json_encode($data), $method)
@@ -169,25 +78,12 @@ class Client
         return $this;
     }
 
-    /**
-     * 设置请求方法
-     *
-     * @param string $method
-     * @return $this
-     */
     public function setMethod(string $method): Client
     {
         $this->method = $method;
         return $this;
     }
 
-    /**
-     * 设置需要POST的文件
-     *
-     * @param array $files 需要POST的文件
-     * @param string $method
-     * @return $this
-     */
     public function setFiles(array $files, string $method = self::METHOD_POST): Client
     {
         if (is_array($this->data)) {
@@ -200,58 +96,30 @@ class Client
         return $this;
     }
 
-    /**
-     * 设置请求超时
-     *
-     * @param integer $timeout 超时时间
-     * @return $this
-     */
     public function setTimeout(int $timeout): Client
     {
         $this->timeout = $timeout;
         return $this;
     }
 
-    /**
-     * setAgent
-     *
-     * @param string $agent
-     * @return $this
-     */
     public function setAgent(string $agent): Client
     {
         $this->agent = $agent;
         return $this;
     }
 
-    /**
-     * @param bool $multipart
-     * @return $this
-     */
     public function setMultipart(bool $multipart): Client
     {
         $this->multipart = $multipart;
         return $this;
     }
 
-    /**
-     * @param int $key
-     * @param mixed $value
-     * @return $this
-     */
     public function setOption(int $key, $value): Client
     {
         $this->options[$key] = $value;
         return $this;
     }
 
-    /**
-     * 设置头信息参数
-     *
-     * @param string $key 参数名称
-     * @param string $value 参数值
-     * @return $this
-     */
     public function setHeader(string $key, string $value): Client
     {
         $key = str_replace(' ', '-', ucwords(str_replace('-', ' ', $key)));
@@ -416,10 +284,6 @@ class Client
 
     private static function canUseStreams(): bool
     {
-        if (!function_exists('file_get_contents')) {
-            return false;
-        }
-
         $allowUrlFopen = strtolower((string) ini_get('allow_url_fopen'));
         if ($allowUrlFopen === '0' || $allowUrlFopen === 'off') {
             return false;
@@ -429,31 +293,17 @@ class Client
         return in_array('http', $wrappers, true) || in_array('https', $wrappers, true);
     }
 
-    /**
-     * 获取回执的头部信息
-     *
-     * @param string $key 头信息名称
-     * @return ?string
-     */
     public function getResponseHeader(string $key): ?string
     {
         $key = strtolower($key);
         return $this->responseHeader[$key] ?? null;
     }
 
-    /**
-     * 获取返回的响应状态
-     */
     public function getResponseStatus(): int
     {
         return $this->responseStatus;
     }
 
-    /**
-     * 获取回执身体
-     *
-     * @return string
-     */
     public function getResponseBody(): string
     {
         return $this->responseBody;
@@ -464,17 +314,11 @@ class Client
         return $this->responseUrl;
     }
 
-    /**
-     * 获取可用的连接
-     *
-     * @return ?Client
-     */
     public static function get(): ?Client
     {
         $client = new static();
         $client->useCurl = extension_loaded('curl')
-            && function_exists('curl_init')
-            && defined('CURLOPT_URL');
+            && function_exists('curl_init');
 
         if (!$client->useCurl && !self::canUseStreams()) {
             return null;

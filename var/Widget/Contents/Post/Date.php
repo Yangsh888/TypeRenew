@@ -11,18 +11,8 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-/**
- * 按日期归档列表组件
- *
- * @author qining
- * @category typecho
- * @package Widget
- */
 class Date extends Base
 {
-    /**
-     * @param Config $parameter
-     */
     protected function initParameter(Config $parameter)
     {
         $parameter->setDefault('format=Y-m&type=month&limit=0');
@@ -38,18 +28,18 @@ class Date extends Base
             ->where('table.contents.created < ?', $this->options->time)
             ->order('table.contents.created', Db::SORT_DESC));
 
-        $offset = $this->options->timezone - $this->options->serverTimezone;
         $result = [];
         while ($post = $this->db->fetchRow($resource)) {
-            $timeStamp = $post['created'] + $offset;
-            $date = date($this->parameter->format, $timeStamp);
+            $timeStamp = (int) $post['created'];
+            $dateTime = $this->options->getDateTime($timeStamp);
+            $date = $dateTime->format($this->parameter->format);
 
             if (isset($result[$date])) {
                 $result[$date]['count'] ++;
             } else {
-                $result[$date]['year'] = date('Y', $timeStamp);
-                $result[$date]['month'] = date('m', $timeStamp);
-                $result[$date]['day'] = date('d', $timeStamp);
+                $result[$date]['year'] = $dateTime->format('Y');
+                $result[$date]['month'] = $dateTime->format('m');
+                $result[$date]['day'] = $dateTime->format('d');
                 $result[$date]['date'] = $date;
                 $result[$date]['count'] = 1;
             }

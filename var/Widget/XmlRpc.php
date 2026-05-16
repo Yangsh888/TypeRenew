@@ -39,8 +39,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
     /**
      * 如果这里没有重载, 每次都会被默认执行
-     *
-     * @param bool $run 是否执行
      */
     public function execute(bool $run = false)
     {
@@ -127,12 +125,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
     /**
      * 获取pageId指定的page
      * about wp xmlrpc api, you can see http://codex.wordpress.org/XML-RPC
-     *
-     * @param int $blogId
-     * @param int $pageId
-     * @param string $userName
-     * @param string $password
-     * @return array
      */
     public function wpGetPage(int $blogId, int $pageId, string $userName, string $password): array
     {
@@ -141,7 +133,7 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         [$excerpt, $more] = $this->getPostExtended($page);
 
         return [
-            'dateCreated'            => new Date($this->options->timezone + $page->created),
+            'dateCreated'            => $this->xmlRpcDate($page->created),
             'userid'                 => $page->authorId,
             'page_id'                => $page->cid,
             'page_status'            => $this->typechoToWordpressStatus($page->status, 'page'),
@@ -162,17 +154,12 @@ class XmlRpc extends Contents implements ActionInterface, Hook
             'wp_page_order'          => $page->order,     //meta是描述字段, 在page时表示顺序
             'wp_author_id'           => $page->authorId,
             'wp_author_display_name' => $page->author->screenName,
-            'date_created_gmt'       => new Date($page->created),
+            'date_created_gmt'       => $this->xmlRpcGmtDate($page->created),
             'custom_fields'          => [],
             'wp_page_template'       => $page->template
         ];
     }
 
-    /**
-     * @param string $methodName
-     * @param ReflectionMethod $reflectionMethod
-     * @param array $parameters
-     */
     public function beforeRpcCall(string $methodName, ReflectionMethod $reflectionMethod, array $parameters)
     {
         $valid = 2;
@@ -212,10 +199,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         }
     }
 
-    /**
-     * @param string $methodName
-     * @param mixed $result
-     */
     public function afterRpcCall(string $methodName, &$result): void
     {
         Widget::destroy();
@@ -223,11 +206,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
     /**
      * 获取所有的page
-     *
-     * @param int $blogId
-     * @param string $userName
-     * @param string $password
-     * @return array
      */
     public function wpGetPages(int $blogId, string $userName, string $password): array
     {
@@ -238,7 +216,7 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         while ($pages->next()) {
             [$excerpt, $more] = $this->getPostExtended($pages);
             $pageStructs[] = [
-                'dateCreated'            => new Date($this->options->timezone + $pages->created),
+                'dateCreated'            => $this->xmlRpcDate($pages->created),
                 'userid'                 => $pages->authorId,
                 'page_id'                => intval($pages->cid),
                 'page_status'            => $this->typechoToWordpressStatus(
@@ -262,7 +240,7 @@ class XmlRpc extends Contents implements ActionInterface, Hook
                 'wp_page_order'          => intval($pages->order),     //meta是描述字段, 在page时表示顺序
                 'wp_author_id'           => $pages->authorId,
                 'wp_author_display_name' => $pages->author->screenName,
-                'date_created_gmt'       => new Date($pages->created),
+                'date_created_gmt'       => $this->xmlRpcGmtDate($pages->created),
                 'custom_fields'          => [],
                 'wp_page_template'       => $pages->template
             ];
@@ -273,13 +251,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
     /**
      * 撰写一个新page
-     *
-     * @param int $blogId
-     * @param string $userName
-     * @param string $password
-     * @param array $content
-     * @param bool $publish
-     * @return int
      */
     public function wpNewPage(int $blogId, string $userName, string $password, array $content, bool $publish): int
     {
@@ -290,13 +261,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
     /**
      * MetaWeblog API
      * about MetaWeblog API, you can see http://www.xmlrpc.com/metaWeblogApi
-     *
-     * @param int $blogId
-     * @param string $userName
-     * @param string $password
-     * @param array $content
-     * @param bool $publish
-     * @return int
      */
     public function mwNewPost(int $blogId, string $userName, string $password, array $content, bool $publish): int
     {
@@ -332,8 +296,10 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         }
 
         if (isset($content['dateCreated'])) {
-            $input['created'] = $content['dateCreated']->getTimestamp()
-                - $this->options->timezone + $this->options->serverTimezone;
+            $timestamp = $this->xmlRpcLocalTimestamp($content['dateCreated']);
+            if ($timestamp !== null) {
+                $input['created'] = $timestamp;
+            }
         }
 
         if (!empty($content['categories']) && is_array($content['categories'])) {
@@ -411,12 +377,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
     /**
      * 添加一个新的分类
-     *
-     * @param int $blogId
-     * @param string $userName
-     * @param string $password
-     * @param array $category
-     * @return int
      */
     public function wpNewCategory(int $blogId, string $userName, string $password, array $category): int
     {
@@ -438,12 +398,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
     /**
      * 删除pageId指定的page
-     *
-     * @param int $blogId
-     * @param string $userName
-     * @param string $password
-     * @param int $pageId
-     * @return bool
      */
     public function wpDeletePage(int $blogId, string $userName, string $password, int $pageId): bool
     {
@@ -455,14 +409,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
     /**
      * 编辑pageId指定的page
-     *
-     * @param int $blogId
-     * @param int $pageId
-     * @param string $userName
-     * @param string $password
-     * @param array $content
-     * @param bool $publish
-     * @return bool
      */
     public function wpEditPage(
         int $blogId,
@@ -479,13 +425,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
     /**
      * 编辑post
-     *
-     * @param int $postId
-     * @param string $userName
-     * @param string $password
-     * @param array $content
-     * @param bool $publish
-     * @return int
      */
     public function mwEditPost(
         int $postId,
@@ -500,13 +439,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
     /**
      * 编辑postId指定的post
-     *
-     * @param int $blogId
-     * @param string $userName
-     * @param string $password
-     * @param int $postId
-     * @param array $content
-     * @return bool
      */
     public function wpEditPost(int $blogId, string $userName, string $password, int $postId, array $content): bool
     {
@@ -529,11 +461,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
     /**
      * 获取page列表，没有wpGetPages获得的详细
-     *
-     * @param int $blogId
-     * @param string $userName
-     * @param string $password
-     * @return array
      */
     public function wpGetPageList(int $blogId, string $userName, string $password): array
     {
@@ -542,8 +469,8 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
         while ($pages->next()) {
             $pageStructs[] = [
-                'dateCreated'      => new Date($this->options->timezone + $pages->created),
-                'date_created_gmt' => new Date($pages->created),
+                'dateCreated'      => $this->xmlRpcDate($pages->created),
+                'date_created_gmt' => $this->xmlRpcGmtDate($pages->created),
                 'page_id'          => $pages->cid,
                 'page_title'       => $pages->title,
                 'page_parent_id'   => '0',
@@ -555,11 +482,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
     /**
      * 获得一个由blog所有作者的信息组成的数组
-     *
-     * @param int $blogId
-     * @param string $userName
-     * @param string $password
-     * @return array
      */
     public function wpGetAuthors(int $blogId, string $userName, string $password): array
     {
@@ -581,13 +503,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
     /**
      * 获取由给定的string开头的链接组成的数组
-     *
-     * @param int $blogId
-     * @param string $userName
-     * @param string $password
-     * @param string $category
-     * @param int $maxResults
-     * @return array
      */
     public function wpSuggestCategories(
         int $blogId,
@@ -596,7 +511,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         string $category,
         int $maxResults = 0
     ): array {
-        /** 构造出查询语句并且查询*/
         $key = Common::filterSearchQuery($category);
         $key = '%' . $key . '%';
         $select = $this->db->select()
@@ -627,10 +541,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
     /**
      * 获取用户博客列表
-     *
-     * @param string $userName 用户名
-     * @param string $password 密码
-     * @return array
      */
     public function wpGetUsersBlogs(string $userName, string $password): array
     {
@@ -647,11 +557,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
     /**
      * 获取用户资料
-     *
-     * @param int $blogId
-     * @param string $userName 用户名
-     * @param string $password 密码
-     * @return array
      */
     public function wpGetProfile(int $blogId, string $userName, string $password): array
     {
@@ -660,7 +565,7 @@ class XmlRpc extends Contents implements ActionInterface, Hook
             'username'     => $this->user->name,
             'first_name'   => '',
             'last_name'    => '',
-            'registered'   => new Date($this->options->timezone + $this->user->created),
+            'registered'   => $this->xmlRpcDate($this->user->created),
             'bio'          => '',
             'email'        => $this->user->mail,
             'nickname'     => $this->user->screenName,
@@ -672,11 +577,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
     /**
      * 获取标签列表
-     *
-     * @param integer $blogId
-     * @param string $userName
-     * @param string $password
-     * @return array
      */
     public function wpGetTags(int $blogId, string $userName, string $password): array
     {
@@ -699,12 +599,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
     /**
      * 删除分类
-     *
-     * @param integer $blogId
-     * @param string $userName
-     * @param string $password
-     * @param integer $categoryId
-     * @return bool
      */
     public function wpDeleteCategory(int $blogId, string $userName, string $password, int $categoryId): bool
     {
@@ -717,12 +611,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
     /**
      * 获取评论数目
-     *
-     * @param integer $blogId
-     * @param string $userName
-     * @param string $password
-     * @param integer $postId
-     * @return array
      */
     public function wpGetCommentCount(int $blogId, string $userName, string $password, int $postId): array
     {
@@ -738,11 +626,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
     /**
      * 获取文章类型列表
-     *
-     * @param integer $blogId
-     * @param string $userName
-     * @param string $password
-     * @return array
      */
     public function wpGetPostFormats(int $blogId, string $userName, string $password): array
     {
@@ -753,11 +636,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
     /**
      * 获取文章状态列表
-     *
-     * @param integer $blogId
-     * @param string $userName
-     * @param string $password
-     * @return array
      */
     public function wpGetPostStatusList(int $blogId, string $userName, string $password): array
     {
@@ -770,11 +648,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
     /**
      * 获取页面状态列表
-     *
-     * @param integer $blogId
-     * @param string $userName
-     * @param string $password
-     * @return array
      */
     public function wpGetPageStatusList(int $blogId, string $userName, string $password): array
     {
@@ -786,11 +659,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
     /**
      * 获取评论状态列表
-     *
-     * @param integer $blogId
-     * @param string $userName
-     * @param string $password
-     * @return array
      */
     public function wpGetCommentStatusList(int $blogId, string $userName, string $password): array
     {
@@ -803,11 +671,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
     /**
      * 获取页面模板
-     *
-     * @param integer $blogId
-     * @param string $userName
-     * @param string $password
-     * @return array
      */
     public function wpGetPageTemplates(int $blogId, string $userName, string $password): array
     {
@@ -819,12 +682,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
     /**
      * 获取系统选项
-     *
-     * @param integer $blogId
-     * @param string $userName
-     * @param string $password
-     * @param array $options
-     * @return array
      */
     public function wpGetOptions(int $blogId, string $userName, string $password, array $options = []): array
     {
@@ -848,12 +705,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
     /**
      * 设置系统选项
-     *
-     * @param integer $blogId
-     * @param string $userName
-     * @param string $password
-     * @param array $options
-     * @return array
      */
     public function wpSetOptions(int $blogId, string $userName, string $password, array $options = []): array
     {
@@ -867,6 +718,25 @@ class XmlRpc extends Contents implements ActionInterface, Hook
                 }
 
                 if (!$this->wpOptions[$option]['readonly'] && isset($this->wpOptions[$option]['option'])) {
+                    if ('time_zone' === $option) {
+                        if (!is_scalar($value)) {
+                            continue;
+                        }
+
+                        $timezone = (int) $value;
+                        if ($timezone < -50400 || $timezone > 50400 || $timezone % 60 !== 0) {
+                            continue;
+                        }
+
+                        $value = (string) $timezone;
+                        $this->db->query(
+                            $this->db->update('table.options')
+                                ->rows(['value' => \Utils\Zone::legacyId($timezone)])
+                                ->where('name = ?', 'timezoneId'),
+                            \Typecho\Db::WRITE
+                        );
+                    }
+
                     if (
                         $this->db->query($this->db->update('table.options')
                             ->rows(['value' => $value])
@@ -882,13 +752,7 @@ class XmlRpc extends Contents implements ActionInterface, Hook
     }
 
     /**
-     * 删除评论
-     *
-     * @param integer $blogId
-     * @param string $userName
-     * @param string $password
-     * @param integer $commentId
-     * @return array
+     * 获取评论详情
      */
     public function wpGetComment(int $blogId, string $userName, string $password, int $commentId): array
     {
@@ -905,7 +769,7 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         }
 
         return [
-            'date_created_gmt' => new Date($comment->created),
+            'date_created_gmt' => $this->xmlRpcGmtDate($comment->created),
             'user_id'          => $comment->authorId,
             'comment_id'       => $comment->coid,
             'parent'           => $comment->parent,
@@ -924,12 +788,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
     /**
      * 获取评论列表
-     *
-     * @param integer $blogId
-     * @param string $userName
-     * @param string $password
-     * @param array $struct
-     * @return array
      */
     public function wpGetComments(int $blogId, string $userName, string $password, array $struct): array
     {
@@ -959,7 +817,7 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
         while ($comments->next()) {
             $commentsStruct[] = [
-                'date_created_gmt' => new Date($comments->created),
+                'date_created_gmt' => $this->xmlRpcGmtDate($comments->created),
                 'user_id'          => $comments->authorId,
                 'comment_id'       => $comments->coid,
                 'parent'           => $comments->parent,
@@ -980,13 +838,7 @@ class XmlRpc extends Contents implements ActionInterface, Hook
     }
 
     /**
-     * 获取评论
-     *
-     * @param integer $blogId
-     * @param string $userName
-     * @param string $password
-     * @param integer $commentId
-     * @throws \Typecho\Db\Exception
+     * 删除评论
      */
     public function wpDeleteComment(int $blogId, string $userName, string $password, int $commentId): bool
     {
@@ -998,20 +850,16 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
     /**
      * 编辑评论
-     *
-     * @param integer $blogId
-     * @param string $userName
-     * @param string $password
-     * @param integer $commentId
-     * @param array $struct
      */
     public function wpEditComment(int $blogId, string $userName, string $password, int $commentId, array $struct): bool
     {
         $input = [];
 
         if (isset($struct['date_created_gmt']) && $struct['date_created_gmt'] instanceof Date) {
-            $input['created'] = $struct['date_created_gmt']->getTimestamp()
-                - $this->options->timezone + $this->options->serverTimezone;
+            $timestamp = $this->xmlRpcUtcTimestamp($struct['date_created_gmt']);
+            if ($timestamp !== null) {
+                $input['created'] = $timestamp;
+            }
         }
 
         if (isset($struct['status'])) {
@@ -1041,14 +889,7 @@ class XmlRpc extends Contents implements ActionInterface, Hook
     }
 
     /**
-     * 更新评论
-     *
-     * @param integer $blogId
-     * @param string $userName
-     * @param string $password
-     * @param mixed $path
-     * @param array $struct
-     * @return int
+     * 新增评论
      */
     public function wpNewComment(int $blogId, string $userName, string $password, $path, array $struct): int
     {
@@ -1095,12 +936,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
     /**
      * 获取媒体文件
-     *
-     * @param integer $blogId
-     * @param string $userName
-     * @param string $password
-     * @param array $struct
-     * @return array
      */
     public function wpGetMediaLibrary(int $blogId, string $userName, string $password, array $struct): array
     {
@@ -1129,7 +964,7 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         while ($attachments->next()) {
             $attachmentsStruct[] = [
                 'attachment_id'    => $attachments->cid,
-                'date_created_gmt' => new Date($attachments->created),
+                'date_created_gmt' => $this->xmlRpcGmtDate($attachments->created),
                 'parent'           => $attachments->parent,
                 'link'             => $attachments->attachment->url,
                 'title'            => $attachments->title,
@@ -1147,12 +982,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
     /**
      * 获取媒体文件
-     *
-     * @param integer $blogId
-     * @param string $userName
-     * @param string $password
-     * @param int $attachmentId
-     * @return array
      */
     public function wpGetMediaItem(int $blogId, string $userName, string $password, int $attachmentId): array
     {
@@ -1160,7 +989,7 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
         return [
             'attachment_id'    => $attachment->cid,
-            'date_created_gmt' => new Date($attachment->created),
+            'date_created_gmt' => $this->xmlRpcGmtDate($attachment->created),
             'parent'           => $attachment->parent,
             'link'             => $attachment->attachment->url,
             'title'            => $attachment->title,
@@ -1176,11 +1005,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
     /**
      * 获取指定id的post
-     *
-     * @param int $postId
-     * @param string $userName
-     * @param string $password
-     * @return array
      */
     public function mwGetPost(int $postId, string $userName, string $password): array
     {
@@ -1191,7 +1015,7 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         $tags = array_column($post->tags, 'name');
 
         return [
-            'dateCreated'            => new Date($this->options->timezone + $post->created),
+            'dateCreated'            => $this->xmlRpcDate($post->created),
             'userid'                 => $post->authorId,
             'postid'                 => $post->cid,
             'description'            => $excerpt,
@@ -1209,7 +1033,7 @@ class XmlRpc extends Contents implements ActionInterface, Hook
             'wp_author'              => $post->author->name,
             'wp_author_id'           => $post->authorId,
             'wp_author_display_name' => $post->author->screenName,
-            'date_created_gmt'       => new Date($post->created),
+            'date_created_gmt'       => $this->xmlRpcGmtDate($post->created),
             'post_status'            => $this->typechoToWordpressStatus($post->status, 'post'),
             'custom_fields'          => [],
             'sticky'                 => 0
@@ -1218,12 +1042,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
     /**
      * 获取前$postsNum个post
-     *
-     * @param int $blogId
-     * @param string $userName
-     * @param string $password
-     * @param int $postsNum
-     * @return array
      */
     public function mwGetRecentPosts(int $blogId, string $userName, string $password, int $postsNum): array
     {
@@ -1236,7 +1054,7 @@ class XmlRpc extends Contents implements ActionInterface, Hook
             $tags = array_column($posts->tags, 'name');
 
             $postStructs[] = [
-                'dateCreated'            => new Date($this->options->timezone + $posts->created),
+                'dateCreated'            => $this->xmlRpcDate($posts->created),
                 'userid'                 => $posts->authorId,
                 'postid'                 => $posts->cid,
                 'description'            => $excerpt,
@@ -1255,15 +1073,15 @@ class XmlRpc extends Contents implements ActionInterface, Hook
                 'wp_author'              => $posts->author->name,
                 'wp_author_id'           => $posts->authorId,
                 'wp_author_display_name' => $posts->author->screenName,
-                'date_created_gmt'       => new Date($posts->created),
+                'date_created_gmt'       => $this->xmlRpcGmtDate($posts->created),
                 'post_status'            => $this->typechoToWordpressStatus(
                     ($posts->hasSaved || 'post_draft' == $posts->type) ? 'draft' : $posts->status,
                     'post'
                 ),
                 'custom_fields'          => [],
                 'wp_post_format'         => 'standard',
-                'date_modified'          => new Date($this->options->timezone + $posts->modified),
-                'date_modified_gmt'      => new Date($posts->modified),
+                'date_modified'          => $this->xmlRpcDate($posts->modified),
+                'date_modified_gmt'      => $this->xmlRpcGmtDate($posts->modified),
                 'wp_post_thumbnail'      => '',
                 'sticky'                 => 0
             ];
@@ -1274,11 +1092,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
     /**
      * 获取所有的分类
-     *
-     * @param int $blogId
-     * @param string $userName
-     * @param string $password
-     * @return array
      */
     public function mwGetCategories(int $blogId, string $userName, string $password): array
     {
@@ -1300,15 +1113,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         return $categoryStructs;
     }
 
-    /**
-     * mwNewMediaObject
-     *
-     * @param int $blogId
-     * @param string $userName
-     * @param string $password
-     * @param array $data
-     * @return array
-     */
     public function mwNewMediaObject(int $blogId, string $userName, string $password, array $data): array
     {
         $result = Upload::uploadHandle($data);
@@ -1330,7 +1134,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
             $this->db->fetchRow($this->select()->where('table.contents.cid = ?', $insertId)
                 ->where('table.contents.type = ?', 'attachment'), [$this, 'push']);
 
-            /** 增加插件接口 */
             self::pluginHandle()->call('upload', $this);
 
             return [
@@ -1342,12 +1145,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
     /**
      * 获取 $postNum个post title
-     *
-     * @param int $blogId
-     * @param string $userName
-     * @param string $password
-     * @param int $postsNum
-     * @return array
      */
     public function mtGetRecentPostTitles(int $blogId, string $userName, string $password, int $postsNum): array
     {
@@ -1355,11 +1152,11 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         $postTitleStructs = [];
         while ($posts->next()) {
             $postTitleStructs[] = [
-                'dateCreated'      => new Date($this->options->timezone + $posts->created),
+                'dateCreated'      => $this->xmlRpcDate($posts->created),
                 'userid'           => $posts->authorId,
                 'postid'           => $posts->cid,
                 'title'            => $posts->title,
-                'date_created_gmt' => new Date($posts->created)
+                'date_created_gmt' => $this->xmlRpcGmtDate($posts->created)
             ];
         }
 
@@ -1368,11 +1165,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
     /**
      * 获取分类列表
-     *
-     * @param int $blogId
-     * @param string $userName
-     * @param string $password
-     * @return array
      */
     public function mtGetCategoryList(int $blogId, string $userName, string $password): array
     {
@@ -1390,17 +1182,11 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
     /**
      * 获取指定post的分类
-     *
-     * @param int $postId
-     * @param string $userName
-     * @param string $password
-     * @return array
      */
     public function mtGetPostCategories(int $postId, string $userName, string $password): array
     {
         $post = PostEdit::alloc(null, ['cid' => $postId], false);
 
-        /** 格式化categories*/
         $categories = [];
         foreach ($post->categories as $category) {
             $categories[] = [
@@ -1415,13 +1201,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
     /**
      * 修改post的分类
-     *
-     * @param int $postId
-     * @param string $userName
-     * @param string $password
-     * @param array $categories
-     * @return bool
-     * @throws \Typecho\Db\Exception
      */
     public function mtSetPostCategories(int $postId, string $userName, string $password, array $categories): bool
     {
@@ -1434,11 +1213,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
     /**
      * 发布(重建)数据
-     *
-     * @param int $postId
-     * @param string $userName
-     * @param string $password
-     * @return bool
      */
     public function mtPublishPost(int $postId, string $userName, string $password): bool
     {
@@ -1451,11 +1225,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
     /**
      * 取得当前用户的所有blog
-     *
-     * @param int $blogId
-     * @param string $userName
-     * @param string $password
-     * @return array
      */
     public function bloggerGetUsersBlogs(int $blogId, string $userName, string $password): array
     {
@@ -1472,11 +1241,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
     /**
      * 返回当前用户的信息
-     *
-     * @param int $blogId
-     * @param string $userName
-     * @param string $password
-     * @return array
      */
     public function bloggerGetUserInfo(int $blogId, string $userName, string $password): array
     {
@@ -1492,12 +1256,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
     /**
      * 获取当前作者的一个指定id的post的详细信息
-     *
-     * @param int $blogId
-     * @param int $postId
-     * @param string $userName
-     * @param string $password
-     * @return array
      */
     public function bloggerGetPost(int $blogId, int $postId, string $userName, string $password): array
     {
@@ -1510,22 +1268,14 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
         return [
             'userid'      => $post->authorId,
-            'dateCreated' => new Date($this->options->timezone + $post->created),
+            'dateCreated' => $this->xmlRpcDate($post->created),
             'content'     => $content,
             'postid'      => $post->cid
         ];
     }
 
     /**
-     * bloggerDeletePost
      * 删除文章
-     *
-     * @param int $blogId
-     * @param int $postId
-     * @param string $userName
-     * @param string $password
-     * @param mixed $publish
-     * @return bool
      */
     public function bloggerDeletePost(int $blogId, int $postId, string $userName, string $password, $publish): bool
     {
@@ -1537,12 +1287,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
     /**
      * 获取当前作者前postsNum个post
-     *
-     * @param int $blogId
-     * @param string $userName
-     * @param string $password
-     * @param int $postsNum
-     * @return array
      */
     public function bloggerGetRecentPosts(int $blogId, string $userName, string $password, int $postsNum): array
     {
@@ -1558,7 +1302,7 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
             $struct = [
                 'userid'      => $posts->authorId,
-                'dateCreated' => new Date($this->options->timezone + $posts->created),
+                'dateCreated' => $this->xmlRpcDate($posts->created),
                 'content'     => $content,
                 'postid'      => $posts->cid,
             ];
@@ -1568,43 +1312,16 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         return $postStructs;
     }
 
-    /**
-     * bloggerGetTemplate
-     *
-     * @param int $blogId
-     * @param string $userName
-     * @param string $password
-     * @param mixed $template
-     * @return bool
-     */
     public function bloggerGetTemplate(int $blogId, string $userName, string $password, $template): bool
     {
         return true;
     }
 
-    /**
-     * bloggerSetTemplate
-     *
-     * @param int $blogId
-     * @param string $userName
-     * @param string $password
-     * @param mixed $content
-     * @param mixed $template
-     * @return bool
-     */
     public function bloggerSetTemplate(int $blogId, string $userName, string $password, $content, $template): bool
     {
         return true;
     }
 
-    /**
-     * pingbackPing
-     *
-     * @param string $source
-     * @param string $target
-     * @return int
-     * @throws \Exception
-     */
     public function pingbackPing(string $source, string $target): int
     {
         if ((int) $this->options->allowXmlRpc !== 2) {
@@ -1623,7 +1340,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
             throw new Exception(_t('源地址服务器错误'), 16);
         }
 
-        /** 这样可以得到cid或者slug*/
         if (!($post instanceof Archive) || !$post->have() || !$post->is('single')) {
             throw new Exception(_t('这个目标地址不存在'), 33);
         }
@@ -1723,17 +1439,53 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         return $default;
     }
 
+    private function xmlRpcDate(int $timestamp): Date
+    {
+        return new Date($this->options->getDateTime($timestamp));
+    }
+
+    private function xmlRpcGmtDate(int $timestamp): Date
+    {
+        return new Date($this->options->getUtcDateTime($timestamp)->format('Ymd\TH:i:s\Z'));
+    }
+
+    private function xmlRpcLocalTimestamp(Date $date): ?int
+    {
+        return $this->parseXmlRpcTimestamp($date, $this->options->getTimezoneZone());
+    }
+
+    private function xmlRpcUtcTimestamp(Date $date): ?int
+    {
+        return $this->parseXmlRpcTimestamp($date, new \DateTimeZone('UTC'));
+    }
+
+    private function parseXmlRpcTimestamp(Date $date, \DateTimeZone $defaultZone): ?int
+    {
+        $iso = preg_replace('/\.[0-9]{1,6}(?=Z|[+-]\d{2}:?\d{2}$)/', '', $date->getIso()) ?? $date->getIso();
+        $dateTime = \DateTimeImmutable::createFromFormat('!Ymd\TH:i:s', substr($iso, 0, 17), $defaultZone);
+
+        if (!$dateTime instanceof \DateTimeImmutable && strlen($iso) > 17) {
+            $formats = str_ends_with($iso, 'Z')
+                ? ['!Ymd\TH:i:s\Z']
+                : ['!Ymd\TH:i:sP', '!Ymd\TH:i:sO'];
+
+            foreach ($formats as $format) {
+                $dateTime = \DateTimeImmutable::createFromFormat($format, $iso, $defaultZone);
+                if ($dateTime instanceof \DateTimeImmutable) {
+                    break;
+                }
+            }
+        }
+
+        return $dateTime instanceof \DateTimeImmutable ? $dateTime->getTimestamp() : null;
+    }
+
     private function attachmentPayload(string $text): array
     {
         $decoded = json_decode($text, true);
         return is_array($decoded) ? $decoded : [];
     }
 
-    /**
-     * 入口执行方法
-     *
-     * @throws Exception
-     */
     public function action()
     {
         if (0 == $this->options->allowXmlRpc) {
@@ -1883,26 +1635,22 @@ EOF;
 
     /**
      * 获取扩展字段
-     *
-     * @param Contents $content
-     * @return array
      */
     private function getPostExtended(Contents $content): array
     {
         //根据客户端显示来判断是否显示html代码
         $agent = $this->request->getAgent();
 
-        switch (true) {
-            case false !== strpos($agent, 'wp-iphone'):   // wordpress iphone客户端
-            case false !== strpos($agent, 'wp-blackberry'):  // 黑莓
-            case false !== strpos($agent, 'wp-andriod'):  // andriod
-            case false !== strpos($agent, 'plain-text'):  // 这是预留给第三方开发者的接口, 用于强行调用非所见即所得数据
-            case $this->options->xmlrpcMarkdown:
-                $text = $content->text;
-                break;
-            default:
-                $text = $content->content;
-                break;
+        if (
+            false !== strpos($agent, 'wp-iphone')
+            || false !== strpos($agent, 'wp-blackberry')
+            || false !== strpos($agent, 'wp-android')
+            || false !== strpos($agent, 'plain-text')
+            || $this->options->xmlrpcMarkdown
+        ) {
+            $text = $content->text;
+        } else {
+            $text = $content->content;
         }
 
         $post = explode('<!--more-->', $text, 2);
@@ -1914,15 +1662,10 @@ EOF;
 
     /**
      * 将typecho的状态类型转换为wordperss的风格
-     *
-     * @param string $status typecho的状态
-     * @param string $type 内容类型
-     * @return string
      */
     private function typechoToWordpressStatus(string $status, string $type = 'post'): string
     {
         if ('post' == $type) {
-            /** 文章状态 */
             switch ($status) {
                 case 'waiting':
                     return 'pending';
@@ -1960,14 +1703,10 @@ EOF;
 
     /**
      * 将wordpress的状态类型转换为typecho的风格
-     * @param string $status wordpress的状态
-     * @param string $type 内容类型
-     * @return string
      */
     private function wordpressToTypechoStatus(string $status, string $type = 'post'): string
     {
         if ('post' == $type) {
-            /** 文章状态 */
             switch ($status) {
                 case 'pending':
                     return 'waiting';

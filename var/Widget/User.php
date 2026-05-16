@@ -15,11 +15,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
 
 class User extends Users
 {
-    /**
-     * 用户组
-     *
-     * @var array
-     */
     public array $groups = [
         'administrator' => 0,
         'editor' => 1,
@@ -28,23 +23,10 @@ class User extends Users
         'visitor' => 4
     ];
 
-    /**
-     * 用户
-     *
-     * @var array
-     */
     private array $currentUser;
 
-    /**
-     * 是否已经登录
-     *
-     * @var boolean|null
-     */
     private ?bool $hasLogin = null;
 
-    /**
-     * @param int $components
-     */
     protected function initComponents(int &$components)
     {
         $components = self::INIT_OPTIONS;

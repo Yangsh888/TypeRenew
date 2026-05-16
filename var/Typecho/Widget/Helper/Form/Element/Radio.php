@@ -9,21 +9,8 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-/**
- * 单选框帮手类
- *
- * @category typecho
- * @package Widget
- * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
- * @license GNU General Public License 2.0
- */
 class Radio extends Element
 {
-    /**
-     * 选择值
-     *
-     * @var array
-     */
     private array $options = [];
 
     /**

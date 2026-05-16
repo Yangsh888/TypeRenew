@@ -44,7 +44,7 @@ class Reset extends Users implements ActionInterface
             $this->response->goBack();
         }
 
-        $this->cleanupExpired();
+        PasswordReset::cleanupExpired($this->db);
 
         $record = PasswordReset::findActiveRecordByToken($this->db, $token);
 
@@ -89,13 +89,5 @@ class Reset extends Users implements ActionInterface
 
         Notice::alloc()->set(_t('密码已重置，请使用新密码登录'), 'success');
         $this->response->redirect(Common::url('login.php', $this->options->adminUrl));
-    }
-
-    private function cleanupExpired(): void
-    {
-        $this->db->query(
-            $this->db->delete('table.password_resets')
-                ->where('expires < ?', time())
-        );
     }
 }

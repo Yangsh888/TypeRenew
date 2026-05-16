@@ -30,8 +30,8 @@ $(document).ready(function() {
 
         dateFormat      :   'yy-mm-dd',
         timezone        :   <?php $options->timezone(); ?> / 60,
-        hour            :   (new Date()).getHours(),
-        minute          :   (new Date()).getMinutes()
+        hour            :   <?php echo (int) $options->getDateTime()->format('G'); ?>,
+        minute          :   <?php echo (int) $options->getDateTime()->format('i'); ?>
     });
 
     $('#title').select();
@@ -378,21 +378,6 @@ $(document).ready(function() {
 
         form.addClass('submitting');
     });
-
-    const dstOffset = (function () {
-        const d = new Date(),
-            jan = new Date(d.getFullYear(), 0, 1),
-            jul = new Date(d.getFullYear(), 6, 1),
-            stdOffset = Math.max(jan.getTimezoneOffset(), jul.getTimezoneOffset());
-
-        return stdOffset - d.getTimezoneOffset();
-    })();
-
-    if (dstOffset > 0) {
-        $('<input name="dst" type="hidden" />').appendTo(form).val(dstOffset);
-    }
-
-    $('<input name="timezone" type="hidden" />').appendTo(form).val(- (new Date).getTimezoneOffset() * 60);
 
     function getPreviewFrame() {
         return $('.preview-frame').get(0) || null;

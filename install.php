@@ -1,5 +1,7 @@
 <?php
 
+install_register_exception_handler();
+
 if (!file_exists(dirname(__FILE__) . '/config.inc.php')) {
     define('__TYPECHO_ROOT_DIR__', dirname(__FILE__));
     define('__TYPECHO_PLUGIN_DIR__', '/usr/plugins');
@@ -12,21 +14,11 @@ if (!file_exists(dirname(__FILE__) . '/config.inc.php')) {
     $installDb = \Typecho\Db::get();
 }
 
-/**
- * get lang
- *
- * @return string
- */
 function install_get_lang(): string
 {
     return \Utils\Defaults::language();
 }
 
-/**
- * detect cli mode
- *
- * @return bool
- */
 function install_is_cli(): bool
 {
     return \Typecho\Request::getInstance()->isCli();
@@ -42,11 +34,110 @@ function install_default_sqlite_file(): string
     return __TYPECHO_ROOT_DIR__ . '/usr/' . uniqid() . '.db';
 }
 
-/**
- * list all default options
- *
- * @return array
- */
+function install_register_exception_handler(): void
+{
+    if (defined('__TYPECHO_DEBUG__') && __TYPECHO_DEBUG__) {
+        return;
+    }
+
+    set_exception_handler(static function (\Throwable $exception): void {
+        $message = function_exists('_t')
+            ? _t('安装程序发生未处理错误，请检查配置后重试')
+            : '安装程序发生未处理错误，请检查配置后重试';
+
+        while (ob_get_level() > 0) {
+            ob_end_clean();
+        }
+
+        if (PHP_SAPI === 'cli' || PHP_SAPI === 'phpdbg') {
+            fwrite(STDERR, $message . "\n");
+            exit(1);
+        }
+
+        if (strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET')) === 'POST') {
+            if (!headers_sent()) {
+                header('Content-Type: application/json; charset=UTF-8');
+            }
+
+            $payload = json_encode([
+                'success' => 0,
+                'message' => $message
+            ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            echo is_string($payload) ? $payload : '{"success":0,"message":"安装程序发生未处理错误，请检查配置后重试"}';
+            exit(1);
+        }
+
+        if (class_exists('\Typecho\Common', false)) {
+            \Typecho\Common::error($exception);
+        }
+
+        if (!headers_sent()) {
+            header('Content-Type: text/html; charset=UTF-8');
+            http_response_code(500);
+        }
+
+        echo '<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><title>500</title></head><body><div>'
+            . htmlspecialchars($message, ENT_QUOTES, 'UTF-8')
+            . '</div></body></html>';
+        exit(1);
+    });
+}
+
+function install_normalize_sqlite_file(string $path): ?string
+{
+    $path = trim($path);
+    if ($path === '' || str_contains($path, "\0")) {
+        return null;
+    }
+
+    $normalized = str_replace('\\', '/', $path);
+    if (preg_match('/^[a-zA-Z]:(?!\/)/', $normalized) === 1) {
+        return null;
+    }
+
+    $usrRoot = rtrim(str_replace('\\', '/', __TYPECHO_ROOT_DIR__), '/') . '/usr';
+    $isAbsolute = preg_match('/^[a-zA-Z]:\//', $normalized) === 1
+        || str_starts_with($normalized, '//')
+        || str_starts_with($normalized, '/');
+
+    if ($isAbsolute) {
+        $absolute = rtrim($normalized, '/');
+        $lowerUsrRoot = strtolower($usrRoot);
+        $lowerAbsolute = strtolower($absolute);
+
+        if ($lowerAbsolute !== $lowerUsrRoot && !str_starts_with($lowerAbsolute, $lowerUsrRoot . '/')) {
+            return null;
+        }
+
+        $relative = ltrim(substr($absolute, strlen($usrRoot)), '/');
+    } else {
+        $relative = ltrim($normalized, '/');
+    }
+
+    $segments = array_values(array_filter(explode('/', $relative), static fn(string $segment): bool => $segment !== ''));
+    if (empty($segments)) {
+        return null;
+    }
+
+    $fileName = array_pop($segments);
+    foreach (array_merge($segments, [$fileName]) as $segment) {
+        if ($segment === '.' || $segment === '..') {
+            return null;
+        }
+    }
+
+    $blocked = ['htaccess', 'htpasswd', 'gitignore', 'env', 'dockerenv', 'editorconfig', 'gitattributes', 'gitmodules'];
+    if (in_array(strtolower(pathinfo($fileName, PATHINFO_FILENAME)), $blocked, true)) {
+        return null;
+    }
+
+    if (preg_match('/\.[^\.\/\\\\]+$/u', $fileName) !== 1) {
+        return null;
+    }
+
+    return $usrRoot . '/' . implode('/', array_merge($segments, [$fileName]));
+}
+
 function install_get_default_options(): array
 {
     static $options;
@@ -61,23 +152,12 @@ function install_get_default_options(): array
     return $options;
 }
 
-/**
- * get database driver type
- *
- * @param string $driver
- * @return string
- */
 function install_get_db_type(string $driver): string
 {
     $parts = explode('_', $driver);
     return $driver == 'Mysqli' ? 'Mysql' : array_pop($parts);
 }
 
-/**
- * list all available database drivers
- *
- * @return array
- */
 function install_get_db_drivers(): array
 {
     $drivers = [];
@@ -109,11 +189,6 @@ function install_get_db_drivers(): array
     return $drivers;
 }
 
-/**
- * get current db driver
- *
- * @return string
- */
 function install_get_current_db_driver(): string
 {
     global $installDb;
@@ -127,42 +202,25 @@ function install_get_current_db_driver(): string
         }
 
         return $driver;
-    } else {
-        return $installDb->getAdapterName();
     }
+
+    return $installDb->getAdapterName();
 }
 
-/**
- * generate config file
- *
- * @param string $adapter
- * @param string $dbPrefix
- * @param array $dbConfig
- * @param bool $return
- * @return string
- */
 function install_config_file(string $adapter, string $dbPrefix, array $dbConfig, bool $return = false): string
 {
     global $configWritten;
 
     $code = "<" . "?php
-// site root path
 define('__TYPECHO_ROOT_DIR__', dirname(__FILE__));
-
-// plugin directory (relative path)
 define('__TYPECHO_PLUGIN_DIR__', '/usr/plugins');
-
-// theme directory (relative path)
 define('__TYPECHO_THEME_DIR__', '/usr/themes');
-
-// admin directory (relative path)
 define('__TYPECHO_ADMIN_DIR__', '/admin/');
 
 require_once __TYPECHO_ROOT_DIR__ . '/var/Typecho/Common.php';
 
 \Typecho\Common::init();
 
-// config db
 \$db = new \Typecho\Db('{$adapter}', '{$dbPrefix}');
 \$db->addServer(" . (var_export($dbConfig, true)) . ", \Typecho\Db::READ | \Typecho\Db::WRITE);
 \Typecho\Db::set(\$db);
@@ -643,53 +701,6 @@ function install_split_sql_statements(string $sql): array
     return $statements;
 }
 
-function install_transaction_supported(\Typecho\Db $db): bool
-{
-    $adapter = strtolower($db->getAdapterName());
-
-    return str_contains($adapter, 'mysql')
-        || str_contains($adapter, 'pgsql')
-        || str_contains($adapter, 'sqlite');
-}
-
-function install_transaction_begin(\Typecho\Db $db): bool
-{
-    if (!install_transaction_supported($db)) {
-        return false;
-    }
-
-    try {
-        $db->query('BEGIN');
-        return true;
-    } catch (\Throwable) {
-        return false;
-    }
-}
-
-function install_transaction_commit(\Typecho\Db $db, bool $started): void
-{
-    if (!$started) {
-        return;
-    }
-
-    $db->query('COMMIT');
-}
-
-function install_transaction_rollback(\Typecho\Db $db, bool $started): void
-{
-    if (!$started) {
-        return;
-    }
-
-    try {
-        $db->query('ROLLBACK');
-    } catch (\Throwable) {
-    }
-}
-
-/**
- * display step 2
- */
 function install_step_2()
 {
     global $installDb;
@@ -814,9 +825,6 @@ function install_step_2()
     <?php
 }
 
-/**
- * perform install step 2
- */
 function install_step_2_perform()
 {
     global $installDb;
@@ -901,6 +909,7 @@ function install_step_2_perform()
 
     $type = install_get_db_type($config['dbAdapter']);
     $dbConfig = [];
+    $normalizedSqliteFile = null;
 
     foreach ($configMap[$type] as $key => $value) {
         $config[$key] = !isset($config[$key]) ? (install_is_cli() ? $value : null) : $config[$key];
@@ -939,46 +948,10 @@ function install_step_2_perform()
         case 'SQLite':
             $error = (new \Typecho\Validate())
                 ->addRule('dbFile', 'required', _t('数据库文件路径不能为空'))
-                ->addRule('dbFile', function (string $path) {
-                    $path = trim($path);
-
-                    if ($path === '' || str_contains($path, "\0")) {
-                        return false;
-                    }
-
-                    $normalized = str_replace('\\', '/', $path);
-                    if ($normalized === '' || str_ends_with($normalized, '/')) {
-                        return false;
-                    }
-
-                    if (preg_match('/^[a-zA-Z]:\//', $normalized)) {
-                        $normalized = substr($normalized, 3);
-                    } elseif (str_starts_with($normalized, '//')) {
-                        $normalized = preg_replace('/^\/\/[^\/]+\/[^\/]+\/?/u', '', $normalized, 1, $count);
-                        if (!is_string($normalized) || ($count ?? 0) === 0) {
-                            return false;
-                        }
-                    } elseif (str_starts_with($normalized, '/')) {
-                        $normalized = substr($normalized, 1);
-                    }
-
-                    if ($normalized === '' || preg_match('/[<>:"|?*\r\n]/u', $normalized)) {
-                        return false;
-                    }
-
-                    $segments = array_values(array_filter(explode('/', $normalized), static fn(string $segment) => $segment !== ''));
-                    if (empty($segments)) {
-                        return false;
-                    }
-
-                    $fileName = array_pop($segments);
-                    $blocked = ['htaccess', 'htpasswd', 'gitignore', 'env', 'dockerenv', 'editorconfig', 'gitattributes', 'gitmodules'];
-                    if (in_array(strtolower(pathinfo($fileName, PATHINFO_FILENAME)), $blocked, true)) {
-                        return false;
-                    }
-
-                    return preg_match('/\.[^\.\/\\\\]+$/u', $fileName) === 1;
-                }, _t('数据库文件路径格式不正确'))
+                ->addRule('dbFile', static function (string $path) use (&$normalizedSqliteFile): bool {
+                    $normalizedSqliteFile = install_normalize_sqlite_file($path);
+                    return $normalizedSqliteFile !== null;
+                }, _t('SQLite 数据库文件必须位于 usr 目录内'))
                 ->run($config);
             break;
         default:
@@ -1006,8 +979,11 @@ function install_step_2_perform()
         $dbConfig['sslVerify'] = $dbConfig['sslVerify'] == 'on' || !empty($dbConfig['sslCa']);
     }
 
-    if (isset($dbConfig['file']) && preg_match("/^[a-z0-9]+\.[a-z0-9]{2,}$/i", $dbConfig['file'])) {
-        $dbConfig['file'] = __DIR__ . '/usr/' . $dbConfig['file'];
+    if (isset($dbConfig['file'])) {
+        $dbConfig['file'] = $normalizedSqliteFile ?? install_normalize_sqlite_file((string) $dbConfig['file']);
+        if ($dbConfig['file'] === null) {
+            install_raise_error(_t('SQLite 数据库文件必须位于 usr 目录内'));
+        }
     }
 
     if ($config['dbNext'] == 'config' && !install_check('config')) {
@@ -1133,9 +1109,6 @@ function install_step_2_perform()
     install_success(3);
 }
 
-/**
- * display step 3
- */
 function install_step_3()
 {
     $options = \Widget\Options::alloc();
@@ -1186,9 +1159,6 @@ function install_step_3()
     <?php
 }
 
-/**
- * perform step 3
- */
 function install_step_3_perform()
 {
     global $installDb;
@@ -1242,7 +1212,19 @@ function install_step_3_perform()
 
     $transactionStarted = false;
     try {
-        $transactionStarted = install_transaction_begin($installDb);
+        $adapter = strtolower($installDb->getAdapterName());
+        if (
+            str_contains($adapter, 'mysql')
+            || str_contains($adapter, 'pgsql')
+            || str_contains($adapter, 'sqlite')
+        ) {
+            try {
+                $installDb->query('BEGIN');
+                $transactionStarted = true;
+            } catch (\Throwable) {
+            }
+        }
+
         $installDb->query(
             $installDb->insert('table.users')->rows([
                 'name' => $config['userName'],
@@ -1330,9 +1312,17 @@ function install_step_3_perform()
                 $installDb->insert('table.options')->rows(['name' => $key, 'user' => 0, 'value' => $value])
             );
         }
-        install_transaction_commit($installDb, $transactionStarted);
+        if ($transactionStarted) {
+            $installDb->query('COMMIT');
+        }
     } catch (\Throwable $e) {
-        install_transaction_rollback($installDb, $transactionStarted);
+        if ($transactionStarted) {
+            try {
+                $installDb->query('ROLLBACK');
+            } catch (\Throwable) {
+            }
+        }
+
         install_raise_error($e->getMessage());
     }
 
@@ -1350,10 +1340,6 @@ function install_step_3_perform()
     ]);
 }
 
-/**
- * dispatch install action
- *
- */
 function install_dispatch()
 {
     if (install_is_cli()) {
@@ -1391,23 +1377,18 @@ function install_dispatch()
 
         $action = 1;
 
-        switch (true) {
-            case $step == 2:
-                if (!install_check('db_structure')) {
-                    $action = 2;
-                } else {
-                    install_redirect('install.php?step=3');
-                }
-                break;
-            case $step == 3:
-                if (install_check('db_structure')) {
-                    $action = 3;
-                } else {
-                    install_redirect('install.php?step=2');
-                }
-                break;
-            default:
-                break;
+        if ($step == 2) {
+            if (!install_check('db_structure')) {
+                $action = 2;
+            } else {
+                install_redirect('install.php?step=3');
+            }
+        } elseif ($step == 3) {
+            if (install_check('db_structure')) {
+                $action = 3;
+            } else {
+                install_redirect('install.php?step=2');
+            }
         }
 
         $method = 'install_step_' . $action;

@@ -2,11 +2,6 @@
 
 namespace IXR;
 
-/**
- * IXR日期
- *
- * @package IXR
- */
 class Date
 {
     private string $year;
@@ -23,21 +18,17 @@ class Date
 
     private string $timezone;
 
-    /**
-     * @param int|string $time A PHP timestamp or an ISO 8601 string
-     */
     public function __construct($time)
     {
-        if (is_numeric($time)) {
+        if ($time instanceof \DateTimeInterface) {
+            $this->parseDateTime($time);
+        } elseif (is_numeric($time)) {
             $this->parseTimestamp(intval($time));
         } else {
             $this->parseIso($time);
         }
     }
 
-    /**
-     * @param int $timestamp
-     */
     private function parseTimestamp(int $timestamp)
     {
         $this->year = gmdate('Y', $timestamp);
@@ -49,9 +40,17 @@ class Date
         $this->timezone = '';
     }
 
-    /**
-     * @param string $iso
-     */
+    private function parseDateTime(\DateTimeInterface $dateTime): void
+    {
+        $this->year = $dateTime->format('Y');
+        $this->month = $dateTime->format('m');
+        $this->day = $dateTime->format('d');
+        $this->hour = $dateTime->format('H');
+        $this->minute = $dateTime->format('i');
+        $this->second = $dateTime->format('s');
+        $this->timezone = '';
+    }
+
     private function parseIso(string $iso)
     {
         $this->year = substr($iso, 0, 4);
@@ -63,17 +62,11 @@ class Date
         $this->timezone = substr($iso, 17);
     }
 
-    /**
-     * @return string
-     */
     public function getIso(): string
     {
         return $this->year . $this->month . $this->day . 'T' . $this->hour . ':' . $this->minute . ':' . $this->second . $this->timezone;
     }
 
-    /**
-     * @return string
-     */
     public function getXml(): string
     {
         return '<dateTime.iso8601>' . $this->getIso() . '</dateTime.iso8601>';
@@ -84,6 +77,20 @@ class Date
      */
     public function getTimestamp()
     {
-        return mktime($this->hour, $this->minute, $this->second, $this->month, $this->day, $this->year);
+        if ($this->timezone === '') {
+            $format = '!Ymd\TH:i:s';
+        } elseif (str_ends_with($this->timezone, 'Z')) {
+            $format = '!Ymd\TH:i:s\Z';
+        } else {
+            $format = str_contains($this->timezone, ':') ? '!Ymd\TH:i:sP' : '!Ymd\TH:i:sO';
+        }
+
+        $dateTime = \DateTimeImmutable::createFromFormat(
+            $format,
+            $this->getIso(),
+            new \DateTimeZone(date_default_timezone_get())
+        );
+
+        return $dateTime instanceof \DateTimeImmutable ? $dateTime->getTimestamp() : false;
     }
 }

@@ -2,11 +2,6 @@
 
 namespace Typecho;
 
-/**
- * Feed
- *
- * @package Feed
- */
 class Feed
 {
     public const RSS1 = 'RSS 1.0';
@@ -21,77 +16,24 @@ class Feed
 
     public const EOL = "\n";
 
-    /**
-     * feed状态
-     *
-     * @var string
-     */
     private string $type;
 
-    /**
-     * 字符集编码
-     *
-     * @var string
-     */
     private string $charset;
 
-    /**
-     * 语言状态
-     *
-     * @var string
-     */
     private string $lang;
 
-    /**
-     * 聚合地址
-     *
-     * @var string
-     */
     private string $feedUrl;
 
-    /**
-     * 基本地址
-     *
-     * @var string
-     */
     private string $baseUrl;
 
-    /**
-     * 聚合标题
-     *
-     * @var string
-     */
     private string $title;
 
-    /**
-     * 聚合副标题
-     *
-     * @var string|null
-     */
     private ?string $subTitle;
 
-    /**
-     * 版本信息
-     *
-     * @var string
-     */
     private string $version;
 
-    /**
-     * 所有的items
-     *
-     * @var array
-     */
     private array $items = [];
 
-    /**
-     * 创建Feed对象
-     *
-     * @param $version
-     * @param string $type
-     * @param string $charset
-     * @param string $lang
-     */
     public function __construct($version, string $type = self::RSS2, string $charset = 'UTF-8', string $lang = 'en')
     {
         $this->version = $version;
@@ -100,57 +42,31 @@ class Feed
         $this->lang = $lang;
     }
 
-    /**
-     * @return string
-     */
     public function getType(): string
     {
         return $this->type;
     }
 
-    /**
-     * 设置标题
-     *
-     * @param string $title 标题
-     */
     public function setTitle(string $title)
     {
         $this->title = $title;
     }
 
-    /**
-     * 设置副标题
-     *
-     * @param string|null $subTitle 副标题
-     */
     public function setSubTitle(?string $subTitle)
     {
         $this->subTitle = $subTitle;
     }
 
-    /**
-     * 设置聚合地址
-     *
-     * @param string $feedUrl 聚合地址
-     */
     public function setFeedUrl(string $feedUrl)
     {
         $this->feedUrl = $feedUrl;
     }
 
-    /**
-     * @return string
-     */
     public function getFeedUrl(): string
     {
         return $this->feedUrl;
     }
 
-    /**
-     * 设置主页
-     *
-     * @param string $baseUrl 主页地址
-     */
     public function setBaseUrl(string $baseUrl)
     {
         $this->baseUrl = $baseUrl;
@@ -179,11 +95,6 @@ class Feed
         $this->items[] = $item;
     }
 
-    /**
-     * 输出字符串
-     *
-     * @return string
-     */
     public function __toString(): string
     {
         $result = '<?xml version="1.0" encoding="' . $this->charset . '"?>' . self::EOL;
@@ -413,9 +324,9 @@ xml:base="' . $this->xmlText($this->baseUrl) . '"
     public function dateFormat(int $stamp): string
     {
         if (self::RSS2 == $this->type) {
-            return date(self::DATE_RFC822, $stamp);
+            return gmdate(self::DATE_RFC822, $stamp);
         } elseif (self::RSS1 == $this->type || self::ATOM1 == $this->type) {
-            return date(self::DATE_W3CDTF, $stamp);
+            return gmdate(self::DATE_W3CDTF, $stamp);
         }
 
         return '';

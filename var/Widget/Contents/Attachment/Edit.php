@@ -28,9 +28,6 @@ class Edit extends Contents implements ActionInterface
 {
     use PrepareEditTrait;
 
-    /**
-     * @throws Exception|\Typecho\Db\Exception
-     */
     public function execute()
     {
         $this->user->pass('contributor');
@@ -57,7 +54,6 @@ class Edit extends Contents implements ActionInterface
      * 判断文件缩略名是否可用
      *
      * @param string $slug 缩略名
-     * @throws \Typecho\Db\Exception
      */
     public function slugExists(string $slug): bool
     {
@@ -77,9 +73,6 @@ class Edit extends Contents implements ActionInterface
 
     /**
      * 更新文件
-     *
-     * @throws \Typecho\Db\Exception
-     * @throws Exception
      */
     public function updateAttachment()
     {
@@ -178,8 +171,6 @@ class Edit extends Contents implements ActionInterface
      *
      * @param integer $cid 文件id
      * @param string|null $status 状态
-     * @return string
-     * @throws \Typecho\Db\Exception|Exception
      */
     protected function getPageOffsetQuery(int $cid, ?string $status = null): string
     {
@@ -236,19 +227,11 @@ class Edit extends Contents implements ActionInterface
         $this->response->redirect(Common::url('manage-medias.php', $this->options->adminUrl));
     }
 
-    /**
-     * @return $this
-     * @throws Exception
-     * @throws \Typecho\Db\Exception
-     */
     public function prepare(): self
     {
         return $this->prepareEdit('attachment', false, _t('文件不存在'));
     }
 
-    /**
-     * @return void
-     */
     public function action()
     {
         if (!$this->request->isPost()) {
@@ -263,11 +246,6 @@ class Edit extends Contents implements ActionInterface
         $this->response->redirect($this->options->adminUrl);
     }
 
-    /**
-     * @param array $posts
-     * @param int $deleteCount
-     * @return void
-     */
     protected function deleteByIds(array $posts, int &$deleteCount): void
     {
         foreach ($posts as $post) {

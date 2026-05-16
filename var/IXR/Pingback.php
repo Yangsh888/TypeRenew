@@ -6,27 +6,13 @@ use Typecho\Common;
 use Typecho\Http\Client as HttpClient;
 use Typecho\Http\Client\Exception as HttpException;
 
-/**
- * fetch pingback
- */
 #[\AllowDynamicProperties]
 class Pingback
 {
-    /**
-     * @var string
-     */
     private string $html;
 
-    /**
-     * @var string
-     */
     private string $target;
 
-    /**
-     * @param string $url
-     * @param string $target
-     * @throws Exception
-     */
     public function __construct(string $url, string $target)
     {
         $client = HttpClient::get();
@@ -76,16 +62,8 @@ class Pingback
         }
 
         $response = $client->getResponseBody();
-        $encoding = 'UTF-8';
-        $contentType = $client->getResponseHeader('Content-Type');
-
-        if (!empty($contentType) && preg_match("/charset=([_a-z0-9-]+)/i", $contentType, $matches)) {
-            $encoding = strtoupper($matches[1]);
-        } elseif (preg_match("/<meta\s+charset=\"([_a-z0-9-]+)\"/i", $response, $matches)) {
-            $encoding = strtoupper($matches[1]);
-        }
-
-        $this->html = $encoding == 'UTF-8' ? $response : mb_convert_encoding($response, 'UTF-8', $encoding);
+        $encoding = $this->detectEncoding($client->getResponseHeader('Content-Type'), $response);
+        $this->html = $this->normalizeHtml($response, $encoding);
 
         if (
             !$client->getResponseHeader('X-Pingback') &&
@@ -103,6 +81,47 @@ class Pingback
         }
 
         return (string) ($parts['host'] ?? '');
+    }
+
+    private function detectEncoding(string $contentType, string $response): string
+    {
+        if ($contentType !== '' && preg_match("/charset=([_a-z0-9-]+)/i", $contentType, $matches)) {
+            return strtoupper($matches[1]);
+        }
+
+        if (preg_match('/<\?xml[^>]*encoding=["\']([_a-z0-9-]+)["\']/i', $response, $matches)) {
+            return strtoupper($matches[1]);
+        }
+
+        if (preg_match("/<meta\s+charset=[\"']?([_a-z0-9-]+)/i", $response, $matches)) {
+            return strtoupper($matches[1]);
+        }
+
+        if (
+            preg_match(
+                '/<meta[^>]+http-equiv=["\']content-type["\'][^>]+content=["\'][^"\']*charset=([_a-z0-9-]+)/i',
+                $response,
+                $matches
+            )
+        ) {
+            return strtoupper($matches[1]);
+        }
+
+        return 'UTF-8';
+    }
+
+    private function normalizeHtml(string $response, string $encoding): string
+    {
+        if ($encoding === 'UTF-8' || !function_exists('mb_convert_encoding')) {
+            return $response;
+        }
+
+        try {
+            $converted = mb_convert_encoding($response, 'UTF-8', $encoding);
+            return is_string($converted) ? $converted : $response;
+        } catch (\ValueError $e) {
+            return $response;
+        }
     }
 
     /**

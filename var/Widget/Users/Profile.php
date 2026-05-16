@@ -104,8 +104,6 @@ class Profile extends Users implements ActionInterface
 
     /**
      * 自定义设置列表
-     *
-     * @throws Plugin\Exception
      */
     public function personalFormList()
     {
@@ -134,7 +132,6 @@ class Profile extends Users implements ActionInterface
      * @param string $className 类名称
      * @param string $pluginFileName 插件文件名
      * @param string|null $group 用户组
-     * @throws Plugin\Exception
      */
     public function personalForm(string $pluginName, string $className, string $pluginFileName, ?string &$group): Form
     {
@@ -165,8 +162,6 @@ class Profile extends Users implements ActionInterface
 
     /**
      * 更新用户
-     *
-     * @throws Exception
      */
     public function updateProfile()
     {
@@ -231,7 +226,6 @@ class Profile extends Users implements ActionInterface
         $url->value($this->user->url);
         $mail->value($this->user->mail);
 
-        /** 给表单增加规则 */
         $screenName->addRule([$this, 'screenNameExists'], _t('昵称已经存在'));
         $screenName->addRule('xssCheck', _t('请不要在昵称中使用特殊字符'));
         $screenName->addRule('maxLength', _t('昵称最多包含32个字符'), 32);
@@ -245,11 +239,6 @@ class Profile extends Users implements ActionInterface
         return $form;
     }
 
-    /**
-     * 执行更新动作
-     *
-     * @throws Exception
-     */
     public function updateOptions()
     {
         $settings['autoSave'] = $this->request->is('autoSave=1') ? 1 : 0;
@@ -283,8 +272,6 @@ class Profile extends Users implements ActionInterface
 
     /**
      * 更新密码
-     *
-     * @throws Exception
      */
     public function updatePassword()
     {
@@ -344,8 +331,6 @@ class Profile extends Users implements ActionInterface
 
     /**
      * 更新个人设置
-     *
-     * @throws \Typecho\Widget\Exception
      */
     public function updatePersonal()
     {
@@ -413,12 +398,12 @@ class Profile extends Users implements ActionInterface
         return false;
     }
 
-    /**
-     * 入口函数
-     * @return void
-     */
     public function action()
     {
+        if (!$this->request->isPost()) {
+            $this->response->goBack();
+            return;
+        }
         $this->security->protect();
         $this->on($this->request->is('do=profile'))->updateProfile();
         $this->on($this->request->is('do=options'))->updateOptions();

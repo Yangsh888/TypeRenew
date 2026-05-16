@@ -23,11 +23,6 @@ class Discussion extends Options implements ActionInterface
 {
     use EditTrait;
 
-    /**
-     * 执行更新动作
-     *
-     * @throws Exception
-     */
     public function updateDiscussionSettings()
     {
         $this->validateFormOrGoBack($this->form());

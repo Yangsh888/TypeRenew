@@ -14,16 +14,8 @@ class AutoP
     // 作为段落的标签
     private const BLOCK = 'p|pre|div|blockquote|form|ul|ol|dd|table|ins|h1|h2|h3|h4|h5|h6';
 
-    /**
-     * 唯一id
-     * @var integer
-     */
     private int $uniqueId = 0;
 
-    /**
-     * 存储的段落
-     * @var array
-     */
     private array $blocks = [];
 
     /**
@@ -37,26 +29,18 @@ class AutoP
         $tagMatch = '|' . $matches[1] . '|';
         $text = $matches[4];
 
-        switch (true) {
-            /** 用br处理换行 */
-            case false !== strpos(
-                '|li|dd|dt|td|p|a|span|cite|strong|sup|sub|small|del|u|i|b|ins|h1|h2|h3|h4|h5|h6|',
-                $tagMatch
-            ):
-                $text = nl2br(trim($text));
-                break;
-            /** 用段落处理换行 */
-            case false !== strpos('|div|blockquote|form|', $tagMatch):
-                $text = $this->cutByBlock($text);
-                if (false !== strpos($text, '</p><p>')) {
-                    $text = $this->fixParagraph($text);
-                }
-                break;
-            default:
-                break;
+        if (false !== strpos(
+            '|li|dd|dt|td|p|a|span|cite|strong|sup|sub|small|del|u|i|b|ins|h1|h2|h3|h4|h5|h6|',
+            $tagMatch
+        )) {
+            $text = nl2br(trim($text));
+        } elseif (false !== strpos('|div|blockquote|form|', $tagMatch)) {
+            $text = $this->cutByBlock($text);
+            if (false !== strpos($text, '</p><p>')) {
+                $text = $this->fixParagraph($text);
+            }
         }
 
-        /** 没有段落能力的标签 */
         if (false !== strpos('|a|span|font|code|cite|strong|sup|sub|small|del|u|i|b|', $tagMatch)) {
             $key = '<b' . $matches[2] . '/>';
         } else {
@@ -116,14 +100,11 @@ class AutoP
      */
     public function parse(string $text): string
     {
-        /** 重置计数器 */
         $this->uniqueId = 0;
         $this->blocks = [];
 
-        /** 将已有的段落后面的换行处理掉 */
         $text = preg_replace(["/<\/p>\s+<p(\s*)/is", "/\s*<br\s*\/?>\s*/is"], ["</p><p\\1", "<br />"], trim($text));
 
-        /** 将所有非自闭合标签解析为唯一的字符串 */
         $foundTagCount = 0;
         $textLength = strlen($text);
         $uniqueIdList = [];
@@ -137,18 +118,12 @@ class AutoP
                 $posFix = strrpos($text, '<' . $tag . ' ', $leftOffset);
                 $pos = false;
 
-                switch (true) {
-                    case (false !== $posSingle && false !== $posFix):
-                        $pos = max($posSingle, $posFix);
-                        break;
-                    case false === $posSingle && false !== $posFix:
-                        $pos = $posFix;
-                        break;
-                    case false !== $posSingle && false === $posFix:
-                        $pos = $posSingle;
-                        break;
-                    default:
-                        break;
+                if (false !== $posSingle && false !== $posFix) {
+                    $pos = max($posSingle, $posFix);
+                } elseif (false === $posSingle && false !== $posFix) {
+                    $pos = $posFix;
+                } elseif (false !== $posSingle && false === $posFix) {
+                    $pos = $posSingle;
                 }
 
                 if (false !== $pos) {
@@ -197,4 +172,3 @@ class AutoP
         return ':' . str_pad($this->uniqueId ++, 4, '0', STR_PAD_LEFT);
     }
 }
-

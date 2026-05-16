@@ -12,6 +12,7 @@ use Typecho\Plugin;
 use Typecho\Response;
 use Typecho\Router;
 use Typecho\Widget;
+use Utils\Zone;
 
 if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
@@ -67,6 +68,7 @@ class Init extends Widget
 
         $options = Options::alloc();
         self::normalizeGenerator($options);
+        self::normalizeTimezone($options);
         Cache::init([
             'status' => (int) ($options->cacheStatus ?? 0),
             'driver' => (string) ($options->cacheDriver ?? 'redis'),
@@ -96,11 +98,11 @@ class Init extends Widget
             Cookie::setOptions(__TYPECHO_COOKIE_OPTIONS__);
         }
 
+        Date::configure($options->timezoneId, (int) $options->timezone);
         Router::setRoutes($options->routingTable);
         Plugin::init($options->plugins);
         $this->response->setCharset($options->charset);
         $this->response->setContentType($options->contentType);
-        Date::setTimezoneOffset($options->timezone);
 
         if (
             $options->installed
@@ -131,5 +133,49 @@ class Init extends Widget
             Db::WRITE
         );
         $options->generator = $normalized;
+    }
+
+    private static function normalizeTimezone(Options $options): void
+    {
+        $storedTimezoneId = $options->getStoredTimezoneId();
+        $normalizedTimezoneId = $options->getTimezoneId();
+        $currentOffset = Zone::offsetAt($normalizedTimezoneId, (int) ($options->timezone ?? 0), Date::time());
+
+        if ($storedTimezoneId === $normalizedTimezoneId && (int) ($options->timezone ?? 0) === $currentOffset) {
+            return;
+        }
+
+        $db = Db::get();
+        $timezoneIdExists = $db->fetchRow(
+            $db->select('name')
+                ->from('table.options')
+                ->where('name = ? AND user = 0', 'timezoneId')
+                ->limit(1)
+        );
+
+        if ($timezoneIdExists) {
+            $db->query(
+                $db->update('table.options')
+                    ->rows(['value' => $normalizedTimezoneId])
+                    ->where('name = ? AND user = 0', 'timezoneId'),
+                Db::WRITE
+            );
+        } else {
+            $db->query(
+                $db->insert('table.options')
+                    ->rows(['name' => 'timezoneId', 'user' => 0, 'value' => $normalizedTimezoneId]),
+                Db::WRITE
+            );
+        }
+
+        $db->query(
+            $db->update('table.options')
+                ->rows(['value' => (string) $currentOffset])
+                ->where('name = ? AND user = 0', 'timezone'),
+            Db::WRITE
+        );
+
+        $options->timezoneId = $normalizedTimezoneId;
+        $options->timezone = $currentOffset;
     }
 }

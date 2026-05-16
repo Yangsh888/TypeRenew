@@ -11,19 +11,8 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-/**
- * 最近评论组件
- *
- * @category typecho
- * @package Widget
- * @copyright Copyright (c) 2008 Typecho team (http://www.typecho.org)
- * @license GNU General Public License 2.0
- */
 class Recent extends Comments
 {
-    /**
-     * @param Config $parameter
-     */
     protected function initParameter(Config $parameter)
     {
         $parameter->setDefault(
@@ -31,9 +20,6 @@ class Recent extends Comments
         );
     }
 
-    /**
-     * @throws Exception
-     */
     public function execute()
     {
         $select = $this->select()->limit($this->parameter->pageSize)

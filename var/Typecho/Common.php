@@ -110,7 +110,7 @@ namespace Typecho {
     class Common
     {
         public const SOFTWARE = 'TypeRenew';
-        public const VERSION = '1.4.2';
+        public const VERSION = '1.5.0';
 
         public static function generator(?string $version = null): string
         {
@@ -535,15 +535,16 @@ EOF;
 
             $found = true;
             while ($found == true) {
-                $val_before = $val;
+                $found = false;
                 for ($i = 0; $i < sizeof($ra); $i++) {
+                    $val_before = $val;
                     $pattern = '/';
                     for ($j = 0; $j < strlen($ra[$i]); $j++) {
                         if ($j > 0) {
                             $pattern .= '(';
                             $pattern .= '(&#[xX]0{0,8}([9ab]);)';
                             $pattern .= '|';
-                            $pattern .= '|(&#0{0,8}([9|10|13]);)';
+                            $pattern .= '(&#0{0,8}(9|10|13);)';
                             $pattern .= ')*';
                         }
                         $pattern .= $ra[$i][$j];
@@ -552,8 +553,8 @@ EOF;
                     $replacement = substr($ra[$i], 0, 2) . '<x>' . substr($ra[$i], 2);
                     $val = preg_replace($pattern, $replacement, $val);
 
-                    if ($val_before == $val) {
-                        $found = false;
+                    if ($val_before != $val) {
+                        $found = true;
                     }
                 }
             }
@@ -939,27 +940,35 @@ EOF;
 
             [$type, $stream] = $parts;
 
-            if (in_array($type, ['image', 'video', 'audio', 'text', 'application'])) {
-                switch (true) {
-                    case in_array($stream, ['msword', 'msaccess', 'ms-powerpoint', 'ms-powerpoint']):
-                    case 0 === strpos($stream, 'vnd.'):
-                        return 'office';
-                    case false !== strpos($stream, 'html')
-                        || false !== strpos($stream, 'xml')
-                        || false !== strpos($stream, 'wml'):
-                        return 'html';
-                    case false !== strpos($stream, 'compressed')
-                        || false !== strpos($stream, 'zip')
-                        || in_array($stream, ['application/x-gtar', 'application/x-tar']):
-                        return 'archive';
-                    case 'text' == $type && 0 === strpos($stream, 'x-'):
-                        return 'script';
-                    default:
-                        return $type;
-                }
-            } else {
+            if (!in_array($type, ['image', 'video', 'audio', 'text', 'application'])) {
                 return 'unknown';
             }
+
+            if (in_array($stream, ['msword', 'msaccess', 'ms-powerpoint']) || 0 === strpos($stream, 'vnd.')) {
+                return 'office';
+            }
+
+            if (
+                false !== strpos($stream, 'html')
+                || false !== strpos($stream, 'xml')
+                || false !== strpos($stream, 'wml')
+            ) {
+                return 'html';
+            }
+
+            if (
+                false !== strpos($stream, 'compressed')
+                || false !== strpos($stream, 'zip')
+                || in_array($stream, ['application/x-gtar', 'application/x-tar'])
+            ) {
+                return 'archive';
+            }
+
+            if ('text' == $type && 0 === strpos($stream, 'x-')) {
+                return 'script';
+            }
+
+            return $type;
         }
 
         private static function parseAttrs(string $attrs): array

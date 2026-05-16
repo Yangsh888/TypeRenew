@@ -26,8 +26,6 @@ class Options extends Base implements QueryInterface
      * 获取原始查询对象
      *
      * @param mixed ...$fields
-     * @return Query
-     * @throws Exception
      */
     public function select(...$fields): Query
     {
