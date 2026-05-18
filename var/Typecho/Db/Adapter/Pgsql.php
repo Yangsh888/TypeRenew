@@ -19,9 +19,6 @@ class Pgsql implements Adapter
         return extension_loaded('pgsql');
     }
 
-    /**
-     * @throws ConnectionException
-     */
     public function connect(Config $config)
     {
         $dsn = "host={$config->host} port={$config->port}"
@@ -48,9 +45,6 @@ class Pgsql implements Adapter
         return $version['server'];
     }
 
-    /**
-     * @throws SQLException
-     */
     public function query(string $query, $handle, int $op = Db::READ, ?string $action = null, ?string $table = null)
     {
         $this->prepareQuery($query, $handle, $action, $table);

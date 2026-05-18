@@ -61,14 +61,6 @@ class Request
         return $this;
     }
 
-    /**
-     * 获取实际传递参数
-     *
-     * @param string $key 指定参数
-     * @param mixed $default 默认参数 (default: NULL)
-     * @param bool|null $exists detect exists
-     * @return mixed
-     */
     public function get(string $key, $default = null, ?bool &$exists = true)
     {
         $value = null;
@@ -90,17 +82,13 @@ class Request
             $value = $_GET[$key];
         }
 
-        if (isset($value) && $value !== '') {
-            $exists = true;
-            if (is_array($default) == is_array($value)) {
-                return $value;
-            } else {
-                return $default;
-            }
-        } else {
+        if (!isset($value)) {
             $exists = false;
             return $default;
         }
+
+        $exists = true;
+        return is_array($default) == is_array($value) ? $value : $default;
     }
 
     public function __get(string $key)
@@ -147,12 +135,6 @@ class Request
         return $this->jsonBody;
     }
 
-    /**
-     * 获取一个数组
-     *
-     * @param string $key
-     * @return array
-     */
     public function getArray(string $key): array
     {
         $result = $this->get($key, [], $exists);
@@ -172,12 +154,6 @@ class Request
         return [$result];
     }
 
-    /**
-     * 从参数列表指定的值中获取http传递参数
-     *
-     * @param string|array $params 指定的参数
-     * @return array
-     */
     public function from(string|array $params): array
     {
         $result = [];
@@ -190,18 +166,13 @@ class Request
         return $result;
     }
 
-    /**
-     * getRequestRoot
-     *
-     * @return string
-     */
     public function getRequestRoot(): string
     {
         if (null === $this->requestRoot) {
             $root = rtrim($this->getUrlPrefix() . $this->getBaseUrl(), '/') . '/';
 
             $pos = strrpos($root, '.php/');
-            if ($pos) {
+            if ($pos !== false) {
                 $root = dirname(substr($root, 0, $pos));
             }
 
@@ -211,22 +182,11 @@ class Request
         return $this->requestRoot;
     }
 
-    /**
-     * 获取当前请求url
-     *
-     * @return string
-     */
     public function getRequestUrl(): string
     {
         return $this->getUrlPrefix() . $this->getRequestUri();
     }
 
-    /**
-     * 根据当前uri构造指定参数的uri
-     *
-     * @param mixed $parameter 指定的参数
-     * @return string
-     */
     public function makeUriByRequest($parameter = null): string
     {
         $requestUri = $this->getRequestUrl();
@@ -249,11 +209,6 @@ class Request
         return Common::buildUrl($parts);
     }
 
-    /**
-     * 获取当前pathinfo
-     *
-     * @return string
-     */
     public function getPathInfo(): ?string
     {
         if (null !== $this->pathInfo) {
@@ -281,8 +236,8 @@ class Request
         }
 
         if (!empty($pathInfo)) {
-            //针对iis的utf8编码做强制转换
-            $pathInfo = defined('__TYPECHO_PATHINFO_ENCODING__') ?
+            // 针对 IIS 的 pathinfo 编码，仅在 mbstring 可用时转换
+            $pathInfo = defined('__TYPECHO_PATHINFO_ENCODING__') && function_exists('mb_convert_encoding') ?
                 mb_convert_encoding($pathInfo, 'UTF-8', __TYPECHO_PATHINFO_ENCODING__) : $pathInfo;
         } else {
             $pathInfo = '/';
@@ -291,33 +246,16 @@ class Request
         return ($this->pathInfo = '/' . ltrim(urldecode($pathInfo), '/'));
     }
 
-    /**
-     * 获取请求的内容类型
-     *
-     * @return string|null
-     */
     public function getContentType(): ?string
     {
         return $this->getHeader('Content-Type');
     }
 
-    /**
-     * 获取环境变量
-     *
-     * @param string $name 获取环境变量名
-     * @param string|null $default
-     * @return string|null
-     */
     public function getServer(string $name, ?string $default = null): ?string
     {
         return $_SERVER[$name] ?? $default;
     }
 
-    /**
-     * 获取ip地址
-     *
-     * @return string
-     */
     public function getIp(): string
     {
         if (null === $this->ip) {
@@ -335,11 +273,7 @@ class Request
                 }
             }
 
-            if (!empty($ip)) {
-                $this->ip = $ip;
-            } else {
-                $this->ip = 'unknown';
-            }
+            $this->ip = !empty($ip) ? $ip : 'unknown';
         }
 
         return $this->ip;
@@ -394,9 +328,14 @@ class Request
         }
 
         $mask = (int) $mask;
-        $ipBin = @inet_pton($ip);
-        $subnetBin = @inet_pton($subnet);
+        $ipBin = inet_pton($ip);
+        $subnetBin = inet_pton($subnet);
         if ($ipBin === false || $subnetBin === false || strlen($ipBin) !== strlen($subnetBin)) {
+            return false;
+        }
+
+        $maxBits = strlen($ipBin) * 8;
+        if ($mask > $maxBits) {
             return false;
         }
 
@@ -542,13 +481,6 @@ class Request
         return $name . ($port > 0 ? ':' . $port : '');
     }
 
-    /**
-     * get header value
-     *
-     * @param string $key
-     * @param string|null $default
-     * @return string|null
-     */
     public function getHeader(string $key, ?string $default = null): ?string
     {
         $key = strtoupper(str_replace('-', '_', $key));
@@ -561,31 +493,16 @@ class Request
         return $this->getServer('HTTP_' . $key, $default);
     }
 
-    /**
-     * 获取客户端
-     *
-     * @return string
-     */
     public function getAgent(): ?string
     {
         return $this->getHeader('User-Agent');
     }
 
-    /**
-     * 获取来源页
-     *
-     * @return string|null
-     */
     public function getReferer(): ?string
     {
         return $this->getHeader('Referer');
     }
 
-    /**
-     * 判断是否为https
-     *
-     * @return bool
-     */
     public function isSecure(): bool
     {
         $remote = $this->filterIp($this->getServer('REMOTE_ADDR', ''));
@@ -663,11 +580,6 @@ class Request
         return $validated;
     }
 
-    /**
-     * 获取请求资源地址
-     *
-     * @return string|null
-     */
     public function getRequestUri(): ?string
     {
         if (!empty($this->requestUri)) {
@@ -709,11 +621,6 @@ class Request
         return $this->requestUri = $requestUri;
     }
 
-    /**
-     * 获取url前缀
-     *
-     * @return string|null
-     */
     public function getUrlPrefix(): ?string
     {
         if (empty($this->urlPrefix)) {

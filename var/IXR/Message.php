@@ -85,11 +85,6 @@ class Message
         return true;
     }
 
-    /**
-     * @param $parser
-     * @param string $tag
-     * @param $attr
-     */
     private function tagOpen($parser, string $tag, $attr)
     {
         switch ($tag) {
@@ -118,10 +113,6 @@ class Message
         $this->currentTagContents .= $cdata;
     }
 
-    /**
-     * @param $parser
-     * @param string $tag
-     */
     private function tagClose($parser, string $tag)
     {
         switch ($tag) {

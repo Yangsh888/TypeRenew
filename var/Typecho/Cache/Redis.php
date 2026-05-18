@@ -245,7 +245,7 @@ class Redis implements Driver
                 return $this->client;
             }
             if ($this->lastFailure > 0) {
-                $cooldown = $this->getBackoffCooldown();
+                $cooldown = self::BACKOFF_STEPS[min($this->failureCount, count(self::BACKOFF_STEPS) - 1)];
                 if ((microtime(true) - $this->lastFailure) < $cooldown) {
                     return null;
                 }
@@ -292,12 +292,6 @@ class Redis implements Driver
             $this->markUnavailable();
             return null;
         }
-    }
-
-    private function getBackoffCooldown(): int
-    {
-        $index = min($this->failureCount, count(self::BACKOFF_STEPS) - 1);
-        return self::BACKOFF_STEPS[$index];
     }
 
     private function encode($value): string

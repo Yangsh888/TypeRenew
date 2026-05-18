@@ -19,9 +19,6 @@ class SQLite implements Adapter
         return extension_loaded('sqlite3');
     }
 
-    /**
-     * @throws ConnectionException
-     */
     public function connect(Config $config): \SQLite3
     {
         try {
@@ -39,9 +36,6 @@ class SQLite implements Adapter
         return \SQLite3::version()['versionString'];
     }
 
-    /**
-     * @throws SQLException
-     */
     public function query(
         string $query,
         $handle,

@@ -10,30 +10,18 @@ namespace Utils;
  */
 class HyperDown
 {
-    /**
-     * _whiteList
-     * @var string
-     */
+    /** @var string */
     private $_commonWhiteList = 'kbd|b|i|strong|em|sup|sub|br|code|del|a|hr|small';
 
-    /**
-     * html tags
-     * @var string
-     */
+    /** @var string */
     private $_blockHtmlTags = 'p|div|h[1-6]|blockquote|pre|table|dl|ol|ul|address|form|fieldset|iframe|hr|legend|article|section|nav|aside|hgroup|header|footer|figcaption|svg|script|noscript';
 
-    /**
-     * _specialWhiteList
-     * @var mixed
-     */
+    /** @var mixed */
     private $_specialWhiteList = [
         'table' => 'table|tbody|thead|tfoot|tr|td|th'
     ];
 
-    /**
-     * _footnotes
-     * @var array
-     */
+    /** @var array */
     private $_footnotes;
 
     /**
@@ -68,28 +56,16 @@ class HyperDown
         ['default', 9999]
     ];
 
-    /**
-     * _blocks
-     * @var array
-     */
+    /** @var array */
     private $_blocks;
 
-    /**
-     * _current
-     * @var string
-     */
+    /** @var string */
     private $_current;
 
-    /**
-     * _pos
-     * @var int
-     */
+    /** @var int */
     private $_pos;
 
-    /**
-     * _definitions
-     * @var array
-     */
+    /** @var array */
     private $_definitions;
 
     /**
@@ -97,31 +73,18 @@ class HyperDown
      */
     private $_hooks = [];
 
-    /**
-     * @var array
-     */
+    /** @var array */
     private $_holders;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private $_uniqid;
 
-    /**
-     * @var int
-     */
+    /** @var int */
     private $_id;
 
-    /**
-     * @var array
-     */
+    /** @var array */
     private $_parsers = [];
 
-    /**
-     * makeHtml
-     * @param mixed $text
-     * @return string
-     */
     public function makeHtml($text): string
     {
         $this->_footnotes = [];
@@ -152,35 +115,21 @@ class HyperDown
         return $this->call('makeHtml', $html);
     }
 
-    /**
-     * @param bool $html
-     */
     public function enableHtml(bool $html = true)
     {
         $this->_html = $html;
     }
 
-    /**
-     * @param bool $line
-     */
     public function enableLine(bool $line = true)
     {
         $this->_line = $line;
     }
 
-    /**
-     * @param string $type
-     * @param callable $callback
-     */
     public function hook(string $type, callable $callback)
     {
         $this->_hooks[$type][] = $callback;
     }
 
-    /**
-     * @param string $str
-     * @return string
-     */
     public function makeHolder(string $str): string
     {
         $key = "\r" . $this->_uniqid . $this->_id . "\r";
@@ -190,10 +139,6 @@ class HyperDown
         return $key;
     }
 
-    /**
-     * @param string $text
-     * @return string
-     */
     private function initText(string $text): string
     {
         $text = str_replace(["\t", "\r"], ['    ', ''], $text);
@@ -236,10 +181,6 @@ class HyperDown
         return implode("\n", $result);
     }
 
-    /**
-     * @param string $html
-     * @return string
-     */
     private function makeFootnotes(string $html): string
     {
         if (count($this->_footnotes) > 0) {
@@ -264,13 +205,6 @@ class HyperDown
         return $html;
     }
 
-    /**
-     * parse
-     * @param string $text
-     * @param bool $inline
-     * @param int $offset
-     * @return string
-     */
     private function parse(string $text, bool $inline = false, int $offset = 0): string
     {
         $blocks = $this->parseBlock($text, $lines);
@@ -296,11 +230,6 @@ class HyperDown
         return $html;
     }
 
-    /**
-     * @param string $text
-     * @param bool $clearHolders
-     * @return string
-     */
     private function releaseHolder(string $text, bool $clearHolders = true): string
     {
         $deep = 0;
@@ -316,11 +245,6 @@ class HyperDown
         return $text;
     }
 
-    /**
-     * @param int $start
-     * @param int $end
-     * @return string
-     */
     private function markLine(int $start, int $end = -1): string
     {
         if ($this->_line) {
@@ -332,11 +256,6 @@ class HyperDown
         return '';
     }
 
-    /**
-     * @param array $lines
-     * @param int $start
-     * @return string[]
-     */
     private function markLines(array $lines, int $start): array
     {
         $i = -1;
@@ -347,10 +266,6 @@ class HyperDown
         }, $lines) : $lines;
     }
 
-    /**
-     * @param string $html
-     * @return string
-     */
     private function optimizeLines(string $html): string
     {
         $last = 0;
@@ -369,11 +284,6 @@ class HyperDown
                 }, $html) : $html;
     }
 
-    /**
-     * @param string $type
-     * @param ...$args
-     * @return mixed
-     */
     private function call(string $type, ...$args)
     {
         $value = $args[0];
@@ -390,14 +300,6 @@ class HyperDown
         return $value;
     }
 
-    /**
-     * parseInline
-     * @param string $text
-     * @param string $whiteList
-     * @param bool $clearHolders
-     * @param bool $enableAutoLink
-     * @return string
-     */
     private function parseInline(
         string $text,
         string $whiteList = '',
@@ -1275,13 +1177,6 @@ class HyperDown
         return $this->call('afterOptimizeBlocks', $blocks, $lines);
     }
 
-    /**
-     * parseCode
-     * @param array $lines
-     * @param array $parts
-     * @param int $start
-     * @return string
-     */
     private function parseCode(array $lines, array $parts, int $start): string
     {
         [$blank, $lang] = $parts;
@@ -1317,13 +1212,6 @@ class HyperDown
             . $str . '</code></pre>';
     }
 
-    /**
-     * parsePre
-     * @param array $lines
-     * @param mixed $value
-     * @param int $start
-     * @return string
-     */
     private function parsePre(array $lines, $value, int $start): string
     {
         foreach ($lines as &$line) {
@@ -1334,77 +1222,32 @@ class HyperDown
         return preg_match("/^\s*$/", $str) ? '' : '<pre><code>' . $str . '</code></pre>';
     }
 
-    /**
-     * parseAhtml
-     * @param array $lines
-     * @param mixed $value
-     * @param int $start
-     * @return string
-     */
     private function parseAhtml(array $lines, $value, int $start): string
     {
         return trim(implode("\n", $this->markLines($lines, $start)));
     }
 
-    /**
-     * parseShtml
-     * @param array $lines
-     * @param mixed $value
-     * @param int $start
-     * @return string
-     */
     private function parseShtml(array $lines, $value, int $start): string
     {
         return trim(implode("\n", $this->markLines(array_slice($lines, 1, -1), $start + 1)));
     }
 
-    /**
-     * parseMath
-     * @param array $lines
-     * @param mixed $value
-     * @param int $start
-     * @param int $end
-     * @return string
-     */
     private function parseMath(array $lines, $value, int $start, int $end): string
     {
         return '<p>' . $this->markLine($start, $end) . htmlspecialchars(implode("\n", $lines)) . '</p>';
     }
 
-    /**
-     * parseSh
-     * @param array $lines
-     * @param int $num
-     * @param int $start
-     * @param int $end
-     * @return string
-     */
     private function parseSh(array $lines, int $num, int $start, int $end): string
     {
         $line = $this->markLine($start, $end) . $this->parseInline(trim($lines[0], '# '));
         return preg_match("/^\s*$/", $line) ? '' : "<h{$num}>{$line}</h{$num}>";
     }
 
-    /**
-     * parseMh
-     * @param array $lines
-     * @param int $num
-     * @param int $start
-     * @param int $end
-     * @return string
-     */
     private function parseMh(array $lines, int $num, int $start, int $end): string
     {
         return $this->parseSh($lines, $num, $start, $end);
     }
 
-    /**
-     * parseQuote
-     * @param array $lines
-     * @param mixed $value
-     * @param int $start
-     * @return string
-     */
     private function parseQuote(array $lines, $value, int $start): string
     {
         foreach ($lines as &$line) {
@@ -1415,13 +1258,6 @@ class HyperDown
         return preg_match("/^\s*$/", $str) ? '' : '<blockquote>' . $this->parse($str, true, $start) . '</blockquote>';
     }
 
-    /**
-     * parseList
-     * @param array $lines
-     * @param mixed $value
-     * @param int $start
-     * @return string
-     */
     private function parseList(array $lines, $value, int $start): string
     {
         $html = '';
@@ -1455,12 +1291,6 @@ class HyperDown
         return "<{$type}{$suffix}>{$html}</{$type}>";
     }
 
-    /**
-     * @param array $lines
-     * @param mixed $value
-     * @param int $start
-     * @return string
-     */
     private function parseTable(array $lines, $value, int $start): string
     {
         [$ignores, $aligns] = $value;
@@ -1557,25 +1387,11 @@ class HyperDown
         return $html;
     }
 
-    /**
-     * parseHr
-     * @param array $lines
-     * @param mixed $value
-     * @param int $start
-     * @return string
-     */
     private function parseHr(array $lines, $value, int $start): string
     {
         return $this->_line ? '<hr class="line" data-start="' . $start . '" data-end="' . $start . '">' : '<hr>';
     }
 
-    /**
-     * parseNormal
-     * @param array $lines
-     * @param mixed $inline
-     * @param int $start
-     * @return string
-     */
     private function parseNormal(array $lines, $inline, int $start): string
     {
         foreach ($lines as $key => &$line) {
@@ -1596,12 +1412,6 @@ class HyperDown
         return preg_match("/^\s*$/", $str) ? '' : ($inline ? $str : "<p>{$str}</p>");
     }
 
-    /**
-     * parseFootnote
-     * @param array $lines
-     * @param array $value
-     * @return string
-     */
     private function parseFootnote(array $lines, array $value): string
     {
         [$space, $note] = $value;
@@ -1615,22 +1425,11 @@ class HyperDown
         return '';
     }
 
-    /**
-     * parseDefinition
-     * @return string
-     */
     private function parseDefinition(): string
     {
         return '';
     }
 
-    /**
-     * parseHtml
-     * @param array $lines
-     * @param string $type
-     * @param int $start
-     * @return string
-     */
     private function parseHtml(array $lines, string $type, int $start): string
     {
         foreach ($lines as &$line) {
@@ -1641,11 +1440,6 @@ class HyperDown
         return implode("\n", $this->markLines($lines, $start));
     }
 
-    /**
-     * @param $url
-     * @param bool $parseTitle
-     * @return mixed
-     */
     private function cleanUrl($url, bool $parseTitle = false)
     {
         $title = null;
@@ -1675,10 +1469,6 @@ class HyperDown
         return $parseTitle ? [$url, $title] : $url;
     }
 
-    /**
-     * @param $str
-     * @return string
-     */
     private function escapeBracket($str): string
     {
         return str_replace(
@@ -1686,12 +1476,6 @@ class HyperDown
         );
     }
 
-    /**
-     * startBlock
-     * @param mixed $type
-     * @param mixed $start
-     * @param mixed $value
-     */
     private function startBlock($type, $start, $value = null): HyperDown
     {
         $this->_pos++;
@@ -1708,32 +1492,17 @@ class HyperDown
         return $this;
     }
 
-    /**
-     * isBlock
-     * @param mixed $type
-     * @param mixed $value
-     * @return bool
-     */
     private function isBlock($type, $value = null): bool
     {
         return $this->_current == $type
             && (null === $value || $this->_blocks[$this->_pos][3] == $value);
     }
 
-    /**
-     * getBlock
-     * @return array
-     */
     private function getBlock(): ?array
     {
         return $this->_blocks[$this->_pos] ?? null;
     }
 
-    /**
-     * setBlock
-     * @param mixed $to
-     * @param mixed $value
-     */
     private function setBlock($to = null, $value = null): HyperDown
     {
         if (null !== $to) {
@@ -1747,12 +1516,6 @@ class HyperDown
         return $this;
     }
 
-    /**
-     * backBlock
-     * @param mixed $step
-     * @param mixed $type
-     * @param mixed $value
-     */
     private function backBlock($step, $type, $value = null): HyperDown
     {
         if ($this->_pos < 0) {

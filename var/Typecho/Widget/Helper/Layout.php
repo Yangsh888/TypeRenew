@@ -170,9 +170,6 @@ class Layout
         $this->attributes[$name] = (string) $value;
     }
 
-    /**
-     * 输出所有元素
-     */
     public function render()
     {
         if (empty($this->items) && empty($this->html)) {

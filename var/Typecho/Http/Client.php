@@ -133,12 +133,6 @@ class Client
         return $this;
     }
 
-    /**
-     * 发送请求
-     *
-     * @param string $url 请求地址
-     * @throws Exception
-     */
     public function send(string $url)
     {
         $params = Common::parseUrl($url);
@@ -234,10 +228,19 @@ class Client
             $headers[] = $key . ': ' . $val;
         }
 
+        if (isset($this->agent)) {
+            $headers[] = 'User-Agent: ' . $this->agent;
+        }
+
         $content = null;
         if (!empty($this->data)) {
             $content = $this->data;
-            if (!$this->multipart) {
+            if (is_array($content)) {
+                $content = is_array($content) ? http_build_query($content) : $content;
+                if (!isset($this->headers['Content-Type'])) {
+                    $headers[] = 'Content-Type: application/x-www-form-urlencoded';
+                }
+            } elseif (!$this->multipart) {
                 $content = is_array($content) ? http_build_query($content) : $content;
             }
         }
@@ -251,6 +254,11 @@ class Client
                 'protocol_version' => 1.1,
                 'header' => implode("\r\n", $headers),
                 'content' => $content,
+            ],
+            'ssl' => [
+                'verify_peer' => true,
+                'verify_peer_name' => true,
+                'allow_self_signed' => false,
             ],
         ]);
 

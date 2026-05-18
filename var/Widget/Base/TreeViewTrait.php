@@ -27,7 +27,7 @@ trait TreeViewTrait
     private function treeViewRowsCallback(Config $rowOptions, string $type, string $func, int $current): void
     {
         if (function_exists($func)) {
-            call_user_func($func, $this, $rowOptions);
+            $func($this, $rowOptions);
             return;
         }
 

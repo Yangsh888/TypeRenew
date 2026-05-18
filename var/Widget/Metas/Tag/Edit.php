@@ -22,11 +22,6 @@ class Edit extends Metas implements ActionInterface
         $this->user->pass('editor');
     }
 
-    /**
-     * 判断标签是否存在
-     *
-     * @param integer $mid 标签主键
-     */
     public function tagExists(int $mid): bool
     {
         $tag = $this->db->fetchRow($this->db->select()
@@ -37,11 +32,6 @@ class Edit extends Metas implements ActionInterface
         return isset($tag);
     }
 
-    /**
-     * 判断标签名称是否可用
-     *
-     * @param string $name 标签名称
-     */
     public function nameExists(string $name): bool
     {
         $select = $this->db->select()
@@ -58,11 +48,6 @@ class Edit extends Metas implements ActionInterface
         return !$tag;
     }
 
-    /**
-     * 判断标签名转换到缩略名后是否合法
-     *
-     * @param string $name 标签名
-     */
     public function nameToSlug(string $name): bool
     {
         if (empty($this->request->slug)) {
@@ -75,11 +60,6 @@ class Edit extends Metas implements ActionInterface
         return true;
     }
 
-    /**
-     * 判断标签缩略名是否存在
-     *
-     * @param string $slug 缩略名
-     */
     public function slugExists(string $slug): bool
     {
         $select = $this->db->select()
@@ -296,7 +276,6 @@ class Edit extends Metas implements ActionInterface
             ->where('type = ? AND count = ?', 'tag', 0)), 'mid');
 
         foreach ($tags as $tag) {
-            // 确认是否已经没有关联了
             $content = $this->db->fetchRow($this->db->select('cid')
                 ->from('table.relationships')->where('mid = ?', $tag)
                 ->limit(1));

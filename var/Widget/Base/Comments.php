@@ -25,14 +25,11 @@ class Comments extends Base implements QueryInterface, RowFilterInterface, Prima
 
     public function getRouterParam(string $key): string
     {
-        switch ($key) {
-            case 'permalink':
-                return $this->parentContent->path;
-            case 'commentPage':
-                return $this->commentPage;
-            default:
-                return '{' . $key . '}';
+        if ($key === 'permalink') {
+            return $this->parentContent->path;
         }
+
+        return $key === 'commentPage' ? (string) $this->commentPage : '{' . $key . '}';
     }
 
     public function insert(array $rows): int
@@ -73,11 +70,11 @@ class Comments extends Base implements QueryInterface, RowFilterInterface, Prima
         $updateCondition = clone $condition;
         $updateComment = $this->db->fetchObject($condition->select('cid')->from('table.comments')->limit(1));
 
-        if ($updateComment) {
-            $cid = $updateComment->cid;
-        } else {
+        if (!$updateComment) {
             return 0;
         }
+
+        $cid = $updateComment->cid;
 
         $preUpdateStruct = [
             'author' => Common::strBy($rows['author'] ?? null),
@@ -120,11 +117,11 @@ class Comments extends Base implements QueryInterface, RowFilterInterface, Prima
         $deleteCondition = clone $condition;
         $deleteComment = $this->db->fetchObject($condition->select('cid')->from('table.comments')->limit(1));
 
-        if ($deleteComment) {
-            $cid = $deleteComment->cid;
-        } else {
+        if (!$deleteComment) {
             return 0;
         }
+
+        $cid = $deleteComment->cid;
 
         $deleteRows = $this->db->query($deleteCondition->delete('table.comments'));
 
@@ -133,7 +130,7 @@ class Comments extends Base implements QueryInterface, RowFilterInterface, Prima
         return $deleteRows;
     }
 
-    private function refreshCommentsNum(int $cid): void
+    protected function refreshCommentsNum(int $cid): void
     {
         $num = $this->db->fetchObject($this->db->select(['COUNT(coid)' => 'num'])->from('table.comments')
             ->where('status = ? AND cid = ?', 'approved', $cid))->num;
@@ -176,13 +173,14 @@ class Comments extends Base implements QueryInterface, RowFilterInterface, Prima
         $autoLink = (null === $autoLink) ? $this->options->commentsShowUrl : $autoLink;
         $noFollow = (null === $noFollow) ? $this->options->commentsUrlNofollow : $noFollow;
 
-        if ($this->url && $autoLink) {
-            echo '<a href="' . Common::safeUrl($this->url) . '"'
-                . ($noFollow ? ' rel="external nofollow"' : null) . '>'
-                . htmlspecialchars($this->author, ENT_QUOTES, 'UTF-8') . '</a>';
-        } else {
+        if (!$this->url || !$autoLink) {
             echo htmlspecialchars($this->author, ENT_QUOTES, 'UTF-8');
+            return;
         }
+
+        echo '<a href="' . Common::safeUrl($this->url) . '"'
+            . ($noFollow ? ' rel="external nofollow"' : null) . '>'
+            . htmlspecialchars($this->author, ENT_QUOTES, 'UTF-8') . '</a>';
     }
 
     public function gravatar(int $size = 32, ?string $default = null, $highRes = false)
@@ -271,12 +269,12 @@ class Comments extends Base implements QueryInterface, RowFilterInterface, Prima
                 $parentRows = $this->db->fetchRow($this->db->select('parent')->from('table.comments')
                     ->where('coid = ? AND status = ?', $parent, 'approved')->limit(1));
 
-                if (!empty($parentRows)) {
-                    $coid = $parent;
-                    $parent = $parentRows['parent'];
-                } else {
+                if (empty($parentRows)) {
                     break;
                 }
+
+                $coid = $parent;
+                $parent = $parentRows['parent'];
             }
 
             $select = $this->db->select('coid', 'parent')

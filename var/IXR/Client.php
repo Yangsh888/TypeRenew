@@ -76,13 +76,6 @@ class Client
         return new self($this->url, $this->prefix . $prefix . '.');
     }
 
-    /**
-     * 增加魔术特性
-     * by 70
-     *
-     * @return mixed
-     * @throws Exception
-     */
     public function __call($method, $args)
     {
         $return = $this->rpcCall($this->prefix . $method, $args);
@@ -94,11 +87,6 @@ class Client
         }
     }
 
-    /**
-     * 获得返回值
-     *
-     * @return mixed
-     */
     public function getResponse()
     {
         // methodResponses can only have one param - return that

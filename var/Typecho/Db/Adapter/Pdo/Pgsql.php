@@ -20,9 +20,6 @@ class Pgsql extends Pdo
         return parent::isAvailable() && in_array('pgsql', \PDO::getAvailableDrivers());
     }
 
-    /**
-     * @throws SQLException
-     */
     public function query(
         string $query,
         $handle,

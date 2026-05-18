@@ -75,6 +75,23 @@ class Backup extends BaseOptions implements ActionInterface
 
     private ?bool $transactionSupported = null;
 
+    private function unlinkTempFile(string $path): void
+    {
+        if ($path === '' || !is_file($path)) {
+            return;
+        }
+
+        set_error_handler(static function (): bool {
+            return true;
+        });
+
+        try {
+            unlink($path);
+        } finally {
+            restore_error_handler();
+        }
+    }
+
     public function listFiles(): array
     {
         if (!is_dir(__TYPECHO_BACKUP_DIR__)) {
@@ -122,9 +139,6 @@ class Backup extends BaseOptions implements ActionInterface
         $this->finish();
     }
 
-    /**
-     * 导出数据
-     */
     private function export()
     {
         $backupFile = tempnam(sys_get_temp_dir(), 'backup_');
@@ -134,7 +148,7 @@ class Backup extends BaseOptions implements ActionInterface
 
         $fp = fopen($backupFile, 'wb');
         if (!$fp) {
-            @unlink($backupFile);
+            $this->unlinkTempFile($backupFile);
             throw new Exception(_t('无法写入临时备份文件'));
         }
 
@@ -147,10 +161,10 @@ class Backup extends BaseOptions implements ActionInterface
             $this->writeBackupFile($fp);
             $size = filesize($backupFile);
             if ($size !== false) {
-                $this->response->setHeader('Content-Length', $size);
+                $this->response->setHeader('Content-Length', (string) $size);
             }
         } catch (Throwable $e) {
-            @unlink($backupFile);
+            $this->unlinkTempFile($backupFile);
             throw $e;
         }
 
@@ -158,9 +172,7 @@ class Backup extends BaseOptions implements ActionInterface
             try {
                 readfile($backupFile);
             } finally {
-                if (is_file($backupFile)) {
-                    @unlink($backupFile);
-                }
+                $this->unlinkTempFile($backupFile);
             }
         }, 'application/octet-stream');
     }
@@ -283,7 +295,10 @@ class Backup extends BaseOptions implements ActionInterface
                 }
             }
 
-            $this->beginImportTransaction();
+            if ($transactionSafe) {
+                $this->db->query('BEGIN');
+                $this->inTransaction = true;
+            }
             $this->clearAllCoreTables();
             $this->importPayload($payload);
 
@@ -292,7 +307,10 @@ class Backup extends BaseOptions implements ActionInterface
             }
 
             $this->pendingLoginUser = $this->resolveLoginUser();
-            $this->commitImportTransaction();
+            if ($this->inTransaction) {
+                $this->db->query('COMMIT');
+                $this->inTransaction = false;
+            }
 
             if ($this->pendingLoginUser !== null) {
                 try {
@@ -312,7 +330,17 @@ class Backup extends BaseOptions implements ActionInterface
             $this->stashReport($report);
             Notice::alloc()->set($messages, 'success');
         } catch (Throwable $e) {
-            $rolledBack = $this->rollbackImportTransaction();
+            $rolledBack = false;
+            if ($this->inTransaction) {
+                try {
+                    $this->db->query('ROLLBACK');
+                    $rolledBack = true;
+                } catch (Throwable) {
+                    $rolledBack = false;
+                } finally {
+                    $this->inTransaction = false;
+                }
+            }
             $messages = [_t('恢复过程中遇到如下错误: %s', $e->getMessage())];
             if (!empty($this->cleared)) {
                 if ($rolledBack) {
@@ -633,9 +661,7 @@ class Backup extends BaseOptions implements ActionInterface
             $this->writeBackupFile($fp);
             return $fileName;
         } catch (Throwable) {
-            if (is_file($path)) {
-                @unlink($path);
-            }
+            $this->unlinkTempFile($path);
             return null;
         }
     }
@@ -672,42 +698,6 @@ class Backup extends BaseOptions implements ActionInterface
                 $this->db->truncate('table.' . $table);
             }
             $this->cleared[$table] = true;
-        }
-    }
-
-    private function beginImportTransaction(): void
-    {
-        if (!$this->supportsTransaction()) {
-            return;
-        }
-
-        $this->db->query('BEGIN');
-        $this->inTransaction = true;
-    }
-
-    private function commitImportTransaction(): void
-    {
-        if (!$this->inTransaction) {
-            return;
-        }
-
-        $this->db->query('COMMIT');
-        $this->inTransaction = false;
-    }
-
-    private function rollbackImportTransaction(): bool
-    {
-        if (!$this->inTransaction) {
-            return false;
-        }
-
-        try {
-            $this->db->query('ROLLBACK');
-            return true;
-        } catch (Throwable) {
-            return false;
-        } finally {
-            $this->inTransaction = false;
         }
     }
 
@@ -1113,7 +1103,7 @@ class Backup extends BaseOptions implements ActionInterface
         $admin = $this->db->fetchRow(
             $this->db->select('uid')
                 ->from('table.users')
-                ->where('group = ?', 'administrator')
+                ->where('table.users.group = ?', 'administrator')
                 ->order('uid', Db::SORT_ASC)
                 ->limit(1)
         );

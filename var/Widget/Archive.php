@@ -271,9 +271,10 @@ class Archive extends Contents
 
         if ($once) {
             require_once $path;
-        } else {
-            require $path;
+            return;
         }
+
+        require $path;
     }
 
     public function execute()
@@ -1039,12 +1040,9 @@ EOF;
 
                     public function getRouterParam(string $key): string
                     {
-                        switch ($key) {
-                            case 'page':
-                                return $this->currentPage;
-                            default:
-                                return $this->pageRow->getRouterParam($key);
-                        }
+                        return $key === 'page'
+                            ? (string) $this->currentPage
+                            : $this->pageRow->getRouterParam($key);
                     }
                 }
             );
@@ -1458,16 +1456,17 @@ EOF;
 
             public function getRouterParam(string $key): string
             {
-                switch ($key) {
-                    case 'year':
-                        return $this->year;
-                    case 'month':
-                        return str_pad($this->month, 2, '0', STR_PAD_LEFT);
-                    case 'day':
-                        return str_pad($this->day, 2, '0', STR_PAD_LEFT);
-                    default:
-                        return '{' . $key . '}';
+                if ($key === 'year') {
+                    return (string) $this->year;
                 }
+
+                if ($key === 'month') {
+                    return str_pad((string) $this->month, 2, '0', STR_PAD_LEFT);
+                }
+
+                return $key === 'day'
+                    ? str_pad((string) $this->day, 2, '0', STR_PAD_LEFT)
+                    : '{' . $key . '}';
             }
         };
 
@@ -1515,12 +1514,7 @@ EOF;
 
             public function getRouterParam(string $key): string
             {
-                switch ($key) {
-                    case 'keywords':
-                        return urlencode($this->keywords);
-                    default:
-                        return '{' . $key . '}';
-                }
+                return $key === 'keywords' ? urlencode($this->keywords) : '{' . $key . '}';
             }
         };
 

@@ -96,18 +96,25 @@ class Profile extends Users implements ActionInterface
         $plugins = Rows::alloc('activated=1');
 
         while ($plugins->next()) {
-            if ($plugins->personalConfig) {
-                [$pluginFileName, $className] = Plugin::portal($plugins->name, $this->options->pluginDir);
+            if (!$plugins->personalConfig) {
+                continue;
+            }
 
-                $form = $this->personalForm($plugins->name, $className, $pluginFileName, $group);
-                if ($this->user->pass($group, true)) {
-                    echo '<section id="personal-' . $plugins->name . '" class="tr-card tr-form-card tr-profile-plugin" data-tr-form-card>';
-                    echo '<div class="tr-card-h"><div class="tr-card-h-inner"><h3>' . $plugins->title . '</h3><div class="tr-card-actions" data-tr-form-actions></div></div></div>';
-                    echo '<div class="tr-card-b">';
-                    $form->render();
-                    echo '</div>';
-                    echo '</section>';
-                }
+            [$pluginFileName, $className] = Plugin::portal($plugins->name, $this->options->pluginDir);
+            require_once $pluginFileName;
+
+            if (!method_exists($className, 'personalConfig')) {
+                continue;
+            }
+
+            $form = $this->personalForm($plugins->name, $className, $pluginFileName, $group);
+            if ($this->user->pass($group, true)) {
+                echo '<section id="personal-' . $plugins->name . '" class="tr-card tr-form-card tr-profile-plugin" data-tr-form-card>';
+                echo '<div class="tr-card-h"><div class="tr-card-h-inner"><h3>' . $plugins->title . '</h3><div class="tr-card-actions" data-tr-form-actions></div></div></div>';
+                echo '<div class="tr-card-b">';
+                $form->render();
+                echo '</div>';
+                echo '</section>';
             }
         }
     }
@@ -271,11 +278,18 @@ class Profile extends Users implements ActionInterface
         }
 
         $password = Password::hash($this->request->password);
+        $authCode = bin2hex(Common::secureRandomBytes(16));
+        $expireAt = \Typecho\Cookie::get('__typecho_remember_remember') ? time() + 30 * 24 * 3600 : 0;
 
         $this->update(
-            ['password' => $password],
+            [
+                'password' => $password,
+                'authCode' => $authCode
+            ],
             $this->db->sql()->where('uid = ?', $this->user->uid)
         );
+        \Typecho\Cookie::set('__typecho_uid', $this->user->uid, $expireAt);
+        \Typecho\Cookie::set('__typecho_authCode', Common::hash($authCode), $expireAt);
 
         Notice::alloc()->highlight('user-' . $this->user->uid);
 
@@ -326,9 +340,10 @@ class Profile extends Users implements ActionInterface
             $pluginName,
             __TYPECHO_ROOT_DIR__ . '/' . __TYPECHO_PLUGIN_DIR__
         );
+        require_once $pluginFileName;
         $info = Plugin::parseInfo($pluginFileName);
 
-        if (!$info['personalConfig'] || !array_key_exists($pluginName, $activatedPlugins)) {
+        if (!array_key_exists($pluginName, $activatedPlugins) || !method_exists($className, 'personalConfig')) {
             throw new \Typecho\Widget\Exception(_t('无法配置插件'), 500);
         }
 
@@ -369,7 +384,12 @@ class Profile extends Users implements ActionInterface
     public function personalConfigHandle(string $className, array $settings): bool
     {
         if (method_exists($className, 'personalConfigHandle')) {
-            call_user_func([$className, 'personalConfigHandle'], $settings, false);
+            $method = new \ReflectionMethod($className, 'personalConfigHandle');
+            if ($method->getNumberOfParameters() < 2) {
+                call_user_func([$className, 'personalConfigHandle'], $settings);
+            } else {
+                call_user_func([$className, 'personalConfigHandle'], $settings, false);
+            }
             return true;
         }
 

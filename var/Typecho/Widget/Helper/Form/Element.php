@@ -32,16 +32,6 @@ abstract class Element extends Layout
 
     protected array $multiline = [];
 
-    /**
-     * 构造函数
-     *
-     * @param string|null $name 表单输入项名称
-     * @param array|null $options 选择项
-     * @param mixed $value 表单默认值
-     * @param string|null $label 表单标题
-     * @param string|null $description 表单描述
-     * @return void
-     */
     public function __construct(
         ?string $name = null,
         ?array $options = null,
@@ -74,11 +64,6 @@ abstract class Element extends Layout
         }
     }
 
-    /**
-     * 供子类覆写的初始化钩子
-     *
-     * @return void
-     */
     public function init()
     {
     }
@@ -115,13 +100,6 @@ abstract class Element extends Layout
         return $this;
     }
 
-    /**
-     * 初始化当前输入项
-     *
-     * @param string|null $name 表单元素名称
-     * @param array|null $options 选择项
-     * @return Layout|null
-     */
     abstract public function input(?string $name = null, ?array $options = null): ?Layout;
 
     /**
@@ -220,11 +198,6 @@ abstract class Element extends Layout
         }
     }
 
-    /**
-     * 设置表单元素值
-     *
-     * @param mixed $value 表单元素值
-     */
     abstract protected function inputValue($value);
 
     protected function filterValue(string $value): string

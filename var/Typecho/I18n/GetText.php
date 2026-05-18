@@ -24,13 +24,6 @@ namespace Typecho\I18n;
 
  */
 
-/**
- * This file is part of PHP-gettext
- *
- * @author Danilo Segan <danilo@kvota.net>, Nico Kaiser <nico@siriux.net>
- * @category typecho
- * @package I18n
- */
 class GetText
 {
     public int $error = 0;

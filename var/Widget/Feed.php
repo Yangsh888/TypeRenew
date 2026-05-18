@@ -83,7 +83,9 @@ class Feed extends Contents
             $feed->setSubTitle($archive->getArchiveDescription());
         }
 
-        $this->checkPermalink($currentFeedUrl);
+        if ($currentFeedUrl != $this->request->getRequestUrl()) {
+            $this->response->redirect($currentFeedUrl, true);
+        }
         $feed->setFeedUrl($currentFeedUrl);
         $this->feed($feed, $feedContentType, $isComments, $archive ?? null);
         $this->feed = $feed;
@@ -167,15 +169,5 @@ class Feed extends Contents
     public function render()
     {
         echo $this->feed;
-    }
-
-    /**
-     * @param string $feedUrl
-     */
-    private function checkPermalink(string $feedUrl)
-    {
-        if ($feedUrl != $this->request->getRequestUrl()) {
-            $this->response->redirect($feedUrl, true);
-        }
     }
 }

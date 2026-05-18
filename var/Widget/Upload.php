@@ -436,12 +436,6 @@ class Upload extends Contents implements ActionInterface
         }
     }
 
-    /**
-     * 上传文件处理函数,如果需要实现自己的文件哈希或者特殊的文件系统,请在options表里把uploadHandle改成自己的函数
-     *
-     * @param array $file 上传的文件
-     * @return mixed
-     */
     public static function uploadHandle(array $file)
     {
         if (empty($file['name'])) {

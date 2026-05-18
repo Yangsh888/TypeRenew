@@ -82,7 +82,16 @@ class Options extends Base implements QueryInterface
         };
 
         if (count($rows) > 1) {
-            $this->runInTransaction($persist);
+            $this->db->query('BEGIN');
+
+            try {
+                $persist();
+                $this->db->query('COMMIT');
+            } catch (\Throwable $throwable) {
+                $this->db->query('ROLLBACK');
+                throw $throwable;
+            }
+
             return;
         }
 
@@ -170,19 +179,6 @@ class Options extends Base implements QueryInterface
         }
 
         return implode(', ', $values);
-    }
-
-    private function runInTransaction(callable $callback): void
-    {
-        $this->db->query('BEGIN');
-
-        try {
-            $callback();
-            $this->db->query('COMMIT');
-        } catch (\Throwable $throwable) {
-            $this->db->query('ROLLBACK');
-            throw $throwable;
-        }
     }
 
     protected function saveSuccessAndGoBack(?string $message = null): void

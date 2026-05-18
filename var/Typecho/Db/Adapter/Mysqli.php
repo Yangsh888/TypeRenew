@@ -22,9 +22,6 @@ class Mysqli implements Adapter
         return extension_loaded('mysqli');
     }
 
-    /**
-     * @throws ConnectionException
-     */
     public function connect(Config $config): \mysqli
     {
         $mysqli = mysqli_init();
@@ -80,9 +77,6 @@ class Mysqli implements Adapter
         return (string) $this->dbLink->server_info;
     }
 
-    /**
-     * @throws SQLException
-     */
     public function query(
         string $query,
         $handle,

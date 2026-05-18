@@ -264,7 +264,7 @@ class Schema
                         . '`scope` varchar(32) NOT NULL,'
                         . '`created` int unsigned NOT NULL default 0,'
                         . 'PRIMARY KEY (`id`)'
-                        . ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=' . $mysqlCollation,
+                        . ') ENGINE=InnoDB ROW_FORMAT=DYNAMIC DEFAULT CHARSET=utf8mb4 COLLATE=' . $mysqlCollation,
                 };
 
             case 'password_resets':

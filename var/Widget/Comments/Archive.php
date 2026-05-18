@@ -35,9 +35,6 @@ class Archive extends Comments
         ]);
     }
 
-    /**
-     * 输出文章评论数
-     */
     public function num(...$args)
     {
         if (empty($args)) {
@@ -126,9 +123,6 @@ class Archive extends Comments
         reset($this->stack);
     }
 
-    /**
-     * 将每行的值压入堆栈
-     */
     public function push(array $value): array
     {
         $value = $this->filter($value);
@@ -196,11 +190,6 @@ class Archive extends Comments
         }
     }
 
-    /**
-     * 列出评论
-     *
-     * @param mixed $singleCommentOptions 单个评论自定义选项
-     */
     public function listComments($singleCommentOptions = null)
     {
         $this->singleCommentOptions = Config::factory($singleCommentOptions);
@@ -301,32 +290,17 @@ class Archive extends Comments
         <?php
     }
 
-    /**
-     * 根据深度余数输出
-     *
-     * @param mixed ...$args 需要输出的值
-     */
     public function levelsAlt(...$args)
     {
         $this->altBy($this->levels, ...$args);
     }
 
-    /**
-     * 重载alt函数,以适应多级评论
-     *
-     * @param ...$args
-     */
     public function alt(...$args)
     {
         $sequence = $this->levels <= 0 ? $this->sequence : $this->order;
         $this->altBy($sequence, ...$args);
     }
 
-    /**
-     * 评论回复链接
-     *
-     * @param string $word 回复链接文字
-     */
     public function reply(string $word = '')
     {
         if ($this->options->commentsThreaded && !$this->isTopLevel && $this->parameter->allowComment) {
@@ -341,9 +315,6 @@ class Archive extends Comments
         }
     }
 
-    /**
-     * 递归输出评论
-     */
     public function threadedComments()
     {
         $children = $this->children;
@@ -365,11 +336,6 @@ class Archive extends Comments
         }
     }
 
-    /**
-     * 取消评论回复链接
-     *
-     * @param string $word 取消回复链接文字
-     */
     public function cancelReply(string $word = '')
     {
         if ($this->options->commentsThreaded) {
@@ -395,17 +361,11 @@ class Archive extends Comments
         return $this->levels > $this->options->commentsMaxNestingLevels - 2;
     }
 
-    /**
-     * 重载评论页码获取
-     */
     protected function ___commentPage(): int
     {
         return $this->currentPage;
     }
 
-    /**
-     * 重载内容获取
-     */
     protected function ___parentContent(): Contents
     {
         return $this->parameter->parentContent;

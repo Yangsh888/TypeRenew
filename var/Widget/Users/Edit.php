@@ -190,10 +190,13 @@ class Edit extends Users implements ActionInterface
         $currentScreenName = (string) $this->screenName;
         $user = $this->request->from('mail', 'screenName', 'password', 'url', 'group');
         $user['screenName'] = Common::strBy($user['screenName'] ?? null, $this->name);
+        $authCode = null;
         if (empty($user['password'])) {
             unset($user['password']);
         } else {
+            $authCode = bin2hex(Common::secureRandomBytes(16));
             $user['password'] = Password::hash($user['password']);
+            $user['authCode'] = $authCode;
         }
 
         try {
@@ -209,6 +212,12 @@ class Edit extends Users implements ActionInterface
         }
         if ($updateRows > 0 && $currentScreenName !== $user['screenName']) {
             $this->syncCommentAuthor((int) $this->request->get('uid'), $user['screenName']);
+        }
+
+        if ($updateRows > 0 && $authCode !== null && (int) $this->request->get('uid') === (int) $this->user->uid) {
+            $expireAt = \Typecho\Cookie::get('__typecho_remember_remember') ? time() + 30 * 24 * 3600 : 0;
+            \Typecho\Cookie::set('__typecho_uid', $this->user->uid, $expireAt);
+            \Typecho\Cookie::set('__typecho_authCode', Common::hash($authCode), $expireAt);
         }
 
         Notice::alloc()->highlight('user-' . $this->request->get('uid'));
@@ -234,7 +243,14 @@ class Edit extends Users implements ActionInterface
                 continue;
             }
 
-            if ($this->ownsPostsOrPages($user)) {
+            $row = $this->db->fetchObject(
+                $this->db->select(['COUNT(cid)' => 'num'])
+                    ->from('table.contents')
+                    ->where('authorId = ?', $user)
+                    ->where('type IN ?', ['post', 'page'])
+            );
+
+            if ((int) ($row->num ?? 0) > 0) {
                 $ownedContentCount++;
                 continue;
             }
@@ -260,18 +276,6 @@ class Edit extends Users implements ActionInterface
         }
 
         $this->response->redirect(Common::url('manage-users.php', $this->options->adminUrl));
-    }
-
-    private function ownsPostsOrPages(int $uid): bool
-    {
-        $row = $this->db->fetchObject(
-            $this->db->select(['COUNT(cid)' => 'num'])
-                ->from('table.contents')
-                ->where('authorId = ?', $uid)
-                ->where('type IN ?', ['post', 'page'])
-        );
-
-        return (int) ($row->num ?? 0) > 0;
     }
 
     private function cleanupUserReferences(int $uid): void

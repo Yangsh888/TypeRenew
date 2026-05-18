@@ -21,16 +21,15 @@ class Package extends BaseOptions implements ActionInterface
         $do = (string) $this->request->get('do');
 
         try {
+            $runner = new Runner();
+
             if ($do === 'upload') {
                 $this->assertEnvironmentReady();
-                $runner = new Runner();
                 $this->upload($runner);
             } elseif ($do === 'apply') {
                 $this->assertEnvironmentReady();
-                $runner = new Runner();
                 $this->apply($runner);
             } elseif ($do === 'clear') {
-                $runner = new Runner();
                 $removed = $runner->clear();
                 Notice::alloc()->set(
                     $removed > 0 ? _t('升级包与临时目录已清理') : _t('当前没有可清理的升级包或临时目录'),

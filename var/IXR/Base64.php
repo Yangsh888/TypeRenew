@@ -2,11 +2,6 @@
 
 namespace IXR;
 
-/**
- * IXR Base64编码
- *
- * @package IXR
- */
 class Base64
 {
     private string $data;

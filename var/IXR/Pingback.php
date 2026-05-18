@@ -124,11 +124,6 @@ class Pingback
         }
     }
 
-    /**
-     * get title
-     *
-     * @return string
-     */
     public function getTitle(): string
     {
         if (preg_match("/<title>([^<]*?)<\/title>/is", $this->html, $matchTitle)) {
@@ -138,12 +133,6 @@ class Pingback
         return (string) (parse_url($this->target, PHP_URL_HOST) ?: '');
     }
 
-    /**
-     * get content
-     *
-     * @return string
-     * @throws Exception
-     */
     public function getContent(): string
     {
         /** 干掉html tag，只留下<a>*/

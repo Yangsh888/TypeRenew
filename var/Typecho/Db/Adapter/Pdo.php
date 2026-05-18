@@ -21,9 +21,6 @@ abstract class Pdo implements Adapter
         return class_exists('PDO');
     }
 
-    /**
-     * @throws ConnectionException
-     */
     public function connect(Config $config): \PDO
     {
         try {
@@ -42,9 +39,6 @@ abstract class Pdo implements Adapter
         return $handle->getAttribute(\PDO::ATTR_SERVER_VERSION);
     }
 
-    /**
-     * @throws SQLException
-     */
     public function query(
         string $query,
         $handle,

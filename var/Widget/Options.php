@@ -83,13 +83,6 @@ class Options extends Base
         echo Common::url($path, $this->index);
     }
 
-    /**
-     * 输出模板路径
-     *
-     * @param string|null $path 子路径
-     * @param string|null $theme 模版名称
-     * @return string | void
-     */
     public function themeUrl(?string $path = null, ?string $theme = null)
     {
         if (!isset($theme)) {
@@ -112,13 +105,6 @@ class Options extends Base
         return Common::url($plugin, $this->pluginDir);
     }
 
-    /**
-     * 输出后台路径
-     *
-     * @param string|null $path 子路径
-     * @param bool $return
-     * @return void|string
-     */
     public function adminUrl(?string $path = null, bool $return = false)
     {
         $url = Common::url($path, $this->adminUrl);
@@ -130,14 +116,6 @@ class Options extends Base
         echo $url;
     }
 
-    /**
-     * 获取或输出后台静态文件路径
-     *
-     * @param string $type
-     * @param string|null $file
-     * @param bool $return
-     * @return void|string
-     */
     public function adminStaticUrl(string $type, ?string $file = null, bool $return = false)
     {
         $url = Common::url($type, $this->adminUrl);
@@ -160,12 +138,6 @@ class Options extends Base
         echo htmlspecialchars((string) ($this->commentsHTMLTagAllowed ?? ''), ENT_QUOTES, 'UTF-8');
     }
 
-    /**
-     * 获取插件系统参数
-     *
-     * @param mixed $pluginName 插件名称
-     * @return mixed
-     */
     public function plugin($pluginName)
     {
         if (!isset($this->pluginConfig[$pluginName])) {
@@ -183,13 +155,6 @@ class Options extends Base
         return $this->pluginConfig[$pluginName];
     }
 
-    /**
-     * 获取个人插件系统参数
-     *
-     * @param mixed $pluginName 插件名称
-     *
-     * @return mixed
-     */
     public function personalPlugin($pluginName)
     {
         if (!isset($this->personalPluginConfig[$pluginName])) {

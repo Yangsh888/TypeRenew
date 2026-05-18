@@ -5,6 +5,7 @@ namespace Widget;
 use Typecho\Common;
 use Typecho\Cookie;
 use Typecho\Widget;
+use Typecho\Widget\Exception;
 use Utils\Password;
 use Widget\Base\Users;
 
@@ -206,7 +207,7 @@ class User extends Users
         if ($return) {
             return false;
         } else {
-            throw new Widget\Exception(_t('禁止访问'), 403);
+            throw new Exception(_t('禁止访问'), 403);
         }
     }
 }

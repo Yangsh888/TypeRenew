@@ -128,12 +128,6 @@ class Router
         return Common::url(vsprintf($route['format'], $pattern), $prefix);
     }
 
-    /**
-     * 设置路由器默认配置
-     *
-     * @param mixed $routes 配置信息
-     * @return void
-     */
     public static function setRoutes($routes)
     {
         if (isset($routes[0])) {
@@ -144,22 +138,11 @@ class Router
         }
     }
 
-    /**
-     * 获取路由信息
-     *
-     * @param string $routeName 路由名称
-     * @return mixed
-     */
     public static function get(string $routeName)
     {
         return self::$routingTable[$routeName] ?? null;
     }
 
-    /**
-     * @param string $pathInfo
-     * @return \Generator
-     * @throws \Exception
-     */
     private static function route(string $pathInfo): \Generator
     {
         foreach (self::$routingTable as $key => $route) {
@@ -170,6 +153,10 @@ class Router
 
                 if (!empty($route['params'])) {
                     unset($matches[0]);
+                    if (count($route['params']) !== count($matches)) {
+                        continue;
+                    }
+
                     $params = array_combine($route['params'], $matches);
                 }
 

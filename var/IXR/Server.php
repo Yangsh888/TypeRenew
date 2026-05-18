@@ -55,10 +55,6 @@ class Server
         return $return;
     }
 
-    /**
-     * @param string $methodName
-     * @return string|Error
-     */
     public function methodHelp(string $methodName)
     {
         if (!$this->hasMethod($methodName)) {
@@ -184,12 +180,6 @@ class Server
         return $args === [] || array_keys($args) === range(0, count($args) - 1);
     }
 
-    /**
-     * 抛出错误
-     * @param integer|Error $error 错误代码
-     * @param string|null $message 错误消息
-     * @return void
-     */
     private function error($error, ?string $message = null)
     {
         // Accepts either an error object or an error code and message
@@ -200,10 +190,6 @@ class Server
         $this->output($error->getXml());
     }
 
-    /**
-     * 输出xml
-     * @param string $xml 输出xml
-     */
     private function output(string $xml)
     {
         $xml = '<?xml version="1.0"?>' . "\n" . $xml;
@@ -311,23 +297,13 @@ class Server
         };
     }
 
-    /**
-     * 是否存在方法
-     * @param string $method 方法名
-     * @return bool
-     */
     private function hasMethod(string $method): bool
     {
-        return in_array($method, array_keys($this->callbacks));
+        return isset($this->callbacks[$method]);
     }
 
-    /**
-     * 设置默认参数
-     * @return void
-     */
     private function setCapabilities()
     {
-        // Initialises capabilities array
         $this->capabilities = [
             'xmlrpc'           => [
                 'specUrl'     => 'http://www.xmlrpc.com/spec',
@@ -344,10 +320,6 @@ class Server
         ];
     }
 
-    /**
-     * 设置默认方法
-     * @return void
-     */
     private function setCallbacks()
     {
         $this->callbacks['system.getCapabilities'] = [$this, 'getCapabilities'];

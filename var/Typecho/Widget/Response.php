@@ -83,11 +83,14 @@ class Response
             $this->response->setContentType($contentType);
         }
 
-        $this->response->setHeader('Content-Length', filesize($file))
-            ->addResponder(function () use ($file) {
-                readfile($file);
-            })
-            ->respond();
+        $length = filesize($file);
+        if ($length !== false) {
+            $this->response->setHeader('Content-Length', (string) $length);
+        }
+
+        $this->response->addResponder(function () use ($file) {
+            readfile($file);
+        })->respond();
     }
 
     public function redirect(string $location, bool $isPermanently = false)

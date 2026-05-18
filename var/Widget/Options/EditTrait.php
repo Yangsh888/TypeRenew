@@ -4,9 +4,6 @@ namespace Widget\Options;
 
 trait EditTrait
 {
-    /**
-     * 以checkbox选项判断是否某个值被启用
-     */
     protected function isEnableByCheckbox($settings, string $name): int
     {
         return is_array($settings) && in_array($name, $settings) ? 1 : 0;

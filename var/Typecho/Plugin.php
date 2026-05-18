@@ -296,6 +296,21 @@ class Plugin
             }
         }
 
+        if (!$info['activate'] && !$info['deactivate'] && !$info['config'] && !$info['personalConfig']) {
+            $fallbackMap = [
+                'activate' => 'activate',
+                'deactivate' => 'deactivate',
+                'config' => 'config',
+                'personalConfig' => 'personalConfig'
+            ];
+
+            foreach ($fallbackMap as $method => $field) {
+                if (preg_match('/function\s+' . preg_quote($method, '/') . '\s*\(/i', $source) === 1) {
+                    $info[$field] = true;
+                }
+            }
+        }
+
         return $info;
     }
 

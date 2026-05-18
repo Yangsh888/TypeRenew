@@ -94,18 +94,12 @@ class Admin extends Users
         $nav->render('&laquo;', '&raquo;');
     }
 
-    /**
-     * 仅仅输出域名和路径
-     */
     protected function ___domainPath(): string
     {
         $parts = \Typecho\Common::parseUrl((string) $this->url);
         return (string) ($parts['host'] ?? '') . (string) ($parts['path'] ?? '');
     }
 
-    /**
-     * 发布文章数
-     */
     protected function ___postsNum(): int
     {
         if (isset($this->row['postsNum'])) {

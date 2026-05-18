@@ -16,11 +16,6 @@ class Date
     public string $day;
     private \DateTimeImmutable $dateTime;
 
-    /**
-     * 初始化参数
-     *
-     * @param integer|null $time 时间戳
-     */
     public function __construct(?int $time = null)
     {
         $this->timeStamp = null === $time ? self::time() : $time;
@@ -31,11 +26,6 @@ class Date
         $this->day = $this->dateTime->format('d');
     }
 
-    /**
-     * 设置当前期望的时区偏移
-     *
-     * @param integer $offset
-     */
     public static function setTimezoneOffset(int $offset)
     {
         self::$timezoneId = null;
@@ -50,30 +40,16 @@ class Date
         self::$serverTimezoneOffset = Zone::serverOffsetAt(self::time());
     }
 
-    /**
-     * 获取格式化时间
-     *
-     * @param string $format 时间格式
-     * @return string
-     */
     public function format(string $format): string
     {
         return $this->dateTime->format($format);
     }
 
-    /**
-     * 获取国际化偏移时间
-     * @return string
-     */
     public function word(): string
     {
         return Zone::word($this->timeStamp, self::time(), self::$timezoneId, self::$timezoneOffset);
     }
 
-    /**
-     * 获取服务器时间
-     * @return int
-     */
     public static function time(): int
     {
         return self::$serverTimeStamp ?: (self::$serverTimeStamp = time());

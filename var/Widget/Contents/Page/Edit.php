@@ -221,11 +221,11 @@ class Edit extends Contents implements ActionInterface
             }
         }
 
-        if (!$this->request->isAjax()) {
-            $this->response->goBack();
-        } else {
+        if ($this->request->isAjax()) {
             $this->response->throwJson(['success' => 1, 'message' => _t('页面排序已经完成')]);
         }
+
+        $this->response->goBack();
     }
 
     public function prepare(): self

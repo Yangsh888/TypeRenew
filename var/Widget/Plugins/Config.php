@@ -44,11 +44,15 @@ class Config extends Options
         $plugins = Plugin::export();
         $activatedPlugins = $plugins['activated'];
 
-        if (!$this->info['config'] || !array_key_exists($pluginName, $activatedPlugins)) {
+        if (!array_key_exists($pluginName, $activatedPlugins)) {
             throw new Exception(_t('无法配置插件'), 500);
         }
 
         require_once $this->pluginFileName;
+        if (!method_exists($this->className, 'config')) {
+            throw new Exception(_t('无法配置插件'), 500);
+        }
+
         $form = new Form($this->security->getIndex('/action/plugins-edit?config=' . $pluginName), Form::POST_METHOD);
         call_user_func([$this->className, 'config'], $form);
 

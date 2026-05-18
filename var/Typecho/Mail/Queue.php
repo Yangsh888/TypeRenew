@@ -382,13 +382,24 @@ class Queue
             return ['pending' => 0, 'failed' => 0, 'dead' => 0, 'sent' => 0, 'lastFail' => null, 'recentFails' => []];
         }
 
+        try {
+            $recentFails = $db->fetchAll(
+                $db->select('id', 'type', 'status', 'attempts', 'lastError', 'updated')->from('table.mail_queue')
+                    ->where('(status = ? OR status = ?)', 'failed', 'dead')
+                    ->order('updated', Db::SORT_DESC)
+                    ->limit(8)
+            );
+        } catch (\Throwable $e) {
+            $recentFails = [];
+        }
+
         return [
             'pending' => $pending,
             'failed' => $failed,
             'dead' => $dead,
             'sent' => $sent,
             'lastFail' => $lastFail ?: null,
-            'recentFails' => self::recentFails($db, 8)
+            'recentFails' => is_array($recentFails) ? $recentFails : []
         ];
     }
 
@@ -544,14 +555,20 @@ class Queue
 
     public static function buildTransport(Options $options): Transport
     {
-        return self::transportName($options) === 'mail'
+        return (string) ($options->mailTransport ?? 'smtp') === 'mail'
             ? new Native()
             : new Smtp(self::smtpConfig($options));
     }
 
     private static function sendMessage(Message $message, Options $options): bool|string
     {
-        self::normalizeMessageSender($message, $options);
+        $sender = self::senderDefaults($options);
+        if (trim($message->from) === '') {
+            $message->from = $sender['from'];
+        }
+        if (trim($message->fromName) === '') {
+            $message->fromName = $sender['fromName'];
+        }
 
         if (trim($message->to) === '' || !filter_var($message->to, FILTER_VALIDATE_EMAIL)) {
             return 'Invalid recipient email';
@@ -610,39 +627,6 @@ class Queue
             'secure' => (string) ($options->mailSmtpSecure ?? ''),
             'timeout' => 10
         ];
-    }
-
-    private static function transportName(Options $options): string
-    {
-        return (string) ($options->mailTransport ?? 'smtp');
-    }
-
-    private static function normalizeMessageSender(Message $message, Options $options): void
-    {
-        $sender = self::senderDefaults($options);
-
-        if (trim($message->from) === '') {
-            $message->from = $sender['from'];
-        }
-        if (trim($message->fromName) === '') {
-            $message->fromName = $sender['fromName'];
-        }
-    }
-
-    private static function recentFails(Db $db, int $limit): array
-    {
-        try {
-            $rows = $db->fetchAll(
-                $db->select('id', 'type', 'status', 'attempts', 'lastError', 'updated')->from('table.mail_queue')
-                    ->where('(status = ? OR status = ?)', 'failed', 'dead')
-                    ->order('updated', Db::SORT_DESC)
-                    ->limit(max(1, min(50, $limit)))
-            );
-        } catch (\Throwable $e) {
-            return [];
-        }
-
-        return is_array($rows) ? $rows : [];
     }
 
     private static function insertQueueRow(Db $db, array $rows): void

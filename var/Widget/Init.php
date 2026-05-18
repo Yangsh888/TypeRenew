@@ -25,7 +25,9 @@ class Init extends Widget
         if (!defined('__TYPECHO_DEBUG__') || !__TYPECHO_DEBUG__) {
             set_exception_handler(function (\Throwable $exception) {
                 Response::getInstance()->clean();
-                ob_end_clean();
+                while (ob_get_level() > 0) {
+                    ob_end_clean();
+                }
 
                 ob_start(function ($content) {
                     Response::getInstance()->sendHeaders();

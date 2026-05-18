@@ -11,9 +11,6 @@ trait PgsqlTrait
     private bool $compatibleInsert = false;
     private ?string $lastInsertTable = null;
 
-    /**
-     * @throws SQLException
-     */
     public function truncate(string $table, $handle)
     {
         $this->query('TRUNCATE TABLE ' . $this->quoteColumn($table) . ' RESTART IDENTITY', $handle);
@@ -29,9 +26,6 @@ trait PgsqlTrait
         return '"' . $string . '"';
     }
 
-    /**
-     * @throws SQLException
-     */
     protected function prepareQuery(string &$query, $handle, ?string $action = null, ?string $table = null)
     {
         if (Db::INSERT == $action && !empty($table)) {
@@ -68,9 +62,6 @@ WHERE
         }
     }
 
-    /**
-     * @throws SQLException
-     */
     public function lastInsertId($resource, $handle): int
     {
         $lastTable = $this->lastInsertTable;

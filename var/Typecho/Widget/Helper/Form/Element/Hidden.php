@@ -12,28 +12,16 @@ class Hidden extends Element
 {
     use TextInputTrait;
 
-    /**
-     * 初始化时隐藏容器
-     *
-     * @return void
-     */
     public function init()
     {
         $this->setAttribute('style', 'display:none');
     }
 
-    /**
-     * @param string $value
-     * @return string
-     */
     protected function filterValue(string $value): string
     {
         return htmlspecialchars($value);
     }
 
-    /**
-     * @return string
-     */
     protected function getType(): string
     {
         return 'hidden';

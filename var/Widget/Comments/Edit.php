@@ -18,22 +18,12 @@ class Edit extends Comments implements ActionInterface
 
     public function waitingComment()
     {
-        $comments = $this->request->filter('int')->getArray('coid');
-        $updateRows = 0;
-
-        foreach ($comments as $comment) {
-            if ($this->mark($comment, 'waiting')) {
-                $updateRows++;
-            }
-        }
-
-        Notice::alloc()
-            ->set(
-                $updateRows > 0 ? _t('评论已经被标记为待审核') : _t('没有评论被标记为待审核'),
-                $updateRows > 0 ? 'success' : 'notice'
-            );
-
-        $this->response->goBack();
+        $this->markComments(
+            $this->request->filter('int')->getArray('coid'),
+            'waiting',
+            _t('评论已经被标记为待审核'),
+            _t('没有评论被标记为待审核')
+        );
     }
 
     public function commentIsWriteable(?Query $condition = null): bool
@@ -67,15 +57,7 @@ class Edit extends Comments implements ActionInterface
 
             $this->db->query($this->db->update('table.comments')
                 ->rows(['status' => $status])->where('coid = ?', $coid));
-
-            if ('approved' == $comment['status'] && 'approved' != $status) {
-                $this->db->query($this->db->update('table.contents')
-                    ->expression('commentsNum', 'commentsNum - 1')
-                    ->where('cid = ? AND commentsNum > 0', $comment['cid']));
-            } elseif ('approved' != $comment['status'] && 'approved' == $status) {
-                $this->db->query($this->db->update('table.contents')
-                    ->expression('commentsNum', 'commentsNum + 1')->where('cid = ?', $comment['cid']));
-            }
+            $this->refreshCommentsNum((int) $comment['cid']);
 
             if ('approved' != $comment['status'] && 'approved' == $status) {
                 \Typecho\Mail\Queue::enqueueComment($this, 'approved', $this->options);
@@ -91,42 +73,22 @@ class Edit extends Comments implements ActionInterface
 
     public function spamComment()
     {
-        $comments = $this->request->filter('int')->getArray('coid');
-        $updateRows = 0;
-
-        foreach ($comments as $comment) {
-            if ($this->mark($comment, 'spam')) {
-                $updateRows++;
-            }
-        }
-
-        Notice::alloc()
-            ->set(
-                $updateRows > 0 ? _t('评论已经被标记为垃圾') : _t('没有评论被标记为垃圾'),
-                $updateRows > 0 ? 'success' : 'notice'
-            );
-
-        $this->response->goBack();
+        $this->markComments(
+            $this->request->filter('int')->getArray('coid'),
+            'spam',
+            _t('评论已经被标记为垃圾'),
+            _t('没有评论被标记为垃圾')
+        );
     }
 
     public function approvedComment()
     {
-        $comments = $this->request->filter('int')->getArray('coid');
-        $updateRows = 0;
-
-        foreach ($comments as $comment) {
-            if ($this->mark($comment, 'approved')) {
-                $updateRows++;
-            }
-        }
-
-        Notice::alloc()
-            ->set(
-                $updateRows > 0 ? _t('评论已经被通过') : _t('没有评论被通过'),
-                $updateRows > 0 ? 'success' : 'notice'
-            );
-
-        $this->response->goBack();
+        $this->markComments(
+            $this->request->filter('int')->getArray('coid'),
+            'approved',
+            _t('评论已经被通过'),
+            _t('没有评论被通过')
+        );
     }
 
     public function deleteComment()
@@ -141,13 +103,7 @@ class Edit extends Comments implements ActionInterface
             if ($comment && $this->commentIsWriteable()) {
                 self::pluginHandle()->call('delete', $comment, $this);
                 $this->reparentChildren((int) $coid, (int) ($comment['parent'] ?? 0));
-
-                $this->db->query($this->db->delete('table.comments')->where('coid = ?', $coid));
-
-                if ('approved' == $comment['status']) {
-                    $this->db->query($this->db->update('table.contents')
-                        ->expression('commentsNum', 'commentsNum - 1')->where('cid = ?', $comment['cid']));
-                }
+                $this->delete($this->db->sql()->where('coid = ?', $coid));
 
                 self::pluginHandle()->call('finishDelete', $comment, $this);
 
@@ -157,27 +113,7 @@ class Edit extends Comments implements ActionInterface
             }
         }
 
-        if ($this->request->isAjax()) {
-            if ($deleteRows > 0) {
-                $this->response->throwJson([
-                    'success' => 1,
-                    'message' => _t('删除评论成功')
-                ]);
-            } else {
-                $this->response->throwJson([
-                    'success' => 0,
-                    'message' => _t('删除评论失败')
-                ]);
-            }
-        } else {
-            Notice::alloc()
-                ->set(
-                    $deleteRows > 0 ? _t('评论已经被删除') : _t('没有评论被删除'),
-                    $deleteRows > 0 ? 'success' : 'notice'
-                );
-
-            $this->response->goBack();
-        }
+        $this->respondDeleteResult($deleteRows);
     }
 
     public function deleteSpamComment()
@@ -263,10 +199,7 @@ class Edit extends Comments implements ActionInterface
         }
 
         if ($this->request->is('status')) {
-            $status = $this->normalizeEditableStatus($this->request->get('status'));
-            if ($status !== null) {
-                $comment['status'] = $status;
-            }
+            $comment['status'] = $this->request->get('status');
         }
 
         $updatedComment = $this->editCommentData($coid, $comment);
@@ -403,6 +336,36 @@ class Edit extends Comments implements ActionInterface
                 error_log('Widget.Comments.Edit.purgeCommentCache.plugin: ' . $e->getMessage());
             }
         });
+    }
+
+    private function markComments(array $comments, string $status, string $successMessage, string $emptyMessage): void
+    {
+        $updateRows = 0;
+
+        foreach ($comments as $comment) {
+            if ($this->mark((int) $comment, $status)) {
+                $updateRows++;
+            }
+        }
+
+        Notice::alloc()->set($updateRows > 0 ? $successMessage : $emptyMessage, $updateRows > 0 ? 'success' : 'notice');
+        $this->response->goBack();
+    }
+
+    private function respondDeleteResult(int $deleteRows): void
+    {
+        if ($this->request->isAjax()) {
+            $this->response->throwJson([
+                'success' => $deleteRows > 0 ? 1 : 0,
+                'message' => $deleteRows > 0 ? _t('删除评论成功') : _t('删除评论失败')
+            ]);
+        }
+
+        Notice::alloc()->set(
+            $deleteRows > 0 ? _t('评论已经被删除') : _t('没有评论被删除'),
+            $deleteRows > 0 ? 'success' : 'notice'
+        );
+        $this->response->goBack();
     }
 
     private function purgeCommentCacheForTransition(?string $beforeStatus, ?string $afterStatus): void

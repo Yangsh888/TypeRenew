@@ -23,11 +23,6 @@ class Edit extends Metas implements ActionInterface
         $this->user->pass('editor');
     }
 
-    /**
-     * 判断分类是否存在
-     *
-     * @param integer $mid 分类主键
-     */
     public function categoryExists(int $mid): bool
     {
         $category = $this->db->fetchRow($this->db->select()
@@ -38,10 +33,6 @@ class Edit extends Metas implements ActionInterface
         return isset($category);
     }
 
-    /**
-     * 判断分类名称是否可用
-     * @param string $name 分类名称
-     */
     public function nameExists(string $name): bool
     {
         $select = $this->db->select()
@@ -61,11 +52,6 @@ class Edit extends Metas implements ActionInterface
         return !$category;
     }
 
-    /**
-     * 判断分类名转换到缩略名后是否合法
-     *
-     * @param string $name 分类名
-     */
     public function nameToSlug(string $name): bool
     {
         if (empty($this->request->slug)) {
@@ -78,11 +64,6 @@ class Edit extends Metas implements ActionInterface
         return true;
     }
 
-    /**
-     * 判断分类缩略名是否存在
-     *
-     * @param string $slug 缩略名
-     */
     public function slugExists(string $slug): bool
     {
         $select = $this->db->select()
@@ -345,11 +326,11 @@ class Edit extends Metas implements ActionInterface
             $this->sort($categories, 'category');
         }
 
-        if (!$this->request->isAjax()) {
-            $this->response->redirect(Common::url('manage-categories.php', $this->options->adminUrl));
-        } else {
+        if ($this->request->isAjax()) {
             $this->response->throwJson(['success' => 1, 'message' => _t('分类排序已经完成')]);
         }
+
+        $this->response->redirect(Common::url('manage-categories.php', $this->options->adminUrl));
     }
 
     public function refreshCategory()

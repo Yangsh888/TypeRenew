@@ -6,6 +6,8 @@ use Typecho\Widget\Terminal;
 
 class Response
 {
+    private const COOKIE_UNIX_TIMESTAMP_MIN = 946684800;
+
     private const HTTP_CODE = [
         100 => 'Continue',
         101 => 'Switching Protocols',
@@ -23,6 +25,7 @@ class Response
         304 => 'Not Modified',
         305 => 'Use Proxy',
         307 => 'Temporary Redirect',
+        308 => 'Permanent Redirect',
         400 => 'Bad Request',
         401 => 'Unauthorized',
         402 => 'Payment Required',
@@ -41,6 +44,7 @@ class Response
         415 => 'Unsupported Media Type',
         416 => 'Requested Range Not Satisfiable',
         417 => 'Expectation Failed',
+        429 => 'Too Many Requests',
         500 => 'Internal Server Error',
         501 => 'Not Implemented',
         502 => 'Bad Gateway',
@@ -66,11 +70,6 @@ class Response
         $this->clean();
     }
 
-    /**
-     * 获取单例句柄
-     *
-     * @return Response
-     */
     public static function getInstance(): Response
     {
         if (!isset(self::$instance)) {
@@ -92,9 +91,6 @@ class Response
         return $this;
     }
 
-    /**
-     * @param bool $enable
-     */
     public function enableAutoSendHeaders(bool $enable = true)
     {
         $this->enableAutoSendHeaders = $enable;
@@ -127,7 +123,7 @@ class Response
             $sentHeaders[] = strtolower(trim($key));
         }
 
-        header('HTTP/1.1 ' . $this->status . ' ' . self::HTTP_CODE[$this->status], true, $this->status);
+        header('HTTP/1.1 ' . $this->status . ' ' . (self::HTTP_CODE[$this->status] ?? ''), true, $this->status);
 
         foreach ($this->headers as $name => $value) {
             if (!in_array(strtolower($name), $sentHeaders)) {
@@ -138,10 +134,7 @@ class Response
         foreach ($this->cookies as $cookie) {
             [$key, $value, $timeout, $path, $domain, $secure, $httponly, $sameSite] = $cookie;
 
-            if ($timeout > 0) {
-                $now = time();
-                $timeout += $timeout > $now - 86400 ? 0 : $now;
-            } elseif ($timeout < 0) {
+            if ($timeout < 0) {
                 $timeout = 1;
             }
 
@@ -167,7 +160,7 @@ class Response
         }
 
         foreach ($this->responders as $responder) {
-            call_user_func($responder, $this);
+            $responder($this);
         }
 
         if (!empty($this->backgroundResponders)) {
@@ -175,7 +168,7 @@ class Response
 
             foreach ($this->backgroundResponders as $responder) {
                 try {
-                    call_user_func($responder, $this);
+                    $responder($this);
                 } catch (\Throwable $e) {
                     error_log('Response.background: ' . $e->getMessage());
                 }
@@ -230,41 +223,25 @@ class Response
 
     public function setStatus(int $code): Response
     {
-        if (!$this->sandbox) {
-            $this->status = $code;
+        if ($this->sandbox) {
+            return $this;
         }
 
+        $this->status = $code >= 100 && $code < 600 ? $code : 500;
         return $this;
     }
 
-    /**
-     * 设置http头
-     *
-     * @param string $name 名称
-     * @param string $value 对应值
-     */
     public function setHeader(string $name, string $value): Response
     {
-        if (!$this->sandbox) {
-            $name = str_replace(' ', '-', ucwords(str_replace('-', ' ', $name)));
-            $this->headers[$name] = $value;
+        if ($this->sandbox) {
+            return $this;
         }
 
+        $name = str_replace(' ', '-', ucwords(str_replace('-', ' ', $name)));
+        $this->headers[$name] = $value;
         return $this;
     }
 
-    /**
-     * 设置指定的COOKIE值
-     *
-     * @param string $key 指定的参数
-     * @param mixed $value 设置的值
-     * @param integer $timeout 过期时间,默认为0,表示随会话时间结束
-     * @param string $path 路径信息
-     * @param string|null $domain 域名信息
-     * @param bool $secure 是否仅可通过安全的 HTTPS 连接传给客户端
-     * @param bool $httponly 是否仅可通过 HTTP 协议访问
-     * @param string $sameSite 同站策略
-     */
     public function setCookie(
         string $key,
         $value,
@@ -275,29 +252,52 @@ class Response
         bool $httponly = false,
         string $sameSite = 'Lax'
     ): Response {
-        if (!$this->sandbox) {
-            $sameSite = ucfirst(strtolower(trim($sameSite)));
-            if (!in_array($sameSite, ['Lax', 'Strict', 'None'], true)) {
-                $sameSite = 'Lax';
-            }
-            $this->cookies[] = [$key, $value, $timeout, $path, $domain, $secure, $httponly, $sameSite];
+        if ($this->sandbox) {
+            return $this;
         }
 
+        $sameSite = ucfirst(strtolower(trim($sameSite)));
+        if (!in_array($sameSite, ['Lax', 'Strict', 'None'], true)) {
+            $sameSite = 'Lax';
+        }
+        if ($sameSite === 'None' && !$secure) {
+            $sameSite = 'Lax';
+        }
+        $this->cookies[] = [
+            $key,
+            $value,
+            $this->normalizeCookieExpires($timeout),
+            $path,
+            $domain,
+            $secure,
+            $httponly,
+            $sameSite
+        ];
         return $this;
     }
 
-    /**
-     * 在http头部请求中声明类型和字符集
-     *
-     * @param string $contentType 文档类型
-     */
-    public function setContentType(string $contentType): Response
+    private function normalizeCookieExpires(int $timeout): int
     {
-        if (!$this->sandbox) {
-            $this->contentType = $contentType;
-            $this->setHeader('Content-Type', $this->contentType . '; charset=' . $this->charset);
+        if ($timeout <= 0) {
+            return $timeout;
         }
 
+        // Prefer absolute Unix timestamps; keep legacy TTL support for older callers/plugins.
+        if ($timeout < self::COOKIE_UNIX_TIMESTAMP_MIN) {
+            return time() + $timeout;
+        }
+
+        return $timeout;
+    }
+
+    public function setContentType(string $contentType): Response
+    {
+        if ($this->sandbox) {
+            return $this;
+        }
+
+        $this->contentType = $contentType;
+        $this->setHeader('Content-Type', $this->contentType . '; charset=' . $this->charset);
         return $this;
     }
 
@@ -306,39 +306,34 @@ class Response
         return $this->charset;
     }
 
-    /**
-     * 设置默认回执编码
-     *
-     * @param string $charset 字符集
-     */
     public function setCharset(string $charset): Response
     {
-        if (!$this->sandbox) {
-            $this->charset = $charset;
-            $this->setHeader('Content-Type', $this->contentType . '; charset=' . $this->charset);
+        if ($this->sandbox) {
+            return $this;
         }
 
+        $this->charset = $charset;
+        $this->setHeader('Content-Type', $this->contentType . '; charset=' . $this->charset);
         return $this;
     }
 
-    /**
-     * @param callable $responder
-     */
     public function addResponder(callable $responder): Response
     {
-        if (!$this->sandbox) {
-            $this->responders[] = $responder;
+        if ($this->sandbox) {
+            return $this;
         }
 
+        $this->responders[] = $responder;
         return $this;
     }
 
     public function addBackgroundResponder(callable $responder): Response
     {
-        if (!$this->sandbox) {
-            $this->backgroundResponders[] = $responder;
+        if ($this->sandbox) {
+            return $this;
         }
 
+        $this->backgroundResponders[] = $responder;
         return $this;
     }
 }

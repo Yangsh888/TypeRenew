@@ -8,9 +8,6 @@ trait SQLiteTrait
 
     private bool $isSQLite2 = false;
 
-    /**
-     * @throws SQLException
-     */
     public function truncate(string $table, $handle)
     {
         $this->query('DELETE FROM ' . $this->quoteColumn($table), $handle);

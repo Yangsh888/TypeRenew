@@ -25,11 +25,6 @@ class Edit extends Contents implements ActionInterface
         $this->user->pass('contributor');
     }
 
-    /**
-     * 判断文件名转换到缩略名后是否合法
-     *
-     * @param string $name 文件名
-     */
     public function nameToSlug(string $name): bool
     {
         if (empty($this->request->slug)) {
@@ -42,11 +37,6 @@ class Edit extends Contents implements ActionInterface
         return true;
     }
 
-    /**
-     * 判断文件缩略名是否可用
-     *
-     * @param string $slug 缩略名
-     */
     public function slugExists(string $slug): bool
     {
         $select = $this->db->select()
@@ -169,17 +159,17 @@ class Edit extends Contents implements ActionInterface
         $this->deleteByIds($posts, $deleteCount);
 
         if ($this->request->isAjax()) {
-            $this->response->throwJson($deleteCount > 0 ? ['code' => 200, 'message' => _t('文件已经被删除')]
-                : ['code' => 500, 'message' => _t('没有文件被删除')]);
-        } else {
-            Notice::alloc()
-                ->set(
-                    $deleteCount > 0 ? _t('文件已经被删除') : _t('没有文件被删除'),
-                    $deleteCount > 0 ? 'success' : 'notice'
-                );
-
-            $this->response->redirect(Common::url('manage-medias.php', $this->options->adminUrl));
+            $this->response->throwJson([
+                'code' => $deleteCount > 0 ? 200 : 500,
+                'message' => $deleteCount > 0 ? _t('文件已经被删除') : _t('没有文件被删除')
+            ]);
         }
+
+        Notice::alloc()->set(
+            $deleteCount > 0 ? _t('文件已经被删除') : _t('没有文件被删除'),
+            $deleteCount > 0 ? 'success' : 'notice'
+        );
+        $this->response->redirect(Common::url('manage-medias.php', $this->options->adminUrl));
     }
 
     public function clearAttachment()

@@ -35,9 +35,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
  */
 class Stat extends Base
 {
-    /**
-     * @param int $components
-     */
     protected function initComponents(int &$components)
     {
         $components = self::INIT_USER | self::INIT_OPTIONS;

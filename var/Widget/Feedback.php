@@ -171,10 +171,10 @@ class Feedback extends Comments implements ActionInterface
                 }
             }
 
-            $expire = 30 * 24 * 3600;
-            Cookie::set('__typecho_remember_author', $comment['author'], $expire);
-            Cookie::set('__typecho_remember_mail', $comment['mail'], $expire);
-            Cookie::set('__typecho_remember_url', $comment['url'], $expire);
+            $expireAt = time() + 30 * 24 * 3600;
+            Cookie::set('__typecho_remember_author', $comment['author'], $expireAt);
+            Cookie::set('__typecho_remember_mail', $comment['mail'], $expireAt);
+            Cookie::set('__typecho_remember_url', $comment['url'], $expireAt);
         } else {
             $comment['author'] = $this->user->screenName;
             $comment['mail'] = $this->user->mail;

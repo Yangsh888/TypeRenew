@@ -88,11 +88,11 @@ trait EditTrait
             $rows['name'] = $name;
 
             return $this->db->query($this->db->insert('table.fields')->rows($rows));
-        } else {
-            return $this->db->query($this->db->update('table.fields')
-                ->rows($rows)
-                ->where('cid = ? AND name = ?', $cid, $name));
         }
+
+        return $this->db->query($this->db->update('table.fields')
+            ->rows($rows)
+            ->where('cid = ? AND name = ?', $cid, $name));
     }
 
     public function incrIntField(string $name, int $value, int $cid)
@@ -114,21 +114,21 @@ trait EditTrait
                     'int_value'   => $value,
                     'float_value' => 0
                 ]));
-        } else {
-            $struct = [
-                'str_value'   => null,
-                'float_value' => null
-            ];
-
-            if ('int' != $exist['type']) {
-                $struct['type'] = 'int';
-            }
-
-            return $this->db->query($this->db->update('table.fields')
-                ->rows($struct)
-                ->expression('int_value', 'int_value ' . ($value >= 0 ? '+' : '') . $value)
-                ->where('cid = ? AND name = ?', $cid, $name));
         }
+
+        $struct = [
+            'str_value'   => null,
+            'float_value' => null
+        ];
+
+        if ('int' != $exist['type']) {
+            $struct['type'] = 'int';
+        }
+
+        return $this->db->query($this->db->update('table.fields')
+            ->rows($struct)
+            ->expression('int_value', 'int_value ' . ($value >= 0 ? '+' : '') . $value)
+            ->where('cid = ? AND name = ?', $cid, $name));
     }
 
     public function getFieldItems(): array
@@ -180,49 +180,51 @@ trait EditTrait
 
             $func = $this->getThemeFieldsHook();
             if (function_exists($func)) {
-                call_user_func($func, $layout);
+                $func($layout);
             }
         }
 
         $items = $layout->getItems();
         foreach ($items as $item) {
-            if ($item instanceof Element) {
-                $name = $item->input->getAttribute('name');
-
-                $isFieldReadOnly = Contents::pluginHandle()
-                    ->trigger($plugged)->call('isFieldReadOnly', $name);
-                if ($plugged && $isFieldReadOnly) {
-                    continue;
-                }
-
-                if (preg_match("/^fields\[(.+)\]$/", $name, $matches)) {
-                    $name = $matches[1];
-                } else {
-                    $inputName = 'fields[' . $name . ']';
-                    if (preg_match("/^(.+)\[\]$/", $name, $matches)) {
-                        $name = $matches[1];
-                        $inputName = 'fields[' . $name . '][]';
-                    }
-
-                    foreach ($item->inputs as $input) {
-                        $input->setAttribute('name', $inputName);
-                    }
-                }
-
-                if (isset($fields->{$name})) {
-                    $item->value($fields->{$name});
-                }
-
-                $elements = $item->container->getItems();
-                array_shift($elements);
-                $div = new Layout('div');
-
-                foreach ($elements as $el) {
-                    $div->addItem($el);
-                }
-
-                $defaultFields[$name] = [$item->label, $div];
+            if (!($item instanceof Element)) {
+                continue;
             }
+
+            $name = $item->input->getAttribute('name');
+
+            $isFieldReadOnly = Contents::pluginHandle()
+                ->trigger($plugged)->call('isFieldReadOnly', $name);
+            if ($plugged && $isFieldReadOnly) {
+                continue;
+            }
+
+            if (preg_match("/^fields\[(.+)\]$/", $name, $matches)) {
+                $name = $matches[1];
+            } else {
+                $inputName = 'fields[' . $name . ']';
+                if (preg_match("/^(.+)\[\]$/", $name, $matches)) {
+                    $name = $matches[1];
+                    $inputName = 'fields[' . $name . '][]';
+                }
+
+                foreach ($item->inputs as $input) {
+                    $input->setAttribute('name', $inputName);
+                }
+            }
+
+            if (isset($fields->{$name})) {
+                $item->value($fields->{$name});
+            }
+
+            $elements = $item->container->getItems();
+            array_shift($elements);
+            $div = new Layout('div');
+
+            foreach ($elements as $el) {
+                $div->addItem($el);
+            }
+
+            $defaultFields[$name] = [$item->label, $div];
         }
 
         return $defaultFields;
@@ -673,24 +675,27 @@ trait EditTrait
 
     private function checkStatus(array &$contents)
     {
-        if ($this->user->pass('editor', true)) {
-            if (empty($contents['visibility'])) {
-                $contents['status'] = 'publish';
-            } elseif (
-                !in_array($contents['visibility'], ['private', 'waiting', 'publish', 'hidden'])
-            ) {
-                if (empty($contents['password']) || 'password' != $contents['visibility']) {
-                    $contents['password'] = '';
-                }
-                $contents['status'] = 'publish';
-            } else {
-                $contents['status'] = $contents['visibility'];
-                $contents['password'] = '';
-            }
-        } else {
+        if (!$this->user->pass('editor', true)) {
             $contents['status'] = 'waiting';
             $contents['password'] = '';
+            return;
         }
+
+        if (empty($contents['visibility'])) {
+            $contents['status'] = 'publish';
+            return;
+        }
+
+        if (!in_array($contents['visibility'], ['private', 'waiting', 'publish', 'hidden'])) {
+            if (empty($contents['password']) || 'password' != $contents['visibility']) {
+                $contents['password'] = '';
+            }
+            $contents['status'] = 'publish';
+            return;
+        }
+
+        $contents['status'] = $contents['visibility'];
+        $contents['password'] = '';
     }
 
     protected function canWriteAttachment(int $attachmentCid): bool

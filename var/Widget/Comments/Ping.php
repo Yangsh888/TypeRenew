@@ -13,9 +13,6 @@ class Ping extends Comments
 {
     private bool $customSinglePingCallback = false;
 
-    /**
-     * @param Config $parameter
-     */
     protected function initParameter(Config $parameter)
     {
         $parameter->setDefault('parentId=0');
@@ -25,11 +22,6 @@ class Ping extends Comments
         }
     }
 
-    /**
-     * 输出文章回响数
-     *
-     * @param mixed ...$args 评论数格式化数据
-     */
     public function num(...$args)
     {
         if (empty($args)) {
@@ -53,11 +45,6 @@ class Ping extends Comments
         $this->db->fetchAll($select, [$this, 'push']);
     }
 
-    /**
-     * 列出回响
-     *
-     * @param mixed $singlePingOptions 单个回响自定义选项
-     */
     public function listPings($singlePingOptions = null)
     {
         if ($this->have()) {
@@ -108,9 +95,6 @@ class Ping extends Comments
         <?php
     }
 
-    /**
-     * 重载内容获取
-     */
     protected function ___parentContent(): ?array
     {
         return $this->parameter->parentContent;

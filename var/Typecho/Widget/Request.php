@@ -30,22 +30,11 @@ class Request
         $this->params = $params ?? new Config();
     }
 
-    /**
-     * 设置http传递参数
-     * @param string $name 指定的参数
-     * @param mixed $value 参数值
-     * @return void
-     */
     public function setParam(string $name, $value)
     {
         $this->params[$name] = $value;
     }
 
-    /**
-     * 设置多个参数
-     *
-     * @param array $params 参数列表
-     */
     public function setParams(array $params): void
     {
         $this->params->setDefault($params);
@@ -232,7 +221,7 @@ class Request
     private function applyFilterRecursive($value, callable $filter)
     {
         if (!is_array($value)) {
-            return call_user_func($filter, $value);
+            return $filter($value);
         }
 
         foreach ($value as $key => $item) {
@@ -252,7 +241,7 @@ class Request
     private function wrapFilter(callable $filter): callable
     {
         return function ($value) use ($filter) {
-            return call_user_func($filter, $value ?? '');
+            return $filter($value ?? '');
         };
     }
 }

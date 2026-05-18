@@ -13,9 +13,6 @@ trait MysqlTrait
         return DbInfo::resolveMysqlCollation($charset, $serverVersion, $existingCollation);
     }
 
-    /**
-     * @throws SQLException
-     */
     public function truncate(string $table, $handle)
     {
         $this->query('TRUNCATE TABLE ' . $this->quoteColumn($table), $handle);

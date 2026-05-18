@@ -54,12 +54,7 @@ class Users extends Base implements QueryInterface, RowFilterInterface, PrimaryK
 
     public function getRouterParam(string $key): string
     {
-        switch ($key) {
-            case 'uid':
-                return $this->uid;
-            default:
-                return '{' . $key . '}';
-        }
+        return $key === 'uid' ? (string) $this->uid : '{' . $key . '}';
     }
 
     public function select(...$fields): Query
@@ -82,9 +77,6 @@ class Users extends Base implements QueryInterface, RowFilterInterface, PrimaryK
         return $this->db->query($condition->update('table.users')->rows($rows));
     }
 
-    /**
-     * 将注册用户的历史评论作者名同步为当前昵称
-     */
     protected function syncCommentAuthor(int $uid, string $screenName): void
     {
         Comment::syncUserAuthor(

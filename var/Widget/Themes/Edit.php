@@ -96,9 +96,6 @@ class Edit extends Options implements ActionInterface
         return $path;
     }
 
-    /**
-     * 更换外观
-     */
     public function changeTheme(string $theme)
     {
         $theme = trim($theme, './');
@@ -139,22 +136,21 @@ class Edit extends Options implements ActionInterface
         $this->response->goBack();
     }
 
-    /**
-     * 用自有函数处理配置信息
-     */
     public function configHandle(array $settings, bool $isInit): bool
     {
         if (function_exists('themeConfigHandle')) {
-            themeConfigHandle($settings, $isInit);
+            $function = new \ReflectionFunction('themeConfigHandle');
+            if ($function->getNumberOfParameters() < 2) {
+                themeConfigHandle($settings);
+            } else {
+                themeConfigHandle($settings, $isInit);
+            }
             return true;
         }
 
         return false;
     }
 
-    /**
-     * 编辑外观文件
-     */
     public function editThemeFile(string $theme, string $file)
     {
         $path = $this->resolveThemePath($theme, $file);
@@ -175,9 +171,6 @@ class Edit extends Options implements ActionInterface
         }
     }
 
-    /**
-     * 配置外观
-     */
     public function config(string $theme)
     {
         $form = Config::alloc()->config();

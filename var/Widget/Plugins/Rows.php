@@ -36,14 +36,14 @@ class Rows extends Widget
                     $info['name'] = $pluginName;
 
                     $info['dependence'] = Plugin::checkDependence($info['since']);
-                    $info['activated'] = true;
+                    $hasLifecycle = $info['activate']
+                        || $info['deactivate']
+                        || $info['config']
+                        || $info['personalConfig'];
+                    $info['activated'] = !$hasLifecycle || array_key_exists($pluginName, $this->activatedPlugins);
 
-                    if ($info['activate'] || $info['deactivate'] || $info['config'] || $info['personalConfig']) {
-                        $info['activated'] = array_key_exists($pluginName, $this->activatedPlugins);
-
-                        if (array_key_exists($pluginName, $this->activatedPlugins)) {
-                            unset($this->activatedPlugins[$pluginName]);
-                        }
+                    if (array_key_exists($pluginName, $this->activatedPlugins)) {
+                        unset($this->activatedPlugins[$pluginName]);
                     }
 
                     if ($activated === null || $info['activated'] === $activated) {

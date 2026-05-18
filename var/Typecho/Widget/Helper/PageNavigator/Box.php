@@ -10,15 +10,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
 
 class Box extends PageNavigator
 {
-    /**
-     * 输出盒装样式分页栏
-     * @param string $prevWord 上一页文字
-     * @param string $nextWord 下一页文字
-     * @param int $splitPage 分割范围
-     * @param string $splitWord 分割字符
-     * @param array $template
-     * @return void
-     */
     public function render(
         string $prevWord = 'PREV',
         string $nextWord = 'NEXT',

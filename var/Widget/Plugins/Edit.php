@@ -20,9 +20,6 @@ class Edit extends Options implements ActionInterface
 {
     private bool $configNoticed = false;
 
-    /**
-     * 启用插件
-     */
     public function activate($pluginName)
     {
         $pluginName = Plugin::normalizeName((string) $pluginName);
@@ -55,10 +52,14 @@ class Edit extends Options implements ActionInterface
                 $activated = true;
 
                 $form = new Form();
-                call_user_func([$className, 'config'], $form);
+                if (method_exists($className, 'config')) {
+                    call_user_func([$className, 'config'], $form);
+                }
 
                 $personalForm = new Form();
-                call_user_func([$className, 'personalConfig'], $personalForm);
+                if (method_exists($className, 'personalConfig')) {
+                    call_user_func([$className, 'personalConfig'], $personalForm);
+                }
 
                 $options = $form->getValues();
                 $personalOptions = $personalForm->getValues();
@@ -148,9 +149,6 @@ class Edit extends Options implements ActionInterface
         $this->response->goBack();
     }
 
-    /**
-     * 用自有函数处理配置信息
-     */
     public function configHandle(string $pluginName, array $settings, bool $isInit): bool
     {
         [$pluginFileName, $className] = Plugin::portal($pluginName, $this->options->pluginDir);
@@ -165,16 +163,18 @@ class Edit extends Options implements ActionInterface
         }
 
         if (method_exists($className, 'configHandle')) {
-            $className::configHandle($settings, $isInit);
+            $method = new \ReflectionMethod($className, 'configHandle');
+            if ($method->getNumberOfParameters() < 2) {
+                $className::configHandle($settings);
+            } else {
+                $className::configHandle($settings, $isInit);
+            }
             return true;
         }
 
         return false;
     }
 
-    /**
-     * 手动配置插件变量
-     */
     public static function configPlugin(string $pluginName, array $settings, bool $isPersonal = false)
     {
         $db = Db::get();
@@ -247,22 +247,21 @@ class Edit extends Options implements ActionInterface
         }
     }
 
-    /**
-     * 用自有函数处理自定义配置信息
-     */
     public function personalConfigHandle(string $className, array $settings): bool
     {
         if (method_exists($className, 'personalConfigHandle')) {
-            call_user_func([$className, 'personalConfigHandle'], $settings, true);
+            $method = new \ReflectionMethod($className, 'personalConfigHandle');
+            if ($method->getNumberOfParameters() < 2) {
+                call_user_func([$className, 'personalConfigHandle'], $settings);
+            } else {
+                call_user_func([$className, 'personalConfigHandle'], $settings, true);
+            }
             return true;
         }
 
         return false;
     }
 
-    /**
-     * 禁用插件
-     */
     public function deactivate(string $pluginName)
     {
         $pluginName = Plugin::normalizeName($pluginName);

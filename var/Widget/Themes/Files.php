@@ -84,9 +84,6 @@ class Files extends Base
         throw new Widget\Exception('风格文件不存在', 404);
     }
 
-    /**
-     * 判断是否拥有写入权限
-     */
     public static function isWriteable(): bool
     {
         return (!defined('__TYPECHO_THEME_WRITEABLE__') || __TYPECHO_THEME_WRITEABLE__)

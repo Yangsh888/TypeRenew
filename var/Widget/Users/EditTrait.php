@@ -4,33 +4,21 @@ namespace Widget\Users;
 
 trait EditTrait
 {
-    /**
-     * 判断用户名称是否可用
-     */
     public function nameExists(string $name): bool
     {
         return $this->isFieldAvailable('name', $name);
     }
 
-    /**
-     * 判断电子邮件是否可用
-     */
     public function mailExists(string $mail): bool
     {
         return $this->isFieldAvailable('mail', $mail);
     }
 
-    /**
-     * 判断用户昵称是否可用
-     */
     public function screenNameExists(string $screenName): bool
     {
         return $this->isFieldAvailable('screenName', $screenName);
     }
 
-    /**
-     * 判断字段值是否可用
-     */
     private function isFieldAvailable(string $field, string $value): bool
     {
         $select = $this->db->select()

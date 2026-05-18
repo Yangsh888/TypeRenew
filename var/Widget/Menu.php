@@ -236,9 +236,6 @@ class Menu extends Base
         $this->currentUrl = Common::safeUrl($currentUrl);
     }
 
-    /**
-     * 获取当前菜单
-     */
     public function getCurrentMenu(): ?array
     {
         if (
@@ -252,9 +249,6 @@ class Menu extends Base
         return $this->menu[$this->currentParent][3][$this->currentChild];
     }
 
-    /**
-     * 获取当前菜单URL
-     */
     public function getCurrentMenuUrl(): string
     {
         return $this->currentMenuUrl;
@@ -323,9 +317,6 @@ class Menu extends Base
         return $tree;
     }
 
-    /**
-     * 输出父级菜单
-     */
     public function output($class = 'focus', $childClass = 'focus')
     {
         foreach ($this->menu as $key => $node) {

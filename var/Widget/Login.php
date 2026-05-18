@@ -28,10 +28,11 @@ class Login extends Users implements ActionInterface
         $validator = new Validate();
         $validator->addRule('name', 'required', _t('请输入用户名'));
         $validator->addRule('password', 'required', _t('请输入密码'));
-        $expire = 30 * 24 * 3600;
+        $rememberTtl = 30 * 24 * 3600;
+        $rememberExpire = time() + $rememberTtl;
 
         if ($this->request->is('remember=1')) {
-            Cookie::set('__typecho_remember_remember', 1, $expire);
+            Cookie::set('__typecho_remember_remember', 1, $rememberExpire);
         } elseif (Cookie::get('__typecho_remember_remember')) {
             Cookie::delete('__typecho_remember_remember');
         }
@@ -47,7 +48,7 @@ class Login extends Users implements ActionInterface
             $this->request->get('name'),
             $this->request->get('password'),
             false,
-            $this->request->is('remember=1') ? $expire : 0
+            $this->request->is('remember=1') ? $rememberTtl : 0
         );
 
         if (!$valid) {
@@ -112,8 +113,8 @@ class Login extends Users implements ActionInterface
                 continue;
             }
 
-            $basePort = (int) ($base['port'] ?? 0);
-            $candidatePort = (int) ($candidate['port'] ?? 0);
+            $basePort = (int) ($base['port'] ?? ($baseScheme === 'https' ? 443 : 80));
+            $candidatePort = (int) ($candidate['port'] ?? ($candidateScheme === 'https' ? 443 : 80));
             if ($basePort !== $candidatePort) {
                 continue;
             }

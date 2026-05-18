@@ -15,20 +15,11 @@ class Cookie
     private static bool $httponly = true;
     private static string $sameSite = 'Lax';
 
-    /**
-     * 获取前缀
-     * @return string
-     */
     public static function getPrefix(): string
     {
         return self::$prefix;
     }
 
-    /**
-     * 设置前缀
-     *
-     * @param string $url
-     */
     public static function setPrefix(string $url)
     {
         self::$prefix = md5($url);
@@ -39,36 +30,21 @@ class Cookie
         self::$secure = isset($parsed['scheme']) && strtolower((string) $parsed['scheme']) === 'https';
     }
 
-    /**
-     * 获取目录
-     * @return string
-     */
     public static function getPath(): string
     {
         return self::$path;
     }
 
-    /**
-     * @return string
-     */
     public static function getDomain(): string
     {
         return self::$domain;
     }
 
-    /**
-     * @return bool
-     */
     public static function getSecure(): bool
     {
-        return self::$secure ?: false;
+        return self::$secure;
     }
 
-    /**
-     * 设置额外的选项
-     *
-     * @param array $options
-     */
     public static function setOptions(array $options)
     {
         if (array_key_exists('domain', $options)) {
@@ -97,13 +73,6 @@ class Cookie
         }
     }
 
-    /**
-     * 获取指定的COOKIE值
-     *
-     * @param string $key 指定的参数
-     * @param string|null $default 默认的参数
-     * @return mixed
-     */
     public static function get(string $key, ?string $default = null)
     {
         $key = self::$prefix . $key;
@@ -116,13 +85,6 @@ class Cookie
         return $value;
     }
 
-    /**
-     * 设置指定的COOKIE值
-     *
-     * @param string $key 指定的参数
-     * @param mixed $value 设置的值
-     * @param integer $expire 过期时间,默认为0,表示随会话时间结束
-     */
     public static function set(string $key, $value, int $expire = 0)
     {
         $key = self::$prefix . $key;
@@ -139,11 +101,6 @@ class Cookie
         );
     }
 
-    /**
-     * 删除指定的COOKIE值
-     *
-     * @param string $key 指定的参数
-     */
     public static function delete(string $key)
     {
         $key = self::$prefix . $key;

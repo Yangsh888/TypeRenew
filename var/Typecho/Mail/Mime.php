@@ -32,12 +32,17 @@ class Mime
 
     public static function buildAlternativeBody(Message $message, string $boundary): array
     {
+        $text = trim((string) $message->text);
+        if ($text === '') {
+            $text = trim(strip_tags((string) $message->html));
+        }
+
         return [
             '--' . $boundary,
             'Content-Type: text/plain; charset=UTF-8',
             'Content-Transfer-Encoding: base64',
             '',
-            chunk_split(base64_encode(self::plainText($message)), 76, "\r\n"),
+            chunk_split(base64_encode($text), 76, "\r\n"),
             '--' . $boundary,
             'Content-Type: text/html; charset=UTF-8',
             'Content-Transfer-Encoding: base64',
@@ -45,15 +50,5 @@ class Mime
             chunk_split(base64_encode((string) $message->html), 76, "\r\n"),
             '--' . $boundary . '--'
         ];
-    }
-
-    private static function plainText(Message $message): string
-    {
-        $text = trim((string) $message->text);
-        if ($text !== '') {
-            return $text;
-        }
-
-        return trim(strip_tags((string) $message->html));
     }
 }
