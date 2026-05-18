@@ -72,24 +72,6 @@ class Feed
         $this->baseUrl = $baseUrl;
     }
 
-    /**
-     * $item的格式为
-     * <code>
-     * array (
-     *     'title'      =>  'xxx',
-     *     'content'    =>  'xxx',
-     *     'excerpt'    =>  'xxx',
-     *     'date'       =>  'xxx',
-     *     'link'       =>  'xxx',
-     *     'author'     =>  'xxx',
-     *     'comments'   =>  'xxx',
-     *     'commentsUrl'=>  'xxx',
-     *     'commentsFeedUrl' => 'xxx',
-     * )
-     * </code>
-     *
-     * @param array $item
-     */
     public function addItem(array $item)
     {
         $this->items[] = $item;
@@ -315,12 +297,6 @@ xml:base="' . $this->xmlText($this->baseUrl) . '"
         return $result;
     }
 
-    /**
-     * 获取Feed时间格式
-     *
-     * @param integer $stamp 时间戳
-     * @return string
-     */
     public function dateFormat(int $stamp): string
     {
         if (self::RSS2 == $this->type) {

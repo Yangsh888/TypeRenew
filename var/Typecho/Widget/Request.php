@@ -40,11 +40,6 @@ class Request
         $this->params->setDefault($params);
     }
 
-    /**
-     * Add filter to request
-     *
-     * @param string|callable ...$filters
-     */
     public function filter(...$filters): Request
     {
         foreach ($filters as $filter) {
@@ -80,7 +75,7 @@ class Request
 
     public function from(...$params): array
     {
-        return $this->applyFilter(call_user_func_array([$this->request->proxy($this->params), 'from'], $params));
+        return $this->applyFilter($this->request->proxy($this->params)->from(...$params));
     }
 
     public function is(string|array $query): bool
@@ -190,13 +185,6 @@ class Request
         return $this->request->getJsonBody();
     }
 
-    /**
-     * 应用过滤器
-     *
-     * @param mixed $value
-     *
-     * @return mixed
-     */
     private function applyFilter($value)
     {
         if ($this->filter) {
@@ -211,13 +199,7 @@ class Request
         return $value;
     }
 
-    /**
-     * 递归将过滤器应用到数组叶子节点，避免深层值绕过净化链路
-     *
-     * @param mixed $value
-     * @param callable $filter
-     * @return mixed
-     */
+    // 递归处理数组叶子节点，避免深层值绕过过滤链路。
     private function applyFilterRecursive($value, callable $filter)
     {
         if (!is_array($value)) {
@@ -231,13 +213,6 @@ class Request
         return $value;
     }
 
-    /**
-     * Wrap a filter to make sure it always receives a string.
-     *
-     * @param callable $filter
-     *
-     * @return callable
-     */
     private function wrapFilter(callable $filter): callable
     {
         return function ($value) use ($filter) {

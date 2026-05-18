@@ -68,11 +68,6 @@ abstract class Element extends Layout
     {
     }
 
-    /**
-     * 创建表单标题
-     *
-     * @param string $value 标题字符串
-     */
     public function label(string $value): Element
     {
         if (empty($this->label)) {
@@ -84,11 +79,6 @@ abstract class Element extends Layout
         return $this;
     }
 
-    /**
-     * 在容器里增加元素
-     *
-     * @param Layout $item 表单元素
-     */
     public function container(Layout $item): Element
     {
         if (empty($this->container)) {
@@ -102,12 +92,6 @@ abstract class Element extends Layout
 
     abstract public function input(?string $name = null, ?array $options = null): ?Layout;
 
-    /**
-     * 设置表单元素值
-     *
-     * @param mixed $value 表单元素值
-     * @return Element
-     */
     public function value($value): Element
     {
         $this->value = $value;
@@ -115,12 +99,6 @@ abstract class Element extends Layout
         return $this;
     }
 
-    /**
-     * 设置描述信息
-     *
-     * @param string $description 描述信息
-     * @return Element
-     */
     public function description(string $description): Element
     {
         if (empty($this->description)) {
@@ -132,12 +110,6 @@ abstract class Element extends Layout
         return $this;
     }
 
-    /**
-     * 设置提示信息
-     *
-     * @param string $message 提示信息
-     * @return Element
-     */
     public function message(string $message): Element
     {
         if (empty($this->message)) {
@@ -149,11 +121,6 @@ abstract class Element extends Layout
         return $this;
     }
 
-    /**
-     * 多行输出模式
-     *
-     * @return Layout
-     */
     public function multiline(): Layout
     {
         $item = new Layout('span');
@@ -161,11 +128,6 @@ abstract class Element extends Layout
         return $item;
     }
 
-    /**
-     * 多行输出模式
-     *
-     * @return Element
-     */
     public function multiMode(): Element
     {
         foreach ($this->multiline as $item) {
@@ -174,23 +136,12 @@ abstract class Element extends Layout
         return $this;
     }
 
-    /**
-     * 增加验证器
-     *
-     * @param mixed ...$rules
-     */
     public function addRule(...$rules): Element
     {
         $this->rules[] = $rules;
         return $this;
     }
 
-    /**
-     * 统一设置所有输入项的属性值
-     *
-     * @param string $attributeName
-     * @param mixed $attributeValue
-     */
     public function setInputsAttribute(string $attributeName, $attributeValue)
     {
         foreach ($this->inputs as $input) {

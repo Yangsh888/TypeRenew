@@ -21,12 +21,6 @@ class Palette
 
     private static bool $initialized = false;
 
-    /**
-     * 注册单个命令
-     *
-     * @param array $command 命令配置
-     * @return void
-     */
     public static function register(array $command): void
     {
         if (empty($command['id'])) {
@@ -51,12 +45,6 @@ class Palette
         self::$commands[$command['id']] = array_merge($defaults, $command);
     }
 
-    /**
-     * 批量注册命令
-     *
-     * @param array $commands 命令列表
-     * @return void
-     */
     public static function registerAll(array $commands): void
     {
         foreach ($commands as $command) {
@@ -64,43 +52,22 @@ class Palette
         }
     }
 
-    /**
-     * 获取所有命令
-     *
-     * @return array
-     */
     public static function getCommands(): array
     {
         return self::$commands;
     }
 
-    /**
-     * 获取所有分类
-     *
-     * @return array
-     */
     public static function getCategories(): array
     {
         return self::$categories;
     }
 
-    /**
-     * 检查用户权限
-     *
-     * @param string $access 权限级别
-     * @return bool
-     */
     public static function checkAccess(string $access): bool
     {
         $user = User::alloc();
         return $user->pass($access, true);
     }
 
-    /**
-     * 获取过滤后的命令（根据权限）
-     *
-     * @return array
-     */
     public static function getFilteredCommands(): array
     {
         $filtered = [];
@@ -116,11 +83,6 @@ class Palette
         return $filtered;
     }
 
-    /**
-     * 初始化内置命令
-     *
-     * @return void
-     */
     public static function initDefaultCommands(): void
     {
         if (self::$initialized) {
@@ -479,11 +441,6 @@ class Palette
         self::$initialized = true;
     }
 
-    /**
-     * 输出命令面板所需的 JavaScript 配置
-     *
-     * @return void
-     */
     public static function outputConfig(): void
     {
         self::initDefaultCommands();

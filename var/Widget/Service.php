@@ -33,6 +33,9 @@ class Service extends BaseOptions implements ActionInterface
             throw new Exception(_t('禁止访问'), 403);
         }
 
+        $permalinkPart = Common::parseUrl((string) $permalink);
+        $permalinkHost = (string) ($permalinkPart['host'] ?? '');
+
         $this->response->throwFinish();
 
         if (function_exists('ignore_user_abort')) {
@@ -45,8 +48,6 @@ class Service extends BaseOptions implements ActionInterface
 
         if (!empty($data['pingback'])) {
             $links = is_array($data['pingback']) ? $data['pingback'] : [];
-            $permalinkPart = Common::parseUrl((string) $permalink);
-            $permalinkHost = (string) ($permalinkPart['host'] ?? '');
             foreach ($links as $url) {
                 $targetUrl = $this->normalizeServiceUrl($url);
                 if ($targetUrl === null || !$this->isSafeRemoteUrl($targetUrl, $permalinkHost)) {
@@ -87,7 +88,6 @@ class Service extends BaseOptions implements ActionInterface
                             try {
                                 $xmlrpc = new \IXR\Client($xmlrpcUrl);
                                 $xmlrpc->pingback->ping($permalink, $targetUrl);
-                                unset($xmlrpc);
                             } catch (\IXR\Exception $e) {
                                 $this->reportException('sendPingHandle.pingback', $e);
                             }
@@ -95,16 +95,12 @@ class Service extends BaseOptions implements ActionInterface
                     } catch (Client\Exception $e) {
                         $this->reportException('sendPingHandle.spider', $e);
                     }
-
-                    unset($spider);
                 }
             }
         }
 
         if (!empty($data['trackback'])) {
             $links = is_array($data['trackback']) ? $data['trackback'] : [];
-            $permalinkPart = Common::parseUrl((string) $permalink);
-            $permalinkHost = (string) ($permalinkPart['host'] ?? '');
 
             foreach ($links as $url) {
                 $targetUrl = $this->normalizeServiceUrl($url);
@@ -129,8 +125,6 @@ class Service extends BaseOptions implements ActionInterface
                                 'excerpt' => $excerpt
                             ]);
                         $client->send($targetUrl);
-
-                        unset($client);
                     } catch (Client\Exception $e) {
                         $this->reportException('sendPingHandle.trackback', $e);
                     }

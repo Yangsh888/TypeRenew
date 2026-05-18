@@ -14,15 +14,6 @@ class Router
 
     private static bool $matched = false;
 
-    /**
-     * 解析路径
-     *
-     * @param string $pathInfo 全路径
-     * @param mixed $parameter 输入参数
-     * @param bool $once 是否只匹配一次
-     * @return false|Widget
-     * @throws \Exception
-     */
     public static function match(string $pathInfo, $parameter = null, bool $once = true)
     {
         $previousMatched = self::$matched;
@@ -56,11 +47,6 @@ class Router
         }
     }
 
-    /**
-     * 路由分发函数
-     *
-     * @throws RouterException|\Exception
-     */
     public static function dispatch()
     {
         $pathInfo = Request::getInstance()->getPathInfo();
@@ -95,14 +81,6 @@ class Router
         throw new RouterException("Path '{$pathInfo}' not found", 404);
     }
 
-    /**
-     * 路由反解析函数
-     *
-     * @param string $name 路由配置表名称
-     * @param mixed $value 路由填充值
-     * @param string|null $prefix 最终合成路径的前缀
-     * @return string
-     */
     public static function url(
         string $name,
         $value = null,

@@ -15,25 +15,20 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
 
 class Edit extends Options implements ActionInterface
 {
-    private function ignoreFsWarning(callable $callback): void
-    {
-        set_error_handler(static function (): bool {
-            return true;
-        });
-
-        try {
-            $callback();
-        } finally {
-            restore_error_handler();
-        }
-    }
-
     private function writeThemeFile(string $path, string $content, string $file): void
     {
         $directory = dirname($path);
         $tempPath = $directory . DIRECTORY_SEPARATOR . '.' . basename($path) . '.tmp.' . bin2hex(random_bytes(6));
         $backupPath = $directory . DIRECTORY_SEPARATOR . '.' . basename($path) . '.bak.' . bin2hex(random_bytes(6));
         $backupCreated = false;
+        $suppressFsWarning = static function (callable $callback): void {
+            set_error_handler(static fn(): bool => true);
+            try {
+                $callback();
+            } finally {
+                restore_error_handler();
+            }
+        };
 
         $written = file_put_contents($tempPath, $content, LOCK_EX);
         if ($written === false) {
@@ -60,12 +55,12 @@ class Edit extends Options implements ActionInterface
             }
         } finally {
             if (is_file($tempPath)) {
-                $this->ignoreFsWarning(static function () use ($tempPath): void {
+                $suppressFsWarning(static function () use ($tempPath): void {
                     unlink($tempPath);
                 });
             }
             if (is_file($backupPath) && !is_file($path)) {
-                $this->ignoreFsWarning(static function () use ($backupPath, $path): void {
+                $suppressFsWarning(static function () use ($backupPath, $path): void {
                     rename($backupPath, $path);
                 });
             }

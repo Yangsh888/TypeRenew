@@ -63,12 +63,6 @@ class Security extends Base
         return Common::url($this->getTokenUrl($path), $this->options->rootUrl);
     }
 
-    /**
-     * 生成带token的路径
-     *
-     * @param $path
-     * @param string|null $url
-     */
     public function getTokenUrl($path, ?string $url = null): string
     {
         $parts = Common::parseUrl((string) $path);

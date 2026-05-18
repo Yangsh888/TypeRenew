@@ -152,13 +152,6 @@ class User extends Users
             ->where('uid = ?', $user['uid']));
     }
 
-    /**
-     * 只需要提供uid或者完整user数组即可登录的方法, 多用于插件等特殊场合
-     *
-     * @param int | array $uid 用户id或者用户数据数组
-     * @param boolean $temporarily 是否为临时登录，默认为临时登录以兼容以前的方法
-     * @param integer $expire 过期时间
-     */
     public function simpleLogin($uid, bool $temporarily = true, int $expire = 0): bool
     {
         if (is_array($uid)) {
@@ -196,18 +189,18 @@ class User extends Users
         } else {
             if ($return) {
                 return false;
-            } else {
-                //防止循环重定向
-                $this->response->redirect(defined('__TYPECHO_ADMIN__') ? $this->options->loginUrl .
-                    (0 === strpos($this->request->getReferer() ?? '', $this->options->loginUrl) ? '' :
-                        '?referer=' . urlencode($this->request->makeUriByRequest())) : $this->options->siteUrl);
             }
+
+            // 防止循环重定向。
+            $this->response->redirect(defined('__TYPECHO_ADMIN__') ? $this->options->loginUrl .
+                (0 === strpos($this->request->getReferer() ?? '', $this->options->loginUrl) ? '' :
+                    '?referer=' . urlencode($this->request->makeUriByRequest())) : $this->options->siteUrl);
         }
 
         if ($return) {
             return false;
-        } else {
-            throw new Exception(_t('禁止访问'), 403);
         }
+
+        throw new Exception(_t('禁止访问'), 403);
     }
 }

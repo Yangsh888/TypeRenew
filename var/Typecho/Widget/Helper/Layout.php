@@ -18,13 +18,6 @@ class Layout
 
     private $parent;
 
-    /**
-     * 构造函数,设置标签名称
-     *
-     * @param string $tagName 标签名称
-     * @param array|null $attributes 属性列表
-     *
-     */
     public function __construct(string $tagName = 'div', ?array $attributes = null)
     {
         $this->setTagName($tagName);
@@ -36,23 +29,12 @@ class Layout
         }
     }
 
-    /**
-     * 设置表单属性
-     *
-     * @param string $attributeName 属性名称
-     * @param mixed $attributeValue 属性值
-     */
     public function setAttribute(string $attributeName, $attributeValue): Layout
     {
         $this->attributes[$attributeName] = (string) $attributeValue;
         return $this;
     }
 
-    /**
-     * 删除元素
-     *
-     * @param Layout $item 元素
-     */
     public function removeItem(Layout $item): Layout
     {
         unset($this->items[array_search($item, $this->items)]);
@@ -69,21 +51,11 @@ class Layout
         return $this->tagName;
     }
 
-    /**
-     * 设置标签名
-     *
-     * @param string $tagName 标签名
-     */
     public function setTagName(string $tagName)
     {
         $this->tagName = $tagName;
     }
 
-    /**
-     * 移除某个属性
-     *
-     * @param string $attributeName 属性名称
-     */
     public function removeAttribute(string $attributeName): Layout
     {
         if (isset($this->attributes[$attributeName])) {
@@ -98,11 +70,6 @@ class Layout
         return $this->attributes[$attributeName] ?? null;
     }
 
-    /**
-     * 设置是否自闭合
-     *
-     * @param boolean $close 是否自闭合
-     */
     public function setClose(bool $close): Layout
     {
         $this->forceClose = $close;
@@ -114,33 +81,18 @@ class Layout
         return $this->parent;
     }
 
-    /**
-     * 设置父节点
-     *
-     * @param Layout $parent 父节点
-     */
     public function setParent(Layout $parent): Layout
     {
         $this->parent = $parent;
         return $this;
     }
 
-    /**
-     * 增加到某布局元素集合中
-     *
-     * @param Layout $parent 布局对象
-     */
     public function appendTo(Layout $parent): Layout
     {
         $parent->addItem($this);
         return $this;
     }
 
-    /**
-     * 增加元素
-     *
-     * @param Layout $item 元素
-     */
     public function addItem(Layout $item): Layout
     {
         $item->setParent($this);
@@ -148,23 +100,11 @@ class Layout
         return $this;
     }
 
-    /**
-     * 获取属性
-     *
-     * @param string $name 属性名称
-     * @return string|null
-     */
     public function __get(string $name): ?string
     {
         return $this->attributes[$name] ?? null;
     }
 
-    /**
-     * 设置属性
-     *
-     * @param string $name 属性名称
-     * @param string $value 属性值
-     */
     public function __set(string $name, $value): void
     {
         $this->attributes[$name] = (string) $value;
@@ -198,12 +138,6 @@ class Layout
         }
     }
 
-    /**
-     * 设置内部数据
-     *
-     * @param string|null $html 内部数据
-     * @return void|$this
-     */
     public function html(?string $html = null)
     {
         if (null === $html) {

@@ -18,12 +18,6 @@ class AutoP
 
     private array $blocks = [];
 
-    /**
-     * 替换段落的回调函数
-     *
-     * @param array $matches 匹配值
-     * @return string
-     */
     public function replaceBlockCallback(array $matches): string
     {
         $tagMatch = '|' . $matches[1] . '|';
@@ -51,12 +45,6 @@ class AutoP
         return $key;
     }
 
-    /**
-     * 用段落方法处理换行
-     *
-     * @param string $text
-     * @return string
-     */
     private function cutByBlock(string $text): string
     {
         $space = "( |　)";
@@ -72,12 +60,6 @@ class AutoP
         return $text;
     }
 
-    /**
-     * 修复段落开头和结尾
-     *
-     * @param string $text
-     * @return string
-     */
     private function fixParagraph(string $text): string
     {
         $text = trim($text);
@@ -92,12 +74,6 @@ class AutoP
         return $text;
     }
 
-    /**
-     * 自动分段
-     *
-     * @param string $text
-     * @return string
-     */
     public function parse(string $text): string
     {
         $this->uniqueId = 0;
@@ -162,11 +138,6 @@ class AutoP
         return $this->fixParagraph($text);
     }
 
-    /**
-     * 生成唯一的id, 为了速度考虑最多支持1万个tag的处理
-     *
-     * @return string
-     */
     private function makeUniqueId(): string
     {
         return ':' . str_pad($this->uniqueId ++, 4, '0', STR_PAD_LEFT);

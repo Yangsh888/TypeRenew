@@ -21,11 +21,6 @@ class Textarea extends Element
         return $input;
     }
 
-    /**
-     * 设置表单项默认值
-     *
-     * @param mixed $value 表单项默认值
-     */
     protected function inputValue($value)
     {
         $this->input->html(htmlspecialchars($value ?? ''));

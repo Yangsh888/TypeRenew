@@ -29,11 +29,6 @@ class Cloud extends Metas
         $this->db->fetchAll($select, [$this, 'push']);
     }
 
-    /**
-     * 按分割数输出字符串
-     *
-     * @param mixed ...$args 需要输出的值
-     */
     public function split(...$args)
     {
         array_unshift($args, $this->count);

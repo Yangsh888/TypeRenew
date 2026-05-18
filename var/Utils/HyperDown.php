@@ -493,10 +493,6 @@ class HyperDown
         return $text;
     }
 
-    /**
-     * @param string $text
-     * @return string
-     */
     private function parseInlineCallback(string $text): string
     {
         $text = preg_replace_callback(
@@ -572,12 +568,6 @@ class HyperDown
         return $text;
     }
 
-    /**
-     * parseBlock
-     * @param string $text
-     * @param array|null $lines
-     * @return array
-     */
     private function parseBlock(string $text, ?array &$lines): array
     {
         $lines = explode("\n", $text);
@@ -618,13 +608,6 @@ class HyperDown
         return $this->optimizeBlocks($this->_blocks, $lines);
     }
 
-    /**
-     * @param array|null $block
-     * @param int $key
-     * @param string $line
-     * @param array|null $state
-     * @return bool
-     */
     private function parseBlockList(?array $block, int $key, string $line, ?array &$state): bool
     {
         if ($this->isBlock('list') && !preg_match("/^\s*\[((?:[^\]]|\\]|\\[)+?)\]:\s*(.+)$/", $line)) {
@@ -667,13 +650,6 @@ class HyperDown
         return true;
     }
 
-    /**
-     * @param array|null $block
-     * @param int $key
-     * @param string $line
-     * @param array|null $state
-     * @return bool
-     */
     private function parseBlockCode(?array $block, int $key, string $line, ?array &$state): bool
     {
         if (preg_match("/^(\s*)(~{3,}|`{3,})([^`~]*)$/i", $line, $matches)) {
@@ -718,13 +694,6 @@ class HyperDown
         return true;
     }
 
-    /**
-     * @param array|null $block
-     * @param int $key
-     * @param string $line
-     * @param array|null $state
-     * @return bool
-     */
     private function parseBlockShtml(?array $block, int $key, string $line, ?array &$state): bool
     {
         if ($this->_html) {
@@ -745,13 +714,6 @@ class HyperDown
         return true;
     }
 
-    /**
-     * @param array|null $block
-     * @param int $key
-     * @param string $line
-     * @param array|null $state
-     * @return bool
-     */
     private function parseBlockAhtml(?array $block, int $key, string $line, ?array &$state): bool
     {
         if ($this->_html) {
@@ -787,12 +749,6 @@ class HyperDown
         return true;
     }
 
-    /**
-     * @param array|null $block
-     * @param int $key
-     * @param string $line
-     * @return bool
-     */
     private function parseBlockMath(?array $block, int $key, string $line): bool
     {
         if (preg_match("/^(\s*)\\$\\$(\s*)$/", $line)) {
@@ -811,13 +767,6 @@ class HyperDown
         return true;
     }
 
-    /**
-     * @param array|null $block
-     * @param int $key
-     * @param string $line
-     * @param array|null $state
-     * @return bool
-     */
     private function parseBlockPre(?array $block, int $key, string $line, ?array &$state): bool
     {
         if (preg_match("/^ {4}/", $line)) {
@@ -836,13 +785,6 @@ class HyperDown
         return true;
     }
 
-    /**
-     * @param array|null $block
-     * @param int $key
-     * @param string $line
-     * @param array|null $state
-     * @return bool
-     */
     private function parseBlockHtml(?array $block, int $key, string $line, ?array &$state): bool
     {
         if (preg_match("/^\s*<({$state['special']})(\s+[^>]*)?>/i", $line, $matches)) {
@@ -869,12 +811,6 @@ class HyperDown
         return true;
     }
 
-    /**
-     * @param array|null $block
-     * @param int $key
-     * @param string $line
-     * @return bool
-     */
     private function parseBlockFootnote(?array $block, int $key, string $line): bool
     {
         if (preg_match("/^\[\^((?:[^\]]|\\]|\\[)+?)\]:/", $line, $matches)) {
@@ -889,12 +825,6 @@ class HyperDown
         return true;
     }
 
-    /**
-     * @param array|null $block
-     * @param int $key
-     * @param string $line
-     * @return bool
-     */
     private function parseBlockDefinition(?array $block, int $key, string $line): bool
     {
         if (preg_match("/^\s*\[((?:[^\]]|\\]|\\[)+?)\]:\s*(.+)$/", $line, $matches)) {
@@ -908,12 +838,6 @@ class HyperDown
         return true;
     }
 
-    /**
-     * @param array|null $block
-     * @param int $key
-     * @param string $line
-     * @return bool
-     */
     private function parseBlockQuote(?array $block, int $key, string $line): bool
     {
         if (preg_match("/^(\s*)>/", $line, $matches)) {
@@ -931,14 +855,6 @@ class HyperDown
         return true;
     }
 
-    /**
-     * @param array|null $block
-     * @param int $key
-     * @param string $line
-     * @param array|null $state
-     * @param array|null $lines
-     * @return bool
-     */
     private function parseBlockTable(?array $block, int $key, string $line, ?array &$state, array $lines): bool
     {
         if (preg_match("/^\s*(\|?[ :]*-{2,}[ :]*(?:[\|\+][ :]*-{2,}[ :]*)*\|?)\s*$/", $line, $matches)) {
@@ -994,12 +910,6 @@ class HyperDown
         return true;
     }
 
-    /**
-     * @param array|null $block
-     * @param int $key
-     * @param string $line
-     * @return bool
-     */
     private function parseBlockSh(?array $block, int $key, string $line): bool
     {
         if (preg_match("/^(#+)(.*)$/", $line, $matches)) {
@@ -1013,14 +923,6 @@ class HyperDown
         return true;
     }
 
-    /**
-     * @param array|null $block
-     * @param int $key
-     * @param string $line
-     * @param array|null $state
-     * @param array $lines
-     * @return bool
-     */
     private function parseBlockMh(?array $block, int $key, string $line, ?array &$state, array $lines): bool
     {
         if (preg_match("/^\s*((=|-){2,})\s*$/", $line, $matches)
@@ -1039,12 +941,6 @@ class HyperDown
         return true;
     }
 
-    /**
-     * @param array|null $block
-     * @param int $key
-     * @param string $line
-     * @return bool
-     */
     private function parseBlockShr(?array $block, int $key, string $line): bool
     {
         if (preg_match("/^\*{3,}\s*$/", $line)) {
@@ -1057,12 +953,6 @@ class HyperDown
         return true;
     }
 
-    /**
-     * @param array|null $block
-     * @param int $key
-     * @param string $line
-     * @return bool
-     */
     private function parseBlockDhr(?array $block, int $key, string $line): bool
     {
         if (preg_match("/^-{3,}\s*$/", $line)) {
@@ -1075,13 +965,6 @@ class HyperDown
         return true;
     }
 
-    /**
-     * @param array|null $block
-     * @param int $key
-     * @param string $line
-     * @param array|null $state
-     * @return bool
-     */
     private function parseBlockDefault(?array $block, int $key, string $line, ?array &$state): bool
     {
         if ($this->isBlock('footnote')) {
@@ -1115,11 +998,6 @@ class HyperDown
         return true;
     }
 
-    /**
-     * @param array $blocks
-     * @param array $lines
-     * @return array
-     */
     private function optimizeBlocks(array $blocks, array $lines): array
     {
         $blocks = $this->call('beforeOptimizeBlocks', $blocks, $lines);

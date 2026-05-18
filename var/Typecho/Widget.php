@@ -73,7 +73,7 @@ abstract class Widget
                 if ($sandbox && is_callable($disableSandboxOrCallback)) {
                     $disableSandboxOrCallback($widget);
                 }
-            } catch (Terminal $e) {
+            } catch (Terminal) {
             } finally {
                 if ($sandbox) {
                     Response::getInstance()->endSandbox();
@@ -127,11 +127,7 @@ abstract class Widget
 
     public function on(bool $condition)
     {
-        if ($condition) {
-            return $this;
-        } else {
-            return new EmptyClass();
-        }
+        return $condition ? $this : new EmptyClass();
     }
 
     public function to(&$variable): Widget

@@ -21,11 +21,6 @@ class Submit extends Element
         return $input;
     }
 
-    /**
-     * 设置表单元素值
-     *
-     * @param mixed $value 表单元素值
-     */
     protected function inputValue($value)
     {
         $this->input->html($value ?? 'Submit');

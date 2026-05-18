@@ -12,11 +12,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
 
 class Notice extends Widget
 {
-    /**
-     * 高亮相关元素
-     *
-     * @param string $theId 需要高亮元素的id
-     */
     public function highlight(string $theId)
     {
         Cookie::set(
@@ -28,8 +23,7 @@ class Notice extends Widget
         }
     }
 
-    /** @param string|array $value */
-    public function set($value, ?string $type = 'notice', string $typeFix = 'notice')
+    public function set(string|array $value, ?string $type = 'notice', string $typeFix = 'notice')
     {
         $notice = is_array($value) ? array_values($value) : [$value];
         if (empty($type) && $typeFix) {

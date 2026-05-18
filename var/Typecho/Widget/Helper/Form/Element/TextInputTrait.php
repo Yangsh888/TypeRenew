@@ -25,11 +25,6 @@ trait TextInputTrait
         return $input;
     }
 
-    /**
-     * 设置表单项默认值
-     *
-     * @param mixed $value 表单项默认值
-     */
     protected function inputValue($value)
     {
         if (isset($value)) {

@@ -10,16 +10,9 @@ use Typecho\Widget;
 use Widget\Base\Options as BaseOptions;
 use Widget\Options;
 use Widget\Plugins\Edit;
-use Widget\Security;
-use Widget\Service;
 
 class Helper
 {
-    public static function security(): Security
-    {
-        return Security::alloc();
-    }
-
     public static function widgetById(string $table, int $pkId): ?Widget
     {
         $table = ucfirst($table);
@@ -45,11 +38,6 @@ class Helper
         );
 
         return $widget;
-    }
-
-    public static function requestService($method, ... $params)
-    {
-        Service::alloc()->requestService($method, ... $params);
     }
 
     public static function removePlugin(string $pluginName)

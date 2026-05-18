@@ -32,7 +32,7 @@ trait PrepareEditTrait
                 );
 
                 if (isset($draft)) {
-                    $draft['parent'] = $this->row['parent'];    // keep parent
+                    $draft['parent'] = $this->row['parent'];
                     $draft['slug'] = ltrim($draft['slug'], '@');
                     $draft['type'] = $this->type;
                     $draft['draft'] = $draft;

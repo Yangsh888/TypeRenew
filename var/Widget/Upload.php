@@ -79,11 +79,6 @@ class Upload extends Contents implements ActionInterface
         return is_file($path) && is_writable(dirname($path)) ? unlink($path) : false;
     }
 
-    /**
-     * 获取实际文件绝对访问路径
-     *
-     * @param Config $attachment 文件相关信息
-     */
     public static function attachmentHandle(Config $attachment): string
     {
         $result = Plugin::factory(Upload::class)->trigger($hasPlugged)->call('attachmentHandle', $attachment);
@@ -97,11 +92,6 @@ class Upload extends Contents implements ActionInterface
         );
     }
 
-    /**
-     * 获取实际文件数据
-     *
-     * @param array $content
-     */
     public static function attachmentDataHandle(array $content): string
     {
         $result = Plugin::factory(Upload::class)->trigger($hasPlugged)->call('attachmentDataHandle', $content);
