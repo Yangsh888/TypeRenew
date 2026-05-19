@@ -104,9 +104,6 @@ $(document).ready(function() {
             case 'type':
                 word = '<?php _e('文件扩展名不被支持'); ?>';
                 break;
-            case 'duplicate':
-                word = '<?php _e('文件已经上传过'); ?>';
-                break;
             case 'server':
                 if (serverMessage) {
                     word = serverMessage;
@@ -121,7 +118,7 @@ $(document).ready(function() {
             li, exist = $('#' + file.id);
 
         if (exist.length > 0) {
-            li = exist.removeClass('loading').html(fileError);
+            li = exist.removeClass('loading').html(fileError + '<br />' + word);
         } else {
             li = $('<li>' + fileError + '<br />' + word + '</li>').appendTo('#file-list');
         }
@@ -131,21 +128,40 @@ $(document).ready(function() {
         });
     }
 
-    function fileUploadComplete (file, attachment) {
-        const li = $('#' + file.id).removeClass('loading').data('cid', attachment.cid)
+    function appendAttachmentItem (attachment, li) {
+        const target = li && li.length ? li : $('<li></li>').appendTo('#file-list');
+
+        target.attr('data-cid', attachment.cid)
+            .attr('data-url', attachment.url)
+            .attr('data-image', attachment.isImage ? '1' : '0')
+            .data('cid', attachment.cid)
             .data('url', attachment.url)
             .data('image', attachment.isImage)
             .html('<input type="hidden" name="attachment[]" value="' + attachment.cid + '" />'
                 + '<a class="insert" target="_blank" href="###" title="<?php _e('点击插入文件'); ?>">'
                 + attachment.title + '</a><div class="info">' + attachment.bytes
-                + ' <a class="file" target="_blank" href="<?php $options->adminUrl('media.php'); ?>?cid=' 
+                + ' <a class="file" target="_blank" href="<?php $options->adminUrl('media.php'); ?>?cid='
                 + attachment.cid + '" title="<?php _e('编辑'); ?>"><i class="i-edit"></i></a>'
                 + ' <a class="delete" href="###" title="<?php _e('删除'); ?>"><i class="i-delete"></i></a></div>')
             .effect('highlight', 1000);
 
-        attachInsertEvent(li);
-        attachDeleteEvent(li);
+        attachInsertEvent(target);
+        attachDeleteEvent(target);
         updateAttachmentNumber();
+        return target;
+    }
+
+    Typecho.appendAttachment = function (attachment) {
+        if (!attachment || !attachment.cid) {
+            return null;
+        }
+
+        return appendAttachmentItem(attachment);
+    };
+
+    function fileUploadComplete (file, attachment) {
+        const li = $('#' + file.id).removeClass('loading');
+        appendAttachmentItem(attachment, li);
 
         if (Typecho.uploadComplete) {
             Typecho.uploadComplete(attachment);
@@ -188,6 +204,10 @@ $(document).ready(function() {
 
             fetch(getUrl(), {
                 method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                },
                 body: data
             }).then(function (response) {
                 return response.json().catch(function () {

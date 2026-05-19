@@ -140,8 +140,10 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
         return $insertId;
     }
 
-    public function applySlug(?string $slug, $cid, string $title = ''): string
+    public function applySlug(?string $slug, $cid, ?string $title = ''): string
     {
+        $title = (string) ($title ?? '');
+
         if ($cid instanceof Query) {
             $row = $this->db->fetchObject($cid->select('cid')
                 ->from('table.contents')->limit(1));

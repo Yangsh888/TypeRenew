@@ -38,7 +38,8 @@ class Edit extends Contents implements ActionInterface
             'visibility'
         );
 
-        $contents['title'] = $this->request->get('title', _t('未命名页面'));
+        $title = $this->request->get('title');
+        $contents['title'] = $title === null || $title === '' ? _t('未命名页面') : $title;
         $contents['created'] = $this->getCreated();
         $contents['visibility'] = ('hidden' == $contents['visibility'] ? 'hidden' : 'publish');
         $contents['parent'] = $this->getParent();

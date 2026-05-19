@@ -10,7 +10,9 @@ trait PrepareEditTrait
 {
     protected function prepareEdit(string $type, bool $hasDraft, string $notFoundMessage): self
     {
-        if ($this->request->is('cid')) {
+        $cid = $this->request->filter('int')->get('cid');
+
+        if ($cid > 0) {
             $contentTypes = [$type];
             if ($hasDraft) {
                 $contentTypes[] = $type . '_draft';
@@ -18,7 +20,7 @@ trait PrepareEditTrait
 
             $this->db->fetchRow($this->select()
                 ->where('table.contents.type IN ?', $contentTypes)
-                ->where('table.contents.cid = ?', $this->request->filter('int')->get('cid'))
+                ->where('table.contents.cid = ?', $cid)
                 ->limit(1), [$this, 'push']);
 
             if (!$this->have()) {

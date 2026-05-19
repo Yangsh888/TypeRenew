@@ -8,7 +8,7 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-class Action extends Widget
+class Action extends Widget implements ActionInterface
 {
     private array $map = [
         'ajax'                     => '\Widget\Ajax',
@@ -42,7 +42,7 @@ class Action extends Widget
         'mail'                     => '\Widget\Mail'
     ];
 
-    public function execute()
+    private function dispatchAction(): void
     {
         $action = $this->request->get('action');
         $actionTable = array_merge($this->map, Options::alloc()->actionTable);
@@ -58,5 +58,14 @@ class Action extends Widget
         }
 
         throw new Widget\Exception(_t('请求的地址不存在'), 404);
+    }
+
+    public function execute()
+    {
+    }
+
+    public function action()
+    {
+        $this->dispatchAction();
     }
 }

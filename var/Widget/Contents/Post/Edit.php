@@ -39,7 +39,8 @@ class Edit extends Contents implements ActionInterface
         );
 
         $contents['category'] = $this->request->getArray('category');
-        $contents['title'] = $this->request->get('title', _t('未命名文档'));
+        $title = $this->request->get('title');
+        $contents['title'] = $title === null || $title === '' ? _t('未命名文档') : $title;
         $contents['created'] = $this->getCreated();
         $contents = $this->normalizeWriteContents($contents);
 
@@ -88,6 +89,7 @@ class Edit extends Contents implements ActionInterface
             $draftId = $this->save($contents);
 
             self::pluginHandle()->call('finishSave', $contents, $this);
+
             $this->finishSaveResponse(
                 (string) $this->title,
                 $draftId,
@@ -146,8 +148,11 @@ class Edit extends Contents implements ActionInterface
                             $this->db->select()->from('table.relationships')->where('cid = ?', $post)
                         );
                         foreach ($metas as $meta) {
+                            $countExpression = $op === '-'
+                                ? 'IF(`count` > 0, `count` - 1, 0)'
+                                : '`count` + 1';
                             $this->db->query($this->db->update('table.metas')
-                                ->expression('count', 'count ' . $op . ' 1')
+                                ->expression('count', $countExpression, false)
                                 ->where('mid = ? AND (type = ? OR type = ?)', $meta['mid'], 'category', 'tag'));
                         }
                     }
