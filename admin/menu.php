@@ -13,23 +13,25 @@ $trIconMap = [
     'manage-categories.php' => 'i-folder',
     'manage-tags.php' => 'i-tag',
     'manage-users.php' => 'i-users',
-    'plugins.php' => 'i-puzzle',
-    'themes.php' => 'i-palette',
+    'plugins.php' => 'i-plug',
+    'themes.php' => 'i-sliders',
     'backup.php' => 'i-download',
     'upgrade.php' => 'i-upload',
     'options-general.php' => 'i-gear',
     'options-discussion.php' => 'i-bell',
     'options-reading.php' => 'i-book',
     'options-permalink.php' => 'i-link',
-    'options-cache.php' => 'i-spark',
+    'options-cache.php' => 'i-database',
     'options-mail.php' => 'i-mail',
     'profile.php' => 'i-user',
-    'extending.php' => 'i-puzzle',
+    'extending.php' => 'i-plug',
 ];
 
 $trPanelIconMap = [
     'RenewGo/Panel.php' => 'i-external',
-    'RenewSEO/Panel.php' => 'i-spark',
+    'RenewBoost/Panel.php' => 'i-zap',
+    'RenewSEO/Panel.php' => 'i-search',
+    'RenewShield/Panel.php' => 'i-shield',
 ];
 $menuAddLink = '';
 if (!empty($menu->addLink)) {
@@ -85,7 +87,11 @@ $trRenderMenu = function () use ($menu, $iconsUrl, $trIconOf, $trText): string {
             $childUrl = (string) ($child['url'] ?? '#');
             $childName = $trText($child['name'] ?? '');
             $childActive = !empty($child['active']);
-            $childIconId = $trIconOf($childUrl) ?? 'i-file';
+            $childIconId = null;
+            if (!empty($child['icon']) && is_string($child['icon'])) {
+                $childIconId = $child['icon'];
+            }
+            $childIconId = $childIconId ?? $trIconOf($childUrl) ?? 'i-file';
             $childIcon = $childIconId ? '<svg class="tr-ico" aria-hidden="true"><use href="' . htmlspecialchars($iconsUrl, ENT_QUOTES, 'UTF-8') . '#' . $childIconId . '"></use></svg>' : '';
 
             $out .= '<li' . ($childActive ? ' class="tr-child-active"' : '') . '>';

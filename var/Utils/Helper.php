@@ -268,14 +268,15 @@ class Helper
         string $subTitle,
         string $level,
         bool $hidden = false,
-        string $addLink = ''
+        string $addLink = '',
+        array $meta = []
     ): int {
         $panelTable = self::options()->panelTable;
         $panelTable['child'] = empty($panelTable['child']) ? [] : $panelTable['child'];
         $panelTable['child'][$index] = empty($panelTable['child'][$index]) ? [] : $panelTable['child'][$index];
         $fileName = urlencode(trim($fileName, '/'));
         $panelTable['child'][$index][]
-            = [$title, $subTitle, 'extending.php?panel=' . $fileName, $level, $hidden, $addLink];
+            = [$title, $subTitle, 'extending.php?panel=' . $fileName, $level, $hidden, $addLink, $meta];
 
         $panelTable['file'] = empty($panelTable['file']) ? [] : $panelTable['file'];
         $panelTable['file'][] = $fileName;

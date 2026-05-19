@@ -105,7 +105,7 @@ class Menu extends Base
         $currentUrl = $this->request->getRequestUrl();
         $adminUrl = $this->options->adminUrl;
         $menu = [];
-        $defaultChildNode = [null, null, null, 'administrator', false, null];
+        $defaultChildNode = [null, null, null, 'administrator', false, null, []];
 
         $currentUrlParts = Common::parseUrl($currentUrl);
         $currentUrlParams = [];
@@ -142,6 +142,7 @@ class Menu extends Base
 
                 $hidden = $childNode[4] ?? false;
                 $addLink = $childNode[5] ?? null;
+                $meta = is_array($childNode[6] ?? null) ? $childNode[6] : [];
 
                 $orgHidden = $hidden;
 
@@ -225,7 +226,8 @@ class Menu extends Base
                     $access,
                     $hidden,
                     $addLink,
-                    $orgHidden
+                    $orgHidden,
+                    $meta
                 ];
             }
 
@@ -302,6 +304,9 @@ class Menu extends Base
                     'url' => $active ? $this->currentUrl : $child[2],
                     'active' => $active,
                     'originalHidden' => (bool) $child[6],
+                    'icon' => (is_array($child[7] ?? null) && !empty($child[7]['icon']) && is_string($child[7]['icon']))
+                        ? $child[7]['icon']
+                        : null,
                 ];
             }
 
