@@ -7,6 +7,7 @@ use Typecho\Db;
 use Utils\Comment;
 use Utils\Defaults;
 use Utils\Schema;
+use Widget\Base\Options as OptionsStorage;
 use Widget\Options;
 
 if (!defined('__TYPECHO_ROOT_DIR__')) {
@@ -260,13 +261,17 @@ class SchemaManager
                 ->where('user = ? AND name IN ?', 0, array_keys($defaults))
         );
         $existingNames = array_flip(array_map('strval', array_column($existing, 'name')));
+        $missing = [];
 
         foreach ($defaults as $name => $value) {
             if (isset($existingNames[$name])) {
                 continue;
             }
+            $missing[$name] = $value;
+        }
 
-            $db->query($db->insert('table.options')->rows(['name' => $name, 'user' => 0, 'value' => $value]));
+        if (!empty($missing)) {
+            OptionsStorage::alloc()->saveOptions($missing);
         }
     }
 

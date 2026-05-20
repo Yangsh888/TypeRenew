@@ -12,6 +12,39 @@ use Widget\Base\Metas;
 
 trait EditTrait
 {
+    private function isDuplicateConstraintError(\Throwable $e): bool
+    {
+        $code = (string) $e->getCode();
+        $message = strtolower($e->getMessage());
+
+        return $code === '1062'
+            || $code === '23000'
+            || $code === '23505'
+            || str_contains($message, 'duplicate')
+            || str_contains($message, 'unique constraint')
+            || str_contains($message, '1062')
+            || str_contains($message, '23000')
+            || str_contains($message, '23505');
+    }
+
+    private function insertRelationshipRow(int $cid, int $mid): bool
+    {
+        try {
+            $this->db->query($this->db->insert('table.relationships')
+                ->rows([
+                    'mid' => $mid,
+                    'cid' => $cid
+                ]));
+            return true;
+        } catch (\Throwable $e) {
+            if ($this->isDuplicateConstraintError($e)) {
+                return false;
+            }
+
+            throw $e;
+        }
+    }
+
     public function deleteFields(int $cid): int
     {
         return $this->db->query($this->db->delete('table.fields')
@@ -87,7 +120,13 @@ trait EditTrait
             $rows['cid'] = $cid;
             $rows['name'] = $name;
 
-            return $this->db->query($this->db->insert('table.fields')->rows($rows));
+            try {
+                return $this->db->query($this->db->insert('table.fields')->rows($rows));
+            } catch (\Throwable $e) {
+                if (!$this->isDuplicateConstraintError($e)) {
+                    throw $e;
+                }
+            }
         }
 
         return $this->db->query($this->db->update('table.fields')
@@ -105,15 +144,21 @@ trait EditTrait
             ->where('cid = ? AND name = ?', $cid, $name));
 
         if (empty($exist)) {
-            return $this->db->query($this->db->insert('table.fields')
-                ->rows([
-                    'cid'         => $cid,
-                    'name'        => $name,
-                    'type'        => 'int',
-                    'str_value'   => null,
-                    'int_value'   => $value,
-                    'float_value' => 0
-                ]));
+            try {
+                return $this->db->query($this->db->insert('table.fields')
+                    ->rows([
+                        'cid'         => $cid,
+                        'name'        => $name,
+                        'type'        => 'int',
+                        'str_value'   => null,
+                        'int_value'   => $value,
+                        'float_value' => 0
+                    ]));
+            } catch (\Throwable $e) {
+                if (!$this->isDuplicateConstraintError($e)) {
+                    throw $e;
+                }
+            }
         }
 
         $struct = [
@@ -380,13 +425,7 @@ trait EditTrait
                     continue;
                 }
 
-                $this->db->query($this->db->insert('table.relationships')
-                    ->rows([
-                        'mid' => $category,
-                        'cid' => $cid
-                    ]));
-
-                if ($afterCount) {
+                if ($this->insertRelationshipRow($cid, (int) $category) && $afterCount) {
                     $this->db->query($this->db->update('table.metas')
                         ->expression('count', 'count + 1')
                         ->where('mid = ?', $category));
@@ -438,13 +477,7 @@ trait EditTrait
                     continue;
                 }
 
-                $this->db->query($this->db->insert('table.relationships')
-                    ->rows([
-                        'mid' => $tag,
-                        'cid' => $cid
-                    ]));
-
-                if ($afterCount) {
+                if ($this->insertRelationshipRow($cid, (int) $tag) && $afterCount) {
                     $this->db->query($this->db->update('table.metas')
                         ->expression('count', 'count + 1')
                         ->where('mid = ?', $tag));

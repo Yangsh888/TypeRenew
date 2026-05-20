@@ -535,7 +535,7 @@ class Queue
                 ])
             );
         } catch (\Throwable $e) {
-            return false;
+            return self::isDuplicateInsertError($e);
         }
 
         return true;

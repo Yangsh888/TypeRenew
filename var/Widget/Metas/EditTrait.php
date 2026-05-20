@@ -4,6 +4,20 @@ namespace Widget\Metas;
 
 trait EditTrait
 {
+    private function isDuplicateRelationshipError(\Throwable $e): bool
+    {
+        $code = (string) $e->getCode();
+        $message = strtolower($e->getMessage());
+
+        return $code === '1062'
+            || $code === '23000'
+            || $code === '23505'
+            || str_contains($message, 'duplicate')
+            || str_contains($message, 'unique constraint')
+            || str_contains($message, '1062')
+            || str_contains($message, '23000')
+            || str_contains($message, '23505');
+    }
 
     public function getMaxOrder(string $type, int $parent = 0): int
     {
@@ -39,8 +53,14 @@ trait EditTrait
                 $this->db->query($this->db->delete('table.relationships')->where('mid = ?', $meta));
 
                 foreach ($diffContents as $content) {
-                    $this->db->query($this->db->insert('table.relationships')
-                        ->rows(['mid' => $mid, 'cid' => $content]));
+                    try {
+                        $this->db->query($this->db->insert('table.relationships')
+                            ->rows(['mid' => $mid, 'cid' => $content]));
+                    } catch (\Throwable $e) {
+                        if (!$this->isDuplicateRelationshipError($e)) {
+                            throw $e;
+                        }
+                    }
                     $contents[] = $content;
                 }
 

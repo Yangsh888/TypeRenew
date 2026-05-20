@@ -166,6 +166,10 @@ $(document).ready(function() {
         if (Typecho.uploadComplete) {
             Typecho.uploadComplete(attachment);
         }
+
+        if (window.TypechoNotice && typeof window.TypechoNotice.show === 'function') {
+            window.TypechoNotice.show('success', ['<?php _e('已上传完成'); ?>']);
+        }
     }
 
     Typecho.uploadFile = (function () {

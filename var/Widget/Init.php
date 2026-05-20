@@ -13,6 +13,7 @@ use Typecho\Response;
 use Typecho\Router;
 use Typecho\Widget;
 use Utils\Zone;
+use Widget\Base\Options as OptionsStorage;
 
 if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
@@ -148,27 +149,7 @@ class Init extends Widget
         }
 
         $db = Db::get();
-        $timezoneIdExists = $db->fetchRow(
-            $db->select('name')
-                ->from('table.options')
-                ->where('name = ? AND user = 0', 'timezoneId')
-                ->limit(1)
-        );
-
-        if ($timezoneIdExists) {
-            $db->query(
-                $db->update('table.options')
-                    ->rows(['value' => $normalizedTimezoneId])
-                    ->where('name = ? AND user = 0', 'timezoneId'),
-                Db::WRITE
-            );
-        } else {
-            $db->query(
-                $db->insert('table.options')
-                    ->rows(['name' => 'timezoneId', 'user' => 0, 'value' => $normalizedTimezoneId]),
-                Db::WRITE
-            );
-        }
+        OptionsStorage::alloc()->saveOptions(['timezoneId' => $normalizedTimezoneId]);
 
         $db->query(
             $db->update('table.options')

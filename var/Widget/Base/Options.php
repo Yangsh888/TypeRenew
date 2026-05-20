@@ -78,7 +78,7 @@ class Options extends Base implements QueryInterface
             }
 
             if (!empty($insertRows)) {
-                $this->insertOptionRows($insertRows);
+                $this->insertOptionRowsWithRetry($insertRows, $updateRows, $user);
             }
 
             if (!empty($updateRows)) {
@@ -144,6 +144,35 @@ class Options extends Base implements QueryInterface
         $sql = "INSERT INTO {$table} ({$nameColumn}, {$userColumn}, {$valueColumn}) VALUES "
             . $this->buildInsertValuesSql($rows);
         $this->db->query($sql);
+    }
+
+    private function insertOptionRowsWithRetry(array $rows, array &$updateRows, int $user): array
+    {
+        try {
+            $this->insertOptionRows($rows);
+            return [];
+        } catch (\Throwable $throwable) {
+            $existing = $this->fetchExistingOptionNames(array_column($rows, 'name'), $user);
+
+            if (empty($existing)) {
+                throw $throwable;
+            }
+
+            $remaining = [];
+            foreach ($rows as $row) {
+                if (isset($existing[$row['name']])) {
+                    $updateRows[$row['name']] = $row['value'];
+                } else {
+                    $remaining[] = $row;
+                }
+            }
+
+            if (!empty($remaining)) {
+                $this->insertOptionRows($remaining);
+            }
+
+            return $remaining;
+        }
     }
 
     private function updateOptionRows(array $rows, int $user): void
