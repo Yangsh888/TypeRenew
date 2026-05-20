@@ -6,6 +6,7 @@ use Typecho\Common;
 use Typecho\Db;
 use Typecho\Http\Client;
 use Typecho\Response;
+use Widget\Base\Options as OptionsStorage;
 use Widget\Options;
 
 class Queue
@@ -708,16 +709,7 @@ class Queue
     private static function setRuntimeOption(string $name, string $value): void
     {
         try {
-            $db = Db::get();
-            $affected = $db->query($db->update('table.options')->rows(['value' => $value])->where('name = ?', $name));
-
-            if ($affected === 0) {
-                $db->query($db->insert('table.options')->rows([
-                    'name' => $name,
-                    'user' => 0,
-                    'value' => $value
-                ]));
-            }
+            OptionsStorage::alloc()->saveOptions([$name => $value]);
         } catch (\Throwable $e) {
             self::logRuntimeOptionFailure('setRuntimeOption:' . $name, $e);
         }
