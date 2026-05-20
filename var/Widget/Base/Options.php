@@ -51,6 +51,11 @@ class Options extends Base implements QueryInterface
         $this->persistOptions([$name => $value], $user);
     }
 
+    public function saveOptions(array $settings, int $user = 0): void
+    {
+        $this->persistOptions($settings, $user);
+    }
+
     protected function persistOptions(array $settings, int $user = 0): void
     {
         $rows = $this->normalizeOptionRows($settings, $user);

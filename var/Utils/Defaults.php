@@ -184,7 +184,7 @@ class Defaults
             'postDateFormat' => 'Y-m-d',
             'feedFullText' => 1,
             'editorSize' => 350,
-            'autoSave' => 0,
+            'autoSave' => 1,
             'markdown' => 1,
             'xmlrpcMarkdown' => 0,
             'commentsMaxNestingLevels' => 5,

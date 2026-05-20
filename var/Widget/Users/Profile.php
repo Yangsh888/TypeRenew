@@ -250,22 +250,7 @@ class Profile extends Users implements ActionInterface
         $settings['defaultAllowComment'] = in_array('comment', $defaultAllow) ? 1 : 0;
         $settings['defaultAllowPing'] = in_array('ping', $defaultAllow) ? 1 : 0;
         $settings['defaultAllowFeed'] = in_array('feed', $defaultAllow) ? 1 : 0;
-        $options = Options::alloc();
-
-        foreach ($settings as $name => $value) {
-            $updated = $options->update(
-                ['value' => $value],
-                $this->db->sql()->where('name = ? AND user = ?', $name, $this->user->uid)
-            );
-
-            if ($updated === 0) {
-                $options->insert([
-                    'name'  => $name,
-                    'value' => $value,
-                    'user'  => $this->user->uid
-                ]);
-            }
-        }
+        Options::alloc()->saveOptions($settings, $this->user->uid);
 
         Notice::alloc()->set(_t("设置已经保存"), 'success');
         $this->response->goBack();
@@ -361,19 +346,7 @@ class Profile extends Users implements ActionInterface
 
         if (!$this->personalConfigHandle($className, $settings)) {
             $value = Common::jsonEncode($settings, 0, '{}');
-            $options = Options::alloc();
-            $updated = $options->update(
-                ['value' => $value],
-                $this->db->sql()->where('name = ? AND user = ?', $name, $this->user->uid)
-            );
-
-            if ($updated === 0) {
-                $options->insert([
-                    'name'  => $name,
-                    'value' => $value,
-                    'user'  => $this->user->uid
-                ]);
-            }
+            Options::alloc()->saveOptions([$name => $value], $this->user->uid);
         }
 
         Notice::alloc()->set(_t("%s 设置已经保存", $info['title']), 'success');
