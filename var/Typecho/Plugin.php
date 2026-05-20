@@ -75,10 +75,13 @@ class Plugin
             && is_array(self::$plugin['activated'][$pluginName]['handles'])
         ) {
             foreach (self::$plugin['activated'][$pluginName]['handles'] as $handle => $handles) {
-                self::$plugin['handles'][$handle] = self::pluginHandlesDiff(
-                    empty(self::$plugin['handles'][$handle]) ? [] : self::$plugin['handles'][$handle],
-                    empty($handles) ? [] : $handles
-                );
+                $pluginHandles = empty(self::$plugin['handles'][$handle]) ? [] : self::$plugin['handles'][$handle];
+                foreach ((empty($handles) ? [] : $handles) as $callback) {
+                    while (false !== ($index = array_search($callback, $pluginHandles, true))) {
+                        unset($pluginHandles[$index]);
+                    }
+                }
+                self::$plugin['handles'][$handle] = $pluginHandles;
                 if (empty(self::$plugin['handles'][$handle])) {
                     unset(self::$plugin['handles'][$handle]);
                 }
@@ -120,17 +123,6 @@ class Plugin
         }
 
         self::$tmp = [];
-    }
-
-    private static function pluginHandlesDiff(array $pluginHandles, array $otherPluginHandles): array
-    {
-        foreach ($otherPluginHandles as $handle) {
-            while (false !== ($index = array_search($handle, $pluginHandles, true))) {
-                unset($pluginHandles[$index]);
-            }
-        }
-
-        return $pluginHandles;
     }
 
     public static function export(): array

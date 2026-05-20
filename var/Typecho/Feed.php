@@ -135,8 +135,7 @@ xmlns:dc="http://purl.org/dc/elements/1.1/">' . self::EOL;
 xmlns:content="http://purl.org/rss/1.0/modules/content/"
 xmlns:dc="http://purl.org/dc/elements/1.1/"
 xmlns:slash="http://purl.org/rss/1.0/modules/slash/"
-xmlns:atom="http://www.w3.org/2005/Atom"
-xmlns:wfw="http://wellformedweb.org/CommentAPI/">
+xmlns:atom="http://www.w3.org/2005/Atom">
 <channel>' . self::EOL;
 
             $content = '';
@@ -150,7 +149,6 @@ xmlns:wfw="http://wellformedweb.org/CommentAPI/">
                 $excerpt = $this->itemValue($item, 'excerpt');
                 $body = $this->itemValue($item, 'content');
                 $comments = isset($item['comments']) ? (string) $item['comments'] : '';
-                $commentsFeedUrl = $this->itemValue($item, 'commentsFeedUrl');
 
                 $content .= '<item>' . self::EOL;
                 $content .= '<title>' . $this->xmlText($title) . '</title>' . self::EOL;
@@ -185,9 +183,6 @@ xmlns:wfw="http://wellformedweb.org/CommentAPI/">
                 }
 
                 $content .= '<comments>' . $this->xmlText($link . '#comments') . '</comments>' . self::EOL;
-                if ($commentsFeedUrl !== '') {
-                    $content .= '<wfw:commentRss>' . $this->xmlText($commentsFeedUrl) . '</wfw:commentRss>' . self::EOL;
-                }
 
                 if (!empty($item['suffix'])) {
                     $content .= $item['suffix'];
@@ -286,7 +281,7 @@ xml:base="' . $this->xmlText($this->baseUrl) . '"
             $result .= '<title type="text">' . $this->xmlText($this->title) . '</title>
 <subtitle type="text">' . $this->xmlText($this->subTitle ?? '') . '</subtitle>
 <updated>' . $this->dateFormat($lastUpdate) . '</updated>
-<generator uri="https://github.com/Yangsh888/TypeRenew/" version="' . $this->xmlText($this->version) . '">TypeRenew</generator>
+<generator version="' . $this->xmlText($this->version) . '">TypeRenew</generator>
 <link rel="alternate" type="text/html" href="' . $this->xmlText($this->baseUrl) . '" />
 <id>' . $this->xmlText($this->feedUrl) . '</id>
 <link rel="self" type="application/atom+xml" href="' . $this->xmlText($this->feedUrl) . '" />

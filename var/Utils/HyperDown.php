@@ -10,33 +10,20 @@ namespace Utils;
  */
 class HyperDown
 {
-    /** @var string */
     private $_commonWhiteList = 'kbd|b|i|strong|em|sup|sub|br|code|del|a|hr|small';
 
-    /** @var string */
     private $_blockHtmlTags = 'p|div|h[1-6]|blockquote|pre|table|dl|ol|ul|address|form|fieldset|iframe|hr|legend|article|section|nav|aside|hgroup|header|footer|figcaption|svg|script|noscript';
 
-    /** @var mixed */
     private $_specialWhiteList = [
         'table' => 'table|tbody|thead|tfoot|tr|td|th'
     ];
 
-    /** @var array */
     private $_footnotes;
 
-    /**
-     * @var bool
-     */
     private $_html = false;
 
-    /**
-     * @var bool
-     */
     private $_line = false;
 
-    /**
-     * @var array
-     */
     private $blockParsers = [
         ['code', 10],
         ['shtml', 20],
@@ -56,33 +43,22 @@ class HyperDown
         ['default', 9999]
     ];
 
-    /** @var array */
     private $_blocks;
 
-    /** @var string */
     private $_current;
 
-    /** @var int */
     private $_pos;
 
-    /** @var array */
     private $_definitions;
 
-    /**
-     * @var array
-     */
     private $_hooks = [];
 
-    /** @var array */
     private $_holders;
 
-    /** @var string */
     private $_uniqid;
 
-    /** @var int */
     private $_id;
 
-    /** @var array */
     private $_parsers = [];
 
     public function makeHtml($text): string

@@ -40,44 +40,6 @@ class Helper
         return $widget;
     }
 
-    public static function removePlugin(string $pluginName)
-    {
-        try {
-            $pluginName = Plugin::normalizeName($pluginName);
-            [$pluginFileName, $className] = Plugin::portal(
-                $pluginName,
-                __TYPECHO_ROOT_DIR__ . '/' . __TYPECHO_PLUGIN_DIR__
-            );
-
-            $plugins = Plugin::export();
-            $activatedPlugins = $plugins['activated'];
-
-            require_once $pluginFileName;
-
-            if (
-                !array_key_exists($pluginName, $activatedPlugins) || !class_exists($className)
-                || !method_exists($className, 'deactivate')
-            ) {
-                throw new Widget\Exception(_t('无法禁用插件'), 500);
-            }
-
-            call_user_func([$className, 'deactivate']);
-        } catch (\Throwable $e) {
-            error_log('[Helper] removePlugin.deactivate: ' . $e->getMessage());
-        }
-
-        $db = Db::get();
-
-        try {
-            Plugin::deactivate($pluginName);
-            self::setOption('plugins', Plugin::export());
-        } catch (Plugin\Exception $e) {
-            error_log('[Helper] removePlugin.state: ' . $e->getMessage());
-        }
-
-        $db->query($db->delete('table.options')->where('name = ?', 'plugin:' . $pluginName));
-    }
-
     public static function lang(string $domain)
     {
         $currentLang = I18n::getLang();
