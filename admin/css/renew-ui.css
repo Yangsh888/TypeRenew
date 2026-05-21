@@ -2573,6 +2573,10 @@ body.tr-admin.tr-page-index .tr-actions-grid .tr-btn-square span {
     margin-top: 16px;
 }
 
+.tr-mb-16 {
+    margin-bottom: 16px;
+}
+
 .tr-section-head {
     display: flex;
     align-items: center;

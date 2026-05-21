@@ -24,7 +24,7 @@ class General extends Options implements ActionInterface
 
     public function checkTimezoneId(string $timezoneId): bool
     {
-        return Zone::normalizeId($timezoneId) !== null;
+        return Zone::normalizeStoredId($timezoneId) !== null;
     }
 
     public static function getLangs(): array
