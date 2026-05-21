@@ -77,12 +77,7 @@ class Cookie
     {
         $key = self::$prefix . $key;
         $value = $_COOKIE[$key] ?? $default;
-
-        if (is_array($value) || (!is_string($value) && $value !== null)) {
-            return $default;
-        }
-
-        return $value;
+        return is_array($value) ? $default : $value;
     }
 
     public static function set(string $key, $value, int $expire = 0)
@@ -104,7 +99,20 @@ class Cookie
     public static function delete(string $key)
     {
         $key = self::$prefix . $key;
-        Response::getInstance()->setCookie($key, '', -1, self::$path, self::$domain, self::$secure, self::$httponly, self::$sameSite);
+        if (!isset($_COOKIE[$key])) {
+            return;
+        }
+
+        Response::getInstance()->setCookie(
+            $key,
+            '',
+            -1,
+            self::$path,
+            self::$domain,
+            self::$secure,
+            self::$httponly,
+            self::$sameSite
+        );
         unset($_COOKIE[$key]);
     }
 }

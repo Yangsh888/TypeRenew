@@ -101,6 +101,8 @@ class Init extends Widget
             Cookie::setOptions(__TYPECHO_COOKIE_OPTIONS__);
         }
 
+        User::destroy();
+        Security::destroy();
         Date::configure($options->timezoneId, (int) $options->timezone);
         Router::setRoutes($options->routingTable);
         Plugin::init($options->plugins);

@@ -217,7 +217,9 @@ class Options extends Base
 
         if (defined('__TYPECHO_ADMIN__')) {
             $adminDir = '/' . trim(defined('__TYPECHO_ADMIN_DIR__') ? __TYPECHO_ADMIN_DIR__ : '/admin/', '/');
-            $rootUrl = substr($rootUrl, 0, - strlen($adminDir));
+            if ($adminDir !== '/' && str_ends_with($rootUrl, $adminDir)) {
+                $rootUrl = substr($rootUrl, 0, -strlen($adminDir));
+            }
         }
 
         return $rootUrl;
