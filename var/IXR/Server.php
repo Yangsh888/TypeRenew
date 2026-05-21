@@ -19,7 +19,10 @@ class Server
     {
         $this->setCapabilities();
         $this->callbacks = $callbacks;
-        $this->setCallbacks();
+        $this->callbacks['system.getCapabilities'] = [$this, 'getCapabilities'];
+        $this->callbacks['system.listMethods'] = [$this, 'listMethods'];
+        $this->callbacks['system.multicall'] = [$this, 'multiCall'];
+        $this->callbacks['system.methodHelp'] = [$this, 'methodHelp'];
     }
 
     public function getCapabilities(): array
@@ -78,13 +81,6 @@ class Server
         $this->hook = $hook;
     }
 
-    /**
-     * 呼叫内部方法
-     *
-     * @param string $methodName 方法名
-     * @param array $args 参数
-     * @return mixed
-     */
     private function call(string $methodName, array $args)
     {
         if (!$this->hasMethod($methodName)) {
@@ -182,7 +178,6 @@ class Server
 
     private function error($error, ?string $message = null)
     {
-        // Accepts either an error object or an error code and message
         if (!$error instanceof Error) {
             $error = new Error($error, $message);
         }
@@ -320,17 +315,6 @@ class Server
         ];
     }
 
-    private function setCallbacks()
-    {
-        $this->callbacks['system.getCapabilities'] = [$this, 'getCapabilities'];
-        $this->callbacks['system.listMethods'] = [$this, 'listMethods'];
-        $this->callbacks['system.multicall'] = [$this, 'multiCall'];
-        $this->callbacks['system.methodHelp'] = [$this, 'methodHelp'];
-    }
-
-    /**
-     * 服务入口
-     */
     public function serve()
     {
         if (!function_exists('xml_parser_create')) {

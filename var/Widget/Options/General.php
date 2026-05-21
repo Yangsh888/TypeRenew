@@ -177,7 +177,8 @@ class General extends Options implements ActionInterface
             ['0' => _t('关闭'), '1' => _t('仅关闭 Pingback 接口'), '2' => _t('打开')],
             $this->options->allowXmlRpc,
             _t('XMLRPC 接口'),
-            _t('如无远程写作、离线客户端或第三方同步需求，建议保持关闭；“仅关闭 Pingback 接口”可保留常规 XML-RPC，同时避免站点接收 Pingback。')
+            _t('如无远程写作、离线客户端或第三方同步需求，建议保持关闭') . '<br />'
+            . _t('“仅关闭 Pingback 接口”可保留常规 XML-RPC，同时避免站点接收 Pingback')
         );
         $form->addInput($allowXmlRpc);
 
@@ -195,7 +196,7 @@ class General extends Options implements ActionInterface
             null,
             $this->options->timezoneId,
             _t('时区'),
-            _t('请输入 IANA 时区标识符，例如 Asia/Shanghai、America/New_York、Europe/Berlin。系统会自动兼容旧版固定偏移配置。')
+            _t('请输入 IANA 时区标识符，例如 Asia/Shanghai、America/New_York、Europe/Berlin。系统会自动兼容旧版配置')
         );
         $timezone->input->setAttribute('class', 'w-100 mono');
         $form->addInput($timezone->addRule('required', _t('请填写时区'))
@@ -241,7 +242,7 @@ class General extends Options implements ActionInterface
             $attachmentTypesOptionsValue,
             _t('允许上传的文件类型'),
             _t('用逗号 "," 将后缀名隔开, 例如: %s', '<code>cpp,h,mak</code>') . '<br />'
-            . _t('核心会校验扩展名，并对明显危险内容类型与图片扩展名不匹配的文件做基础拦截；如需更严格策略，建议配合独立安全插件。')
+            . _t('核心会校验扩展名，并对明显的危险内容类型做基础拦截；如需更严格策略，建议配合 RenewShield 插件')
         );
         $form->addInput($attachmentTypes->multiMode());
 

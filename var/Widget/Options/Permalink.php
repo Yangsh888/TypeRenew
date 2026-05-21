@@ -33,7 +33,7 @@ class Permalink extends Options implements ActionInterface
         return [
             [
                 'title' => _t('Apache 标准规则'),
-                'description' => _t('适用于 Apache + mod_rewrite。当前项目后台自动探测优先使用这一写法。'),
+                'description' => _t('适用于 Apache + mod_rewrite。当前项目优先使用这一写法'),
                 'code' => "<IfModule mod_rewrite.c>\n"
                     . "RewriteEngine On\n"
                     . "RewriteBase {$basePath}\n"
@@ -44,7 +44,7 @@ class Permalink extends Options implements ActionInterface
             ],
             [
                 'title' => _t('Apache 兼容回退规则'),
-                'description' => _t('当上面的 PATH_INFO 写法不可用时，可改用这一套回退规则。两者任选其一即可。'),
+                'description' => _t('当上面的 PATH_INFO 写法不可用时，可改用这一套回退规则'),
                 'code' => "<IfModule mod_rewrite.c>\n"
                     . "RewriteEngine On\n"
                     . "RewriteBase {$basePath}\n"
@@ -55,7 +55,7 @@ class Permalink extends Options implements ActionInterface
             ],
             [
                 'title' => _t('Nginx 标准规则'),
-                'description' => _t('适用于 Nginx。建议将请求统一转发到入口脚本，不使用 if + rewrite 的兼容性更稳。'),
+                'description' => _t('适用于 Nginx 的标准规则，不建议使用 if + rewrite 规则'),
                 'code' => "location {$location} {\n"
                     . "    try_files \$uri \$uri/ {$entry}\$is_args\$args;\n"
                     . "}",
@@ -67,14 +67,13 @@ class Permalink extends Options implements ActionInterface
     {
         $basePath = $this->rewriteBasePath();
         $notes = [
-            _t('只有在启用“地址重写功能”后，才需要把下列规则写入 Web 服务器配置。'),
-            _t('Apache 可使用上方两套规则中的任意一套；Nginx 使用标准规则即可。'),
+            _t('只有在启用“地址重写功能”后，才需要把下列规则写入 Web 服务器配置'),
         ];
 
         if ('/' === $basePath) {
-            $notes[] = _t('当前站点部署在根目录。若以后迁移到子目录，请同步修改 RewriteBase 和入口脚本路径。');
+            $notes[] = _t('当前站点部署在根目录。若以后迁移到子目录，请同步修改 RewriteBase 和入口脚本路径');
         } else {
-            $notes[] = _t('当前站点子目录前缀为 %s，下列示例已按该前缀生成。', '<code>' . htmlspecialchars($basePath, ENT_QUOTES, 'UTF-8') . '</code>');
+            $notes[] = _t('当前站点子目录前缀为 %s，下列示例已按该前缀生成', '<code>' . htmlspecialchars($basePath, ENT_QUOTES, 'UTF-8') . '</code>');
         }
 
         return $notes;
@@ -310,8 +309,7 @@ RewriteRule . {$basePath}index.php [L]
             $postPatternValue,
             _t('自定义文章路径'),
             _t('可用参数：<code>{cid}</code> 日志 ID  <code>{slug}</code> 日志缩略名  <code>{category}</code> 分类  <code>{directory}</code> 多级分类  <code>{year}</code> 年  <code>{month}</code> 月  <code>{day}</code> 日')
-            . '<br />' . _t('选择一种合适的文章静态路径风格, 使得你的网站链接更加友好')
-            . '<br />' . _t('一旦你选择了某种链接风格请不要轻易修改它')
+            . '<br />' . _t('选择一种合适的文章静态路径风格，使得你的网站链接更加友好；一旦你选择了某种链接风格请不要轻易修改它')
         );
         if ($customPatternValue) {
             $postPattern->value('custom');
@@ -323,7 +321,7 @@ RewriteRule . {$basePath}index.php [L]
             null,
             $this->decodeRule((string) $routingTable['page']['url']),
             _t('独立页面路径'),
-            _t('可用参数: <code>{cid}</code> 页面 ID, <code>{slug}</code> 页面缩略名，<code>{directory}</code> 多级页面')
+            _t('可用参数：<code>{cid}</code> 页面 ID，<code>{slug}</code> 页面缩略名，<code>{directory}</code> 多级页面')
             . '<br />' . _t('请在路径中至少包含上述的一项参数')
         );
         $pagePattern->input->setAttribute('class', 'mono w-60');
@@ -334,7 +332,7 @@ RewriteRule . {$basePath}index.php [L]
             null,
             $this->decodeRule((string) $routingTable['category']['url']),
             _t('分类路径'),
-            _t('可用参数: <code>{mid}</code> 分类 ID, <code>{slug}</code> 分类缩略名，<code>{directory}</code> 多级分类')
+            _t('可用参数：<code>{mid}</code> 分类 ID，<code>{slug}</code> 分类缩略名，<code>{directory}</code> 多级分类')
             . '<br />' . _t('请在路径中至少包含上述的一项参数')
         );
         $categoryPattern->input->setAttribute('class', 'mono w-60');

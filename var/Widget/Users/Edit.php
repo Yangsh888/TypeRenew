@@ -39,11 +39,12 @@ class Edit extends Users implements ActionInterface
 
     public function userExists(int $uid): bool
     {
-        $user = $this->db->fetchRow($this->db->select()
-            ->from('table.users')
-            ->where('uid = ?', $uid)->limit(1));
-
-        return !empty($user);
+        return (bool) $this->db->fetchRow(
+            $this->db->select()
+                ->from('table.users')
+                ->where('uid = ?', $uid)
+                ->limit(1)
+        );
     }
 
     public function insertUser()

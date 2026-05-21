@@ -34,9 +34,6 @@ class Admin extends Contents
         $this->db->fetchAll($select, [$this, 'push']);
     }
 
-    /**
-     * 所属文章
-     */
     protected function ___parentPost(): Config
     {
         return new Config($this->db->fetchRow(

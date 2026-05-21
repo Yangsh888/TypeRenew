@@ -229,7 +229,6 @@ class Request
             (null !== $finalBaseUrl)
             && (false === ($pathInfo = substr($requestUri, strlen($finalBaseUrl))))
         ) {
-            // If substr() returns false then PATH_INFO is set to an empty string
             $pathInfo = '/';
         } elseif (null === $finalBaseUrl) {
             $pathInfo = $requestUri;
@@ -588,10 +587,9 @@ class Request
 
         $requestUri = '/';
 
-        if (isset($_SERVER['HTTP_X_REWRITE_URL'])) { // check this first so IIS will catch
+        if (isset($_SERVER['HTTP_X_REWRITE_URL'])) {
             $requestUri = $_SERVER['HTTP_X_REWRITE_URL'];
         } elseif (
-            // IIS7 with URL Rewrite: make sure we get the unencoded url (double slash problem)
             isset($_SERVER['IIS_WasUrlRewritten'])
             && $_SERVER['IIS_WasUrlRewritten'] == '1'
             && isset($_SERVER['UNENCODED_URL'])
@@ -611,7 +609,7 @@ class Request
             } elseif (!empty($_SERVER['QUERY_STRING']) && empty($parts['query'])) {
                 $requestUri .= '?' . $_SERVER['QUERY_STRING'];
             }
-        } elseif (isset($_SERVER['ORIG_PATH_INFO'])) { // IIS 5.0, PHP as CGI
+        } elseif (isset($_SERVER['ORIG_PATH_INFO'])) {
             $requestUri = $_SERVER['ORIG_PATH_INFO'];
             if (!empty($_SERVER['QUERY_STRING'])) {
                 $requestUri .= '?' . $_SERVER['QUERY_STRING'];
@@ -647,10 +645,8 @@ class Request
         } elseif (isset($_SERVER['PHP_SELF']) && basename($_SERVER['PHP_SELF']) === $filename) {
             $baseUrl = $_SERVER['PHP_SELF'];
         } elseif (isset($_SERVER['ORIG_SCRIPT_NAME']) && basename($_SERVER['ORIG_SCRIPT_NAME']) === $filename) {
-            $baseUrl = $_SERVER['ORIG_SCRIPT_NAME']; // 1and1 shared hosting compatibility
+            $baseUrl = $_SERVER['ORIG_SCRIPT_NAME'];
         } else {
-            // Backtrack up the script_filename to find the portion matching
-            // php_self
             $path = $_SERVER['PHP_SELF'] ?? '';
             $file = $_SERVER['SCRIPT_FILENAME'] ?? '';
             $segs = explode('/', trim($file, '/'));
@@ -665,26 +661,19 @@ class Request
             } while (($last > $index) && (false !== ($pos = strpos($path, $baseUrl))) && (0 != $pos));
         }
 
-        // Does the baseUrl have anything in common with the request_uri?
         $finalBaseUrl = null;
         $requestUri = $this->getRequestUri();
 
         if (0 === strpos($requestUri, $baseUrl)) {
-            // full $baseUrl matches
             $finalBaseUrl = $baseUrl;
         } elseif (0 === strpos($requestUri, dirname($baseUrl))) {
-            // directory portion of $baseUrl matches
             $finalBaseUrl = rtrim(dirname($baseUrl), '/');
         } elseif (false === strpos($requestUri, basename($baseUrl))) {
-            // no match whatsoever; set it blank
             $finalBaseUrl = '';
         } elseif (
             (strlen($requestUri) >= strlen($baseUrl))
             && ((false !== ($pos = strpos($requestUri, $baseUrl))) && ($pos !== 0))
         ) {
-            // If using mod_rewrite or ISAPI_Rewrite strip the script filename
-            // out of baseUrl. $pos !== 0 makes sure it is not matching a value
-            // from PATH_INFO or QUERY_STRING
             $baseUrl = substr($requestUri, 0, $pos + strlen($baseUrl));
         }
 

@@ -49,15 +49,8 @@ class GetText
     private ?array $table_translations = null;
 
     private ?array $cache_translations = null;
-    /**
-     * Constructor
-     *
-     * @param string $file file name
-     * @param boolean $enable_cache Enable or disable caching of strings (default on)
-     */
     public function __construct(string $file, bool $enable_cache = true)
     {
-        // If there isn't a StreamReader, turn on short circuit mode.
         if (!file_exists($file)) {
             $this->short_circuit = true;
             return;
@@ -68,7 +61,6 @@ class GetText
             return;
         }
 
-        // Caching can be turned off
         $this->enable_cache = $enable_cache;
         $this->STREAM = fopen($file, 'rb');
         if (!is_resource($this->STREAM)) {
@@ -84,7 +76,7 @@ class GetText
         } elseif (-107 == $magic) {
             $this->BYTE_ORDER = 1;
         } else {
-            $this->error = 1; // not MO file
+            $this->error = 1;
             return;
         }
 
@@ -104,7 +96,6 @@ class GetText
         $this->loadTables();
 
         if ($this->enable_cache) {
-            // Caching enabled, get translated string from cache
             if (array_key_exists($string, $this->cache_translations)) {
                 $num = 0;
                 return $this->cache_translations[$string];
@@ -113,7 +104,6 @@ class GetText
                 return $string;
             }
         } else {
-            // Caching not enabled, try to find string
             $num = $this->findString($string);
             if ($num == -1) {
                 return $string;
@@ -129,39 +119,31 @@ class GetText
 
         if ($this->short_circuit) {
             $num = -1;
-            if ($number != 1) {
-                return $plural;
-            } else {
-                return $single;
-            }
+            return $number != 1 ? $plural : $single;
         }
 
-        // find out the appropriate form
         $select = $this->selectString($number);
-
-        // this should contains all strings separated by NULLs
         $key = $single . chr(0) . $plural;
 
         if ($this->enable_cache) {
             if (!array_key_exists($key, $this->cache_translations)) {
                 $num = -1;
                 return ($number != 1) ? $plural : $single;
-            } else {
-                $num = 0;
-                $result = $this->cache_translations[$key];
-                $list = explode(chr(0), $result);
-                return $list[$select] ?? '';
             }
+
+            $num = 0;
+            $result = $this->cache_translations[$key];
         } else {
             $num = $this->findString($key);
             if ($num == -1) {
                 return ($number != 1) ? $plural : $single;
-            } else {
-                $result = $this->getTranslationString($num);
-                $list = explode(chr(0), $result);
-                return $list[$select] ?? '';
             }
+
+            $result = $this->getTranslationString($num);
         }
+
+        $list = explode(chr(0), $result);
+        return $list[$select] ?? '';
     }
 
     public function __destruct()
@@ -198,7 +180,6 @@ class GetText
             return;
         }
 
-        /* get original and translations tables */
         fseek($this->STREAM, $this->originals);
         $this->table_originals = $this->readIntArray($this->total * 2);
         fseek($this->STREAM, $this->translations);
@@ -206,7 +187,6 @@ class GetText
 
         if ($this->enable_cache) {
             $this->cache_translations = ['' => null];
-            /* read all strings in the cache */
             for ($i = 0; $i < $this->total; $i++) {
                 if ($this->table_originals[$i * 2 + 1] > 0) {
                     fseek($this->STREAM, $this->table_originals[$i * 2 + 2]);
@@ -219,12 +199,6 @@ class GetText
         }
     }
 
-    /**
-     * Reads an array of Integers from the Stream
-     *
-     * @param int $count How many elements should be read
-     * @return array of Integers
-     */
     private function readIntArray(int $count): array
     {
         return unpack(($this->BYTE_ORDER == 0 ? 'V' : 'N') . $count, $this->read(4 * $count));
@@ -233,12 +207,10 @@ class GetText
     private function findString(string $string, int $start = -1, int $end = -1): int
     {
         if (($start == -1) or ($end == -1)) {
-            // findString is called with only one parameter, set start end end
             $start = 0;
             $end = $this->total;
         }
         if (abs($start - $end) <= 1) {
-            // We're done, now we either found the string, or it doesn't exist
             $txt = $this->getOriginalString($start);
             if ($string == $txt) {
                 return $start;

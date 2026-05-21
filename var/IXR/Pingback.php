@@ -135,10 +135,8 @@ class Pingback
 
     public function getContent(): string
     {
-        /** 干掉html tag，只留下<a>*/
         $text = Common::stripTags($this->html, '<a href="">');
 
-        /** 此处将$target quote,留着后面用*/
         $pregLink = preg_quote($this->target);
 
         $finalText = '';

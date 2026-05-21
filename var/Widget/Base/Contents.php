@@ -81,24 +81,16 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
 
     public function getRouterParam(string $key): string
     {
-        switch ($key) {
-            case 'cid':
-                return $this->cid;
-            case 'slug':
-                return urlencode($this->slug);
-            case 'directory':
-                return implode('/', array_map('urlencode', $this->directory));
-            case 'category':
-                return empty($this->categories) ? 'uncategorized' : urlencode($this->categories[0]['slug']);
-            case 'year':
-                return $this->date->year;
-            case 'month':
-                return $this->date->month;
-            case 'day':
-                return $this->date->day;
-            default:
-                return '{' . $key . '}';
-        }
+        return match ($key) {
+            'cid' => (string) $this->cid,
+            'slug' => urlencode($this->slug),
+            'directory' => implode('/', array_map('urlencode', $this->directory)),
+            'category' => empty($this->categories) ? 'uncategorized' : urlencode($this->categories[0]['slug']),
+            'year' => (string) $this->date->year,
+            'month' => (string) $this->date->month,
+            'day' => (string) $this->date->day,
+            default => '{' . $key . '}',
+        };
     }
 
     public function select(...$fields): Query

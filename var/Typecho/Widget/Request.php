@@ -43,10 +43,11 @@ class Request
     public function filter(...$filters): Request
     {
         foreach ($filters as $filter) {
-            $this->filter[] = $this->wrapFilter(
-                is_string($filter) && isset(self::FILTERS[$filter])
-                ? self::FILTERS[$filter] : $filter
-            );
+            $filter = is_string($filter) && isset(self::FILTERS[$filter])
+                ? self::FILTERS[$filter] : $filter;
+            $this->filter[] = static function ($value) use ($filter) {
+                return $filter($value ?? '');
+            };
         }
 
         return $this;
@@ -199,7 +200,6 @@ class Request
         return $value;
     }
 
-    // 递归处理数组叶子节点，避免深层值绕过过滤链路。
     private function applyFilterRecursive($value, callable $filter)
     {
         if (!is_array($value)) {
@@ -213,10 +213,4 @@ class Request
         return $value;
     }
 
-    private function wrapFilter(callable $filter): callable
-    {
-        return function ($value) use ($filter) {
-            return $filter($value ?? '');
-        };
-    }
 }

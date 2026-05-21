@@ -22,7 +22,7 @@ class Zone
         }
 
         if ($identifiers === null) {
-            $identifiers = array_flip(DateTimeZone::listIdentifiers());
+            $identifiers = array_flip(DateTimeZone::listIdentifiers(DateTimeZone::ALL_WITH_BC));
         }
 
         return isset($identifiers[$timezoneId]) ? $timezoneId : null;

@@ -85,11 +85,8 @@ class Value
         if (!is_array($this->data)) {
             return 'string';
         }
-        if ($this->isStruct($this->data)) {
-            return 'struct';
-        } else {
-            return 'array';
-        }
+
+        return $this->isStruct($this->data) ? 'struct' : 'array';
     }
 
     private function isStruct($array): bool

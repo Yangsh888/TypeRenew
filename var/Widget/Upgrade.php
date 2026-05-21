@@ -14,14 +14,14 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
 
 class Upgrade extends BaseOptions implements ActionInterface
 {
-    private function blockingMysqlRisks(): array
+    private function assertMysqlSchemaActionAllowed(string $actionLabel): void
     {
         $status = SchemaManager::inspectMysqlUpgradeRisks($this->db);
         if (empty($status['supported'])) {
-            return [];
+            return;
         }
 
-        return array_values(array_filter(
+        $blocking = array_values(array_filter(
             (array) ($status['items'] ?? []),
             static function (array $item): bool {
                 if ((string) ($item['status'] ?? 'ok') === 'ok') {
@@ -31,11 +31,6 @@ class Upgrade extends BaseOptions implements ActionInterface
                 return in_array((string) ($item['key'] ?? ''), ['mysql_version', 'legacy_index_limit', 'mail_unsub_duplicates'], true);
             }
         ));
-    }
-
-    private function assertMysqlSchemaActionAllowed(string $actionLabel): void
-    {
-        $blocking = $this->blockingMysqlRisks();
         if ($blocking === []) {
             return;
         }

@@ -42,7 +42,11 @@ class Action extends Widget implements ActionInterface
         'mail'                     => '\Widget\Mail'
     ];
 
-    private function dispatchAction(): void
+    public function execute()
+    {
+    }
+
+    public function action()
     {
         $action = $this->request->get('action');
         $actionTable = array_merge($this->map, Options::alloc()->actionTable);
@@ -58,14 +62,5 @@ class Action extends Widget implements ActionInterface
         }
 
         throw new Widget\Exception(_t('请求的地址不存在'), 404);
-    }
-
-    public function execute()
-    {
-    }
-
-    public function action()
-    {
-        $this->dispatchAction();
     }
 }

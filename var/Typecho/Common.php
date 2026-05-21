@@ -6,17 +6,12 @@ namespace {
 
     function _t(string $string, ...$args): string
     {
-        if (empty($args)) {
-            return I18n::translate($string);
-        } else {
-            return vsprintf(I18n::translate($string), $args);
-        }
+        return empty($args) ? I18n::translate($string) : vsprintf(I18n::translate($string), $args);
     }
 
     function _e(string $string, ...$args)
     {
-        array_unshift($args, $string);
-        echo call_user_func_array('_t', $args);
+        echo _t($string, ...$args);
     }
 
     function _n(string $single, string $plural, int $number): string

@@ -45,7 +45,6 @@ class Edit extends Metas implements ActionInterface
             $select->where('mid <> ?', $this->request->get('mid'));
         }
 
-        // 只在同一父分类下判断重复性
         $select->where('parent = ?', $this->request->filter('int')->get('parent', 0));
 
         $category = $this->db->fetchRow($select);

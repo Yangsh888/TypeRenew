@@ -41,16 +41,12 @@ class Metas extends Base implements QueryInterface, RowFilterInterface, PrimaryK
 
     public function getRouterParam(string $key): string
     {
-        switch ($key) {
-            case 'mid':
-                return (string)$this->mid;
-            case 'slug':
-                return urlencode($this->slug);
-            case 'directory':
-                return implode('/', array_map('urlencode', $this->directory));
-            default:
-                return '{' . $key . '}';
-        }
+        return match ($key) {
+            'mid' => (string) $this->mid,
+            'slug' => urlencode($this->slug),
+            'directory' => implode('/', array_map('urlencode', $this->directory)),
+            default => '{' . $key . '}',
+        };
     }
 
     public function size(Query $condition): int

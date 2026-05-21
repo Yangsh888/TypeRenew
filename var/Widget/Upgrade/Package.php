@@ -23,12 +23,29 @@ class Package extends BaseOptions implements ActionInterface
         try {
             $runner = new Runner();
 
-            if ($do === 'upload') {
-                $this->assertEnvironmentReady();
-                $this->upload($runner);
-            } elseif ($do === 'apply') {
-                $this->assertEnvironmentReady();
-                $this->apply($runner);
+            if ($do === 'upload' || $do === 'apply') {
+                $report = Runner::inspect();
+                if (!$report['available']) {
+                    $message = '在线升级环境未就绪';
+                    if (!empty($report['blocking'])) {
+                        $message .= '：' . implode('；', $report['blocking']);
+                    }
+
+                    $message .= '。请开放升级目录写权限';
+                    if (defined('__TYPECHO_UPGRADE_DIR__')) {
+                        $message .= '，或调整当前升级目录配置';
+                    } else {
+                        $message .= '，或在 config.inc.php 中定义 __TYPECHO_UPGRADE_DIR__ 指向可写目录';
+                    }
+
+                    throw new Exception(_t($message), 500);
+                }
+
+                if ($do === 'upload') {
+                    $this->upload($runner);
+                } else {
+                    $this->apply($runner);
+                }
             } elseif ($do === 'clear') {
                 $removed = $runner->clear();
                 Notice::alloc()->set(
@@ -78,29 +95,6 @@ class Package extends BaseOptions implements ActionInterface
         $applied = (int) ($state['appliedFiles'] ?? 0);
         $runner->clear(true);
         Notice::alloc()->set(_t('在线升级已完成：目标版本 %s，已覆盖 %d 个文件', $to, $applied), 'success');
-    }
-
-    private function assertEnvironmentReady(): void
-    {
-        $report = Runner::inspect();
-        if ($report['available']) {
-            return;
-        }
-
-        $messages = $report['blocking'];
-        $message = '在线升级环境未就绪';
-        if (!empty($messages)) {
-            $message .= '：' . implode('；', $messages);
-        }
-
-        $message .= '。请开放升级目录写权限';
-        if (defined('__TYPECHO_UPGRADE_DIR__')) {
-            $message .= '，或调整当前升级目录配置';
-        } else {
-            $message .= '，或在 config.inc.php 中定义 __TYPECHO_UPGRADE_DIR__ 指向可写目录';
-        }
-
-        throw new Exception(_t($message), 500);
     }
 
 }

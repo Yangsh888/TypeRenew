@@ -36,9 +36,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 {
     private array $wpOptions;
 
-    /**
-     * 如果这里没有重载, 每次都会被默认执行
-     */
     public function execute(bool $run = false)
     {
         if ($run) {
@@ -119,9 +116,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         ];
     }
 
-    /**
-     * about wp xmlrpc api, you can see http://codex.wordpress.org/XML-RPC
-     */
     public function wpGetPage(int $blogId, int $pageId, string $userName, string $password): array
     {
         $page = PageEdit::alloc(null, ['cid' => $pageId], false);
@@ -147,7 +141,7 @@ class XmlRpc extends Contents implements ActionInterface, Hook
             'wp_author'              => $page->author->name,
             'wp_page_parent_id'      => '0',
             'wp_page_parent_title'   => '',
-            'wp_page_order'          => $page->order,     //meta是描述字段, 在page时表示顺序
+            'wp_page_order'          => $page->order,
             'wp_author_id'           => $page->authorId,
             'wp_author_display_name' => $page->author->screenName,
             'date_created_gmt'       => $this->xmlRpcGmtDate($page->created),
@@ -230,7 +224,7 @@ class XmlRpc extends Contents implements ActionInterface, Hook
                 'wp_author'              => $pages->author->name,
                 'wp_page_parent_id'      => 0,
                 'wp_page_parent_title'   => '',
-                'wp_page_order'          => intval($pages->order),     //meta是描述字段, 在page时表示顺序
+                'wp_page_order'          => intval($pages->order),
                 'wp_author_id'           => $pages->authorId,
                 'wp_author_display_name' => $pages->author->screenName,
                 'date_created_gmt'       => $this->xmlRpcGmtDate($pages->created),
@@ -248,9 +242,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         return $this->mwNewPost($blogId, $userName, $password, $content, $publish);
     }
 
-    /**
-     * about MetaWeblog API, you can see http://www.xmlrpc.com/metaWeblogApi
-     */
     public function mwNewPost(int $blogId, string $userName, string $password, array $content, bool $publish): int
     {
         $input = [];
@@ -285,7 +276,7 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         }
 
         if (isset($content['dateCreated'])) {
-            $timestamp = $this->xmlRpcLocalTimestamp($content['dateCreated']);
+            $timestamp = $this->parseXmlRpcTimestamp($content['dateCreated'], $this->options->getTimezoneZone());
             if ($timestamp !== null) {
                 $input['created'] = $timestamp;
             }
@@ -784,7 +775,7 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         ];
 
         if (isset($struct['date_created_gmt']) && $struct['date_created_gmt'] instanceof Date) {
-            $timestamp = $this->xmlRpcUtcTimestamp($struct['date_created_gmt']);
+            $timestamp = $this->parseXmlRpcTimestamp($struct['date_created_gmt'], new \DateTimeZone('UTC'));
             if ($timestamp !== null) {
                 $input['created'] = $timestamp;
             }
@@ -1332,16 +1323,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         return new Date($this->options->getUtcDateTime($timestamp)->format('Ymd\TH:i:s\Z'));
     }
 
-    private function xmlRpcLocalTimestamp(Date $date): ?int
-    {
-        return $this->parseXmlRpcTimestamp($date, $this->options->getTimezoneZone());
-    }
-
-    private function xmlRpcUtcTimestamp(Date $date): ?int
-    {
-        return $this->parseXmlRpcTimestamp($date, new \DateTimeZone('UTC'));
-    }
-
     private function parseXmlRpcTimestamp(Date $date, \DateTimeZone $defaultZone): ?int
     {
         $iso = preg_replace('/\.[0-9]{1,6}(?=Z|[+-]\d{2}:?\d{2}$)/', '', $date->getIso()) ?? $date->getIso();
@@ -1513,7 +1494,6 @@ EOF;
 
     private function getPostExtended(Contents $content): array
     {
-        //根据客户端显示来判断是否显示html代码
         $agent = $this->request->getAgent();
 
         if (

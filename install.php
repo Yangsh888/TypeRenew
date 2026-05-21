@@ -454,10 +454,6 @@ function install_js_support()
     <?php
 }
 
-/**
- * @param string[] $extensions
- * @return string|null
- */
 function install_check_extension(array $extensions): ?string
 {
     foreach ($extensions as $extension) {
@@ -520,9 +516,6 @@ function install_step_1()
     <?php
 }
 
-/**
- * check dependencies before install
- */
 function install_step_1_perform()
 {
     $errors = [];

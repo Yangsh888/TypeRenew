@@ -22,7 +22,6 @@ class Form extends Layout
 
     public const MULTIPART_ENCODE = 'multipart/form-data';
 
-    /** 文本编码 */
     public const TEXT_ENCODE = 'text/plain';
 
     private array $inputs = [];

@@ -11,7 +11,6 @@ namespace Utils;
  */
 class AutoP
 {
-    // 作为段落的标签
     private const BLOCK = 'p|pre|div|blockquote|form|ul|ol|dd|table|ins|h1|h2|h3|h4|h5|h6';
 
     private int $uniqueId = 0;
@@ -113,7 +112,7 @@ class AutoP
                         $uniqueId,
                         $match[1] + 7 + $foundTagCount * 10 + $tagLength,
                         0
-                    ); // 7 = 5 + 2
+                    );
                     $foundTagCount++;
                 }
             }

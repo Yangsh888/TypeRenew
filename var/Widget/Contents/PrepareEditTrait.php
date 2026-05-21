@@ -71,13 +71,14 @@ trait PrepareEditTrait
         foreach ($permissions as $permission) {
             $permission = strtolower($permission);
 
-            if ('edit' == $permission) {
+            if ($permission === 'edit') {
                 $allow &= ($this->user->pass('editor', true) || $this->authorId == $this->user->uid);
-            } else {
-                $permission = 'allow' . ucfirst(strtolower($permission));
-                $optionPermission = 'default' . ucfirst($permission);
-                $allow &= ($this->{$permission} ?? $this->options->{$optionPermission});
+                continue;
             }
+
+            $permission = 'allow' . ucfirst($permission);
+            $optionPermission = 'default' . ucfirst($permission);
+            $allow &= ($this->{$permission} ?? $this->options->{$optionPermission});
         }
 
         return $allow;

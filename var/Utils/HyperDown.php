@@ -186,7 +186,6 @@ class HyperDown
         $blocks = $this->parseBlock($text, $lines);
         $html = '';
 
-        // inline mode for single normal block
         if ($inline && count($blocks) == 1 && $blocks[0][0] == 'normal') {
             $blocks[0][3] = true;
         }
@@ -285,7 +284,6 @@ class HyperDown
     {
         $text = $this->call('beforeParseInline', $text);
 
-        // code
         $text = preg_replace_callback(
             "/(^|[^\\\])(`+)(.+?)\\2/",
             function ($matches) {
@@ -296,7 +294,6 @@ class HyperDown
             $text
         );
 
-        // mathjax
         $text = preg_replace_callback(
             "/(^|[^\\\])(\\$+)(.+?)\\2/",
             function ($matches) {
@@ -307,7 +304,6 @@ class HyperDown
             $text
         );
 
-        // escape
         $text = preg_replace_callback(
             "/\\\(.)/u",
             function ($matches) {
@@ -319,7 +315,6 @@ class HyperDown
             $text
         );
 
-        // link
         $text = preg_replace_callback(
             "/<(https?:\/\/.+|(?:mailto:)?[_a-z0-9-\.\+]+@[_\w-]+(?:\.[a-z]{2,})+)>/i",
             function ($matches) {
@@ -355,7 +350,6 @@ class HyperDown
 
         $text = str_replace(['<', '>'], ['&lt;', '&gt;'], $text);
 
-        // footnote
         $text = preg_replace_callback(
             "/\[\^((?:[^\]]|\\\\\]|\\\\\[)+?)\]/",
             function ($matches) {
@@ -373,7 +367,6 @@ class HyperDown
             $text
         );
 
-        // image
         $text = preg_replace_callback(
             "/!\[((?:[^\]]|\\\\\]|\\\\\[)*?)\]\(((?:[^\)]|\\\\\)|\\\\\()+?)\)/",
             function ($matches) {
@@ -409,7 +402,6 @@ class HyperDown
             $text = '';
         }
 
-        // link
         $text = preg_replace_callback(
             "/\[([^\]]*(?:\\\\.[^\]]*)*)\]\(([^)]*(?:\\\\.[^)]*)*)\)/",
             function ($matches) {
@@ -440,7 +432,6 @@ class HyperDown
             $text
         );
 
-        // strong and em processing
         $text = $this->parseInlineCallback($text);
         $text = preg_replace(
             "/<([_a-z0-9-\.\+]+@[^@]+\.[a-z]{2,})>/i",
@@ -448,7 +439,6 @@ class HyperDown
             $text
         );
 
-        // autolink url
         if ($enableAutoLink) {
             $text = preg_replace_callback(
                 "/(^|[^\"])(https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\b([-a-zA-Z0-9@:%_\+.~#?&\/=]*)|(?:mailto:)?[_a-z0-9-\.\+]+@[_\w-]+(?:\.[a-z]{2,})+)($|[^\"])/",
@@ -557,7 +547,6 @@ class HyperDown
             'html'    => false
         ];
 
-        // analyze by line
         foreach ($lines as $key => $line) {
             $block = $this->getBlock();
             $args = [$block, $key, $line, &$state, $lines];
@@ -609,7 +598,6 @@ class HyperDown
             $state['empty'] = 0;
             $type = false !== strpos('+-*', $matches[2]) ? 'ul' : 'ol';
 
-            // opened
             if ($this->isBlock('list')) {
                 if ($space < $block[3][0] || ($space == $block[3][0] && $type != $block[3][1])) {
                     $this->startBlock('list', $key, [$space, $type, $tab]);
@@ -1003,7 +991,6 @@ class HyperDown
             }
 
             if ('normal' == $type) {
-                // combine two blocks
                 $types = ['list', 'quote'];
 
                 if ($from == $to && preg_match("/^\s*$/", $lines[$from])
@@ -1011,13 +998,11 @@ class HyperDown
                     if ($prevBlock[0] == $nextBlock[0] && in_array($prevBlock[0], $types)
                         && ($prevBlock[0] != 'list'
                             || ($prevBlock[3][0] == $nextBlock[3][0] && $prevBlock[3][1] == $nextBlock[3][1]))) {
-                        // combine 3 blocks
                         $blocks[$key - 1] = [
                             $prevBlock[0], $prevBlock[1], $nextBlock[2], $prevBlock[3] ?? null
                         ];
                         array_splice($blocks, $key, 2);
 
-                        // do not move
                         $moved = true;
                     }
                 }

@@ -25,11 +25,11 @@ class Comments extends Base implements QueryInterface, RowFilterInterface, Prima
 
     public function getRouterParam(string $key): string
     {
-        if ($key === 'permalink') {
-            return $this->parentContent->path;
-        }
-
-        return $key === 'commentPage' ? (string) $this->commentPage : '{' . $key . '}';
+        return match ($key) {
+            'permalink' => $this->parentContent->path,
+            'commentPage' => (string) $this->commentPage,
+            default => '{' . $key . '}',
+        };
     }
 
     public function insert(array $rows): int

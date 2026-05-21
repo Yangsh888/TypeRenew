@@ -7,7 +7,6 @@ use Typecho\Http\Client as HttpClient;
 #[\AllowDynamicProperties]
 class Client
 {
-    /** 默认客户端 */
     private const DEFAULT_USERAGENT = 'Typecho XML-RPC PHP Library';
 
     private string $url;
@@ -49,10 +48,8 @@ class Client
 
         $contents = $client->getResponseBody();
 
-        // Now parse what we've got back
         $this->message = new Message($contents);
         if (!$this->message->parse()) {
-            // XML error
             $this->error = new Error(-32700, 'parse error. not well formed');
             return false;
         }
@@ -82,29 +79,18 @@ class Client
 
         if ($return) {
             return $this->getResponse();
-        } else {
-            throw new Exception($this->getErrorMessage(), $this->getErrorCode());
         }
+
+        throw new Exception($this->error->message, $this->error->code);
     }
 
     public function getResponse()
     {
-        // methodResponses can only have one param - return that
         return $this->message->params[0] ?? null;
     }
 
     public function isError(): bool
     {
         return isset($this->error);
-    }
-
-    private function getErrorCode(): int
-    {
-        return $this->error->code;
-    }
-
-    private function getErrorMessage(): string
-    {
-        return $this->error->message;
     }
 }

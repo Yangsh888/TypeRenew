@@ -25,9 +25,6 @@ class Admin extends Metas
         $this->pushAll($this->getRows($this->getChildIds($this->parentId)));
     }
 
-    /**
-     * 向上的返回链接
-     */
     public function backLink()
     {
         if ($this->parentId) {

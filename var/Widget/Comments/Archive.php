@@ -79,7 +79,7 @@ class Archive extends Comments
 
                     if ($comment['levels'] >= $this->options->commentsMaxNestingLevels) {
                         $comment['levels'] = $this->stack[$parent]['levels'];
-                        $parent = $this->stack[$parent]['parent'];     // 上上层节点
+                        $parent = $this->stack[$parent]['parent'];
                         $comment['parent'] = $parent;
                     }
 

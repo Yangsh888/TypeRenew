@@ -29,18 +29,12 @@ class Edit extends Comments implements ActionInterface
     public function commentIsWriteable(?Query $condition = null): bool
     {
         if (empty($condition)) {
-            if ($this->have() && ($this->user->pass('editor', true) || $this->ownerId == $this->user->uid)) {
-                return true;
-            }
-        } else {
-            $post = $this->db->fetchRow($condition->select('ownerId')->from('table.comments')->limit(1));
-
-            if ($post && ($this->user->pass('editor', true) || $post['ownerId'] == $this->user->uid)) {
-                return true;
-            }
+            return $this->have() && ($this->user->pass('editor', true) || $this->ownerId == $this->user->uid);
         }
 
-        return false;
+        $post = $this->db->fetchRow($condition->select('ownerId')->from('table.comments')->limit(1));
+
+        return $post && ($this->user->pass('editor', true) || $post['ownerId'] == $this->user->uid);
     }
 
     private function mark(int $coid, string $status): bool

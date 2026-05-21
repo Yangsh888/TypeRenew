@@ -6,7 +6,7 @@ class Message
 {
     public string $message;
 
-    public string $messageType = '';  // methodCall / methodResponse / fault
+    public string $messageType = '';
 
     public int $faultCode = 0;
 
@@ -16,12 +16,11 @@ class Message
 
     public array $params = [];
 
-    // Current variable stacks
-    private array $arrayStructs = [];   // The stack used to keep track of the current array/struct
+    private array $arrayStructs = [];
 
-    private array $arrayStructsTypes = []; // Stack keeping track of if things are structs or array
+    private array $arrayStructsTypes = [];
 
-    private array $currentStructName = [];  // A stack as well
+    private array $currentStructName = [];
 
     private array $valueTypes = [];
 
@@ -138,7 +137,6 @@ class Message
                 $this->markTypedValue();
                 break;
             case 'value':
-                // "If no type is indicated, the type is string."
                 $typed = array_pop($this->valueTypes);
                 if ($typed === false) {
                     $value = $this->currentTagContents;

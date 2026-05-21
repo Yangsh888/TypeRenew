@@ -55,7 +55,6 @@ class Parser
                 preg_quote(str_replace(['[', ']', ':'], ['%', '%', ' '], $route['url']))
             );
 
-            /** 处理斜线 */
             $route['regx'] = rtrim($route['regx'], '/');
             $route['regx'] = '|^' . $route['regx'] . '[/]?$|';
 

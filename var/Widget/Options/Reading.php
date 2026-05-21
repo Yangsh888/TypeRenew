@@ -66,11 +66,12 @@ class Reading extends Permalink
                     $routingTable,
                     '/' . ltrim($this->encodeRule($archivePattern), '/')
                 );
-            } else {
-                $routingTable = \Utils\Helper::syncArchiveRoutes($routingTable);
             }
         } else {
             $settings['frontArchive'] = 0;
+        }
+
+        if (!$settings['frontArchive']) {
             $routingTable = \Utils\Helper::syncArchiveRoutes($routingTable);
         }
 

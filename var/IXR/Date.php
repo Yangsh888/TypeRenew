@@ -72,9 +72,6 @@ class Date
         return '<dateTime.iso8601>' . $this->getIso() . '</dateTime.iso8601>';
     }
 
-    /**
-     * @return false|int
-     */
     public function getTimestamp()
     {
         if ($this->timezone === '') {

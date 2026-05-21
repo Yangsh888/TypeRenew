@@ -73,15 +73,9 @@ class Options extends Base
         return __TYPECHO_ROOT_DIR__ . __TYPECHO_THEME_DIR__ . '/' . trim($theme, './') . '/' . trim($file, './');
     }
 
-    public function siteUrl(?string $path = null)
-    {
-        echo Common::url($path, $this->siteUrl);
-    }
+    public function siteUrl(?string $path = null) { echo Common::url($path, $this->siteUrl); }
 
-    public function index(?string $path = null)
-    {
-        echo Common::url($path, $this->index);
-    }
+    public function index(?string $path = null) { echo Common::url($path, $this->index); }
 
     public function themeUrl(?string $path = null, ?string $theme = null)
     {
@@ -95,15 +89,9 @@ class Options extends Base
         }
     }
 
-    public function pluginUrl(?string $path = null)
-    {
-        echo Common::url($path, $this->pluginUrl);
-    }
+    public function pluginUrl(?string $path = null) { echo Common::url($path, $this->pluginUrl); }
 
-    public function pluginDir(?string $plugin = null): string
-    {
-        return Common::url($plugin, $this->pluginDir);
-    }
+    public function pluginDir(?string $plugin = null): string { return Common::url($plugin, $this->pluginDir); }
 
     public function adminUrl(?string $path = null, bool $return = false)
     {
