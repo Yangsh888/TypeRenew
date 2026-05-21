@@ -18,7 +18,7 @@ class Plugin
 
     private $component;
 
-    private bool $signal = false;
+    private array $signalStack = [];
 
     public function __construct(string $handle)
     {
@@ -338,8 +338,18 @@ class Plugin
     public function trigger(?bool &$signal): Plugin
     {
         $signal = false;
-        $this->signal = &$signal;
+        $this->signalStack[] = static function (bool $value) use (&$signal): void {
+            $signal = $value;
+        };
         return $this;
+    }
+
+    private function emitSignal(bool $value): void
+    {
+        $emitter = array_pop($this->signalStack);
+        if ($emitter !== null) {
+            $emitter($value);
+        }
     }
 
     public function __get(string $component)
@@ -391,13 +401,15 @@ class Plugin
     public function call(string $component, ...$args)
     {
         $componentKey = $this->handle . ':' . $component;
+        $hasCallbacks = isset(self::$plugin['handles'][$componentKey]);
 
-        if (!isset(self::$plugin['handles'][$componentKey])) {
+        $this->emitSignal($hasCallbacks);
+
+        if (!$hasCallbacks) {
             return null;
         }
 
         $return = null;
-        $this->signal = true;
 
         foreach (self::$plugin['handles'][$componentKey] as $callback) {
             $return = call_user_func_array($callback, $args);
@@ -409,13 +421,15 @@ class Plugin
     public function filter(string $component, $value, ...$args)
     {
         $componentKey = $this->handle . ':' . $component;
+        $hasCallbacks = isset(self::$plugin['handles'][$componentKey]);
 
-        if (!isset(self::$plugin['handles'][$componentKey])) {
+        $this->emitSignal($hasCallbacks);
+
+        if (!$hasCallbacks) {
             return $value;
         }
 
         $result = $value;
-        $this->signal = true;
 
         foreach (self::$plugin['handles'][$componentKey] as $callback) {
             $currentArgs = array_merge([$result], $args, [$result]);
