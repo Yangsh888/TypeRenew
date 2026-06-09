@@ -187,6 +187,29 @@ $userAvatarUrl = \Typecho\Common::gravatarUrl($user->mail, 38);
                     <svg class="tr-ico" aria-hidden="true"><use href="<?php echo htmlspecialchars($iconsUrl, ENT_QUOTES, 'UTF-8'); ?>#i-monitor"></use></svg>
                     <span><?php _e('跟随系统'); ?></span>
                 </button>
+                <div class="tr-pop-sep" role="separator"></div>
+                <div class="tr-pop-label"><?php _e('主题色'); ?></div>
+                <div class="tr-accent-row" role="group" aria-label="<?php _e('主题色'); ?>">
+                    <?php
+                    $trAccents = [
+                        'blue'    => ['#2563eb', _t('蓝')],
+                        'violet'  => ['#7c3aed', _t('紫')],
+                        'indigo'  => ['#4f46e5', _t('靛')],
+                        'emerald' => ['#059669', _t('翠')],
+                        'teal'    => ['#0f766e', _t('墨绿')],
+                        'cyan'    => ['#0891b2', _t('青')],
+                        'rose'    => ['#e11d48', _t('玫')],
+                        'pink'    => ['#db2777', _t('粉')],
+                        'red'     => ['#dc2626', _t('红')],
+                        'amber'   => ['#d97706', _t('琥珀')],
+                        'orange'  => ['#ea580c', _t('橙')],
+                        'slate'   => ['#475569', _t('灰')],
+                    ];
+                    foreach ($trAccents as $trAccentId => $trAccentInfo):
+                    ?>
+                        <button type="button" class="tr-accent-dot" data-tr-accent="<?php echo htmlspecialchars($trAccentId, ENT_QUOTES, 'UTF-8'); ?>" style="--tr-dot: <?php echo htmlspecialchars($trAccentInfo[0], ENT_QUOTES, 'UTF-8'); ?>" title="<?php echo htmlspecialchars($trAccentInfo[1], ENT_QUOTES, 'UTF-8'); ?>" aria-label="<?php echo htmlspecialchars($trAccentInfo[1], ENT_QUOTES, 'UTF-8'); ?>" aria-pressed="false"></button>
+                    <?php endforeach; ?>
+                </div>
             </div>
             <button type="button" class="tr-pill tr-pill-btn tr-pill-kbd" id="trCmdBtn" title="<?php _e('快捷命令'); ?>">
                 <svg class="tr-ico" aria-hidden="true"><use href="<?php echo htmlspecialchars($iconsUrl, ENT_QUOTES, 'UTF-8'); ?>#i-command"></use></svg>

@@ -147,9 +147,7 @@ $pluginVersionToolbar = '<div class="tr-plugin-version-toolbar">'
                 <?php if ($deactivatedPlugins->have() || !$activatedPlugins->have()): ?>
                     <div class="tr-plugin-section-head">
                         <h4 class="typecho-list-table-title"><?php _e('禁用的插件'); ?></h4>
-                        <?php if (!$activatedPlugins->have() && empty($activatedPlugins->activatedPlugins)): ?>
-                            <?php echo $pluginVersionToolbar; ?>
-                        <?php endif; ?>
+                        <?php echo $pluginVersionToolbar; ?>
                     </div>
                     <table class="typecho-list-table deactivate">
                         <colgroup>

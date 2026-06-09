@@ -41,6 +41,20 @@
         }
     };
 
+    let booted = false;
+    let animTimer = null;
+    const pulseAnim = () => {
+        if (!booted) return;
+        root.classList.add('tr-theme-anim');
+        if (animTimer) {
+            window.clearTimeout(animTimer);
+        }
+        animTimer = window.setTimeout(() => {
+            root.classList.remove('tr-theme-anim');
+            animTimer = null;
+        }, 320);
+    };
+
     const apply = () => {
         let dark = false;
         if (pref === 'dark') {
@@ -48,6 +62,8 @@
         } else if (pref === 'system') {
             dark = isSystemDark();
         }
+
+        pulseAnim();
 
         if (dark) {
             root.classList.add('tr-theme-dark');
@@ -114,6 +130,7 @@
 
     pref = getPref();
     apply();
+    booted = true;
 
     if (window.matchMedia) {
         try {
@@ -171,6 +188,51 @@
             if (e.key === 'Escape') {
                 togglePop(false);
             }
+        });
+    }
+
+    // 主题色（强调色）切换：独立于浅/深色模式，写 trAccent，切 html.tr-accent-*
+    const ACCENT_KEY = 'trAccent';
+    const ACCENT_IDS = ['blue', 'violet', 'indigo', 'emerald', 'teal', 'cyan', 'rose', 'pink', 'red', 'amber', 'orange', 'slate'];
+    const accentDots = themePop
+        ? Array.from(themePop.querySelectorAll('[data-tr-accent]'))
+        : [];
+
+    const getAccent = () => {
+        const saved = store ? store.get(ACCENT_KEY, 'blue') : 'blue';
+        return ACCENT_IDS.indexOf(saved) !== -1 ? saved : 'blue';
+    };
+
+    const syncAccentUi = (cur) => {
+        accentDots.forEach((el) => {
+            const on = el.getAttribute('data-tr-accent') === cur;
+            el.setAttribute('aria-pressed', on ? 'true' : 'false');
+            el.classList.toggle('is-active', on);
+        });
+    };
+
+    const applyAccent = (next) => {
+        ACCENT_IDS.forEach((id) => root.classList.remove('tr-accent-' + id));
+        root.classList.add('tr-accent-' + next);
+        syncAccentUi(next);
+    };
+
+    const setAccent = (next) => {
+        if (store) {
+            store.set(ACCENT_KEY, next);
+        }
+        pulseAnim();
+        applyAccent(next);
+    };
+
+    if (accentDots.length) {
+        applyAccent(getAccent());
+        accentDots.forEach((el) => {
+            el.addEventListener('click', () => {
+                const v = el.getAttribute('data-tr-accent') || 'blue';
+                if (ACCENT_IDS.indexOf(v) === -1) return;
+                setAccent(v);
+            });
         });
     }
 

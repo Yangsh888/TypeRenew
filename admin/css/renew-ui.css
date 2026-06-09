@@ -1,5 +1,6 @@
 :root {
-    --tr-accent: #2563eb;
+    --tr-accent-rgb: 37 99 235;
+    --tr-accent: rgb(var(--tr-accent-rgb));
     --tr-accent-2: #1d4ed8;
     --tr-bg: #f2f3f5;
     --tr-surface: #ffffff;
@@ -11,16 +12,10 @@
     --tr-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
     --tr-shadow-sm: 0 6px 18px rgba(15, 23, 42, 0.06);
     --tr-radius: 14px;
-    --tr-radius-sm: 12px;
-    --tr-radius-lg: 18px;
     --tr-gap: 16px;
     --tr-gap-sm: 12px;
-    --tr-col-gap: 14px;
     --tr-gutter: 10px;
     --tr-stack: 12px;
-    --tr-pad-1: 10px;
-    --tr-pad-2: 14px;
-    --tr-pad-3: 16px;
     --tr-control-h: 40px;
     --tr-control-h-sm: 34px;
     --tr-control-font: 14px;
@@ -40,6 +35,21 @@
     --tr-hover-border: rgba(15, 23, 42, 0.14);
     --tr-table-head-bg: rgba(15, 23, 42, 0.04);
     --tr-row-hover-bg: rgba(2, 6, 23, 0.02);
+
+    /* 强调色派生（主题色切换只需改 --tr-accent-rgb 与 --tr-accent-2） */
+    --tr-accent-soft: rgb(var(--tr-accent-rgb) / 0.12);
+    --tr-accent-strong: var(--tr-accent-2);
+
+    /* 圆角补全 */
+    --tr-radius-pill: 999px;
+
+    /* 语义状态色（成功/警告/危险，浅色态） */
+    --tr-success: #0f766e;
+    --tr-warning: #b45309;
+    --tr-danger: #dc2626;
+    --tr-danger-rgb: 239 68 68;
+
+    /* 断点约定（仅团队规范记录）：xs480/sm640/md768/lg1024/xl1280；主力 768（侧边栏转抽屉）与 1024（平板）。 */
 }
 
 body.tr-admin {
@@ -50,7 +60,22 @@ body.tr-admin {
     display: flex;
     flex-direction: column;
     padding-left: var(--tr-sidebar-w);
+    padding-top: 0;
     overflow-x: hidden;
+}
+
+/* 丝滑切换：仅 <html>.tr-theme-anim（切换瞬间 JS 临时加）时对大面积表面做颜色过渡，首屏不动画避免闪烁。 */
+html.tr-theme-anim body.tr-admin,
+html.tr-theme-anim body.tr-admin .tr-shell,
+html.tr-theme-anim body.tr-admin .tr-topbar,
+html.tr-theme-anim body.tr-admin .tr-card,
+html.tr-theme-anim body.tr-admin .tr-panel,
+html.tr-theme-anim body.tr-admin .tr-pill,
+html.tr-theme-anim body.tr-admin .tr-btn,
+html.tr-theme-anim body.tr-admin .tr-kpi-icon,
+html.tr-theme-anim body.tr-admin .typecho-list-table,
+html.tr-theme-anim body.tr-admin .typecho-page-main > [class*="col-"]::before {
+    transition: background-color .28s ease, color .28s ease, border-color .28s ease, box-shadow .28s ease;
 }
 
 body.tr-admin.tr-page-profile,
@@ -136,7 +161,7 @@ body.tr-admin a:hover {
     height: 34px;
     border-radius: 10px;
     background: linear-gradient(135deg, var(--tr-accent), var(--tr-accent-2));
-    box-shadow: 0 10px 20px rgba(37, 99, 235, 0.22);
+    box-shadow: 0 10px 20px rgb(var(--tr-accent-rgb) / 0.22);
     display: grid;
     place-items: center;
     color: #fff;
@@ -148,12 +173,6 @@ body.tr-admin a:hover {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-}
-
-.tr-shell-actions {
-    display: flex;
-    align-items: center;
-    gap: 8px;
 }
 
 .tr-btn-icon {
@@ -196,12 +215,7 @@ body.tr-admin a:hover {
     background-clip: content-box;
 }
 
-.tr-nav ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-}
-
+.tr-nav ul,
 .tr-nav menu {
     list-style: none;
     margin: 0;
@@ -243,8 +257,8 @@ body.tr-admin a:hover {
 
 .tr-nav > ul > li.tr-parent-active > a {
     color: rgba(15, 23, 42, 0.92);
-    background: rgba(37, 99, 235, 0.10);
-    border: 1px solid rgba(37, 99, 235, 0.16);
+    background: rgb(var(--tr-accent-rgb) / 0.10);
+    border: 1px solid rgb(var(--tr-accent-rgb) / 0.16);
 }
 
 .tr-nav > ul > li:not(.tr-parent-active) > a:hover {
@@ -274,7 +288,7 @@ body.tr-admin a:hover {
 }
 
 .tr-nav > ul > li > menu > li.tr-child-active > a {
-    background: rgba(37, 99, 235, 0.14);
+    background: rgb(var(--tr-accent-rgb) / 0.14);
     color: rgba(15, 23, 42, 0.98);
 }
 
@@ -354,6 +368,8 @@ body.tr-admin a:hover {
     z-index: 40;
     height: var(--tr-topbar-h);
     display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
     align-items: center;
     justify-content: space-between;
     gap: 12px;
@@ -395,48 +411,7 @@ body.tr-admin a:hover {
     text-overflow: ellipsis;
 }
 
-.tr-topbar-brand {
-    font-weight: 820;
-    letter-spacing: 0.2px;
-    color: rgba(15, 23, 42, 0.92);
-    text-decoration: none;
-}
-
-.tr-topbar-brand:hover {
-    color: rgba(15, 23, 42, 0.92);
-}
-
-.tr-crumbs {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    min-width: 0;
-    color: rgba(15, 23, 42, 0.84);
-    font-weight: 650;
-    letter-spacing: 0.1px;
-}
-
-.tr-crumb {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.tr-crumb-current {
-    color: rgba(15, 23, 42, 0.94);
-}
-
-.tr-crumb-sep {
-    flex: 0 0 auto;
-    color: rgba(15, 23, 42, 0.28);
-}
-
-.tr-topbar-right {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
+.tr-topbar-right,
 .tr-topbar-ext {
     display: flex;
     align-items: center;
@@ -467,12 +442,6 @@ body.tr-admin a:hover {
     color: var(--tr-text-1);
 }
 
-.tr-topbar-meta {
-    font-size: 12px;
-    color: var(--tr-muted);
-    white-space: nowrap;
-}
-
 .tr-pill {
     display: inline-flex;
     align-items: center;
@@ -498,13 +467,13 @@ body.tr-admin .tr-topbar a:focus {
 }
 
 .tr-pill.tr-pill-accent {
-    background: rgba(37, 99, 235, 0.12);
-    border-color: rgba(37, 99, 235, 0.22);
+    background: rgb(var(--tr-accent-rgb) / 0.12);
+    border-color: rgb(var(--tr-accent-rgb) / 0.22);
     color: rgba(15, 23, 42, 0.92);
 }
 
 .tr-pill.tr-pill-accent:hover {
-    background: rgba(37, 99, 235, 0.16);
+    background: rgb(var(--tr-accent-rgb) / 0.16);
 }
 
 .tr-topbar-tools {
@@ -549,7 +518,7 @@ body.tr-admin .tr-topbar a:focus {
     grid-template-columns: 1fr;
     gap: 6px;
     padding: 8px;
-    min-width: 160px;
+    min-width: 200px;
     background: var(--tr-surface);
     border: 1px solid rgba(15, 23, 42, 0.12);
     border-radius: 14px;
@@ -575,8 +544,51 @@ body.tr-admin .tr-topbar a:focus {
 }
 
 .tr-pop-item:hover {
-    background: rgba(37, 99, 235, 0.10);
-    border-color: rgba(37, 99, 235, 0.18);
+    background: rgb(var(--tr-accent-rgb) / 0.10);
+    border-color: rgb(var(--tr-accent-rgb) / 0.18);
+}
+
+.tr-pop-sep {
+    height: 1px;
+    margin: 2px 2px;
+    background: var(--tr-border);
+}
+
+.tr-pop-label {
+    padding: 2px 4px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    color: var(--tr-muted);
+}
+
+.tr-accent-row {
+    display: grid;
+    grid-template-columns: repeat(6, 22px);
+    gap: 8px;
+    padding: 2px 4px 4px;
+}
+
+.tr-accent-dot {
+    width: 22px;
+    height: 22px;
+    flex: 0 0 22px;
+    border-radius: var(--tr-radius-pill);
+    border: 2px solid transparent;
+    background: var(--tr-dot, var(--tr-accent));
+    cursor: pointer;
+    padding: 0;
+    box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.12);
+    transition: transform .14s ease, box-shadow .14s ease, border-color .14s ease;
+}
+
+.tr-accent-dot:hover {
+    transform: translateY(-1px) scale(1.08);
+}
+
+.tr-accent-dot.is-active {
+    border-color: var(--tr-surface);
+    box-shadow: 0 0 0 2px var(--tr-dot, var(--tr-accent));
 }
 
 .tr-cmd {
@@ -630,8 +642,8 @@ body.tr-admin.tr-cmd-open {
 }
 
 .tr-cmd-input:focus {
-    border-color: rgba(37, 99, 235, 0.55);
-    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+    border-color: rgb(var(--tr-accent-rgb) / 0.55);
+    box-shadow: 0 0 0 4px rgb(var(--tr-accent-rgb) / 0.12);
     background: var(--tr-surface);
 }
 
@@ -670,8 +682,8 @@ body.tr-admin.tr-cmd-open {
 
 .tr-cmd-item.is-active,
 .tr-cmd-item:hover {
-    background: rgba(37, 99, 235, 0.10);
-    border-color: rgba(37, 99, 235, 0.18);
+    background: rgb(var(--tr-accent-rgb) / 0.10);
+    border-color: rgb(var(--tr-accent-rgb) / 0.18);
 }
 
 .tr-cmd-main {
@@ -695,7 +707,7 @@ body.tr-admin.tr-cmd-open {
 
 .tr-cmd-item.is-active .tr-cmd-ico,
 .tr-cmd-item:hover .tr-cmd-ico {
-    color: rgba(37, 99, 235, 0.85);
+    color: rgb(var(--tr-accent-rgb) / 0.85);
 }
 
 .tr-cmd-title {
@@ -715,7 +727,8 @@ html.tr-theme-dark {
 }
 
 html.tr-theme-dark body.tr-admin {
-    --tr-accent: #60a5fa;
+    --tr-accent-rgb: 96 165 250;
+    --tr-accent: rgb(var(--tr-accent-rgb));
     --tr-accent-2: #3b82f6;
     --tr-bg: #0c0f14;
     --tr-surface: rgba(18, 21, 28, 0.92);
@@ -735,20 +748,59 @@ html.tr-theme-dark body.tr-admin {
     --tr-hover-border: rgba(148, 163, 184, 0.22);
     --tr-table-head-bg: rgba(148, 163, 184, 0.08);
     --tr-row-hover-bg: rgba(148, 163, 184, 0.06);
-    --tr-notice-bg: var(--tr-surface-2);
-    --tr-notice-badge-bg: rgba(2, 6, 23, 0.34);
-    --tr-toast-bg: var(--tr-surface-2);
     --tr-auth-bg: rgba(12, 15, 20, 0.96);
     --tr-auth-panel-bg: var(--tr-surface);
-    --tr-auth-input-bg: var(--tr-control-bg);
     --tr-pager-bg: rgba(2, 6, 23, 0.34);
     --tr-pager-hover-bg: var(--tr-hover-bg);
     --tr-col-pseudo-bg: var(--tr-surface-2);
     --tr-col-pseudo-border: var(--tr-border);
     --tr-welcome-link-bg: rgba(2, 6, 23, 0.30);
-    --tr-profile-kpi-bg: rgba(2, 6, 23, 0.30);
     --tr-post-option-bg: rgba(2, 6, 23, 0.34);
+
+    /* 语义状态色（深色态，提高对比度） */
+    --tr-success: #34d399;
+    --tr-warning: #f59e0b;
+    --tr-danger: #fca5a5;
+    --tr-danger-rgb: 248 113 113;
 }
+
+/* 主题色预设：每套只覆盖 --tr-accent-rgb 与 --tr-accent-2，全站强调色经 rgb(var(--tr-accent-rgb)/α) 自动跟随。
+ * 浅色规则 (0,2,2) 压浅色 :root；深色规则 (0,3,2) 压深色 :root → 主题色优先 + 深色自动提亮。默认蓝即 :root 值。 */
+html.tr-accent-blue body.tr-admin { --tr-accent-rgb: 37 99 235; --tr-accent-2: #1d4ed8; }
+html.tr-theme-dark.tr-accent-blue body.tr-admin { --tr-accent-rgb: 96 165 250; --tr-accent-2: #3b82f6; }
+
+html.tr-accent-violet body.tr-admin { --tr-accent-rgb: 124 58 237; --tr-accent-2: #6d28d9; }
+html.tr-theme-dark.tr-accent-violet body.tr-admin { --tr-accent-rgb: 167 139 250; --tr-accent-2: #8b5cf6; }
+
+html.tr-accent-emerald body.tr-admin { --tr-accent-rgb: 5 150 105; --tr-accent-2: #047857; }
+html.tr-theme-dark.tr-accent-emerald body.tr-admin { --tr-accent-rgb: 52 211 153; --tr-accent-2: #10b981; }
+
+html.tr-accent-rose body.tr-admin { --tr-accent-rgb: 225 29 72; --tr-accent-2: #be123c; }
+html.tr-theme-dark.tr-accent-rose body.tr-admin { --tr-accent-rgb: 251 113 133; --tr-accent-2: #f43f5e; }
+
+html.tr-accent-amber body.tr-admin { --tr-accent-rgb: 217 119 6; --tr-accent-2: #b45309; }
+html.tr-theme-dark.tr-accent-amber body.tr-admin { --tr-accent-rgb: 251 191 36; --tr-accent-2: #f59e0b; }
+
+html.tr-accent-cyan body.tr-admin { --tr-accent-rgb: 8 145 178; --tr-accent-2: #0e7490; }
+html.tr-theme-dark.tr-accent-cyan body.tr-admin { --tr-accent-rgb: 34 211 238; --tr-accent-2: #06b6d4; }
+
+html.tr-accent-slate body.tr-admin { --tr-accent-rgb: 71 85 105; --tr-accent-2: #334155; }
+html.tr-theme-dark.tr-accent-slate body.tr-admin { --tr-accent-rgb: 148 163 184; --tr-accent-2: #64748b; }
+
+html.tr-accent-orange body.tr-admin { --tr-accent-rgb: 234 88 12; --tr-accent-2: #c2410c; }
+html.tr-theme-dark.tr-accent-orange body.tr-admin { --tr-accent-rgb: 251 146 60; --tr-accent-2: #f97316; }
+
+html.tr-accent-pink body.tr-admin { --tr-accent-rgb: 219 39 119; --tr-accent-2: #be185d; }
+html.tr-theme-dark.tr-accent-pink body.tr-admin { --tr-accent-rgb: 244 114 182; --tr-accent-2: #ec4899; }
+
+html.tr-accent-indigo body.tr-admin { --tr-accent-rgb: 79 70 229; --tr-accent-2: #4338ca; }
+html.tr-theme-dark.tr-accent-indigo body.tr-admin { --tr-accent-rgb: 129 140 248; --tr-accent-2: #6366f1; }
+
+html.tr-accent-teal body.tr-admin { --tr-accent-rgb: 15 118 110; --tr-accent-2: #0f766e; }
+html.tr-theme-dark.tr-accent-teal body.tr-admin { --tr-accent-rgb: 45 212 191; --tr-accent-2: #14b8a6; }
+
+html.tr-accent-red body.tr-admin { --tr-accent-rgb: 220 38 38; --tr-accent-2: #b91c1c; }
+html.tr-theme-dark.tr-accent-red body.tr-admin { --tr-accent-rgb: 248 113 113; --tr-accent-2: #ef4444; }
 
 html.tr-theme-dark body.tr-admin,
 html.tr-theme-dark body.tr-admin .tr-topbar,
@@ -769,13 +821,10 @@ html.tr-theme-dark body.tr-admin .tr-topbar-title {
 }
 
 html.tr-theme-dark body.tr-admin .tr-topbar-subtitle,
-html.tr-theme-dark body.tr-admin .tr-topbar-meta,
 html.tr-theme-dark body.tr-admin .tr-kpi-label,
 html.tr-theme-dark body.tr-admin .tr-help,
 html.tr-theme-dark body.tr-admin .tr-subtext,
-html.tr-theme-dark body.tr-admin .tr-empty,
-html.tr-theme-dark body.tr-admin .tr-crumbs,
-html.tr-theme-dark body.tr-admin .tr-crumb-current {
+html.tr-theme-dark body.tr-admin .tr-empty {
     color: var(--tr-muted);
 }
 
@@ -786,16 +835,6 @@ html.tr-theme-dark body.tr-admin .tr-link-strong {
 
 html.tr-theme-dark body.tr-admin .tr-link:hover {
     color: rgba(255, 255, 255, 0.96);
-}
-
-html.tr-theme-dark body.tr-admin .tr-welcome-list li .tr-link {
-    border-color: var(--tr-border);
-    background: rgba(2, 6, 23, 0.30);
-}
-
-html.tr-theme-dark body.tr-admin .tr-welcome-list li .tr-link:hover {
-    background: rgba(2, 6, 23, 0.38);
-    border-color: rgba(96, 165, 250, 0.22);
 }
 
 html.tr-theme-dark body.tr-admin .tr-feed-item {
@@ -857,11 +896,7 @@ html.tr-theme-dark body.tr-admin .tr-pill {
     color: rgba(226, 232, 240, 0.78);
 }
 
-html.tr-theme-dark body.tr-admin .tr-pill:hover {
-    background: rgba(148, 163, 184, 0.08);
-    color: rgba(226, 232, 240, 0.92);
-}
-
+html.tr-theme-dark body.tr-admin .tr-pill:hover,
 html.tr-theme-dark body.tr-admin .tr-topbar-ext a:hover {
     background: rgba(148, 163, 184, 0.08);
     color: rgba(226, 232, 240, 0.92);
@@ -1317,8 +1352,7 @@ html.tr-theme-dark body.tr-admin table.typecho-list-table tbody tr {
     background: transparent;
 }
 
-html.tr-theme-dark body.tr-admin .tr-notice,
-html.tr-theme-dark body.tr-admin .tr-toast {
+html.tr-theme-dark body.tr-admin .tr-notice {
     border-color: var(--tr-border);
     background: var(--tr-surface-2);
     color: var(--tr-text);
@@ -1334,13 +1368,11 @@ html.tr-theme-dark body.tr-admin .tr-notice-text {
     color: rgba(241, 245, 249, 0.82);
 }
 
-html.tr-theme-dark body.tr-admin .tr-notice-close,
-html.tr-theme-dark body.tr-admin .tr-toast-close {
+html.tr-theme-dark body.tr-admin .tr-notice-close {
     color: var(--tr-muted);
 }
 
-html.tr-theme-dark body.tr-admin .tr-notice-close:hover,
-html.tr-theme-dark body.tr-admin .tr-toast-close:hover {
+html.tr-theme-dark body.tr-admin .tr-notice-close:hover {
     background: var(--tr-hover-bg);
     color: rgba(241, 245, 249, 0.92);
 }
@@ -1640,11 +1672,7 @@ html.tr-theme-dark body.tr-admin #file-list li .info {
     color: var(--tr-muted);
 }
 
-html.tr-theme-dark body.tr-admin #custom-field ul.fields .field {
-    border-color: var(--tr-border);
-    background: var(--tr-surface);
-}
-
+html.tr-theme-dark body.tr-admin #custom-field ul.fields .field,
 html.tr-theme-dark body.tr-admin .typecho-attachment-photo {
     border-color: var(--tr-border);
     background: var(--tr-surface);
@@ -1793,31 +1821,12 @@ html.tr-theme-dark body.tr-admin .tr-flow-title {
     color: rgba(241, 245, 249, 0.92);
 }
 
-html.tr-theme-dark body.tr-admin .typecho-pager li a,
-html.tr-theme-dark body.tr-admin .typecho-pager li span {
-    background: var(--tr-pager-bg);
-}
-
-html.tr-theme-dark body.tr-admin .typecho-pager li a:hover {
-    background: var(--tr-pager-hover-bg);
-}
-
 html.tr-theme-dark body.tr-admin .typecho-page-main > [class*="col-"]::before {
     background: var(--tr-col-pseudo-bg);
     border-color: var(--tr-col-pseudo-border);
 }
 
 html.tr-theme-dark body.tr-admin.tr-page-write .tr-editor-card {
-    background: var(--tr-surface);
-    border-color: var(--tr-border);
-}
-
-html.tr-theme-dark body.tr-admin.tr-page-write #edit-secondary .tr-side-stack {
-    background: var(--tr-surface);
-    border-color: var(--tr-border);
-}
-
-html.tr-theme-dark body.tr-admin.tr-page-write #edit-secondary .typecho-option-tabs {
     background: var(--tr-surface);
     border-color: var(--tr-border);
 }
@@ -1881,11 +1890,6 @@ html.tr-theme-dark body.tr-admin #custom-field .add .description {
     color: var(--tr-muted);
 }
 
-html.tr-theme-dark body.tr-admin .typecho-attachment-photo {
-    background: var(--tr-surface);
-    border-color: var(--tr-border);
-}
-
 html.tr-theme-dark body.tr-admin.tr-page-backup #backup-secondary .tr-dropzone {
     background: var(--tr-surface);
     border-color: var(--tr-border);
@@ -1896,31 +1900,14 @@ html.tr-theme-dark body.tr-admin.tr-page-profile .tr-profile-avatar {
     background: var(--tr-surface);
 }
 
-html.tr-theme-dark body.tr-admin.tr-page-profile .tr-form-card .tr-card-h {
-    border-bottom-color: var(--tr-border);
-}
-
-html.tr-theme-dark body.tr-admin.tr-page-profile .tr-form-card .tr-card-h h3 {
-    color: var(--tr-text);
-}
-
-html.tr-theme-dark body.tr-admin.tr-page-profile .tr-form-card .tr-card-actions .btn,
-html.tr-theme-dark body.tr-admin.tr-page-profile .tr-form-card .tr-card-actions a.btn {
-    box-shadow: var(--tr-shadow-sm);
-}
-
 html.tr-theme-dark body.tr-admin.tr-page-profile .tr-form-card .tr-card-actions .btn.primary,
 html.tr-theme-dark body.tr-admin.tr-page-profile .tr-form-card .tr-card-actions a.btn.primary {
-    box-shadow: 0 12px 24px rgba(37, 99, 235, 0.18);
+    box-shadow: 0 12px 24px rgb(var(--tr-accent-rgb) / 0.18);
 }
 
 html.tr-theme-dark body.body-100 {
     --tr-bg: #0c0f14;
     background: var(--tr-bg);
-}
-
-html.tr-theme-dark body.body-100 .tr-auth-layer {
-    background: var(--tr-auth-bg);
 }
 
 html.tr-theme-dark body.body-100 .tr-auth-panel {
@@ -1962,17 +1949,6 @@ html.tr-theme-dark body.body-100 .tr-auth-field input:focus {
 
 html.tr-theme-dark body.body-100 .tr-auth-check {
     color: rgba(241, 245, 249, 0.86);
-}
-
-html.tr-theme-dark body.body-100 .tr-auth-btn.tr-auth-btn-secondary {
-    background: var(--tr-surface);
-    color: var(--tr-text);
-    border-color: var(--tr-border);
-}
-
-html.tr-theme-dark body.body-100 .tr-auth-btn.tr-auth-btn-secondary:hover {
-    background: var(--tr-hover-bg);
-    border-color: var(--tr-hover-border);
 }
 
 html.tr-theme-dark body.body-100 .tr-auth-divider {
@@ -2056,8 +2032,7 @@ html.tr-theme-dark body.tr-admin.tr-page-write #edit-secondary .category-option 
     border-color: var(--tr-border) !important;
 }
 
-body.tr-admin .main,
-body.tr-admin .tr-main {
+body.tr-admin .main {
     min-height: 0;
     padding-top: 0;
     flex: 1 0 auto;
@@ -2124,12 +2099,60 @@ body.tr-admin.tr-sidebar-collapsed .tr-nav > ul > li:focus-within > menu {
     display: block;
 }
 
-body.tr-admin.tr-sidebar-collapsed .tr-user-meta {
+body.tr-admin.tr-sidebar-collapsed .tr-user-meta,
+body.tr-admin.tr-sidebar-collapsed .tr-user-actions {
     display: none;
 }
 
-body.tr-admin.tr-sidebar-collapsed .tr-user-actions {
-    display: none;
+/* 仪表盘布局基元（base）— 必须置于下方响应式 @media 之前。
+ * 否则同特异性下源码靠后者获胜，无条件的 repeat() 会反向覆盖断点里的折叠规则，导致窄屏不塌缩、中文逐字竖排。 */
+.tr-grid {
+    display: grid;
+    gap: var(--tr-gap);
+}
+.tr-grid.cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.tr-grid.cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.tr-grid.cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.tr-grid.cols-1 { grid-template-columns: minmax(0, 1fr); }
+
+.tr-kpi-start {
+    align-items: flex-start;
+}
+
+.tr-spark-stack {
+    min-width: 0;
+    width: 260px;
+    display: grid;
+    gap: 8px;
+}
+
+.tr-dist {
+    margin-top: 14px;
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    gap: 14px;
+    align-items: center;
+}
+
+/* 平板区间（769–980，侧边栏仍占 284px）：≤980 即让 .tr-kpi-start 纵向堆叠、迷你图表栈转整宽，避免中文逐字换行。 */
+@media (max-width: 980px) {
+    .tr-kpi-start {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 16px;
+    }
+
+    .tr-spark-stack {
+        width: 100%;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+/* R5 + R4 统一断点（lg=1024）：cols-4 中屏先降 2 列，避免 4 张 KPI 卡过窄拥挤。 */
+@media (max-width: 1024px) {
+    .tr-grid.cols-4 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
 }
 
 @media (max-width: 768px) {
@@ -2147,14 +2170,7 @@ body.tr-admin.tr-sidebar-collapsed .tr-user-actions {
         margin-left: 0;
     }
 
-    body.tr-admin .typecho-foot .tr-foot-inner {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    body.tr-admin .typecho-foot .resource {
-        white-space: normal;
-    }
+    /* 手机端脚部纵向堆叠规则置于 .typecho-foot 基块之后的 @media（媒体查询不增特异性，须靠源序胜出）。 */
 
     .tr-shell {
         transform: translateX(-100%);
@@ -2182,12 +2198,27 @@ body.tr-admin.tr-sidebar-collapsed .tr-user-actions {
         display: block;
     }
 
+    /* R3 修复：窄屏顶栏紧凑化并只留图标，隐藏 Ctrl K 文案与用户名文字，防止换行/溢出/拥挤 */
     .tr-topbar {
         padding: 0 14px;
+        gap: 8px;
     }
 
-    .tr-topbar-meta {
+    .tr-topbar .tr-pill-kbd .tr-kbd {
         display: none;
+    }
+
+    /* 仅隐藏用户资料 pill 的用户名文字（它带图标）；不动文字型的"新增"按钮 */
+    .tr-topbar-right > .tr-pill:not(.tr-pill-accent):last-child > span {
+        display: none;
+    }
+
+    .tr-topbar-right > .tr-pill:not(.tr-pill-accent):last-child {
+        padding: 0 10px;
+    }
+
+    .tr-topbar-heading {
+        min-width: 0;
     }
 
     body.tr-admin {
@@ -2198,12 +2229,21 @@ body.tr-admin.tr-sidebar-collapsed .tr-user-actions {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    .tr-grid.cols-3 {
+    .tr-grid.cols-3,
+    .tr-grid.cols-2 {
         grid-template-columns: 1fr;
     }
 
-    .tr-grid.cols-2 {
-        grid-template-columns: 1fr;
+    /* R1 修复：仪表盘欢迎卡在窄屏纵向堆叠，迷你图表栈转整宽，杜绝中文逐字竖排 */
+    .tr-kpi-start {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 16px;
+    }
+
+    .tr-spark-stack {
+        width: 100%;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 
@@ -2212,10 +2252,57 @@ body.tr-admin.tr-sidebar-collapsed .tr-user-actions {
     body.tr-admin.tr-sidebar-collapsed .main > .body.container {
         width: calc(100% - 24px);
         padding: 14px 0 22px;
+        /* J 修复：.main 为 flex column 时子项可能回退到 flex-start，显式重申水平 auto 外边距确保内容居中。 */
+        margin-left: auto;
+        margin-right: auto;
     }
 
     .tr-grid.cols-4 {
         grid-template-columns: 1fr;
+    }
+
+    /* R1 修复：内容分布甜甜圈+图例在窄屏单列，图例不再被压成竖排 */
+    .tr-dist {
+        grid-template-columns: 1fr;
+        justify-items: center;
+        text-align: left;
+    }
+
+    .tr-dist .tr-legend {
+        width: 100%;
+    }
+
+    .tr-spark-stack {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* C 修复：搜索筛选行 .search 窄屏换行并解除最小宽地板，避免溢出被裁切。 */
+@media (max-width: 620px) {
+    body.tr-admin .typecho-list-operate .search {
+        flex-wrap: wrap;
+        width: 100%;
+        gap: 8px;
+    }
+
+    body.tr-admin .typecho-list-operate .search > * {
+        margin-left: 0;
+    }
+
+    body.tr-admin .typecho-list-operate .search input[type="text"] {
+        flex: 1 1 auto;
+        min-width: 0;
+        margin-bottom: 0;
+    }
+
+    body.tr-admin .typecho-list-operate .search select {
+        flex: 1 1 auto;
+        min-width: 0;
+        max-width: 160px;
+    }
+
+    body.tr-admin .typecho-list-operate .search .btn {
+        flex: 0 0 auto;
     }
 }
 
@@ -2232,27 +2319,6 @@ body.tr-admin.tr-sidebar-collapsed .tr-user-actions {
 
 .tr-card-b {
     padding: 14px 16px 16px;
-}
-
-.tr-grid {
-    display: grid;
-    gap: var(--tr-gap);
-}
-
-.tr-grid.cols-4 {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-
-.tr-grid.cols-3 {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.tr-grid.cols-2 {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.tr-align-start {
-    align-items: start;
 }
 
 .tr-between {
@@ -2277,10 +2343,6 @@ body.tr-admin.tr-sidebar-collapsed .tr-user-actions {
 
 .tr-align-end {
     align-items: flex-end;
-}
-
-.tr-kpi-start {
-    align-items: flex-start;
 }
 
 .tr-welcome-name {
@@ -2376,7 +2438,7 @@ body.tr-admin.tr-page-index .tr-actions-grid .tr-btn-square span {
     width: 34px;
     height: 34px;
     border-radius: 12px;
-    background: rgba(37, 99, 235, 0.12);
+    background: rgb(var(--tr-accent-rgb) / 0.12);
     color: var(--tr-accent);
     display: grid;
     place-items: center;
@@ -2419,25 +2481,18 @@ body.tr-admin.tr-page-index .tr-actions-grid .tr-btn-square span {
 
 @media (max-width: 620px) {
     .tr-feed-list {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
     }
 }
 
 .tr-spark-wrap {
-    width: 260px;
-    max-width: 42vw;
+    width: 100%;
+    max-width: 260px;
 }
 
 .tr-subtitle {
     margin-top: 8px;
     color: var(--tr-muted);
-}
-
-.tr-spark-stack {
-    min-width: 0;
-    width: min(260px, 38vw);
-    display: grid;
-    gap: 8px;
 }
 
 .tr-spark-card {
@@ -2461,14 +2516,6 @@ body.tr-admin.tr-page-index .tr-actions-grid .tr-btn-square span {
 
 .tr-spark-card .tr-spark {
     width: 100%;
-}
-
-.tr-dist {
-    margin-top: 14px;
-    display: grid;
-    grid-template-columns: 160px 1fr;
-    gap: 14px;
-    align-items: center;
 }
 
 .tr-relative {
@@ -2502,7 +2549,7 @@ body.tr-admin.tr-page-index .tr-actions-grid .tr-btn-square span {
 }
 
 .tr-dot-post {
-    background: rgba(37, 99, 235, 0.92);
+    background: rgb(var(--tr-accent-rgb) / 0.92);
 }
 
 .tr-dot-page {
@@ -2527,34 +2574,6 @@ body.tr-admin.tr-page-index .tr-actions-grid .tr-btn-square span {
 .tr-link:hover {
     color: rgba(15, 23, 42, 0.96);
     text-decoration: none;
-}
-
-.tr-welcome-list {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    display: grid;
-    gap: 10px;
-}
-
-.tr-welcome-list li {
-    margin: 0;
-    padding: 0;
-}
-
-.tr-welcome-list li .tr-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 10px;
-    border-radius: 12px;
-    border: 1px solid rgba(15, 23, 42, 0.10);
-    background: var(--tr-surface-2);
-}
-
-.tr-welcome-list li .tr-link:hover {
-    background: var(--tr-hover-bg);
-    border-color: rgba(15, 23, 42, 0.14);
 }
 
 .tr-mt-10 {
@@ -2656,7 +2675,7 @@ body.tr-admin.tr-page-index .tr-actions-grid .tr-btn-square span {
     width: 44px;
     height: 44px;
     border-radius: 16px;
-    background: rgba(37, 99, 235, 0.12);
+    background: rgb(var(--tr-accent-rgb) / 0.12);
     color: var(--tr-accent);
     display: grid;
     place-items: center;
@@ -2669,7 +2688,7 @@ body.tr-admin.tr-page-index .tr-actions-grid .tr-btn-square span {
 }
 
 .tr-kpi-icon.tr-tone-blue {
-    background: rgba(37, 99, 235, 0.10);
+    background: rgb(var(--tr-accent-rgb) / 0.10);
 }
 
 .tr-kpi-icon.tr-tone-ink {
@@ -2709,13 +2728,13 @@ body.tr-admin.tr-page-index .tr-actions-grid .tr-btn-square span {
 
 .tr-btn.primary {
     background: linear-gradient(135deg, var(--tr-accent), var(--tr-accent-2));
-    border-color: rgba(37, 99, 235, 0.24);
+    border-color: rgb(var(--tr-accent-rgb) / 0.24);
     color: #fff;
-    box-shadow: 0 12px 26px rgba(37, 99, 235, 0.26);
+    box-shadow: 0 12px 26px rgb(var(--tr-accent-rgb) / 0.26);
 }
 
 .tr-btn.primary:hover {
-    box-shadow: 0 14px 30px rgba(37, 99, 235, 0.30);
+    box-shadow: 0 14px 30px rgb(var(--tr-accent-rgb) / 0.30);
 }
 
 .tr-btn.tr-block {
@@ -2812,26 +2831,18 @@ body.tr-admin .typecho-page-title > a {
     padding: 0 12px;
     font-size: var(--tr-control-font);
     font-weight: 650;
-    border: 1px solid rgba(37, 99, 235, 0.22);
-    background: rgba(37, 99, 235, 0.12);
+    border: 1px solid rgb(var(--tr-accent-rgb) / 0.22);
+    background: rgb(var(--tr-accent-rgb) / 0.12);
     color: rgba(15, 23, 42, 0.92);
     text-decoration: none;
 }
 
 body.tr-admin .typecho-page-title > a:hover {
-    background: rgba(37, 99, 235, 0.16);
+    background: rgb(var(--tr-accent-rgb) / 0.16);
 }
 
 body.tr-admin .main > .body.container,
 body.tr-admin .main > .container {
-    width: min(var(--tr-content-max), calc(100% - var(--tr-content-gutter)));
-    max-width: none;
-    margin: 0 auto;
-    padding: 18px 0 28px;
-    display: block;
-}
-
-body.tr-admin .tr-main-content {
     width: min(var(--tr-content-max), calc(100% - var(--tr-content-gutter)));
     max-width: none;
     margin: 0 auto;
@@ -2896,6 +2907,33 @@ body.tr-admin .typecho-foot .resource a {
 
 body.tr-admin .typecho-foot .resource a:hover {
     color: rgba(15, 23, 42, 0.92);
+}
+
+/* 手机端脚部：纵向居中堆叠，去掉横向布局的分隔线/内边距（置于桌面基样式之后以靠源序胜出）。 */
+@media (max-width: 768px) {
+    body.tr-admin .typecho-foot .tr-foot-inner {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 10px;
+        padding: 16px 0;
+    }
+
+    /* L 修复：脚部竖排三段（logo/版权/资源）统一 gap:10px 等距；资源行 line-height 收紧为 1.5 防视觉间距不均。 */
+    body.tr-admin .typecho-foot .copyright {
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        padding-right: 0;
+        border-right: 0;
+    }
+
+    body.tr-admin .typecho-foot .resource {
+        padding-left: 0;
+        white-space: normal;
+        line-height: 1.5;
+        text-align: center;
+    }
 }
 
 body.tr-admin .row {
@@ -3077,6 +3115,25 @@ body.tr-admin.tr-page-write .tr-editor-card .url-slug input.mono {
 body.tr-admin.tr-page-write .tr-editor-card textarea.tr-editor {
     border: 1px solid rgba(15, 23, 42, 0.08);
     background: var(--tr-surface);
+}
+
+/* 编辑器工具栏 #wmd-button-bar：覆盖 legacy 的 height:26px+负 margin（窄屏换行被裁切、负边距致图标与正文重叠）。 */
+body.tr-admin.tr-page-write .tr-editor-card #wmd-button-bar {
+    height: auto;
+    margin: 0 0 12px;
+    padding: 4px 0 10px;
+    flex-wrap: wrap;
+    gap: 6px 4px;
+    border-bottom: 1px solid var(--tr-border);
+}
+
+body.tr-admin.tr-page-write .tr-editor-card #wmd-button-bar .wmd-button-row {
+    height: auto;
+    min-height: 26px;
+}
+
+body.tr-admin.tr-page-write .tr-editor-card #wmd-button-bar .wmd-edittab {
+    margin-left: auto;
 }
 
 body.tr-admin.tr-page-write .edit-draft-notice {
@@ -3367,7 +3424,7 @@ body.tr-admin.tr-page-write .tr-write-shell.tr-write-fullscreen .tr-editor-card 
 }
 
 body.tr-admin.tr-page-write .editor .tr-fullscreen-active {
-    color: var(--tr-primary, #2563eb);
+    color: var(--tr-accent);
 }
 
 body.tr-admin.tr-page-write .tr-write-shell.tr-write-fullscreen .preview-frame {
@@ -3443,19 +3500,7 @@ body.tr-admin.tr-page-backup #backup-secondary .tab-content {
     padding-top: 10px;
 }
 
-body.tr-admin.tr-page-backup #backup-secondary .tr-dropzone {
-    position: relative;
-    border-radius: 14px;
-    border: 1px dashed rgba(15, 23, 42, 0.22);
-    background: var(--tr-surface);
-    min-height: 168px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 16px;
-}
-
+body.tr-admin.tr-page-backup #backup-secondary .tr-dropzone,
 body.tr-admin.tr-page-upgrade .tr-dropzone {
     position: relative;
     border-radius: 14px;
@@ -3572,10 +3617,7 @@ body.tr-admin.tr-page-profile .tr-profile-kpi-k {
         align-items: flex-start;
     }
 
-    body.tr-admin.tr-page-profile .tr-profile-head-right {
-        width: 100%;
-    }
-
+    body.tr-admin.tr-page-profile .tr-profile-head-right,
     body.tr-admin.tr-page-profile .tr-profile-kpis {
         width: 100%;
     }
@@ -3622,7 +3664,7 @@ body.tr-admin.tr-page-profile .tr-form-card .tr-card-actions a.btn {
 
 body.tr-admin.tr-page-profile .tr-form-card .tr-card-actions .btn.primary,
 body.tr-admin.tr-page-profile .tr-form-card .tr-card-actions a.btn.primary {
-    box-shadow: 0 12px 24px rgba(37, 99, 235, 0.18);
+    box-shadow: 0 12px 24px rgb(var(--tr-accent-rgb) / 0.18);
 }
 
 body.tr-admin.tr-page-profile .tr-form-card .tr-card-b {
@@ -3644,15 +3686,7 @@ body.tr-admin.tr-page-profile .tr-form-card form {
     }
 }
 
-body.tr-admin.tr-page-backup #backup-secondary .tr-dropzone-input {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    opacity: 0;
-    cursor: pointer;
-}
-
+body.tr-admin.tr-page-backup #backup-secondary .tr-dropzone-input,
 body.tr-admin.tr-page-upgrade .tr-dropzone-input {
     position: absolute;
     inset: 0;
@@ -3662,24 +3696,14 @@ body.tr-admin.tr-page-upgrade .tr-dropzone-input {
     cursor: pointer;
 }
 
-body.tr-admin.tr-page-backup #backup-secondary .tr-dropzone-title {
-    display: block;
-    font-weight: 800;
-    color: rgba(15, 23, 42, 0.90);
-}
-
+body.tr-admin.tr-page-backup #backup-secondary .tr-dropzone-title,
 body.tr-admin.tr-page-upgrade .tr-dropzone-title {
     display: block;
     font-weight: 800;
     color: rgba(15, 23, 42, 0.90);
 }
 
-body.tr-admin.tr-page-backup #backup-secondary .tr-dropzone-desc {
-    margin: 6px 0 0;
-    font-size: 12px;
-    color: var(--tr-muted);
-}
-
+body.tr-admin.tr-page-backup #backup-secondary .tr-dropzone-desc,
 body.tr-admin.tr-page-upgrade .tr-dropzone-desc {
     margin: 6px 0 0;
     font-size: 12px;
@@ -3688,8 +3712,8 @@ body.tr-admin.tr-page-upgrade .tr-dropzone-desc {
 
 body.tr-admin .tr-dropzone.tr-dropzone-picked {
     border-style: solid;
-    border-color: rgba(37, 99, 235, 0.30);
-    background: rgba(37, 99, 235, 0.05);
+    border-color: rgb(var(--tr-accent-rgb) / 0.30);
+    background: rgb(var(--tr-accent-rgb) / 0.05);
 }
 
 html.tr-theme-dark body.tr-admin .tr-dropzone.tr-dropzone-picked {
@@ -3719,7 +3743,7 @@ body.tr-admin.tr-page-backup #typecho-welcome ul li::before {
     width: 6px;
     height: 6px;
     border-radius: 999px;
-    background: rgba(37, 99, 235, 0.60);
+    background: rgb(var(--tr-accent-rgb) / 0.60);
 }
 
 body.tr-admin.tr-page-backup #backup-secondary .typecho-option {
@@ -3762,11 +3786,6 @@ body.tr-admin.tr-page-options-cache .tr-cache-actions form {
     }
 }
 
-body.tr-admin.tr-page-options-mail .tr-actions-right {
-    margin-top: 0;
-    justify-content: flex-end;
-}
-
 body.tr-admin .tr-flow {
     list-style: none;
     margin: 0;
@@ -3800,8 +3819,8 @@ body.tr-admin .tr-flow-dot {
     width: 28px;
     height: 28px;
     border-radius: 999px;
-    border: 1px solid rgba(37, 99, 235, 0.28);
-    background: rgba(37, 99, 235, 0.10);
+    border: 1px solid rgb(var(--tr-accent-rgb) / 0.28);
+    background: rgb(var(--tr-accent-rgb) / 0.10);
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -3827,6 +3846,7 @@ body.tr-admin .tr-flow-desc {
 @media (max-width: 980px) {
     body.tr-admin .tr-flow {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 20px 18px;
     }
 
     body.tr-admin .tr-flow::before {
@@ -3839,13 +3859,26 @@ body.tr-admin .tr-flow-desc {
 
     body.tr-admin .tr-flow-item {
         text-align: left;
-        padding-left: 38px;
+        padding-left: 40px;
+        min-height: 28px;
     }
 
     body.tr-admin .tr-flow-dot {
         position: absolute;
         left: 0;
         top: 0;
+    }
+
+    /* H 修复：窄屏流程竖列时，标题与第 1 步留出呼吸间距并垂直居中。 */
+    body.tr-admin .tr-flow.tr-mt-12 {
+        margin-top: 18px;
+    }
+
+    body.tr-admin .tr-flow-item .tr-flow-title {
+        margin-top: 4px;
+        min-height: 28px;
+        display: flex;
+        align-items: center;
     }
 }
 
@@ -3885,6 +3918,53 @@ body.tr-admin .typecho-page-main table.typecho-list-table {
     min-width: 640px;
 }
 
+/* 清除 legacy `.typecho-list-table{border:10px solid #FFF}` 白边（裸表格页表现为多余空白+加剧窄屏溢出）。
+ * 被 .typecho-table-wrap / operate-form 包裹的表格已各自重定义 border，不受影响。 */
+body.tr-admin .typecho-page-main table.typecho-list-table {
+    border: 0;
+}
+
+/* R2 修复：表格 min-width:640px 但模板无 .typecho-table-wrap 滚动容器 → 让表格父级成为横滚上下文，窄屏横滑而非裁切。 */
+body.tr-admin .typecho-page-main .operate-form,
+body.tr-admin .typecho-page-main > .typecho-list > .operate-form,
+body.tr-admin .typecho-page-main .typecho-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* A 修复：分类/标签页批量浮层 .dropdown-menu 与列表同处一个 form.operate-form，R2 的 overflow-x:auto 会裁切它。
+ * 这两页恢复 overflow:visible 让浮层正常展开；去掉横滑后分类宽表改 min-width:0 靠 table-layout:fixed 收敛，避免撑出灰卡框。 */
+body.tr-admin.tr-page-manage-categories .typecho-page-main .operate-form,
+body.tr-admin.tr-page-manage-tags .typecho-page-main .operate-form {
+    overflow: visible;
+}
+
+body.tr-admin.tr-page-manage-categories .typecho-page-main form.operate-form > table.typecho-list-table {
+    min-width: 0;
+}
+
+/* 裸表格页（plugins/themes/medias，表格直接在带 ::before 装饰的卡片列中，不能加 overflow）：
+ * 窄屏放宽 min-width 配合 kit-hidden-mb 隐藏次列，使表格自适应卡片宽度而非固定 640px 溢出。 */
+@media (max-width: 768px) {
+    body.tr-admin .typecho-page-main > .typecho-list > table.typecho-list-table,
+    body.tr-admin .typecho-page-main > [class*="col-"] > table.typecho-list-table {
+        min-width: 0;
+    }
+
+    /* 裸表格窄屏：收紧单元格内边距，操作按钮允许换行，避免最后一列（操作）被裁出卡片。 */
+    body.tr-admin .typecho-page-main > [class*="col-"] > table.typecho-list-table th,
+    body.tr-admin .typecho-page-main > [class*="col-"] > table.typecho-list-table td {
+        padding: 10px 6px;
+        word-break: break-word;
+    }
+
+    body.tr-admin.tr-page-plugins .tr-plugin-actions {
+        flex-wrap: wrap;
+        white-space: normal;
+        justify-content: flex-start;
+    }
+}
+
 body.tr-admin.tr-page-options-mail .tr-grid.cols-2 > .tr-card {
     height: 100%;
 }
@@ -3894,18 +3974,6 @@ body.tr-admin.tr-page-options-mail .tr-mail-head {
     align-items: flex-start;
     justify-content: space-between;
     gap: 12px;
-}
-
-body.tr-admin.tr-page-options-mail .tr-mail-btns {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 10px;
-}
-
-body.tr-admin.tr-page-options-mail .tr-mail-btns form {
-    margin: 0;
 }
 
 body.tr-admin.tr-page-options-mail .tr-mail-actions {
@@ -3981,20 +4049,10 @@ body.tr-admin.tr-page-options-mail .tr-mail-code-input[readonly] {
     color: var(--tr-text-1) !important;
 }
 
-body.tr-admin.tr-page-options-mail .tr-mail-subtitle {
-    font-weight: 750;
-    color: rgba(15, 23, 42, 0.86);
-}
-
 @media (max-width: 620px) {
     body.tr-admin.tr-page-options-mail .tr-mail-head {
         flex-direction: column;
         align-items: flex-start;
-    }
-
-    body.tr-admin.tr-page-options-mail .tr-mail-btns {
-        width: 100%;
-        justify-content: flex-start;
     }
 
     body.tr-admin.tr-page-options-mail .tr-mail-row {
@@ -4002,14 +4060,8 @@ body.tr-admin.tr-page-options-mail .tr-mail-subtitle {
         align-items: stretch;
     }
 
-    body.tr-admin.tr-page-options-mail .tr-mail-row .tr-btn {
-        width: 100%;
-    }
-
-    body.tr-admin.tr-page-options-mail .tr-mail-actions {
-        width: 100%;
-    }
-
+    body.tr-admin.tr-page-options-mail .tr-mail-row .tr-btn,
+    body.tr-admin.tr-page-options-mail .tr-mail-actions,
     body.tr-admin.tr-page-options-mail .tr-tpl-btns {
         width: 100%;
     }
@@ -4155,16 +4207,11 @@ body.tr-admin .typecho-option-tabs li a:hover {
     color: var(--tr-text-1);
 }
 
-body.tr-admin .typecho-option-tabs li.current a {
-    background: rgba(37, 99, 235, 0.14);
-    color: rgba(15, 23, 42, 0.92);
-    border-color: rgba(37, 99, 235, 0.22);
-}
-
+body.tr-admin .typecho-option-tabs li.current a,
 body.tr-admin .typecho-option-tabs li.active a {
-    background: rgba(37, 99, 235, 0.14);
+    background: rgb(var(--tr-accent-rgb) / 0.14);
     color: rgba(15, 23, 42, 0.92);
-    border-color: rgba(37, 99, 235, 0.22);
+    border-color: rgb(var(--tr-accent-rgb) / 0.22);
 }
 
 body.tr-admin .tr-tabs-wrap {
@@ -4217,7 +4264,7 @@ body.tr-admin .tr-settings-tabs a:hover {
 
 body.tr-admin .tr-settings-tabs li.current a {
     color: rgba(15, 23, 42, 0.92);
-    border-bottom-color: rgba(37, 99, 235, 0.72);
+    border-bottom-color: rgb(var(--tr-accent-rgb) / 0.72);
 }
 
 @media (max-width: 767px) {
@@ -4225,16 +4272,7 @@ body.tr-admin .tr-settings-tabs li.current a {
         justify-content: flex-start;
     }
 
-    body.tr-admin .tr-tabs-wrap::after {
-        content: "";
-        position: absolute;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        width: 64px;
-        background: linear-gradient(to left, var(--tr-bg), transparent);
-        pointer-events: none;
-    }
+    /* N 修复：移除右侧滚动渐变蒙层（它遮住末尾 tab 如“永久链接”，标签栏已支持触摸横滑无需提示）。 */
 }
 
 body.tr-admin .tr-settings-body > :first-child {
@@ -4270,7 +4308,7 @@ body.tr-admin #backup-secondary .typecho-option-tabs li a:hover {
 
 body.tr-admin #edit-secondary .typecho-option-tabs li.active a,
 body.tr-admin #backup-secondary .typecho-option-tabs li.active a {
-    background: rgba(37, 99, 235, 0.14);
+    background: rgb(var(--tr-accent-rgb) / 0.14);
 }
 
 body.tr-admin .dropdown-menu {
@@ -4326,6 +4364,15 @@ body.tr-admin .typecho-list-table td {
     padding: 12px 12px;
 }
 
+/* K 修复：列表空状态 <td.none>（legacy 无内边距显示为矮空白框）做成居中、留白充足的“暂无数据”占位。 */
+body.tr-admin .typecho-list-table td.none {
+    padding: 40px 16px;
+    text-align: center;
+    color: var(--tr-muted);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
 body.tr-admin input[type=text],
 body.tr-admin input[type=url],
 body.tr-admin input[type=password],
@@ -4374,7 +4421,6 @@ body.tr-admin textarea[readonly] {
 }
 
 body.tr-admin .tr-settings-body > form,
-body.tr-admin .tr-profile-section > form,
 body.tr-admin .tr-profile-panel > section > form,
 body.tr-admin .row.typecho-page-main[role="form"] > [class*="col-"] > form,
 body.tr-admin .tr-panel[role="form"] > form,
@@ -4387,7 +4433,6 @@ body.tr-admin .tr-panel form.typecho-option {
 }
 
 body.tr-admin .tr-settings-body,
-body.tr-admin .tr-profile-section,
 body.tr-admin .tr-panel[role="form"] {
     --tr-form-max: 720px;
 }
@@ -4399,13 +4444,6 @@ body.tr-admin .tr-settings-body > form input[type=email],
 body.tr-admin .tr-settings-body > form input[type=number],
 body.tr-admin .tr-settings-body > form textarea,
 body.tr-admin .tr-settings-body > form select,
-body.tr-admin .tr-profile-section > form input[type=text],
-body.tr-admin .tr-profile-section > form input[type=url],
-body.tr-admin .tr-profile-section > form input[type=password],
-body.tr-admin .tr-profile-section > form input[type=email],
-body.tr-admin .tr-profile-section > form input[type=number],
-body.tr-admin .tr-profile-section > form textarea,
-body.tr-admin .tr-profile-section > form select,
 body.tr-admin .tr-profile-panel > section > form input[type=text],
 body.tr-admin .tr-profile-panel > section > form input[type=url],
 body.tr-admin .tr-profile-panel > section > form input[type=password],
@@ -4438,13 +4476,6 @@ body.tr-admin .tr-settings-body > form input[type=email]:focus,
 body.tr-admin .tr-settings-body > form input[type=number]:focus,
 body.tr-admin .tr-settings-body > form textarea:focus,
 body.tr-admin .tr-settings-body > form select:focus,
-body.tr-admin .tr-profile-section > form input[type=text]:focus,
-body.tr-admin .tr-profile-section > form input[type=url]:focus,
-body.tr-admin .tr-profile-section > form input[type=password]:focus,
-body.tr-admin .tr-profile-section > form input[type=email]:focus,
-body.tr-admin .tr-profile-section > form input[type=number]:focus,
-body.tr-admin .tr-profile-section > form textarea:focus,
-body.tr-admin .tr-profile-section > form select:focus,
 body.tr-admin .tr-profile-panel > section > form input[type=text]:focus,
 body.tr-admin .tr-profile-panel > section > form input[type=url]:focus,
 body.tr-admin .tr-profile-panel > section > form input[type=password]:focus,
@@ -4482,8 +4513,8 @@ body.tr-admin textarea:focus,
 body.tr-admin select:focus {
     outline: none;
     background: var(--tr-surface);
-    border-color: rgba(37, 99, 235, 0.55);
-    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+    border-color: rgb(var(--tr-accent-rgb) / 0.55);
+    box-shadow: 0 0 0 4px rgb(var(--tr-accent-rgb) / 0.12);
 }
 
 body.tr-admin .btn.primary {
@@ -4491,7 +4522,7 @@ body.tr-admin .btn.primary {
     background: linear-gradient(135deg, var(--tr-accent), var(--tr-accent-2));
     color: #fff;
     border: 0;
-    box-shadow: 0 12px 26px rgba(37, 99, 235, 0.26);
+    box-shadow: 0 12px 26px rgb(var(--tr-accent-rgb) / 0.26);
 }
 
 body.tr-admin .btn.primary:hover {
@@ -4560,8 +4591,8 @@ body.tr-admin select:focus {
 
 body.tr-admin .btn:focus-visible,
 body.tr-admin a.btn:focus-visible {
-    border-color: rgba(37, 99, 235, 0.40);
-    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12), 0 10px 22px rgba(15, 23, 42, 0.06);
+    border-color: rgb(var(--tr-accent-rgb) / 0.40);
+    box-shadow: 0 0 0 4px rgb(var(--tr-accent-rgb) / 0.12), 0 10px 22px rgba(15, 23, 42, 0.06);
 }
 
 body.tr-admin .btn.btn-warn,
@@ -4661,8 +4692,8 @@ body.tr-admin details.typecho-post-option > summary {
 }
 
 body.tr-admin details.typecho-post-option[open] > summary {
-    background: rgba(37, 99, 235, 0.12);
-    border-color: rgba(37, 99, 235, 0.22);
+    background: rgb(var(--tr-accent-rgb) / 0.12);
+    border-color: rgb(var(--tr-accent-rgb) / 0.22);
     color: rgba(15, 23, 42, 0.92);
 }
 
@@ -4996,106 +5027,14 @@ body.tr-admin .tr-notice.tr-notice .tr-notice-badge {
     color: rgba(180, 83, 9, 0.92);
 }
 
-body.tr-admin .tr-toast-layer {
-    position: fixed;
-    top: 14px;
-    right: 14px;
-    z-index: 120;
-    display: grid;
-    gap: 10px;
-    width: min(420px, calc(100vw - 28px));
-    pointer-events: none;
-}
-
-body.tr-admin .tr-toast {
-    pointer-events: auto;
-    border-radius: 14px;
-    border: 1px solid rgba(15, 23, 42, 0.12);
-    background: var(--tr-surface);
-    backdrop-filter: blur(10px);
-    box-shadow: var(--tr-shadow);
-    padding: 12px 12px;
-    color: rgba(15, 23, 42, 0.92);
-    transform: translateY(0);
-    opacity: 1;
-    transition: transform .18s ease, opacity .18s ease;
-}
-
-body.tr-admin .tr-toast.tr-leaving {
-    transform: translateY(-6px);
-    opacity: 0;
-}
-
-body.tr-admin .tr-toast-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    margin-bottom: 6px;
-}
-
-body.tr-admin .tr-toast-title {
-    font-weight: 850;
-    letter-spacing: -0.2px;
-}
-
-body.tr-admin .tr-toast-close {
-    border: 0;
-    background: transparent;
-    width: 32px;
-    height: 32px;
-    border-radius: 12px;
-    cursor: pointer;
-    color: rgba(15, 23, 42, 0.55);
-    display: grid;
-    place-items: center;
-    font-size: 20px;
-    line-height: 1;
-}
-
-body.tr-admin .tr-toast-close:hover {
-    background: rgba(15, 23, 42, 0.06);
-    color: rgba(15, 23, 42, 0.82);
-}
-
-body.tr-admin .tr-toast-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: grid;
-    gap: 4px;
-    color: rgba(15, 23, 42, 0.76);
-}
-
-body.tr-admin .tr-toast-list li {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-}
-
-body.tr-admin .tr-toast.tr-success {
-    border-color: rgba(34, 197, 94, 0.22);
-    background: rgba(240, 253, 244, 0.86);
-}
-
-body.tr-admin .tr-toast.tr-error {
-    border-color: rgba(239, 68, 68, 0.22);
-    background: rgba(254, 242, 242, 0.86);
-}
-
-body.tr-admin .tr-toast.tr-notice {
-    border-color: rgba(245, 158, 11, 0.22);
-    background: rgba(255, 251, 235, 0.88);
-}
-
 body.tr-admin .tr-highlight {
     animation: tr-highlight 1.1s ease;
 }
 
 @keyframes tr-highlight {
-    0% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.0); }
-    30% { box-shadow: 0 0 0 6px rgba(37, 99, 235, 0.16); }
-    100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.0); }
+    0% { box-shadow: 0 0 0 0 rgb(var(--tr-accent-rgb) / 0.0); }
+    30% { box-shadow: 0 0 0 6px rgb(var(--tr-accent-rgb) / 0.16); }
+    100% { box-shadow: 0 0 0 0 rgb(var(--tr-accent-rgb) / 0.0); }
 }
 
 body.tr-admin.tr-scroll-lock {
@@ -5286,8 +5225,8 @@ body.body-100 .tr-auth-field input[type="email"] {
 }
 
 body.body-100 .tr-auth-field input:focus {
-    border-color: rgba(37, 99, 235, 0.65);
-    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.14);
+    border-color: rgb(var(--tr-accent-rgb) / 0.65);
+    box-shadow: 0 0 0 4px rgb(var(--tr-accent-rgb) / 0.14);
     background: var(--tr-surface);
 }
 
@@ -5343,23 +5282,13 @@ body.body-100 .tr-auth-btn:active {
 
 body.body-100 .tr-auth-btn:focus {
     outline: none;
-    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.18);
+    box-shadow: 0 0 0 4px rgb(var(--tr-accent-rgb) / 0.18);
 }
 
 body.body-100 .tr-auth-btn[disabled] {
     opacity: 0.65;
     cursor: not-allowed;
     transform: none;
-}
-
-body.body-100 .tr-auth-btn.tr-auth-btn-secondary {
-    background: var(--tr-surface);
-    color: rgba(15, 23, 42, 0.90);
-    border: 1px solid rgba(15, 23, 42, 0.12);
-}
-
-body.body-100 .tr-auth-btn.tr-auth-btn-secondary:hover {
-    background: var(--tr-surface-2);
 }
 
 body.body-100 .tr-auth-divider {
@@ -5387,7 +5316,7 @@ body.body-100 .tr-auth-divider span {
 }
 
 body.body-100 .tr-auth-link {
-    color: rgba(37, 99, 235, 0.90);
+    color: rgb(var(--tr-accent-rgb) / 0.90);
     text-decoration: none;
     font-weight: 700;
     font-size: 13px;
@@ -5464,8 +5393,8 @@ body.body-100 .tr-auth-switch-item {
 }
 
 body.body-100 .tr-auth-switch-item:hover {
-    background: rgba(37, 99, 235, 0.10);
-    border-color: rgba(37, 99, 235, 0.18);
+    background: rgb(var(--tr-accent-rgb) / 0.10);
+    border-color: rgb(var(--tr-accent-rgb) / 0.18);
 }
 
 @media (max-width: 380px) {
@@ -5552,9 +5481,9 @@ body.body-100.tr-auth-lilac .tr-auth {
 }
 
 .typecho-pager li.current span {
-    background: rgba(37, 99, 235, 0.16);
+    background: rgb(var(--tr-accent-rgb) / 0.16);
     color: rgba(15, 23, 42, 0.98);
-    border-color: rgba(37, 99, 235, 0.28);
+    border-color: rgb(var(--tr-accent-rgb) / 0.28);
     font-weight: 700;
 }
 
@@ -5575,12 +5504,6 @@ body.tr-admin .body.container {
     max-width: none;
     margin: 0 auto;
     padding: 18px 0 28px;
-}
-
-body.tr-admin .row {
-    width: 100%;
-    margin-left: 0;
-    margin-right: 0;
 }
 
 body.tr-admin .row:not(.typecho-page-main) [class*="col-"] {
@@ -5746,7 +5669,7 @@ body.tr-admin.tr-page-plugins .tr-plugin-version-badge.is-unofficial {
 
 body.tr-admin.tr-page-plugins .tr-plugin-version-badge:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+    box-shadow: 0 0 0 2px rgb(var(--tr-accent-rgb) / 0.2);
 }
 
 body.tr-admin.tr-page-plugins .tr-plugin-version-badge[data-tip]::before,
@@ -5831,24 +5754,42 @@ body.tr-admin.tr-page-plugins .tr-plugin-actions .btn.btn-link:hover {
     }
 
     body.tr-admin.tr-page-plugins .tr-plugin-section-head {
-        position: static;
-        align-items: flex-start;
+        /* 保持 position:relative：col 卡片背景 ::before 为 absolute/z-index:0，
+         * 内容靠 col > * 的 z-index:1 浮于其上；若这里改成 static，z-index 失效，
+         * section-head 会退回背景层之下被 ::before 浅灰卡片遮住（浅色下整块“消失”）。
+         * 仅需取消标题的绝对居中（在下方 .typecho-list-table-title 处理），无需把容器设为 static。 */
+        align-items: stretch;
         flex-direction: column;
     }
 
     body.tr-admin.tr-page-plugins .tr-plugin-section-head .typecho-list-table-title {
         position: static;
         transform: none;
-        text-align: left;
+        text-align: center;
         white-space: normal;
     }
 
     body.tr-admin.tr-page-plugins .tr-plugin-version-toolbar {
-        justify-content: flex-start;
+        justify-content: center;
+    }
+
+    body.tr-admin.tr-page-plugins .tr-plugin-version-toolbar-actions {
+        justify-content: center;
+        text-align: center;
     }
 
     body.tr-admin.tr-page-plugins .tr-plugin-version-wrap.is-mobile {
         display: inline-flex;
+    }
+}
+
+/* D 修复：plugins/medias 表的 colgroup 多列在 ≤575 被 kit-hidden-mb 隐藏，但 legacy table-layout:fixed 仍保留其轨道
+ * → 右侧异常空白 + 操作列被挤压竖排。改 table-layout:auto 让浏览器按可见内容铺满整表，隐藏列不再占位。 */
+@media (max-width: 575px) {
+    body.tr-admin.tr-page-plugins .typecho-page-main table.typecho-list-table,
+    body.tr-admin.tr-page-manage-medias .typecho-page-main table.typecho-list-table {
+        table-layout: auto;
+        min-width: 0;
     }
 }
 
@@ -5935,6 +5876,21 @@ body.tr-admin.tr-page-themes .tr-theme-actions .btn.btn-link:hover {
     text-decoration: none;
 }
 
+/* E 修复：外观页裸表格 .typecho-theme-list 不在 operate-form/table-wrap 内，没拿到白卡配方而退化为扁平。
+ * 这里补同套白卡配方恢复“灰底托白卡”纵深。深色态已有 !important 覆盖，本规则不带 !important 故不冲突。 */
+body.tr-admin.tr-page-themes .typecho-page-main table.typecho-theme-list {
+    background: var(--tr-surface);
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: calc(var(--tr-radius) - 2px);
+    box-shadow: var(--tr-shadow-sm);
+    overflow: hidden;
+}
+
+/* 当前启用主题行的淡黄高亮（legacy #FFF9E8）保留，但给两侧留出圆角内缩，作为白卡内部的高亮块而非边到边色带。 */
+body.tr-admin.tr-page-themes .typecho-theme-list tbody tr.current td {
+    border-top: 1px solid rgba(15, 23, 42, 0.06);
+}
+
 body.tr-admin.tr-page-manage-comments .tr-comment-actions {
     margin-top: 10px;
     line-height: 1.3;
@@ -5964,7 +5920,7 @@ body.tr-admin.tr-page-manage-comments .tr-comment-actions .tr-comment-op.is-acti
 
 body.tr-admin.tr-page-manage-comments .tr-comment-actions .tr-comment-op.is-actionable:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.24);
+    box-shadow: 0 0 0 2px rgb(var(--tr-accent-rgb) / 0.24);
 }
 
 body.tr-admin.tr-page-manage-comments .tr-comment-actions .tr-comment-op.tone-ok {
@@ -5980,7 +5936,7 @@ body.tr-admin.tr-page-manage-comments .tr-comment-actions .tr-comment-op.tone-sp
 }
 
 body.tr-admin.tr-page-manage-comments .tr-comment-actions .tr-comment-op.tone-edit {
-    color: #2563eb;
+    color: var(--tr-accent);
 }
 
 body.tr-admin.tr-page-manage-comments .tr-comment-actions .tr-comment-op.tone-reply {
@@ -6206,8 +6162,8 @@ html.tr-theme-dark body.tr-admin.tr-page-manage-comments .tr-comment-actions .tr
 
 .tr-panel-input:focus {
     outline: none;
-    border-color: rgba(37, 99, 235, 0.35);
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    border-color: rgb(var(--tr-accent-rgb) / 0.35);
+    box-shadow: 0 0 0 3px rgb(var(--tr-accent-rgb) / 0.12);
 }
 
 .tr-panel-input.w-short {
@@ -6284,7 +6240,7 @@ textarea.tr-panel-input {
 
 .tr-panel-badge.is-success {
     color: var(--tr-accent);
-    background: rgba(37, 99, 235, 0.12);
+    background: rgb(var(--tr-accent-rgb) / 0.12);
 }
 
 .tr-panel-empty {
@@ -6303,6 +6259,29 @@ textarea.tr-panel-input {
     margin: 8px 0 0;
     white-space: pre-wrap;
     word-break: break-word;
+}
+
+/* 问题4 修复：永久链接示例 <pre> 的长 rewrite 规则覆盖 legacy white-space:pre（否则横向溢出撑破面板），加横滚+软换行。 */
+body.tr-admin .tr-card pre {
+    margin: 8px 0 0;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: var(--tr-surface-3);
+    border: 1px solid var(--tr-border);
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+body.tr-admin .tr-card pre code.mono {
+    white-space: inherit;
+    word-break: inherit;
+    overflow-wrap: inherit;
 }
 
 .tr-panel-sticky {
@@ -6425,18 +6404,6 @@ body.tr-admin #edit-secondary .typecho-post-option + .typecho-post-option {
     }
 }
 
-@media (max-width: 980px) {
-    body.tr-admin .row {
-        margin-left: 0;
-        margin-right: 0;
-    }
-
-    body.tr-admin .row:not(.typecho-page-main) [class*="col-"] {
-        padding-left: var(--tr-gutter);
-        padding-right: var(--tr-gutter);
-    }
-}
-
 @media (max-width: 820px) {
     body.tr-admin .typecho-post-area {
         flex-direction: column;
@@ -6453,11 +6420,11 @@ body.tr-admin #edit-secondary .typecho-post-option + .typecho-post-option {
     .tr-btn {
         transition: none;
     }
-}
 
-html.tr-theme-dark body.tr-admin .typecho-list-table-title,
-html.tr-theme-dark body.tr-admin .typecho-page-main > .typecho-list > .typecho-list-table-title {
-    color: var(--tr-text) !important;
+    html.tr-theme-anim body.tr-admin,
+    html.tr-theme-anim body.tr-admin * {
+        transition: none !important;
+    }
 }
 
 html.tr-theme-dark body.tr-admin.tr-page-write #edit-secondary .typecho-post-option,
@@ -6508,7 +6475,7 @@ html.tr-theme-dark body.tr-admin .tr-compact-table {
 }
 
 .tr-cmd-mark {
-    background: rgba(37, 99, 235, 0.18);
+    background: rgb(var(--tr-accent-rgb) / 0.18);
     color: inherit;
     padding: 0 2px;
     border-radius: 3px;

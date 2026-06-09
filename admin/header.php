@@ -20,7 +20,7 @@ if (!$isBody100) {
 
 $header = '';
 if (!empty($trAdminEnabled)) {
-    $header .= '<script>(function(){var k="trTheme";var p;try{p=localStorage.getItem(k)||"system";}catch(e){p="system";}var d=false;if(p==="dark"){d=true;}else if(p==="system"){try{d=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches;}catch(e){d=false;}}var r=document.documentElement;if(d){r.classList.add("tr-theme-dark");}else{r.classList.remove("tr-theme-dark");}})();</script>';
+    $header .= '<script>(function(){var k="trTheme";var p;try{p=localStorage.getItem(k)||"system";}catch(e){p="system";}var d=false;if(p==="dark"){d=true;}else if(p==="system"){try{d=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches;}catch(e){d=false;}}var r=document.documentElement;if(d){r.classList.add("tr-theme-dark");}else{r.classList.remove("tr-theme-dark");}var a;try{a=localStorage.getItem("trAccent")||"";}catch(e){a="";}if(a&&/^[a-z]+$/.test(a)){r.classList.add("tr-accent-"+a);}})();</script>';
 }
 $header .= '<link rel="stylesheet" href="' . $options->adminStaticUrl('css', 'normalize.css', true) . '">
 <link rel="stylesheet" href="' . $options->adminStaticUrl('css', 'grid.css', true) . '">
