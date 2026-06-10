@@ -5,7 +5,7 @@ include 'menu.php';
 
 $pages = \Widget\Contents\Page\Admin::alloc();
 $pageAction = htmlspecialchars($options->index . '/action/contents-page-edit', ENT_QUOTES, 'UTF-8');
-$pageToken = htmlspecialchars($security->getToken($options->index . '/action/contents-page-edit'), ENT_QUOTES, 'UTF-8');
+$pageToken = htmlspecialchars($security->getToken($request->getRequestUrl()), ENT_QUOTES, 'UTF-8');
 ?>
 <main class="main">
     <div class="body container">

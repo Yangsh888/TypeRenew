@@ -7,7 +7,7 @@ $stat = \Widget\Stat::alloc();
 $posts = \Widget\Contents\Post\Admin::alloc();
 $isAllPosts = ('on' == $request->get('__typecho_all_posts') || 'on' == \Typecho\Cookie::get('__typecho_all_posts'));
 $postAction = htmlspecialchars($options->index . '/action/contents-post-edit', ENT_QUOTES, 'UTF-8');
-$postToken = htmlspecialchars($security->getToken($options->index . '/action/contents-post-edit'), ENT_QUOTES, 'UTF-8');
+$postToken = htmlspecialchars($security->getToken($request->getRequestUrl()), ENT_QUOTES, 'UTF-8');
 $uidQuery = isset($request->uid) ? '?uid=' . $request->filter('encode')->uid : '';
 $uidTail = isset($request->uid) ? '&uid=' . $request->filter('encode')->uid : '';
 $filterBase = [];

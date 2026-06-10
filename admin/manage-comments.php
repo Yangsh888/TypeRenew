@@ -7,7 +7,7 @@ $stat = \Widget\Stat::alloc();
 $comments = \Widget\Comments\Admin::alloc();
 $isAllComments = ('on' == $request->get('__typecho_all_comments') || 'on' == \Typecho\Cookie::get('__typecho_all_comments'));
 $commentAction = htmlspecialchars($options->index . '/action/comments-edit', ENT_QUOTES, 'UTF-8');
-$commentToken = htmlspecialchars($security->getToken($options->index . '/action/comments-edit'), ENT_QUOTES, 'UTF-8');
+$commentToken = htmlspecialchars($security->getToken($request->getRequestUrl()), ENT_QUOTES, 'UTF-8');
 $cidQuery = isset($request->cid) ? '?cid=' . $request->filter('encode')->cid : '';
 $cidTail = isset($request->cid) ? '&cid=' . $request->filter('encode')->cid : '';
 $filterBase = [];
@@ -206,6 +206,7 @@ include 'copyright.php';
 include 'common-js.php';
 include 'table-js.php';
 ?>
+<script src="<?php $options->adminStaticUrl('js', 'purify.js'); ?>"></script>
 <script type="text/javascript">
 $(document).ready(function () {
     function rememberScroll () {
@@ -270,35 +271,31 @@ $(document).ready(function () {
         if ($('.comment-reply', td).length > 0) {
             $('.comment-reply').remove();
         } else {
-            var form = $('<form method="post" action="'
-                + commentAction + '" class="comment-reply">'
-                + '<input type="hidden" name="_" value="' + commentToken + '">'
-                + '<input type="hidden" name="do" value="reply">'
-                + '<input type="hidden" name="coid" value="' + t.data('coid') + '">'
-                + '<p><label for="text" class="sr-only"><?php _e('内容'); ?></label><textarea id="text" name="text" class="w-90 mono" rows="3"></textarea></p>'
-                + '<p><button type="submit" class="btn btn-s primary"><?php _e('回复'); ?></button> <button type="button" class="btn btn-s cancel"><?php _e('取消'); ?></button></p>'
-                + '</form>').insertBefore($('.comment-action', td));
+            var box = $('<div class="comment-reply">'
+                + '<p><label for="text" class="sr-only"><?php _e('内容'); ?></label><textarea class="w-90 mono" rows="3"></textarea></p>'
+                + '<p><button type="button" class="btn btn-s primary"><?php _e('回复'); ?></button> <button type="button" class="btn btn-s cancel"><?php _e('取消'); ?></button></p>'
+                + '</div>').insertBefore($('.comment-action', td));
 
-            $('.cancel', form).click(function () {
-                $(this).parents('.comment-reply').remove();
+            $('.cancel', box).click(function () {
+                box.remove();
             });
 
-            var textarea = $('textarea', form).focus();
+            var textarea = $('textarea', box).focus();
 
-            form.submit(function () {
-                var t = $(this), tr = t.parents('tr'), 
+            $('.btn.primary', box).click(function () {
+                var tr = box.parents('tr'),
                     reply = $('<div class="comment-reply-content"></div>').insertAfter($('.comment-content', tr));
 
                 var html = DOMPurify.sanitize(textarea.val(), {USE_PROFILES: {html: true}});
                 reply.html('<p>' + html + '</p>');
-                $.post(t.attr('action'), t.serialize(), function (o) {
+                $.post(commentAction, {
+                    '_': commentToken, 'do': 'reply', 'coid': t.data('coid'), 'text': textarea.val()
+                }, function (o) {
                     var html = DOMPurify.sanitize(o.comment.content, {USE_PROFILES: {html: true}});
-                    reply.html(html)
-                        .effect('highlight');
+                    reply.html(html).effect('highlight');
                 }, 'json');
 
-                t.remove();
-                return false;
+                box.remove();
             });
         }
 
@@ -310,53 +307,40 @@ $(document).ready(function () {
         tr.hide();
 
         var edit = $('<tr class="comment-edit"><td> </td>'
-                        + '<td colspan="2" valign="top"><form method="post" action="'
-                        + commentAction + '" class="comment-edit-info">'
-                        + '<input type="hidden" name="_" value="' + commentToken + '">'
-                        + '<input type="hidden" name="do" value="edit">'
-                        + '<input type="hidden" name="coid" value="' + t.data('coid') + '">'
+                        + '<td colspan="2" valign="top"><div class="comment-edit-info">'
                         + '<p><label for="' + id + '-author"><?php _e('用户名'); ?></label><input class="text-s w-100" id="'
                         + id + '-author" name="author" type="text"></p>'
                         + '<p><label for="' + id + '-mail"><?php _e('电子邮箱'); ?></label>'
                         + '<input class="text-s w-100" type="email" name="mail" id="' + id + '-mail"></p>'
                         + '<p><label for="' + id + '-url"><?php _e('个人主页'); ?></label>'
-                        + '<input class="text-s w-100" type="text" name="url" id="' + id + '-url"></p></form></td>'
-                        + '<td valign="top"><form method="post" action="'
-                        + commentAction + '" class="comment-edit-content">'
-                        + '<input type="hidden" name="_" value="' + commentToken + '">'
-                        + '<input type="hidden" name="do" value="edit">'
-                        + '<input type="hidden" name="coid" value="' + t.data('coid') + '">'
+                        + '<input class="text-s w-100" type="text" name="url" id="' + id + '-url"></p></div></td>'
+                        + '<td valign="top"><div class="comment-edit-content">'
                         + '<p><label for="' + id + '-text"><?php _e('内容'); ?></label>'
-                        + '<textarea name="text" id="' + id + '-text" rows="6" class="w-90 mono"></textarea></p>'
-                        + '<p><button type="submit" class="btn btn-s primary"><?php _e('提交'); ?></button> '
-                        + '<button type="button" class="btn btn-s cancel"><?php _e('取消'); ?></button></p></form></td></tr>')
+                        + '<textarea id="' + id + '-text" rows="6" class="w-90 mono"></textarea></p>'
+                        + '<p><button type="button" class="btn btn-s primary"><?php _e('提交'); ?></button> '
+                        + '<button type="button" class="btn btn-s cancel"><?php _e('取消'); ?></button></p></div></td></tr>')
                         .data('id', id).data('comment', comment).insertAfter(tr);
 
         $('input[name=author]', edit).val(comment.author);
         $('input[name=mail]', edit).val(comment.mail);
         $('input[name=url]', edit).val(comment.url);
-        $('textarea[name=text]', edit).val(comment.text).focus();
+        $('textarea', edit).val(comment.text).focus();
 
         $('.cancel', edit).click(function () {
             var tr = $(this).parents('tr');
-
             $('#' + tr.data('id')).show();
             tr.remove();
         });
 
-        $('form', edit).submit(function () {
-            var t = $(this), tr = t.parents('tr'),
+        $('.btn.primary', edit).click(function () {
+            var tr = $(this).parents('tr'),
                 oldTr = $('#' + tr.data('id')),
                 comment = oldTr.data('comment');
 
-            $('form', tr).each(function () {
-                var items  = $(this).serializeArray();
-
-                for (var i = 0; i < items.length; i ++) {
-                    var item = items[i];
-                    comment[item.name] = item.value;
-                }
-            });
+            comment.author = $('input[name=author]', tr).val();
+            comment.mail   = $('input[name=mail]', tr).val();
+            comment.url    = $('input[name=url]', tr).val();
+            comment.text   = $('textarea', tr).val();
 
             var unsafeHTML = '<strong class="comment-author">'
                 + (comment.url ? '<a target="_blank" href="' + comment.url + '">'
@@ -368,21 +352,22 @@ $(document).ready(function () {
 
             var html = DOMPurify.sanitize(unsafeHTML, {USE_PROFILES: {html: true}});
             var content = DOMPurify.sanitize(comment.text, {USE_PROFILES: {html: true}});
-            $('.comment-meta', oldTr).html(html)
-                .effect('highlight');
+            $('.comment-meta', oldTr).html(html).effect('highlight');
             $('.comment-content', oldTr).html('<p>' + content + '</p>');
             oldTr.data('comment', comment);
 
-            $.post(t.attr('action'), comment, function (o) {
+            $.post(commentAction, {
+                '_': commentToken, 'do': 'edit',
+                'coid': t.data('coid'),
+                'author': comment.author, 'mail': comment.mail,
+                'url': comment.url, 'text': comment.text
+            }, function (o) {
                 var content = DOMPurify.sanitize(o.comment.content, {USE_PROFILES: {html: true}});
-                $('.comment-content', oldTr).html('<p>' + content + '</p>')
-                    .effect('highlight');
+                $('.comment-content', oldTr).html('<p>' + content + '</p>').effect('highlight');
             }, 'json');
-            
+
             oldTr.show();
             tr.remove();
-
-            return false;
         });
 
         return false;

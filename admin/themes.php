@@ -3,7 +3,7 @@ include 'common.php';
 include 'header.php';
 include 'menu.php';
 $themeAction = htmlspecialchars($options->index . '/action/themes-edit', ENT_QUOTES, 'UTF-8');
-$themeToken = htmlspecialchars($security->getToken($options->index . '/action/themes-edit'), ENT_QUOTES, 'UTF-8');
+$themeToken = htmlspecialchars($security->getToken($request->getRequestUrl()), ENT_QUOTES, 'UTF-8');
 $themeHomepage = static function ($value): string {
     $candidate = trim((string) $value);
 

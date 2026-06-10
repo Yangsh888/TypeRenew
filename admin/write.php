@@ -5,7 +5,7 @@ if (!defined('__TYPECHO_ADMIN__')) {
 
 $content = $write['content'];
 $draftAction = $options->index . '/action/' . $write['draftAction'];
-$draftToken = $security->getToken($draftAction);
+$draftToken = $security->getToken($request->getRequestUrl());
 $vditorForceMarkdown = false;
 if (class_exists('VditorRenew_Plugin')) {
     $vditorSettings = \VditorRenew_Plugin::getSettings();

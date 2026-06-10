@@ -6,7 +6,7 @@ $menu->addTarget = '_blank';
 include 'header.php';
 include 'menu.php';
 $pluginAction = htmlspecialchars($options->index . '/action/plugins-edit', ENT_QUOTES, 'UTF-8');
-$pluginToken = htmlspecialchars($security->getToken($options->index . '/action/plugins-edit'), ENT_QUOTES, 'UTF-8');
+$pluginToken = htmlspecialchars($security->getToken($request->getRequestUrl()), ENT_QUOTES, 'UTF-8');
 $pluginVersionUrl = \Typecho\Common::url('/action/ajax?do=pluginVersion', $options->index);
 $pluginVersionRefreshUrl = $security->getIndex('/action/ajax?do=pluginVersion');
 $pluginHomepage = static function ($value): string {
