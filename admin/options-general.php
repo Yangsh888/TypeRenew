@@ -21,5 +21,22 @@ include 'menu.php';
 include 'copyright.php';
 include 'common-js.php';
 include 'form-js.php';
+?>
+<script>
+$(function () {
+    var select = $('select[name=ipSource]'),
+        custom = $('input[name=ipSourceCustom]').closest('.typecho-option');
+
+    function toggleCustom() {
+        select.val() === 'custom' ? custom.show() : custom.hide();
+    }
+
+    if (select.length > 0) {
+        toggleCustom();
+        select.on('change', toggleCustom);
+    }
+});
+</script>
+<?php
 include 'footer.php';
 ?>

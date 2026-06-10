@@ -216,6 +216,7 @@ class Defaults
             'cacheRedisPassword' => '',
             'cacheRedisDatabase' => 0,
             'allowXmlRpc' => 0,
+            'ipSource' => 'REMOTE_ADDR',
         ];
     }
 

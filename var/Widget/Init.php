@@ -9,6 +9,7 @@ use Typecho\Date;
 use Typecho\Db;
 use Typecho\I18n;
 use Typecho\Plugin;
+use Typecho\Request;
 use Typecho\Response;
 use Typecho\Router;
 use Typecho\Widget;
@@ -100,6 +101,8 @@ class Init extends Widget
         if (defined('__TYPECHO_COOKIE_OPTIONS__')) {
             Cookie::setOptions(__TYPECHO_COOKIE_OPTIONS__);
         }
+
+        Request::configureIp((string) ($options->ipSource ?? 'REMOTE_ADDR'));
 
         User::destroy();
         Security::destroy();

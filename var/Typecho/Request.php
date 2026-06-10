@@ -28,6 +28,8 @@ class Request
 
     private ?string $host = null;
 
+    private static string $ipSource = '';
+
     public static function getInstance(): Request
     {
         if (!isset(self::$instance)) {
@@ -35,6 +37,15 @@ class Request
         }
 
         return self::$instance;
+    }
+
+    /**
+     * 配置客户端 IP 来源头（由 Widget\Init 从后台选项注入）。
+     * 传入 REMOTE_ADDR（或空）表示直接使用连接 IP，不读取任何转发头。
+     */
+    public static function configureIp(string $source): void
+    {
+        self::$ipSource = trim($source);
     }
 
     public function beginSandbox(Config $sandbox): Request
@@ -258,24 +269,100 @@ class Request
     public function getIp(): string
     {
         if (null === $this->ip) {
-            $remote = $this->filterIp($this->getServer('REMOTE_ADDR', ''));
-            $header = defined('__TYPECHO_IP_SOURCE__') ? __TYPECHO_IP_SOURCE__ : 'X-Forwarded-For';
-            $ip = $remote;
-            if ($this->isTrustedProxy($remote)) {
-                $candidate = $this->getHeader($header, $this->getHeader('Client-Ip', $remote));
-                if (!empty($candidate)) {
-                    [$candidate] = array_map('trim', explode(',', $candidate));
-                    $candidate = $this->filterIp($candidate);
-                    if ($candidate !== '') {
-                        $ip = $candidate;
-                    }
-                }
-            }
-
-            $this->ip = !empty($ip) ? $ip : 'unknown';
+            $this->ip = $this->resolveIp() ?: 'unknown';
         }
 
         return $this->ip;
+    }
+
+    /**
+     * 解析客户端真实 IP。
+     *
+     * 优先级：
+     * 1. 定义了 __TYPECHO_TRUST_PROXY__ 时，沿用可信代理校验（仅信任来自可信代理的转发头），安全性最高；
+     * 2. 否则按管理员在后台选择的来源头（或 __TYPECHO_IP_SOURCE__ 常量）直接取值；
+     * 3. 默认或来源为 REMOTE_ADDR 时，仅使用连接 IP，不读取任何转发头。
+     */
+    private function resolveIp(): string
+    {
+        $remote = $this->filterIp($this->getServer('REMOTE_ADDR', ''));
+
+        // 高安全场景：定义了可信代理白名单，仅当连接来自可信代理时才信任转发头。
+        if (defined('__TYPECHO_TRUST_PROXY__')) {
+            if (!$this->isTrustedProxy($remote)) {
+                return $remote;
+            }
+
+            $source = $this->resolveIpSource();
+            if ($source === '' || $source === 'REMOTE_ADDR') {
+                $source = 'HTTP_X_FORWARDED_FOR';
+            }
+
+            return $this->ipFromSource($source) ?: $remote;
+        }
+
+        // 常规场景：按管理员选择的来源头取值（默认 REMOTE_ADDR，不信任任何转发头）。
+        $source = $this->resolveIpSource();
+        if ($source === '' || $source === 'REMOTE_ADDR') {
+            return $remote;
+        }
+
+        return $this->ipFromSource($source) ?: $remote;
+    }
+
+    /**
+     * 确定 IP 来源头标识（$_SERVER 键名形式）。常量优先于后台配置。
+     */
+    private function resolveIpSource(): string
+    {
+        if (defined('__TYPECHO_IP_SOURCE__')) {
+            return $this->normalizeIpSource((string) __TYPECHO_IP_SOURCE__);
+        }
+
+        return $this->normalizeIpSource(self::$ipSource);
+    }
+
+    /**
+     * 将来源标识规范化为 $_SERVER 键名（如 x-forwarded-for => HTTP_X_FORWARDED_FOR）。
+     */
+    private function normalizeIpSource(string $source): string
+    {
+        $source = strtoupper(trim($source));
+        if ($source === '') {
+            return '';
+        }
+
+        $source = preg_replace('/[^A-Z0-9_]/', '_', $source) ?? '';
+        if ($source === '' || $source === 'REMOTE_ADDR') {
+            return $source;
+        }
+
+        // 允许填写 X_FORWARDED_FOR / X-Forwarded-For 等不带 HTTP_ 前缀的写法。
+        if (!str_starts_with($source, 'HTTP_')) {
+            $source = 'HTTP_' . $source;
+        }
+
+        return $source;
+    }
+
+    /**
+     * 从指定来源头取第一个合法 IP（兼容 X-Forwarded-For 的多级列表）。
+     */
+    private function ipFromSource(string $source): string
+    {
+        $value = (string) $this->getServer($source, '');
+        if ($value === '') {
+            return '';
+        }
+
+        foreach (explode(',', $value) as $candidate) {
+            $ip = $this->filterIp(trim($candidate));
+            if ($ip !== '') {
+                return $ip;
+            }
+        }
+
+        return '';
     }
 
     private function filterIp(?string $ip): string

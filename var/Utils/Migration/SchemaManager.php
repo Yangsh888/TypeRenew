@@ -20,6 +20,7 @@ class SchemaManager
     {
         $messages = [_t('当前版本所需的数据库结构已同步')];
         self::ensureMailInfrastructure($db);
+        self::ensureGeneralOptions($db);
         Schema::ensureCoreIndexes($db);
         Schema::ensureUserPasswordStorage($db);
         $syncedComments = self::syncCommentAuthors($db);
@@ -280,6 +281,34 @@ class SchemaManager
         return Defaults::repairableOptions([
             'mailCronKey' => Common::randString(32),
         ]);
+    }
+
+    /**
+     * 为旧站点补齐新增的常规选项（缺失时写入默认值），避免升级后选项缺失。
+     */
+    private static function ensureGeneralOptions(Db $db): void
+    {
+        $defaults = [
+            'ipSource' => 'REMOTE_ADDR',
+        ];
+
+        $existing = $db->fetchAll(
+            $db->select('name')
+                ->from('table.options')
+                ->where('user = ? AND name IN ?', 0, array_keys($defaults))
+        );
+        $existingNames = array_flip(array_map('strval', array_column($existing, 'name')));
+        $missing = [];
+
+        foreach ($defaults as $name => $value) {
+            if (!isset($existingNames[$name])) {
+                $missing[$name] = $value;
+            }
+        }
+
+        if (!empty($missing)) {
+            OptionsStorage::alloc()->saveOptions($missing);
+        }
     }
 
     private static function updateGenerator(Db $db, string $version): void

@@ -53,6 +53,110 @@ class General extends Options implements ActionInterface
             && !preg_match("/^(php|php3|php4|php5|php7|php8|phtml|pht|phar|cgi|shtml|html|htm|sh|asp|aspx|jsp|rb|py|pl|dll|exe|bat|cmd|com)$/i", $ext);
     }
 
+    /**
+     * IP 来源预设。键为 $_SERVER 键名，值为说明文案。
+     */
+    public static function ipSourcePresets(): array
+    {
+        return [
+            'REMOTE_ADDR'           => _t('REMOTE_ADDR（默认，直连）'),
+            'HTTP_X_FORWARDED_FOR'  => _t('X-Forwarded-For（腾讯云、阿里云、七牛等）'),
+            'HTTP_X_REAL_IP'        => _t('X-Real-IP（又拍云、百度云加速等）'),
+            'HTTP_CF_CONNECTING_IP' => _t('CF-Connecting-IP（Cloudflare）'),
+            'HTTP_CLIENT_IP'        => _t('Client-IP（通用代理）'),
+        ];
+    }
+
+    /**
+     * 规范化 IP 来源标识为 $_SERVER 键名形式（与 Typecho\Request 保持一致）。
+     */
+    public function normalizeIpSource(string $source): string
+    {
+        $source = strtoupper(trim($source));
+        if ($source === '') {
+            return 'REMOTE_ADDR';
+        }
+
+        $source = preg_replace('/[^A-Z0-9_]/', '_', $source) ?? '';
+        if ($source === '' || $source === 'REMOTE_ADDR') {
+            return 'REMOTE_ADDR';
+        }
+
+        if (!str_starts_with($source, 'HTTP_')) {
+            $source = 'HTTP_' . $source;
+        }
+
+        return $source;
+    }
+
+    /**
+     * 读取某个来源头当前解析到的 IP，供后台对照显示。
+     */
+    private function ipSourcePreview(string $source): string
+    {
+        $value = (string) $this->request->getServer($source, '');
+        if ($value === '') {
+            return '';
+        }
+
+        foreach (explode(',', $value) as $candidate) {
+            $candidate = trim($candidate);
+            if (filter_var($candidate, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_IPV6)) {
+                return $candidate;
+            }
+        }
+
+        return '';
+    }
+
+    private function addIpSourceInput(Form $form): void
+    {
+        $current = $this->normalizeIpSource((string) ($this->options->ipSource ?? 'REMOTE_ADDR'));
+        $presets = self::ipSourcePresets();
+        $isCustom = !array_key_exists($current, $presets);
+
+        $options = [];
+        foreach ($presets as $key => $label) {
+            $preview = $this->ipSourcePreview($key);
+            $options[$key] = $preview !== '' ? $label . ' — ' . $preview : $label;
+        }
+        $options['custom'] = _t('自定义请求头');
+
+        $ipSource = new Form\Element\Select(
+            'ipSource',
+            $options,
+            $isCustom ? 'custom' : $current,
+            _t('客户端 IP 获取来源'),
+            _t('当站点位于 CDN 或反向代理之后时，请选择对应的来源头以获取访客真实 IP。')
+            . '<br />' . _t('默认 REMOTE_ADDR 最安全；其余来源头可被伪造，请仅在确认前端代理会覆盖该头时选用。')
+        );
+        $form->addInput($ipSource);
+
+        $ipSourceCustom = new Form\Element\Text(
+            'ipSourceCustom',
+            null,
+            $isCustom ? $current : '',
+            _t('自定义请求头名称'),
+            _t('当选择“自定义请求头”时填写，例如 HTTP_TRUE_CLIENT_IP、HTTP_ALI_CDN_REAL_IP。可省略 HTTP_ 前缀。')
+        );
+        $ipSourceCustom->input->setAttribute('class', 'w-100 mono');
+        $form->addInput($ipSourceCustom);
+    }
+
+    /**
+     * 解析提交的 IP 来源设置，返回规范化后的 $_SERVER 键名。
+     */
+    private function resolveIpSourceInput(): string
+    {
+        $choice = (string) $this->request->get('ipSource', 'REMOTE_ADDR');
+
+        if ($choice === 'custom') {
+            return $this->normalizeIpSource((string) $this->request->get('ipSourceCustom', ''));
+        }
+
+        return array_key_exists($choice, self::ipSourcePresets()) ? $choice : 'REMOTE_ADDR';
+    }
+
     public function updateGeneralSettings()
     {
         $this->validateFormOrGoBack($this->form());
@@ -75,6 +179,7 @@ class General extends Options implements ActionInterface
         );
         $settings['attachmentTypes'] = $this->request->getArray('attachmentTypes');
         $settings['timezoneId'] = (string) ($settings['timezoneId'] ?? '');
+        $settings['ipSource'] = $this->resolveIpSourceInput();
         $settings['timezone'] = Zone::offsetAt(
             $settings['timezoneId'],
             (int) ($this->options->timezone ?? 0),
@@ -181,6 +286,8 @@ class General extends Options implements ActionInterface
             . _t('“仅关闭 Pingback 接口”可保留常规 XML-RPC，同时避免站点接收 Pingback')
         );
         $form->addInput($allowXmlRpc);
+
+        $this->addIpSourceInput($form);
 
         _t('lang');
 
