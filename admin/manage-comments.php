@@ -107,14 +107,14 @@ $cancelFilterUrl = 'manage-comments.php' . ($filterBase ? '?' . implode('&', $fi
                         <?php if($comments->have()): ?>
                         <?php while($comments->next()): ?>
                         <tr id="<?php $comments->theId(); ?>" data-comment="<?php
-                        $comment = array(
+                        $comment = [
                             'author'    =>  $comments->author,
                             'mail'      =>  $comments->mail,
                             'url'       =>  $comments->url,
                             'ip'        =>  $comments->ip,
                             'type'        =>  $comments->type,
                             'text'      =>  $comments->text
-                        );
+                        ];
 
                         echo htmlspecialchars(json_encode($comment));
                         ?>">

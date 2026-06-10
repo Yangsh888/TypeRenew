@@ -56,12 +56,12 @@ $(document).ready(function() {
         }
 
         tags.tokenInput(<?php
-        $data = array();
+        $data = [];
         while ($tags->next()) {
-            $data[] = array(
+            $data[] = [
                 'id'    =>  $tags->name,
                 'tags'  =>  $tags->name
-            );
+            ];
         }
         echo json_encode($data);
         ?>, {
