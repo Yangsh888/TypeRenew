@@ -19,7 +19,7 @@ $(document).ready(function() {
 
         if (count > 0) {
             if (!balloon.length) {
-                btn.html($.trim(btn.html()) + ' ');
+                btn.html((btn.html() || '').trim() + ' ');
                 balloon = $('<span class="balloon"></span>').appendTo(btn);
             }
 

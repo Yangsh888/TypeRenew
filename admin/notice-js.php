@@ -44,7 +44,7 @@ if (session_status() === PHP_SESSION_ACTIVE) {
             if (!!cookies.notice && 'success|notice|error'.indexOf(cookies.noticeType) >= 0) {
                 var messages = [];
                 try {
-                    messages = $.parseJSON(cookies.notice);
+                    messages = JSON.parse(cookies.notice);
                 } catch (e) {
                     messages = [cookies.notice];
                 }

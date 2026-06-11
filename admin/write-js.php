@@ -410,7 +410,7 @@ $(document).ready(function() {
             .attr('sandbox', 'allow-same-origin allow-scripts')
             .appendTo(document.body);
 
-        frame.load(function () {
+        frame.on('load', function () {
             frame.removeClass('preview-loading');
         });
     }

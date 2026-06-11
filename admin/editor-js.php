@@ -110,7 +110,7 @@ $(document).ready(function () {
             }
 
             return '<div class="embed"><strong>'
-                + tag + '</strong> : ' + $.trim(src) + '</div>';
+                + tag + '</strong> : ' + (src || '').trim() + '</div>';
         });
 
         return DOMPurify.sanitize(html, {USE_PROFILES: {html: true}});

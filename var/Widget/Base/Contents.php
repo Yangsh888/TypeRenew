@@ -400,7 +400,7 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
     public function author(string $item = 'screenName')
     {
         if ($this->have()) {
-            echo $this->author->{$item};
+            echo htmlspecialchars((string) $this->author->{$item}, ENT_QUOTES, 'UTF-8');
         }
     }
 

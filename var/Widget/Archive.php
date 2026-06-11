@@ -873,7 +873,7 @@ EOF;
         if ($return) {
             return $value;
         } else {
-            echo htmlspecialchars($value ?? '');
+            echo htmlspecialchars($value ?? '', ENT_QUOTES, 'UTF-8');
         }
     }
 
@@ -891,7 +891,7 @@ EOF;
 
     public function keywords(string $split = ',', string $default = '')
     {
-        echo empty($this->archiveKeywords) ? $default : str_replace(',', $split, htmlspecialchars($this->archiveKeywords ?? ''));
+        echo empty($this->archiveKeywords) ? $default : str_replace(',', $split, htmlspecialchars($this->archiveKeywords ?? '', ENT_QUOTES, 'UTF-8'));
     }
 
     public function need(string $fileName)
