@@ -336,9 +336,7 @@ class Edit extends Metas implements ActionInterface
     {
         $categories = $this->request->filter('int')->getArray('mid');
         if ($categories) {
-            foreach ($categories as $category) {
-                $this->refreshCountByTypeAndStatus($category, 'post');
-            }
+            $this->refreshCountBatch($categories, 'post');
 
             self::pluginHandle()->call('finishRefresh', $categories, $this);
 

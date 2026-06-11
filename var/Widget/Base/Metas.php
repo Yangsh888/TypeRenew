@@ -88,31 +88,43 @@ class Metas extends Base implements QueryInterface, RowFilterInterface, PrimaryK
     public function scanTags($inputTags)
     {
         $tags = is_array($inputTags) ? $inputTags : [$inputTags];
+        $tags = array_values(array_filter($tags, static fn($tag) => !empty($tag)));
+
+        if (empty($tags)) {
+            return is_array($inputTags) ? [] : null;
+        }
+
+        // 一次性查出已存在的标签, 避免逐个标签名查询
+        $existing = [];
+        foreach (
+            $this->db->fetchAll($this->select('mid', 'name')
+                ->where('type = ?', 'tag')
+                ->where('name IN ?', $tags)) as $row
+        ) {
+            $existing[$row['name']] = $row['mid'];
+        }
+
         $result = [];
 
+        // 按输入顺序产出: 已存在直接取 mid, 不存在则插入 (插入仍逐条, 但仅针对新标签)
         foreach ($tags as $tag) {
-            if (empty($tag)) {
+            if (isset($existing[$tag])) {
+                $result[] = $existing[$tag];
                 continue;
             }
 
-            $row = $this->db->fetchRow($this->select()
-                ->where('type = ?', 'tag')
-                ->where('name = ?', $tag)->limit(1));
+            $slug = Common::slugName($tag);
 
-            if ($row) {
-                $result[] = $row['mid'];
-            } else {
-                $slug = Common::slugName($tag);
-
-                if ($slug) {
-                    $result[] = $this->insert([
-                        'name'  => $tag,
-                        'slug'  => $slug,
-                        'type'  => 'tag',
-                        'count' => 0,
-                        'order' => 0,
-                    ]);
-                }
+            if ($slug) {
+                $mid = $this->insert([
+                    'name'  => $tag,
+                    'slug'  => $slug,
+                    'type'  => 'tag',
+                    'count' => 0,
+                    'order' => 0,
+                ]);
+                $existing[$tag] = $mid;
+                $result[] = $mid;
             }
         }
 

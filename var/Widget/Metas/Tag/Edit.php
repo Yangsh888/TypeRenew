@@ -255,9 +255,7 @@ class Edit extends Metas implements ActionInterface
     {
         $tags = $this->request->filter('int')->getArray('mid');
         if ($tags) {
-            foreach ($tags as $tag) {
-                $this->refreshCountByTypeAndStatus($tag, 'post');
-            }
+            $this->refreshCountBatch($tags, 'post');
 
             $this->clearTags();
             self::pluginHandle()->call('finishRefresh', $tags, $this);
@@ -275,15 +273,21 @@ class Edit extends Metas implements ActionInterface
         $tags = array_column($this->db->fetchAll($this->select('mid')
             ->where('type = ? AND count = ?', 'tag', 0)), 'mid');
 
-        foreach ($tags as $tag) {
-            $content = $this->db->fetchRow($this->db->select('cid')
-                ->from('table.relationships')->where('mid = ?', $tag)
-                ->limit(1));
+        if (empty($tags)) {
+            return;
+        }
 
-            if (empty($content)) {
-                $this->db->query($this->db->delete('table.metas')
-                    ->where('mid = ?', $tag));
-            }
+        // 一次性筛出确实没有任何关联内容的标签, 避免逐个标签查 relationships
+        $usedTags = array_column($this->db->fetchAll($this->db->select('mid')
+            ->from('table.relationships')
+            ->where('mid IN ?', $tags)
+            ->group('mid')), 'mid');
+
+        $emptyTags = array_diff($tags, array_map('intval', $usedTags));
+
+        if (!empty($emptyTags)) {
+            $this->db->query($this->db->delete('table.metas')
+                ->where('mid IN ?', array_values($emptyTags)));
         }
     }
 

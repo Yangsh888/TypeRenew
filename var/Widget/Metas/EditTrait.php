@@ -37,37 +37,57 @@ trait EditTrait
 
     public function merge(int $mid, string $type, array $metas)
     {
+        // 目标已关联的内容
         $contents = array_column($this->db->fetchAll($this->db->select('cid')
             ->from('table.relationships')
             ->where('mid = ?', $mid)), 'cid');
 
+        // 待合并的源 (排除目标自身)
+        $sources = [];
         foreach ($metas as $meta) {
-            if ($mid != $meta) {
-                $existsContents = array_column($this->db->fetchAll($this->db
-                    ->select('cid')->from('table.relationships')
-                    ->where('mid = ?', $meta)), 'cid');
-
-                $where = $this->db->sql()->where('mid = ? AND type = ?', $meta, $type);
-                $this->delete($where);
-                $diffContents = array_diff($existsContents, $contents);
-                $this->db->query($this->db->delete('table.relationships')->where('mid = ?', $meta));
-
-                foreach ($diffContents as $content) {
-                    try {
-                        $this->db->query($this->db->insert('table.relationships')
-                            ->rows(['mid' => $mid, 'cid' => $content]));
-                    } catch (\Throwable $e) {
-                        if (!$this->isDuplicateRelationshipError($e)) {
-                            throw $e;
-                        }
-                    }
-                    $contents[] = $content;
-                }
-
-                $this->update(['parent' => $mid], $this->db->sql()->where('parent = ?', $meta));
-                unset($existsContents);
+            $meta = (int) $meta;
+            if ($meta !== $mid) {
+                $sources[$meta] = $meta;
             }
         }
+        $sources = array_values($sources);
+
+        if (empty($sources)) {
+            return;
+        }
+
+        // 一次性取出全部源的关联内容, 避免逐个源查询
+        $sourceContents = array_column($this->db->fetchAll($this->db->select('cid')
+            ->from('table.relationships')
+            ->where('mid IN ?', $sources)), 'cid');
+
+        // 去重后真正需要补到目标的内容 (源有、目标无)
+        $existing = array_fill_keys(array_map('intval', $contents), true);
+        $pending = [];
+        foreach ($sourceContents as $cid) {
+            $cid = (int) $cid;
+            if (!isset($existing[$cid])) {
+                $existing[$cid] = true;
+                $pending[] = $cid;
+            }
+        }
+
+        // 构造器仅支持单行 INSERT, 但此处规模已是去重后的缺失数, 不再被源数量放大
+        foreach ($pending as $cid) {
+            try {
+                $this->db->query($this->db->insert('table.relationships')
+                    ->rows(['mid' => $mid, 'cid' => $cid]));
+            } catch (\Throwable $e) {
+                if (!$this->isDuplicateRelationshipError($e)) {
+                    throw $e;
+                }
+            }
+        }
+
+        // 批量清理源: 关系 / meta 行 / 子级改挂
+        $this->db->query($this->db->delete('table.relationships')->where('mid IN ?', $sources));
+        $this->delete($this->db->sql()->where('mid IN ? AND type = ?', $sources, $type));
+        $this->update(['parent' => $mid], $this->db->sql()->where('parent IN ?', $sources));
 
         $num = $this->db->fetchObject($this->db
             ->select(['COUNT(mid)' => 'num'])->from('table.relationships')
@@ -92,5 +112,49 @@ trait EditTrait
 
         $this->db->query($this->db->update('table.metas')->rows(['count' => $num])
             ->where('mid = ?', $mid));
+    }
+
+    /**
+     * 批量重算多个 mid 的 count, 避免逐项 COUNT+UPDATE 造成的 N+1
+     *
+     * @param int[] $mids 需要刷新的分类/标签主键
+     */
+    protected function refreshCountBatch(array $mids, string $type, string $status = 'publish')
+    {
+        $mids = array_values(array_unique(array_map('intval', $mids)));
+
+        if (empty($mids)) {
+            return;
+        }
+
+        $select = $this->db->select(['table.relationships.mid' => 'mid', 'COUNT(table.contents.cid)' => 'num'])
+            ->from('table.contents')
+            ->join('table.relationships', 'table.contents.cid = table.relationships.cid')
+            ->where('table.relationships.mid IN ?', $mids)
+            ->where('table.contents.type = ?', $type)
+            ->where('table.contents.status = ?', $status);
+
+        if ($status === 'publish') {
+            $select->where('table.contents.created < ?', $this->options->time);
+        }
+
+        $select->group('table.relationships.mid');
+
+        // 默认全部为 0, 再用聚合结果覆盖 (没有关联内容的 mid 不会出现在结果中)
+        $counts = array_fill_keys($mids, 0);
+        foreach ($this->db->fetchAll($select) as $row) {
+            $counts[(int) $row['mid']] = (int) $row['num'];
+        }
+
+        // 按 count 值归组, 相同值的 mid 合并为一条 UPDATE ... WHERE mid IN (...)
+        $groups = [];
+        foreach ($counts as $mid => $num) {
+            $groups[$num][] = $mid;
+        }
+
+        foreach ($groups as $num => $groupMids) {
+            $this->db->query($this->db->update('table.metas')->rows(['count' => $num])
+                ->where('mid IN ?', $groupMids));
+        }
     }
 }
