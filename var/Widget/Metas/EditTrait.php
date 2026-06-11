@@ -37,12 +37,10 @@ trait EditTrait
 
     public function merge(int $mid, string $type, array $metas)
     {
-        // 目标已关联的内容
         $contents = array_column($this->db->fetchAll($this->db->select('cid')
             ->from('table.relationships')
             ->where('mid = ?', $mid)), 'cid');
 
-        // 待合并的源 (排除目标自身)
         $sources = [];
         foreach ($metas as $meta) {
             $meta = (int) $meta;
@@ -56,12 +54,10 @@ trait EditTrait
             return;
         }
 
-        // 一次性取出全部源的关联内容, 避免逐个源查询
         $sourceContents = array_column($this->db->fetchAll($this->db->select('cid')
             ->from('table.relationships')
             ->where('mid IN ?', $sources)), 'cid');
 
-        // 去重后真正需要补到目标的内容 (源有、目标无)
         $existing = array_fill_keys(array_map('intval', $contents), true);
         $pending = [];
         foreach ($sourceContents as $cid) {
@@ -84,7 +80,6 @@ trait EditTrait
             }
         }
 
-        // 批量清理源: 关系 / meta 行 / 子级改挂
         $this->db->query($this->db->delete('table.relationships')->where('mid IN ?', $sources));
         $this->delete($this->db->sql()->where('mid IN ? AND type = ?', $sources, $type));
         $this->update(['parent' => $mid], $this->db->sql()->where('parent IN ?', $sources));
@@ -94,24 +89,6 @@ trait EditTrait
             ->where('table.relationships.mid = ?', $mid))->num;
 
         $this->update(['count' => $num], $this->db->sql()->where('mid = ?', $mid));
-    }
-
-    protected function refreshCountByTypeAndStatus(int $mid, string $type, string $status = 'publish')
-    {
-        $select = $this->db->select(['COUNT(table.contents.cid)' => 'num'])->from('table.contents')
-            ->join('table.relationships', 'table.contents.cid = table.relationships.cid')
-            ->where('table.relationships.mid = ?', $mid)
-            ->where('table.contents.type = ?', $type)
-            ->where('table.contents.status = ?', $status);
-
-        if ($status === 'publish') {
-            $select->where('table.contents.created < ?', $this->options->time);
-        }
-
-        $num = $this->db->fetchObject($select)->num;
-
-        $this->db->query($this->db->update('table.metas')->rows(['count' => $num])
-            ->where('mid = ?', $mid));
     }
 
     /**

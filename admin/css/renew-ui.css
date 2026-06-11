@@ -40,10 +40,8 @@
     --tr-accent-soft: rgb(var(--tr-accent-rgb) / 0.12);
     --tr-accent-strong: var(--tr-accent-2);
 
-    /* 圆角补全 */
     --tr-radius-pill: 999px;
 
-    /* 语义状态色（成功/警告/危险，浅色态） */
     --tr-success: #0f766e;
     --tr-warning: #b45309;
     --tr-danger: #dc2626;
@@ -757,7 +755,6 @@ html.tr-theme-dark body.tr-admin {
     --tr-welcome-link-bg: rgba(2, 6, 23, 0.30);
     --tr-post-option-bg: rgba(2, 6, 23, 0.34);
 
-    /* 语义状态色（深色态，提高对比度） */
     --tr-success: #34d399;
     --tr-warning: #f59e0b;
     --tr-danger: #fca5a5;

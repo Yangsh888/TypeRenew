@@ -94,7 +94,6 @@ class Metas extends Base implements QueryInterface, RowFilterInterface, PrimaryK
             return is_array($inputTags) ? [] : null;
         }
 
-        // 一次性查出已存在的标签, 避免逐个标签名查询
         $existing = [];
         foreach (
             $this->db->fetchAll($this->select('mid', 'name')
@@ -106,7 +105,6 @@ class Metas extends Base implements QueryInterface, RowFilterInterface, PrimaryK
 
         $result = [];
 
-        // 按输入顺序产出: 已存在直接取 mid, 不存在则插入 (插入仍逐条, 但仅针对新标签)
         foreach ($tags as $tag) {
             if (isset($existing[$tag])) {
                 $result[] = $existing[$tag];
@@ -146,7 +144,6 @@ class Metas extends Base implements QueryInterface, RowFilterInterface, PrimaryK
             return;
         }
 
-        // 一次性筛出确实没有任何关联内容的标签, 避免逐个标签查 relationships
         $usedTags = array_column($this->db->fetchAll($this->db->select('mid')
             ->from('table.relationships')
             ->where('mid IN ?', $tags)
