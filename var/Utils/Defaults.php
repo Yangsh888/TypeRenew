@@ -60,7 +60,7 @@ class Defaults
         return array_merge(
             self::routingOptions(),
             [
-                'plugins' => 'a:0:{}',
+                'plugins' => '{}',
                 'charset' => 'UTF-8',
                 'contentType' => 'text/html',
                 'timezone' => '28800',
@@ -170,7 +170,7 @@ class Defaults
             'commentsWhitelist' => 0,
             'commentsRequireUrl' => 0,
             'commentsRequireModeration' => 0,
-            'plugins' => 'a:0:{}',
+            'plugins' => '{}',
             'commentDateFormat' => 'F jS, Y \a\t h:i a',
             'defaultCategory' => 1,
             'allowRegister' => 0,
