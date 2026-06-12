@@ -91,11 +91,6 @@ trait EditTrait
         $this->update(['count' => $num], $this->db->sql()->where('mid = ?', $mid));
     }
 
-    /**
-     * 批量重算多个 mid 的 count, 避免逐项 COUNT+UPDATE 造成的 N+1
-     *
-     * @param int[] $mids 需要刷新的分类/标签主键
-     */
     protected function refreshCountBatch(array $mids, string $type, string $status = 'publish')
     {
         $mids = array_values(array_unique(array_map('intval', $mids)));

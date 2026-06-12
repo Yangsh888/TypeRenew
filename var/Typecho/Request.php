@@ -39,10 +39,6 @@ class Request
         return self::$instance;
     }
 
-    /**
-     * 配置客户端 IP 来源头（由 Widget\Init 从后台选项注入）。
-     * 传入 REMOTE_ADDR（或空）表示直接使用连接 IP，不读取任何转发头。
-     */
     public static function configureIp(string $source): void
     {
         self::$ipSource = trim($source);
@@ -275,14 +271,6 @@ class Request
         return $this->ip;
     }
 
-    /**
-     * 解析客户端真实 IP。
-     *
-     * 优先级：
-     * 1. 定义了 __TYPECHO_TRUST_PROXY__ 时，沿用可信代理校验（仅信任来自可信代理的转发头），安全性最高；
-     * 2. 否则按管理员在后台选择的来源头（或 __TYPECHO_IP_SOURCE__ 常量）直接取值；
-     * 3. 默认或来源为 REMOTE_ADDR 时，仅使用连接 IP，不读取任何转发头。
-     */
     private function resolveIp(): string
     {
         $remote = $this->filterIp($this->getServer('REMOTE_ADDR', ''));
@@ -310,9 +298,6 @@ class Request
         return $this->ipFromSource($source) ?: $remote;
     }
 
-    /**
-     * 确定 IP 来源头标识（$_SERVER 键名形式）。常量优先于后台配置。
-     */
     private function resolveIpSource(): string
     {
         if (defined('__TYPECHO_IP_SOURCE__')) {
@@ -322,9 +307,6 @@ class Request
         return $this->normalizeIpSource(self::$ipSource);
     }
 
-    /**
-     * 将来源标识规范化为 $_SERVER 键名（如 x-forwarded-for => HTTP_X_FORWARDED_FOR）。
-     */
     private function normalizeIpSource(string $source): string
     {
         $source = strtoupper(trim($source));
@@ -345,9 +327,6 @@ class Request
         return $source;
     }
 
-    /**
-     * 从指定来源头取第一个合法 IP（兼容 X-Forwarded-For 的多级列表）。
-     */
     private function ipFromSource(string $source): string
     {
         $value = (string) $this->getServer($source, '');

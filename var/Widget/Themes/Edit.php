@@ -67,9 +67,6 @@ class Edit extends Options implements ActionInterface
         }
     }
 
-    /**
-     * 解析主题内文件真实路径，阻止目录穿越到主题目录外
-     */
     private function resolveThemePath(string $theme, ?string $file = null): string
     {
         $theme = trim($theme, './');

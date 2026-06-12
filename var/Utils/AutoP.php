@@ -2,13 +2,6 @@
 
 namespace Utils;
 
-/**
- * AutoP
- *
- * @copyright Copyright (c) 2012 Typecho Team. (http://typecho.org)
- * @author Joyqi <magike.net@gmail.com>
- * @license GNU General Public License 2.0
- */
 class AutoP
 {
     private const BLOCK = 'p|pre|div|blockquote|form|ul|ol|dd|table|ins|h1|h2|h3|h4|h5|h6';

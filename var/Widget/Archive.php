@@ -987,18 +987,6 @@ EOF;
         }
     }
 
-    /**
-     * 列表批量预取: 一次性查好整页内容的分类/标签/自定义字段, 回填进每行的
-     * '#' 缓存槽 (见 Typecho\Widget::__get), 从而消除模板逐行访问
-     * $this->categories / $this->tags / $this->fields 造成的 N+1 查询。
-     *
-     * 设计要点:
-     * - 仅在结果多于 1 行时启用 (单篇页无收益);
-     * - permalink 完全复用内核 widget (分类树单例 / Metas\From), 不手写 URL,
-     *   保证与惰性方法 ___categories / ___tags 输出一致;
-     * - 全程 try/catch: 任一环节异常即静默回退到惰性方法 (结果仍正确, 仅变慢),
-     *   绝不因预取失败破坏页面。
-     */
     private function preLoadList(): void
     {
         if (count($this->stack) < 2) {
@@ -1034,13 +1022,6 @@ EOF;
         }
     }
 
-    /**
-     * 一次查询取回整页内容关联的全部 metas, 按 cid 分组构造分类/标签数组。
-     * 返回 [cid => categories[], cid => tags[]] 两张表。
-     *
-     * @param int[] $cids
-     * @return array{0: array<int, array>, 1: array<int, array>}
-     */
     private function preLoadMetas(array $cids): array
     {
         $catByCid = [];
@@ -1115,11 +1096,6 @@ EOF;
         );
     }
 
-    /**
-     * 取标签 mid -> 数组(含 permalink), 字段集与 ___tags 一致。
-     *
-     * @param int[] $mids
-     */
     private function preLoadTagMap(array $mids): array
     {
         return $this->preLoadMetaMap(
@@ -1129,10 +1105,6 @@ EOF;
         );
     }
 
-    /**
-     * @param int[] $mids
-     * @param string[] $columns
-     */
     private function preLoadMetaMap(array $mids, string $type, array $columns): array
     {
         $map = [];
@@ -1156,12 +1128,6 @@ EOF;
         return $map;
     }
 
-    /**
-     * 一次查询取回整页全部自定义字段, 按 cid 分组。结构与 ___fields 一致。
-     *
-     * @param int[] $cids
-     * @return array<int, array>
-     */
     private function preLoadFields(array $cids): array
     {
         $fieldByCid = [];

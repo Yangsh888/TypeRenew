@@ -202,9 +202,6 @@ class Upload extends Contents implements ActionInterface
         }
     }
 
-    /**
-     * 修改文件处理函数,如果需要实现自己的文件哈希或者特殊的文件系统,请在options表里把modifyHandle改成自己的函数
-     */
     public static function modifyHandle(array $content, array $file)
     {
         if (empty($file['name'])) {

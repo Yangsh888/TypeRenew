@@ -2,12 +2,6 @@
 
 namespace Utils;
 
-/**
- * Parser
- * @copyright Copyright (c) 2012 SegmentFault Team. (http://segmentfault.com)
- * @author Joyqi <joyqi@segmentfault.com>
- * @license BSD License
- */
 class HyperDown
 {
     private $_commonWhiteList = 'kbd|b|i|strong|em|sup|sub|br|code|del|a|hr|small';

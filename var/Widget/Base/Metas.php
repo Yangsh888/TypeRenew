@@ -129,12 +129,6 @@ class Metas extends Base implements QueryInterface, RowFilterInterface, PrimaryK
         return is_array($inputTags) ? $result : current($result);
     }
 
-    /**
-     * 清理没有任何关联内容的空标签 (count=0 且 relationships 中无记录)
-     *
-     * 定义在此基类, 使删除文章后的 Metas::alloc()->clearTags() 与标签刷新
-     * 路径 Tag\Edit 的 $this->clearTags() 均可正确调用
-     */
     public function clearTags()
     {
         $tags = array_column($this->db->fetchAll($this->select('mid')

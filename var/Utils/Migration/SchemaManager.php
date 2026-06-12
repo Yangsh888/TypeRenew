@@ -283,9 +283,6 @@ class SchemaManager
         ]);
     }
 
-    /**
-     * 为旧站点补齐新增的常规选项（缺失时写入默认值），避免升级后选项缺失。
-     */
     private static function ensureGeneralOptions(Db $db): void
     {
         $defaults = [

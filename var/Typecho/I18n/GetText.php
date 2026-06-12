@@ -256,12 +256,6 @@ class GetText
         return (string)$data;
     }
 
-    /**
-     * Detects which plural form to take
-     *
-     * @param int $n count
-     * @return int array index of the right plural form
-     */
     private function selectString(int $n): int
     {
         [$total, $expression] = $this->parsePluralHeader($this->getPluralForms());

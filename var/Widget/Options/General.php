@@ -67,9 +67,6 @@ class General extends Options implements ActionInterface
         ];
     }
 
-    /**
-     * 规范化 IP 来源标识为 $_SERVER 键名形式（与 Typecho\Request 保持一致）。
-     */
     public function normalizeIpSource(string $source): string
     {
         $source = strtoupper(trim($source));
@@ -89,9 +86,6 @@ class General extends Options implements ActionInterface
         return $source;
     }
 
-    /**
-     * 读取某个来源头当前解析到的 IP，供后台对照显示。
-     */
     private function ipSourcePreview(string $source): string
     {
         $value = (string) $this->request->getServer($source, '');
@@ -143,9 +137,6 @@ class General extends Options implements ActionInterface
         $form->addInput($ipSourceCustom);
     }
 
-    /**
-     * 解析提交的 IP 来源设置，返回规范化后的 $_SERVER 键名。
-     */
     private function resolveIpSourceInput(): string
     {
         $choice = (string) $this->request->get('ipSource', 'REMOTE_ADDR');
