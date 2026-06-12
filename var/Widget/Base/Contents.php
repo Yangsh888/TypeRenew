@@ -512,7 +512,10 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
 
     protected function ___author(): Users
     {
-        return Author::allocWithAlias($this->cid, ['uid' => $this->authorId]);
+        // 按 authorId 分桶而非 cid: 同一作者的多篇文章复用同一池实例,
+        // 将列表页作者查询从 N 次降为"作者数"次。前缀与 Archive::authorHandle
+        // 的 'user:' 一致, 使作者归档页可共享同一实例
+        return Author::allocWithAlias('user:' . $this->authorId, ['uid' => $this->authorId]);
     }
 
     protected function ___dateWord(): string

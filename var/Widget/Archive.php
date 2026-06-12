@@ -983,8 +983,205 @@ EOF;
         self::pluginHandle()->trigger($queryPlugged)->call('query', $this, $select);
         if (!$queryPlugged) {
             $this->db->fetchAll($select, [$this, 'push']);
+            $this->preLoadList();
         }
     }
+
+    /**
+     * 列表批量预取: 一次性查好整页内容的分类/标签/自定义字段, 回填进每行的
+     * '#' 缓存槽 (见 Typecho\Widget::__get), 从而消除模板逐行访问
+     * $this->categories / $this->tags / $this->fields 造成的 N+1 查询。
+     *
+     * 设计要点:
+     * - 仅在结果多于 1 行时启用 (单篇页无收益);
+     * - permalink 完全复用内核 widget (分类树单例 / Metas\From), 不手写 URL,
+     *   保证与惰性方法 ___categories / ___tags 输出一致;
+     * - 全程 try/catch: 任一环节异常即静默回退到惰性方法 (结果仍正确, 仅变慢),
+     *   绝不因预取失败破坏页面。
+     */
+    private function preLoadList(): void
+    {
+        if (count($this->stack) < 2) {
+            return;
+        }
+
+        try {
+            $cids = [];
+            foreach ($this->stack as $row) {
+                if (isset($row['cid'])) {
+                    $cids[] = (int) $row['cid'];
+                }
+            }
+
+            $cids = array_values(array_unique($cids));
+            if (empty($cids)) {
+                return;
+            }
+
+            [$catByCid, $tagByCid] = $this->preLoadMetas($cids);
+            $fieldByCid = $this->preLoadFields($cids);
+
+            foreach ($this->stack as $index => $row) {
+                $cid = (int) ($row['cid'] ?? 0);
+                $this->stack[$index]['#categories'] = $catByCid[$cid] ?? [];
+                $this->stack[$index]['#tags'] = $tagByCid[$cid] ?? [];
+                $this->stack[$index]['#fields'] = new Config($fieldByCid[$cid] ?? []);
+            }
+
+            reset($this->stack);
+        } catch (\Throwable $e) {
+            // 回退到逐行惰性加载, 不影响正确性
+        }
+    }
+
+    /**
+     * 一次查询取回整页内容关联的全部 metas, 按 cid 分组构造分类/标签数组。
+     * 返回 [cid => categories[], cid => tags[]] 两张表。
+     *
+     * @param int[] $cids
+     * @return array{0: array<int, array>, 1: array<int, array>}
+     */
+    private function preLoadMetas(array $cids): array
+    {
+        $catByCid = [];
+        $tagByCid = [];
+
+        // 单查询: 内容 -> 关系 -> 描述项 (分类与标签一并取回)
+        $rows = $this->db->fetchAll($this->db->select(
+            'table.relationships.cid',
+            'table.metas.mid',
+            'table.metas.type'
+        )->from('table.metas')
+            ->join('table.relationships', 'table.relationships.mid = table.metas.mid')
+            ->where('table.relationships.cid IN ?', $cids)
+            ->where('table.metas.type IN ?', ['category', 'tag']));
+
+        if (empty($rows)) {
+            return [$catByCid, $tagByCid];
+        }
+
+        $catMids = [];
+        $tagMids = [];
+        foreach ($rows as $row) {
+            if ('category' === $row['type']) {
+                $catMids[] = (int) $row['mid'];
+            } else {
+                $tagMids[] = (int) $row['mid'];
+            }
+        }
+
+        // mid -> 完整数组(含 permalink), 复用内核 widget 生成, 不手写 URL
+        $catMap = $this->preLoadCategoryMap(array_unique($catMids));
+        $tagMap = $this->preLoadTagMap(array_unique($tagMids));
+
+        foreach ($rows as $row) {
+            $cid = (int) $row['cid'];
+            $mid = (int) $row['mid'];
+
+            if ('category' === $row['type']) {
+                if (isset($catMap[$mid])) {
+                    $catByCid[$cid][] = $catMap[$mid];
+                }
+            } else {
+                if (isset($tagMap[$mid])) {
+                    $tagByCid[$cid][] = $tagMap[$mid];
+                }
+            }
+        }
+
+        // 分类按 order 排序, 贴合惰性方法 ___categories 的树序输出
+        foreach ($catByCid as &$list) {
+            usort($list, static function ($a, $b) {
+                return [$a['order'] ?? 0, $a['mid']] <=> [$b['order'] ?? 0, $b['mid']];
+            });
+        }
+        unset($list);
+
+        return [$catByCid, $tagByCid];
+    }
+
+    /**
+     * 取分类 mid -> 数组(含 permalink)。复用 Metas\From: 它会按 type=category
+     * 自动构建分类树, 使 directory / permalink 与 ___categories 完全一致。
+     *
+     * @param int[] $mids
+     */
+    private function preLoadCategoryMap(array $mids): array
+    {
+        return $this->preLoadMetaMap(
+            $mids,
+            'category',
+            ['mid', 'name', 'slug', 'description', 'order', 'parent', 'count', 'permalink']
+        );
+    }
+
+    /**
+     * 取标签 mid -> 数组(含 permalink), 字段集与 ___tags 一致。
+     *
+     * @param int[] $mids
+     */
+    private function preLoadTagMap(array $mids): array
+    {
+        return $this->preLoadMetaMap(
+            $mids,
+            'tag',
+            ['mid', 'name', 'slug', 'description', 'count', 'permalink']
+        );
+    }
+
+    /**
+     * @param int[] $mids
+     * @param string[] $columns
+     */
+    private function preLoadMetaMap(array $mids, string $type, array $columns): array
+    {
+        $map = [];
+        if (empty($mids)) {
+            return $map;
+        }
+
+        sort($mids);
+        $alias = 'archive-preload-' . $type . '-' . md5(implode(',', $mids));
+
+        $widget = MetasFrom::allocWithAlias($alias, [
+            'query' => $this->db->select()->from('table.metas')->where('mid IN ?', $mids),
+        ]);
+
+        foreach ($widget->toArray($columns) as $item) {
+            if (isset($item['mid'])) {
+                $map[(int) $item['mid']] = $item;
+            }
+        }
+
+        return $map;
+    }
+
+    /**
+     * 一次查询取回整页全部自定义字段, 按 cid 分组。结构与 ___fields 一致。
+     *
+     * @param int[] $cids
+     * @return array<int, array>
+     */
+    private function preLoadFields(array $cids): array
+    {
+        $fieldByCid = [];
+
+        $rows = $this->db->fetchAll($this->db->select()->from('table.fields')
+            ->where('cid IN ?', $cids));
+
+        foreach ($rows as $row) {
+            $cid = (int) $row['cid'];
+            $value = 'json' == $row['type']
+                ? json_decode($row['str_value'], true)
+                : $row[$row['type'] . '_value'];
+            $fieldByCid[$cid][$row['name']] = $value;
+        }
+
+        return $fieldByCid;
+    }
+
+
+
 
     protected function ___directory(): array
     {
