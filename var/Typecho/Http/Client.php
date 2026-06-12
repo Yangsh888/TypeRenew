@@ -11,10 +11,6 @@ class Client
 
     public const METHOD_GET = 'GET';
 
-    public const METHOD_PUT = 'PUT';
-
-    public const METHOD_DELETE = 'DELETE';
-
     private string $method = self::METHOD_GET;
 
     public string $agent;

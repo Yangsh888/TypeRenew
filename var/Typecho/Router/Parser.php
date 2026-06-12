@@ -30,17 +30,13 @@ class Parser
         $paramsNum = count($params);
         $this->params[] = $params[0];
 
-        if (1 == $paramsNum) {
-            return sprintf($this->defaultRegex['char'], '+');
-        } elseif (2 == $paramsNum) {
-            return sprintf($this->defaultRegex[$params[1]], '+');
-        } elseif (3 == $paramsNum) {
-            return sprintf($this->defaultRegex[$params[1]], $params[2] > 0 ? '{' . $params[2] . '}' : '*');
-        } elseif (4 == $paramsNum) {
-            return sprintf($this->defaultRegex[$params[1]], '{' . $params[2] . ',' . $params[3] . '}');
-        }
-
-        return $matches[0];
+        return match ($paramsNum) {
+            1 => sprintf($this->defaultRegex['char'], '+'),
+            2 => sprintf($this->defaultRegex[$params[1]], '+'),
+            3 => sprintf($this->defaultRegex[$params[1]], $params[2] > 0 ? '{' . $params[2] . '}' : '*'),
+            4 => sprintf($this->defaultRegex[$params[1]], '{' . $params[2] . ',' . $params[3] . '}'),
+            default => $matches[0],
+        };
     }
 
     public function parse(): array

@@ -542,7 +542,7 @@ class Request
                 return '';
             }
 
-            $port = isset($matches['port']) ? (int) $matches['port'] : 0;
+            $port = (int)($matches['port'] ?? 0);
             if ($port < 0 || $port > 65535) {
                 return '';
             }
@@ -559,7 +559,7 @@ class Request
             return '';
         }
 
-        $port = isset($matches['port']) ? (int) $matches['port'] : 0;
+        $port = (int)($matches['port'] ?? 0);
         if ($port < 0 || $port > 65535) {
             return '';
         }

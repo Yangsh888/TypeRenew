@@ -890,7 +890,7 @@ class HyperDown
     private function parseBlockMh(?array $block, int $key, string $line, ?array &$state, array $lines): bool
     {
         if (preg_match("/^\s*((=|-){2,})\s*$/", $line, $matches)
-            && ($block && $block[0] == "normal" && !preg_match("/^\s*$/", $lines[$block[2]]))) {    // check if last line isn't empty
+            && ($block && $block[0] == "normal" && !preg_match("/^\s*$/", $lines[$block[2]]))) {
             if ($this->isBlock('normal')) {
                 $this->backBlock(1, 'mh', $matches[1][0] == '=' ? 1 : 2)
                     ->setBlock($key)

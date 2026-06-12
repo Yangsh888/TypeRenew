@@ -354,7 +354,6 @@ class Plugin
 
     public function __get(string $component)
     {
-        $this->component = $component;
         return $this;
     }
 

@@ -44,8 +44,8 @@ class Comment
             $updatedRows += self::updateUserAuthor(
                 $db,
                 (int) ($user['uid'] ?? 0),
-                isset($user['screenName']) ? (string) $user['screenName'] : null,
-                isset($user['name']) ? (string) $user['name'] : null
+                (string)($user['screenName'] ?? null),
+                (string)($user['name'] ?? null)
             );
         }
 

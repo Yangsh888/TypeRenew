@@ -294,13 +294,11 @@ xml:base="' . $this->xmlText($this->baseUrl) . '"
 
     public function dateFormat(int $stamp): string
     {
-        if (self::RSS2 == $this->type) {
-            return gmdate(self::DATE_RFC822, $stamp);
-        } elseif (self::RSS1 == $this->type || self::ATOM1 == $this->type) {
-            return gmdate(self::DATE_W3CDTF, $stamp);
-        }
-
-        return '';
+        return match ($this->type) {
+            self::RSS2 => gmdate(self::DATE_RFC822, $stamp),
+            self::RSS1, self::ATOM1 => gmdate(self::DATE_W3CDTF, $stamp),
+            default => '',
+        };
     }
 
     private function itemValue(array $item, string $key): string

@@ -18,11 +18,7 @@ class Db
 
     public const INNER_JOIN = 'INNER';
 
-    public const OUTER_JOIN = 'OUTER';
-
     public const LEFT_JOIN = 'LEFT';
-
-    public const RIGHT_JOIN = 'RIGHT';
 
     public const SELECT = 'SELECT';
 
