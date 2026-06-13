@@ -53,9 +53,6 @@ class General extends Options implements ActionInterface
             && !preg_match("/^(php|php3|php4|php5|php7|php8|phtml|pht|phar|cgi|shtml|html|htm|sh|asp|aspx|jsp|rb|py|pl|dll|exe|bat|cmd|com)$/i", $ext);
     }
 
-    /**
-     * IP 来源预设。键为 $_SERVER 键名，值为说明文案。
-     */
     public static function ipSourcePresets(): array
     {
         return [

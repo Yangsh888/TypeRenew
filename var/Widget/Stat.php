@@ -6,33 +6,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-/**
- * 全局统计组件
- *
- * @property-read int $publishedPostsNum
- * @property-read int $waitingPostsNum
- * @property-read int $draftPostsNum
- * @property-read int $myPublishedPostsNum
- * @property-read int $myWaitingPostsNum
- * @property-read int $myDraftPostsNum
- * @property-read int $currentPublishedPostsNum
- * @property-read int $currentWaitingPostsNum
- * @property-read int $currentDraftPostsNum
- * @property-read int $publishedPagesNum
- * @property-read int $draftPagesNum
- * @property-read int $publishedCommentsNum
- * @property-read int $waitingCommentsNum
- * @property-read int $spamCommentsNum
- * @property-read int $myPublishedCommentsNum
- * @property-read int $myWaitingCommentsNum
- * @property-read int $mySpamCommentsNum
- * @property-read int $currentCommentsNum
- * @property-read int $currentPublishedCommentsNum
- * @property-read int $currentWaitingCommentsNum
- * @property-read int $currentSpamCommentsNum
- * @property-read int $categoriesNum
- * @property-read int $tagsNum
- */
 class Stat extends Base
 {
     protected function initComponents(int &$components)

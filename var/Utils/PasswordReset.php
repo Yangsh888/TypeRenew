@@ -54,7 +54,6 @@ class PasswordReset
             return $record;
         }
 
-        // 兼容旧版本使用 bcrypt 保存的临时重置链接，避免升级瞬间导致已发邮件全部失效。
         $legacyRecords = $db->fetchAll(
             $db->select()->from('table.password_resets')
                 ->where('token LIKE ?', '$2%')

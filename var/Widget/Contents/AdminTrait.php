@@ -7,11 +7,6 @@ use Typecho\Db\Query;
 use Typecho\Widget\Exception;
 use Typecho\Widget\Helper\PageNavigator\Box;
 
-/**
- * 文章管理列表组件
- *
- * @property-read array? $revision
- */
 trait AdminTrait
 {
     private ?int $total;

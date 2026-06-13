@@ -127,14 +127,6 @@ class Queue
         }
     }
 
-    /**
-     * 自愈兜底: 在普通请求结束后顺手消费一小批积压邮件。
-     *
-     * 设计目标 (零新配置 / 零新表 / 不强依赖 Cache):
-     * async 自请求在反代/容器下可能被拒、cron 模式又需用户手配 crontab,
-     * 两种情况下邮件都会积压。此方法借自然流量做最后兜底, 即使上述触发全部失效,
-     * 邮件仍会被后续访问慢慢发出。deliverBatch 自带行级租约, 多请求并发安全。
-     */
     public static function maybeDrain(Db $db, Options $options): void
     {
         static $called = false;
@@ -144,7 +136,6 @@ class Queue
         $called = true;
 
         try {
-            // sync 模式入队时已同步发完, 无需兜底
             if ((string) ($options->mailQueueMode ?? 'async') === 'sync') {
                 return;
             }
@@ -152,8 +143,6 @@ class Queue
             $now = time();
             $cache = \Typecho\Cache::getInstance();
 
-            // 节流: Cache 可用时 60s 最多触发一次; 不可用时按概率抽样 (~1/20),
-            // 避免高频站点每个请求都查库
             if ($cache->enabled()) {
                 $cacheKey = 'mail:drain:last';
                 $hit = false;
@@ -166,7 +155,6 @@ class Queue
                 return;
             }
 
-            // 廉价预检: 是否存在到期可投递的邮件 (走 (status, sendAt) 复合索引)
             $pending = $db->fetchRow(
                 $db->select('id')->from('table.mail_queue')
                     ->where('sendAt <= ?', $now)
@@ -193,7 +181,6 @@ class Queue
                 }
             });
         } catch (\Throwable $e) {
-            // 兜底逻辑绝不影响正常请求
         }
     }
 
@@ -337,8 +324,6 @@ class Queue
         $failed = 0;
         $errors = [];
 
-        // 单连接复用: 整批共用一个 transport, 首封建连/认证, 后续复用, 批末关闭。
-        // SMTP 下可省去逐封重连握手; Native(mail()) 的 open/close 为空操作。
         $transport = self::buildTransport($options);
         $transport->open();
 
@@ -697,7 +682,6 @@ class Queue
         $encryptedPass = (string) ($options->mailSmtpPass ?? '');
         $decryptedPass = \Utils\Cipher::decrypt($encryptedPass, (string) ($options->secret ?? ''));
 
-        // HELO 域名取站点域名 (部分严格 MTA 拒绝无意义的 HELO)
         $heloHost = (string) (parse_url((string) ($options->siteUrl ?? $options->index ?? ''), PHP_URL_HOST) ?: '');
 
         return [

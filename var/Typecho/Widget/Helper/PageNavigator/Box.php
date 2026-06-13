@@ -31,7 +31,6 @@ class Box extends PageNavigator
 
         $template = array_merge($default, $template);
 
-        // 显式取值替代 extract($template), 避免向局部作用域注入不可控变量
         $itemTag = $template['itemTag'];
         $textTag = $template['textTag'];
         $currentClass = $template['currentClass'];

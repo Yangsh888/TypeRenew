@@ -242,7 +242,6 @@ class Request
         }
 
         if (!empty($pathInfo)) {
-            // 针对 IIS 的 pathinfo 编码，仅在 mbstring 可用时转换
             $pathInfo = defined('__TYPECHO_PATHINFO_ENCODING__') && function_exists('mb_convert_encoding') ?
                 mb_convert_encoding($pathInfo, 'UTF-8', __TYPECHO_PATHINFO_ENCODING__) : $pathInfo;
         } else {
@@ -275,7 +274,6 @@ class Request
     {
         $remote = $this->filterIp($this->getServer('REMOTE_ADDR', ''));
 
-        // 高安全场景：定义了可信代理白名单，仅当连接来自可信代理时才信任转发头。
         if (defined('__TYPECHO_TRUST_PROXY__')) {
             if (!$this->isTrustedProxy($remote)) {
                 return $remote;
@@ -289,7 +287,6 @@ class Request
             return $this->ipFromSource($source) ?: $remote;
         }
 
-        // 常规场景：按管理员选择的来源头取值（默认 REMOTE_ADDR，不信任任何转发头）。
         $source = $this->resolveIpSource();
         if ($source === '' || $source === 'REMOTE_ADDR') {
             return $remote;
@@ -319,7 +316,6 @@ class Request
             return $source;
         }
 
-        // 允许填写 X_FORWARDED_FOR / X-Forwarded-For 等不带 HTTP_ 前缀的写法。
         if (!str_starts_with($source, 'HTTP_')) {
             $source = 'HTTP_' . $source;
         }
@@ -550,7 +546,6 @@ class Request
     {
         $key = strtoupper(str_replace('-', '_', $key));
 
-        // Content-Type 和 Content-Length 这两个 header 还需要从不带 HTTP_ 的 key 尝试获取
         if (in_array($key, ['CONTENT_TYPE', 'CONTENT_LENGTH'])) {
             $default = $this->getServer($key, $default);
         }

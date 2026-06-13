@@ -42,7 +42,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
             parent::execute();
         }
 
-        // XML-RPC 请求不会走常规表单令牌校验。
         $this->security->enable(false);
 
         $this->wpOptions = [

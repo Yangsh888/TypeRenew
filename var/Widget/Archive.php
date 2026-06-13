@@ -706,25 +706,25 @@ class Archive extends Contents
         dom : function (sel) {
             return document.querySelector(sel);
         },
-        
+
         visiable: function (el, show) {
             el.style.display = show ? '' : 'none';
         },
-    
+
         create : function (tag, attr) {
             const el = document.createElement(tag);
-        
+
             for (const key in attr) {
                 el.setAttribute(key, attr[key]);
             }
-        
+
             return el;
         },
-        
+
         inputParent: function (response, coid) {
             const form = 'form' === response.tagName ? response : response.querySelector('form');
             let input = form.querySelector('input[name=parent]');
-            
+
             if (null == input && coid) {
                 input = this.create('input', {
                     'type' : 'hidden',
@@ -733,17 +733,17 @@ class Archive extends Contents
 
                 form.appendChild(input);
             }
-            
+
             if (coid) {
                 input.setAttribute('value', coid);
             } else if (input) {
                 input.parentNode.removeChild(input);
             }
         },
-        
+
         getChild: function (root, node) {
             const parentNode = node.parentNode;
-            
+
             if (parentNode === null) {
                 return null;
             } else if (parentNode === root) {
@@ -768,7 +768,7 @@ class Archive extends Contents
 
                 response.parentNode.insertBefore(holder, response);
             }
-            
+
             if (child) {
                 comment.insertBefore(response, child.nextSibling);
             } else {
@@ -824,11 +824,11 @@ EOF;
         if (null != response) {
             const form = 'form' === response.tagName ? response : response.querySelector('form');
             const input = document.createElement('input');
-            
+
             input.type = 'hidden';
             input.name = '_';
             input.value = {$shuffled};
- 
+
             if (form) {
                 function append() {
                     if (!added) {
@@ -836,7 +836,7 @@ EOF;
                         added = true;
                     }
                 }
-            
+
                 for (const event of events) {
                     window.addEventListener(event, append);
                 }
@@ -987,9 +987,6 @@ EOF;
         }
     }
 
-
-
-
     protected function ___directory(): array
     {
         if ('page' == $this->type) {
@@ -1081,7 +1078,7 @@ EOF;
         if ($this->user->hasLogin()) {
             if ($includeHidden) {
                 $select->where(
-                    'table.contents.status = ? OR table.contents.status = ? 
+                    'table.contents.status = ? OR table.contents.status = ?
                         OR (table.contents.status = ? AND table.contents.authorId = ?)',
                     'publish',
                     'hidden',
@@ -1485,8 +1482,6 @@ EOF;
 
     private function searchHandle(Query $select, bool &$hasPushed)
     {
-        // Route params here are plain search terms, not full URLs. Applying `url`
-        // filtering would strip spaces and break multi-word searches.
         $keywords = $this->request->filter('search')->get('keywords');
         self::pluginHandle()->trigger($hasPushed)->call('search', $keywords, $this);
 

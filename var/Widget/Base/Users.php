@@ -14,26 +14,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-/**
- * 用户抽象类
- *
- * @property int $uid
- * @property string $name
- * @property string $password
- * @property string $mail
- * @property string $url
- * @property string $screenName
- * @property int $created
- * @property int $activated
- * @property int $logged
- * @property string $group
- * @property string $authCode
- * @property-read Config $personalOptions
- * @property-read string $permalink
- * @property-read string $feedUrl
- * @property-read string $feedRssUrl
- * @property-read string $feedAtomUrl
- */
 class Users extends Base implements QueryInterface, RowFilterInterface, PrimaryKeyInterface, ParamsDelegateInterface
 {
     public function getPrimaryKey(): string

@@ -13,17 +13,12 @@ class Smtp implements Transport
         $this->config = $config;
     }
 
-    /**
-     * 开启批量会话: 建立并保持连接, 供同一批多封邮件复用 (避免逐封重连/认证)。
-     * 连接失败时静默退化, 后续 send() 会自行重连, 不影响正确性。
-     */
     public function open(): void
     {
         $this->keepAlive = true;
         if (!is_resource($this->socket)) {
             $err = $this->connect();
             if ($err !== true) {
-                // 预连接失败不抛错, 留待 send() 时按单封逻辑重试并上报
                 $this->disconnect();
             }
         }
@@ -37,7 +32,6 @@ class Smtp implements Transport
 
     public function send(Message $message): bool|string
     {
-        // 非保持模式: 自连自断, 单封语义与改造前完全一致
         if (!$this->keepAlive) {
             $err = $this->connect();
             if ($err !== true) {
@@ -50,7 +44,6 @@ class Smtp implements Transport
             return $result;
         }
 
-        // 保持模式: 复用连接; 若连接已断 (上一封异常/对端关闭) 则重连
         if (!is_resource($this->socket)) {
             $err = $this->connect();
             if ($err !== true) {
@@ -61,7 +54,6 @@ class Smtp implements Transport
 
         $result = $this->deliver($message);
 
-        // 单封失败可能使会话状态不可靠, 断开以便下一封干净重连
         if ($result !== true) {
             $this->disconnect();
         }
@@ -69,9 +61,6 @@ class Smtp implements Transport
         return $result;
     }
 
-    /**
-     * 建立连接并完成 EHLO / STARTTLS / 认证。成功返回 true, 失败返回错误字符串。
-     */
     private function connect(): bool|string
     {
         $host = (string) ($this->config['host'] ?? '');
@@ -149,9 +138,6 @@ class Smtp implements Transport
         return true;
     }
 
-    /**
-     * 在已建立的连接上投递一封邮件 (MAIL FROM / RCPT TO / DATA)。
-     */
     private function deliver(Message $message): bool|string
     {
         $from = $message->from;

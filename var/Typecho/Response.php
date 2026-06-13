@@ -282,7 +282,6 @@ class Response
             return $timeout;
         }
 
-        // Prefer absolute Unix timestamps; keep legacy TTL support for older callers/plugins.
         if ($timeout < self::COOKIE_UNIX_TIMESTAMP_MIN) {
             return time() + $timeout;
         }

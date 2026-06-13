@@ -10,10 +10,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-/**
- * @property-read int $levels
- * @property-read array $children
- */
 class Rows extends Metas
 {
     use InitTreeRowsTrait;

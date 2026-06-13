@@ -68,7 +68,6 @@ trait EditTrait
             }
         }
 
-        // 构造器仅支持单行 INSERT, 但此处规模已是去重后的缺失数, 不再被源数量放大
         foreach ($pending as $cid) {
             try {
                 $this->db->query($this->db->insert('table.relationships')
@@ -112,13 +111,11 @@ trait EditTrait
 
         $select->group('table.relationships.mid');
 
-        // 默认全部为 0, 再用聚合结果覆盖 (没有关联内容的 mid 不会出现在结果中)
         $counts = array_fill_keys($mids, 0);
         foreach ($this->db->fetchAll($select) as $row) {
             $counts[(int) $row['mid']] = (int) $row['num'];
         }
 
-        // 按 count 值归组, 相同值的 mid 合并为一条 UPDATE ... WHERE mid IN (...)
         $groups = [];
         foreach ($counts as $mid => $num) {
             $groups[$num][] = $mid;

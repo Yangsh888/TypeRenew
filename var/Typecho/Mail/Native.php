@@ -6,7 +6,6 @@ class Native implements Transport
 {
     public function open(): void
     {
-        // mail() 无连接概念, 无需保持
     }
 
     public function close(): void

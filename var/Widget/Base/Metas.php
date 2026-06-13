@@ -12,26 +12,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-/**
- * 描述性数据组件
- *
- * @property int $mid
- * @property string $name
- * @property string $title
- * @property string $slug
- * @property string $type
- * @property string $description
- * @property int $count
- * @property int $order
- * @property int $parent
- * @property-read string $theId
- * @property-read string $url
- * @property-read string $permalink
- * @property-read string[] $directory
- * @property-read string $feedUrl
- * @property-read string $feedRssUrl
- * @property-read string $feedAtomUrl
- */
 class Metas extends Base implements QueryInterface, RowFilterInterface, PrimaryKeyInterface, ParamsDelegateInterface
 {
     public function getPrimaryKey(): string

@@ -79,7 +79,6 @@ class Admin extends Comments
 
         $this->db->fetchAll($select, [$this, 'push']);
 
-        // 列表模板逐行读取 parentContent 的标题/链接, 批量预热 From 池消除 N+1
         From::preload(array_column($this->stack, 'cid'));
     }
 

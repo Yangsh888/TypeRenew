@@ -24,55 +24,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
 
-/**
- * 内容基类
- *
- * @property int $cid
- * @property string $title
- * @property string $slug
- * @property int $created
- * @property int $modified
- * @property string $text
- * @property int $order
- * @property int $authorId
- * @property string $template
- * @property string $type
- * @property string $status
- * @property string|null $password
- * @property int $commentsNum
- * @property bool $allowComment
- * @property bool $allowPing
- * @property bool $allowFeed
- * @property int $parent
- * @property-read Users $author
- * @property-read string $permalink
- * @property-read string $path
- * @property-read string $url
- * @property-read string $feedUrl
- * @property-read string $feedRssUrl
- * @property-read string $feedAtomUrl
- * @property-read bool $isMarkdown
- * @property-read bool $hidden
- * @property-read Date $date
- * @property-read string $dateWord
- * @property-read string[] $directory
- * @property-read array[] $tags
- * @property-read array[] $categories
- * @property-read string $excerpt
- * @property-read string $plainExcerpt
- * @property-read string $summary
- * @property-read string $content
- * @property-read Config $fields
- * @property-read Config $attachment
- * @property-read string $theId
- * @property-read string $respondId
- * @property-read string $commentUrl
- * @property-read string $trackbackUrl
- * @property-read string $responseUrl
- * @property-read string $year
- * @property-read string $month
- * @property-read string $day
- */
 class Contents extends Base implements QueryInterface, RowFilterInterface, PrimaryKeyInterface, ParamsDelegateInterface
 {
     public function getPrimaryKey(): string
@@ -232,8 +183,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
 
     public function size(Query $condition): int
     {
-        // 仅在带 JOIN(如按分类筛选关联 relationships)时才需 DISTINCT 去重;
-        // 无 JOIN 时 COUNT(cid) 走主键足矣, 避免 DISTINCT 触发临时表/filesort。
         $count = $condition->hasJoin()
             ? 'COUNT(DISTINCT table.contents.cid)'
             : 'COUNT(table.contents.cid)';
@@ -519,9 +468,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
 
     protected function ___author(): Users
     {
-        // 按 authorId 分桶而非 cid: 同一作者的多篇文章复用同一池实例,
-        // 将列表页作者查询从 N 次降为"作者数"次。前缀与 Archive::authorHandle
-        // 的 'user:' 一致, 使作者归档页可共享同一实例
         return Author::allocWithAlias('user:' . $this->authorId, ['uid' => $this->authorId]);
     }
 
@@ -564,13 +510,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
         return new Config($fields);
     }
 
-    /**
-     * 批量预载当前栈内各行的分类/标签/自定义字段, 将 N+1 查询降为常数次。
-     * 结果写入每行的 #categories / #tags / #fields 缓存键, 从而短路对应的
-     * ___categories / ___tags / ___fields 惰性方法 (见 Widget::__get)。
-     *
-     * 前台 Archive 列表与后台文章列表共用此实现; 后台仅需分类时可关闭 tags/fields。
-     */
     protected function preLoadContents(bool $categories = true, bool $tags = true, bool $fields = true): void
     {
         if (count($this->stack) < 2) {
@@ -616,16 +555,9 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
 
             reset($this->stack);
         } catch (\Throwable $e) {
-            // 回退到逐行惰性加载, 不影响正确性
         }
     }
 
-    /**
-     * 单查询取回若干内容的分类/标签关系, 返回 [按 cid 分组的分类, 按 cid 分组的标签]。
-     *
-     * @param int[] $cids
-     * @param string[] $types 需要加载的元数据类型 (category / tag)
-     */
     protected function preLoadMetas(array $cids, array $types = ['category', 'tag']): array
     {
         $catByCid = [];
@@ -635,7 +567,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
             return [$catByCid, $tagByCid];
         }
 
-        // 单查询: 内容 -> 关系 -> 描述项 (按需取回分类与/或标签)
         $rows = $this->db->fetchAll($this->db->select(
             'table.relationships.cid',
             'table.metas.mid',
@@ -659,7 +590,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
             }
         }
 
-        // mid -> 完整数组(含 permalink), 复用内核 widget 生成, 不手写 URL
         $catMap = $this->preLoadCategoryMap(array_unique($catMids));
         $tagMap = $this->preLoadTagMap(array_unique($tagMids));
 
@@ -678,7 +608,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
             }
         }
 
-        // 分类按 order 排序, 贴合惰性方法 ___categories 的树序输出
         foreach ($catByCid as &$list) {
             usort($list, static function ($a, $b) {
                 return [$a['order'] ?? 0, $a['mid']] <=> [$b['order'] ?? 0, $b['mid']];
@@ -689,12 +618,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
         return [$catByCid, $tagByCid];
     }
 
-    /**
-     * 取分类 mid -> 数组(含 permalink)。复用 Metas\From: 它会按 type=category
-     * 自动构建分类树, 使 directory / permalink 与 ___categories 完全一致。
-     *
-     * @param int[] $mids
-     */
     protected function preLoadCategoryMap(array $mids): array
     {
         return $this->preLoadMetaMap(
@@ -704,9 +627,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
         );
     }
 
-    /**
-     * @param int[] $mids
-     */
     protected function preLoadTagMap(array $mids): array
     {
         return $this->preLoadMetaMap(
@@ -716,10 +636,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
         );
     }
 
-    /**
-     * @param int[] $mids
-     * @param string[] $columns
-     */
     protected function preLoadMetaMap(array $mids, string $type, array $columns): array
     {
         $map = [];
@@ -743,11 +659,6 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
         return $map;
     }
 
-    /**
-     * 单查询取回若干内容的自定义字段, 返回按 cid 分组的字段键值。
-     *
-     * @param int[] $cids
-     */
     protected function preLoadFields(array $cids): array
     {
         $fieldByCid = [];

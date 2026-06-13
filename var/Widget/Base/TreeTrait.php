@@ -101,8 +101,6 @@ trait TreeTrait
     {
         $parameter->setDefault('ignore=0&current=');
 
-        // Widgets are pooled and may be reused with different params in one request.
-        // Reset tree state before rebuilding to avoid stale node references.
         $this->treeRows = [];
         $this->top = [];
         $this->map = [];
