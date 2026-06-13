@@ -4,7 +4,6 @@ namespace Typecho\Cache;
 
 class Redis implements Driver
 {
-    private array $config;
     private ?\Redis $client = null;
     private bool $connected = false;
     private bool $usable = false;
@@ -12,9 +11,8 @@ class Redis implements Driver
     private int $failureCount = 0;
     private const BACKOFF_STEPS = [5, 15, 60, 120, 300];
 
-    public function __construct(array $config)
+    public function __construct(private array $config)
     {
-        $this->config = $config;
     }
 
     public function name(): string

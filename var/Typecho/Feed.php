@@ -16,12 +16,6 @@ class Feed
 
     public const EOL = "\n";
 
-    private string $type;
-
-    private string $charset;
-
-    private string $lang;
-
     private string $feedUrl;
 
     private string $baseUrl;
@@ -30,16 +24,14 @@ class Feed
 
     private ?string $subTitle;
 
-    private string $version;
-
     private array $items = [];
 
-    public function __construct($version, string $type = self::RSS2, string $charset = 'UTF-8', string $lang = 'en')
-    {
-        $this->version = $version;
-        $this->type = $type;
-        $this->charset = $charset;
-        $this->lang = $lang;
+    public function __construct(
+        private $version,
+        private string $type = self::RSS2,
+        private string $charset = 'UTF-8',
+        private string $lang = 'en'
+    ) {
     }
 
     public function getType(): string

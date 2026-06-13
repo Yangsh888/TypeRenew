@@ -20,13 +20,10 @@ class Request
 
     private array $filter = [];
 
-    private HttpRequest $request;
-
     private Config $params;
 
-    public function __construct(HttpRequest $request, ?Config $params = null)
+    public function __construct(private HttpRequest $request, ?Config $params = null)
     {
-        $this->request = $request;
         $this->params = $params ?? new Config();
     }
 

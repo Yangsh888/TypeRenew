@@ -4,13 +4,11 @@ namespace Typecho\Mail;
 
 class Smtp implements Transport
 {
-    private array $config;
     private $socket = null;
     private bool $keepAlive = false;
 
-    public function __construct(array $config)
+    public function __construct(private array $config)
     {
-        $this->config = $config;
     }
 
     public function open(): void

@@ -1030,13 +1030,8 @@ EOF;
             $path = Router::url(
                 $type,
                 new class ($this->currentPage, $this->pageRow) implements Router\ParamsDelegateInterface {
-                    private Router\ParamsDelegateInterface $pageRow;
-                    private int $currentPage;
-
-                    public function __construct(int $currentPage, Router\ParamsDelegateInterface $pageRow)
+                    public function __construct(private int $currentPage, private Router\ParamsDelegateInterface $pageRow)
                     {
-                        $this->pageRow = $pageRow;
-                        $this->currentPage = $currentPage;
                     }
 
                     public function getRouterParam(string $key): string
@@ -1444,15 +1439,8 @@ EOF;
         $this->archiveType = 'date';
 
         $this->pageRow = new class ($year, $month, $day) implements Router\ParamsDelegateInterface {
-            private int $year;
-            private int $month;
-            private int $day;
-
-            public function __construct(int $year, int $month, int $day)
+            public function __construct(private int $year, private int $month, private int $day)
             {
-                $this->year = $year;
-                $this->month = $month;
-                $this->day = $day;
             }
 
             public function getRouterParam(string $key): string
@@ -1504,11 +1492,8 @@ EOF;
         $this->archiveKeywords = $keywords;
 
         $this->pageRow = new class ($keywords) implements Router\ParamsDelegateInterface {
-            private string $keywords;
-
-            public function __construct(string $keywords)
+            public function __construct(private string $keywords)
             {
-                $this->keywords = $keywords;
             }
 
             public function getRouterParam(string $key): string

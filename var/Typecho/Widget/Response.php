@@ -8,13 +8,8 @@ use Typecho\Response as HttpResponse;
 
 class Response
 {
-    private HttpRequest $request;
-    private HttpResponse $response;
-
-    public function __construct(HttpRequest $request, HttpResponse $response)
+    public function __construct(private HttpRequest $request, private HttpResponse $response)
     {
-        $this->request = $request;
-        $this->response = $response;
     }
 
     public function setStatus(int $code): Response
