@@ -5,7 +5,6 @@ namespace Utils;
 use Typecho\Common;
 use Typecho\Db;
 use Typecho\I18n;
-use Typecho\Plugin;
 use Typecho\Widget;
 use Widget\Base\Options as BaseOptions;
 use Widget\Options;

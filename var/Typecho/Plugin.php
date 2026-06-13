@@ -16,8 +16,6 @@ class Plugin
 
     private string $handle;
 
-    private $component;
-
     private array $signalStack = [];
 
     public function __construct(string $handle)

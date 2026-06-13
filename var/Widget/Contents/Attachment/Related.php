@@ -2,7 +2,6 @@
 
 namespace Widget\Contents\Attachment;
 
-use Typecho\Db;
 use Widget\Base\Contents;
 
 if (!defined('__TYPECHO_ROOT_DIR__')) {

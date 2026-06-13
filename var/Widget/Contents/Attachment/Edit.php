@@ -3,7 +3,6 @@
 namespace Widget\Contents\Attachment;
 
 use Typecho\Common;
-use Typecho\Widget\Exception;
 use Typecho\Widget\Helper\Form;
 use Typecho\Widget\Helper\Layout;
 use Widget\ActionInterface;

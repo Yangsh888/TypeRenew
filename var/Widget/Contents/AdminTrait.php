@@ -2,9 +2,7 @@
 
 namespace Widget\Contents;
 
-use Typecho\Config;
 use Typecho\Db\Query;
-use Typecho\Widget\Exception;
 use Typecho\Widget\Helper\PageNavigator\Box;
 
 trait AdminTrait

@@ -4,7 +4,6 @@ namespace Widget;
 
 use Typecho\Http\Client;
 use Typecho\Plugin;
-use Typecho\Widget\Exception;
 use Widget\Base\Options as BaseOptions;
 
 if (!defined('__TYPECHO_ROOT_DIR__')) {

@@ -371,7 +371,6 @@ class SchemaManager
         return $missing;
     }
 
-
     private static function mailUnsubDuplicateGroups(Db $db, string $collation): array
     {
         if (!self::tableExists($db, 'table.mail_unsub')) {

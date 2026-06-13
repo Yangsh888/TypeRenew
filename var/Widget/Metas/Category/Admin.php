@@ -3,7 +3,6 @@
 namespace Widget\Metas\Category;
 
 use Typecho\Common;
-use Typecho\Db;
 use Typecho\Widget\Exception;
 use Widget\Base\Metas;
 use Widget\Base\TreeTrait;

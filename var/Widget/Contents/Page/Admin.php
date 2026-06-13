@@ -3,12 +3,10 @@
 namespace Widget\Contents\Page;
 
 use Typecho\Common;
-use Typecho\Db;
 use Typecho\Widget\Exception;
 use Widget\Base\Contents;
 use Widget\Base\TreeTrait;
 use Widget\Contents\AdminTrait;
-use Widget\Contents\From;
 
 if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;

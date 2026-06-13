@@ -3,7 +3,6 @@
 namespace Widget\Users;
 
 use Typecho\Common;
-use Typecho\Db;
 use Typecho\Db\Query;
 use Typecho\Widget\Helper\PageNavigator\Box;
 use Widget\Base\Users;
