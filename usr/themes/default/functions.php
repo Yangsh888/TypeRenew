@@ -14,11 +14,11 @@ function themeConfig($form)
 
     $colorSchema = new \Typecho\Widget\Helper\Form\Element\Select(
         'colorSchema',
-        array(
+        [
             'auto' => _t('自动 (跟随系统)'),
             'light' => _t('浅色'),
             'dark' => _t('深色')
-        ),
+        ],
         'auto',
         _t('外观风格'),
         _t('选择主题的颜色风格')

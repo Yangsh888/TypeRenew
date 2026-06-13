@@ -165,7 +165,7 @@ namespace Typecho {
             });
         }
 
-        public static function error(\Throwable $exception)
+        public static function error(\Throwable $exception): never
         {
             $code = $exception->getCode() ?: 500;
             $message = $exception->getMessage();

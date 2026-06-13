@@ -53,6 +53,11 @@ class Query
         return $this->sqlPreBuild[$attributeName] ?? null;
     }
 
+    public function hasJoin(): bool
+    {
+        return !empty($this->sqlPreBuild['join']);
+    }
+
     public function cleanAttribute(string $attributeName): Query
     {
         if (isset($this->sqlPreBuild[$attributeName])) {

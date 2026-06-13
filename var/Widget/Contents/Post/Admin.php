@@ -80,5 +80,8 @@ class Admin extends Contents
             ->page($this->currentPage, $this->parameter->pageSize);
 
         $this->db->fetchAll($select, [$this, 'push']);
+
+        // 列表模板逐行渲染分类, 批量预载以消除 N+1 (标签/字段后台列表不展示, 不加载)
+        $this->preLoadContents(true, false, false);
     }
 }

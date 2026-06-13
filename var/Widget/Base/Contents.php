@@ -18,6 +18,7 @@ use Widget\Upload;
 use Widget\Users\Author;
 use Widget\Metas\Category\Related as CategoryRelated;
 use Widget\Metas\Tag\Related as TagRelated;
+use Widget\Metas\From as MetasFrom;
 
 if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
@@ -231,8 +232,14 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
 
     public function size(Query $condition): int
     {
+        // 仅在带 JOIN(如按分类筛选关联 relationships)时才需 DISTINCT 去重;
+        // 无 JOIN 时 COUNT(cid) 走主键足矣, 避免 DISTINCT 触发临时表/filesort。
+        $count = $condition->hasJoin()
+            ? 'COUNT(DISTINCT table.contents.cid)'
+            : 'COUNT(table.contents.cid)';
+
         return $this->db->fetchObject($condition
-            ->select(['COUNT(DISTINCT table.contents.cid)' => 'num'])
+            ->select([$count => 'num'])
             ->from('table.contents')
             ->cleanAttribute('group'))->num;
     }
@@ -555,6 +562,212 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
         }
 
         return new Config($fields);
+    }
+
+    /**
+     * 批量预载当前栈内各行的分类/标签/自定义字段, 将 N+1 查询降为常数次。
+     * 结果写入每行的 #categories / #tags / #fields 缓存键, 从而短路对应的
+     * ___categories / ___tags / ___fields 惰性方法 (见 Widget::__get)。
+     *
+     * 前台 Archive 列表与后台文章列表共用此实现; 后台仅需分类时可关闭 tags/fields。
+     */
+    protected function preLoadContents(bool $categories = true, bool $tags = true, bool $fields = true): void
+    {
+        if (count($this->stack) < 2) {
+            return;
+        }
+
+        try {
+            $cids = [];
+            foreach ($this->stack as $row) {
+                if (isset($row['cid'])) {
+                    $cids[] = (int) $row['cid'];
+                }
+            }
+
+            $cids = array_values(array_unique($cids));
+            if (empty($cids)) {
+                return;
+            }
+
+            $types = [];
+            if ($categories) {
+                $types[] = 'category';
+            }
+            if ($tags) {
+                $types[] = 'tag';
+            }
+
+            [$catByCid, $tagByCid] = $this->preLoadMetas($cids, $types);
+            $fieldByCid = $fields ? $this->preLoadFields($cids) : [];
+
+            foreach ($this->stack as $index => $row) {
+                $cid = (int) ($row['cid'] ?? 0);
+                if ($categories) {
+                    $this->stack[$index]['#categories'] = $catByCid[$cid] ?? [];
+                }
+                if ($tags) {
+                    $this->stack[$index]['#tags'] = $tagByCid[$cid] ?? [];
+                }
+                if ($fields) {
+                    $this->stack[$index]['#fields'] = new Config($fieldByCid[$cid] ?? []);
+                }
+            }
+
+            reset($this->stack);
+        } catch (\Throwable $e) {
+            // 回退到逐行惰性加载, 不影响正确性
+        }
+    }
+
+    /**
+     * 单查询取回若干内容的分类/标签关系, 返回 [按 cid 分组的分类, 按 cid 分组的标签]。
+     *
+     * @param int[] $cids
+     * @param string[] $types 需要加载的元数据类型 (category / tag)
+     */
+    protected function preLoadMetas(array $cids, array $types = ['category', 'tag']): array
+    {
+        $catByCid = [];
+        $tagByCid = [];
+
+        if (empty($cids) || empty($types)) {
+            return [$catByCid, $tagByCid];
+        }
+
+        // 单查询: 内容 -> 关系 -> 描述项 (按需取回分类与/或标签)
+        $rows = $this->db->fetchAll($this->db->select(
+            'table.relationships.cid',
+            'table.metas.mid',
+            'table.metas.type'
+        )->from('table.metas')
+            ->join('table.relationships', 'table.relationships.mid = table.metas.mid')
+            ->where('table.relationships.cid IN ?', $cids)
+            ->where('table.metas.type IN ?', $types));
+
+        if (empty($rows)) {
+            return [$catByCid, $tagByCid];
+        }
+
+        $catMids = [];
+        $tagMids = [];
+        foreach ($rows as $row) {
+            if ('category' === $row['type']) {
+                $catMids[] = (int) $row['mid'];
+            } else {
+                $tagMids[] = (int) $row['mid'];
+            }
+        }
+
+        // mid -> 完整数组(含 permalink), 复用内核 widget 生成, 不手写 URL
+        $catMap = $this->preLoadCategoryMap(array_unique($catMids));
+        $tagMap = $this->preLoadTagMap(array_unique($tagMids));
+
+        foreach ($rows as $row) {
+            $cid = (int) $row['cid'];
+            $mid = (int) $row['mid'];
+
+            if ('category' === $row['type']) {
+                if (isset($catMap[$mid])) {
+                    $catByCid[$cid][] = $catMap[$mid];
+                }
+            } else {
+                if (isset($tagMap[$mid])) {
+                    $tagByCid[$cid][] = $tagMap[$mid];
+                }
+            }
+        }
+
+        // 分类按 order 排序, 贴合惰性方法 ___categories 的树序输出
+        foreach ($catByCid as &$list) {
+            usort($list, static function ($a, $b) {
+                return [$a['order'] ?? 0, $a['mid']] <=> [$b['order'] ?? 0, $b['mid']];
+            });
+        }
+        unset($list);
+
+        return [$catByCid, $tagByCid];
+    }
+
+    /**
+     * 取分类 mid -> 数组(含 permalink)。复用 Metas\From: 它会按 type=category
+     * 自动构建分类树, 使 directory / permalink 与 ___categories 完全一致。
+     *
+     * @param int[] $mids
+     */
+    protected function preLoadCategoryMap(array $mids): array
+    {
+        return $this->preLoadMetaMap(
+            $mids,
+            'category',
+            ['mid', 'name', 'slug', 'description', 'order', 'parent', 'count', 'permalink']
+        );
+    }
+
+    /**
+     * @param int[] $mids
+     */
+    protected function preLoadTagMap(array $mids): array
+    {
+        return $this->preLoadMetaMap(
+            $mids,
+            'tag',
+            ['mid', 'name', 'slug', 'description', 'count', 'permalink']
+        );
+    }
+
+    /**
+     * @param int[] $mids
+     * @param string[] $columns
+     */
+    protected function preLoadMetaMap(array $mids, string $type, array $columns): array
+    {
+        $map = [];
+        if (empty($mids)) {
+            return $map;
+        }
+
+        sort($mids);
+        $alias = 'preload-' . $type . '-' . md5(implode(',', $mids));
+
+        $widget = MetasFrom::allocWithAlias($alias, [
+            'query' => $this->db->select()->from('table.metas')->where('mid IN ?', $mids),
+        ]);
+
+        foreach ($widget->toArray($columns) as $item) {
+            if (isset($item['mid'])) {
+                $map[(int) $item['mid']] = $item;
+            }
+        }
+
+        return $map;
+    }
+
+    /**
+     * 单查询取回若干内容的自定义字段, 返回按 cid 分组的字段键值。
+     *
+     * @param int[] $cids
+     */
+    protected function preLoadFields(array $cids): array
+    {
+        $fieldByCid = [];
+
+        if (empty($cids)) {
+            return $fieldByCid;
+        }
+
+        $rows = $this->db->fetchAll($this->db->select()->from('table.fields')
+            ->where('cid IN ?', $cids));
+
+        foreach ($rows as $row) {
+            $cid = (int) $row['cid'];
+            $value = 'json' == $row['type']
+                ? json_decode($row['str_value'], true)
+                : $row[$row['type'] . '_value'];
+            $fieldByCid[$cid][$row['name']] = $value;
+        }
+
+        return $fieldByCid;
     }
 
     protected function ___excerpt(): ?string

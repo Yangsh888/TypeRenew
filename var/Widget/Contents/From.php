@@ -22,11 +22,22 @@ class From extends Contents
         $parameter->setDefault([
             'cid' => null,
             'query' => null,
+            'rows' => null,
         ]);
     }
 
     public function execute()
     {
+        // 预取行直接入栈, 不再查库 (供批量预热使用, 消除评论列表按 cid 逐行查父内容的 N+1)
+        if (is_array($this->parameter->rows)) {
+            $this->pushAll($this->parameter->rows);
+
+            if ($this->type == 'page') {
+                $this->initTreeParameter($this->parameter);
+            }
+            return;
+        }
+
         $query = null;
 
         if (isset($this->parameter->cid)) {
@@ -41,6 +52,36 @@ class From extends Contents
             if ($this->type == 'page') {
                 $this->initTreeParameter($this->parameter);
             }
+        }
+    }
+
+    /**
+     * 批量预热 From 池: 一次查回多个 cid 的内容行, 按 cid 注入对应的 From@cid 池实例。
+     * 之后对这些 cid 调用 From::allocWithAlias($cid, ...) 将命中暖池, 不再逐行查库。
+     *
+     * @param int[] $cids
+     */
+    public static function preload(array $cids): void
+    {
+        $cids = array_values(array_unique(array_filter(array_map('intval', $cids))));
+        if (count($cids) < 2) {
+            return;
+        }
+
+        try {
+            $db = \Typecho\Db::get();
+            $rows = $db->fetchAll($db->select()->from('table.contents')->where('cid IN ?', $cids));
+
+            $byCid = [];
+            foreach ($rows as $row) {
+                $byCid[(int) $row['cid']][] = $row;
+            }
+
+            foreach ($byCid as $cid => $cidRows) {
+                self::allocWithAlias((string) $cid, ['rows' => $cidRows]);
+            }
+        } catch (\Throwable $e) {
+            // 预热失败回退到逐行惰性加载, 不影响正确性
         }
     }
 

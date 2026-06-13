@@ -127,6 +127,76 @@ class Queue
         }
     }
 
+    /**
+     * 自愈兜底: 在普通请求结束后顺手消费一小批积压邮件。
+     *
+     * 设计目标 (零新配置 / 零新表 / 不强依赖 Cache):
+     * async 自请求在反代/容器下可能被拒、cron 模式又需用户手配 crontab,
+     * 两种情况下邮件都会积压。此方法借自然流量做最后兜底, 即使上述触发全部失效,
+     * 邮件仍会被后续访问慢慢发出。deliverBatch 自带行级租约, 多请求并发安全。
+     */
+    public static function maybeDrain(Db $db, Options $options): void
+    {
+        static $called = false;
+        if ($called) {
+            return;
+        }
+        $called = true;
+
+        try {
+            // sync 模式入队时已同步发完, 无需兜底
+            if ((string) ($options->mailQueueMode ?? 'async') === 'sync') {
+                return;
+            }
+
+            $now = time();
+            $cache = \Typecho\Cache::getInstance();
+
+            // 节流: Cache 可用时 60s 最多触发一次; 不可用时按概率抽样 (~1/20),
+            // 避免高频站点每个请求都查库
+            if ($cache->enabled()) {
+                $cacheKey = 'mail:drain:last';
+                $hit = false;
+                $last = (int) $cache->get($cacheKey, $hit);
+                if ($hit && ($now - $last) < 60) {
+                    return;
+                }
+                $cache->set($cacheKey, $now, 120);
+            } elseif (random_int(1, 20) !== 1) {
+                return;
+            }
+
+            // 廉价预检: 是否存在到期可投递的邮件 (走 (status, sendAt) 复合索引)
+            $pending = $db->fetchRow(
+                $db->select('id')->from('table.mail_queue')
+                    ->where('sendAt <= ?', $now)
+                    ->where('(status = ? OR status = ? OR (status = ? AND lockedUntil < ?))', 'pending', 'failed', 'processing', $now)
+                    ->limit(1)
+            );
+
+            if (empty($pending)) {
+                return;
+            }
+
+            $batch = max(1, min(50, (int) ($options->mailBatchSize ?? 20)));
+            Response::getInstance()->addBackgroundResponder(function () use ($db, $options, $batch) {
+                try {
+                    if (function_exists('ignore_user_abort')) {
+                        ignore_user_abort(true);
+                    }
+                    if (function_exists('set_time_limit')) {
+                        set_time_limit(30);
+                    }
+                    self::deliverBatch($db, $options, $batch);
+                } catch (\Throwable $e) {
+                    self::recordRuntimeError('drain', $e->getMessage());
+                }
+            });
+        } catch (\Throwable $e) {
+            // 兜底逻辑绝不影响正常请求
+        }
+    }
+
     public static function requestAsync(Options $options): bool
     {
         static $called;
@@ -267,6 +337,11 @@ class Queue
         $failed = 0;
         $errors = [];
 
+        // 单连接复用: 整批共用一个 transport, 首封建连/认证, 后续复用, 批末关闭。
+        // SMTP 下可省去逐封重连握手; Native(mail()) 的 open/close 为空操作。
+        $transport = self::buildTransport($options);
+        $transport->open();
+
         foreach ($candidates as $row) {
             $id = (int) $row['id'];
             $attempts = (int) $row['attempts'];
@@ -321,7 +396,7 @@ class Queue
                     (string) ($payload['text'] ?? '')
                 );
 
-                $result = self::sendMessage($msg, $options);
+                $result = self::sendMessage($msg, $options, $transport);
                 if ($result === true) {
                     $ok = true;
                 } else {
@@ -360,6 +435,8 @@ class Queue
                 $cache->delete($cacheLockKey);
             }
         }
+
+        $transport->close();
 
         return [
             'sent' => $sent,
@@ -561,7 +638,7 @@ class Queue
             : new Smtp(self::smtpConfig($options));
     }
 
-    private static function sendMessage(Message $message, Options $options): bool|string
+    private static function sendMessage(Message $message, Options $options, ?Transport $transport = null): bool|string
     {
         $sender = self::senderDefaults($options);
         if (trim($message->from) === '') {
@@ -578,7 +655,7 @@ class Queue
             return 'Invalid sender email';
         }
 
-        return self::buildTransport($options)->send($message);
+        return ($transport ?? self::buildTransport($options))->send($message);
     }
 
     private static function retryDelay(int $attempt): int
@@ -620,12 +697,16 @@ class Queue
         $encryptedPass = (string) ($options->mailSmtpPass ?? '');
         $decryptedPass = \Utils\Cipher::decrypt($encryptedPass, (string) ($options->secret ?? ''));
 
+        // HELO 域名取站点域名 (部分严格 MTA 拒绝无意义的 HELO)
+        $heloHost = (string) (parse_url((string) ($options->siteUrl ?? $options->index ?? ''), PHP_URL_HOST) ?: '');
+
         return [
             'host' => (string) ($options->mailSmtpHost ?? ''),
             'port' => (int) ($options->mailSmtpPort ?? 25),
             'user' => (string) ($options->mailSmtpUser ?? ''),
             'pass' => $decryptedPass,
             'secure' => (string) ($options->mailSmtpSecure ?? ''),
+            'heloHost' => $heloHost,
             'timeout' => 10
         ];
     }

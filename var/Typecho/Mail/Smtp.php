@@ -6,13 +6,73 @@ class Smtp implements Transport
 {
     private array $config;
     private $socket = null;
+    private bool $keepAlive = false;
 
     public function __construct(array $config)
     {
         $this->config = $config;
     }
 
+    /**
+     * 开启批量会话: 建立并保持连接, 供同一批多封邮件复用 (避免逐封重连/认证)。
+     * 连接失败时静默退化, 后续 send() 会自行重连, 不影响正确性。
+     */
+    public function open(): void
+    {
+        $this->keepAlive = true;
+        if (!is_resource($this->socket)) {
+            $err = $this->connect();
+            if ($err !== true) {
+                // 预连接失败不抛错, 留待 send() 时按单封逻辑重试并上报
+                $this->disconnect();
+            }
+        }
+    }
+
+    public function close(): void
+    {
+        $this->keepAlive = false;
+        $this->quit();
+    }
+
     public function send(Message $message): bool|string
+    {
+        // 非保持模式: 自连自断, 单封语义与改造前完全一致
+        if (!$this->keepAlive) {
+            $err = $this->connect();
+            if ($err !== true) {
+                $this->disconnect();
+                return $err;
+            }
+
+            $result = $this->deliver($message);
+            $this->quit();
+            return $result;
+        }
+
+        // 保持模式: 复用连接; 若连接已断 (上一封异常/对端关闭) 则重连
+        if (!is_resource($this->socket)) {
+            $err = $this->connect();
+            if ($err !== true) {
+                $this->disconnect();
+                return $err;
+            }
+        }
+
+        $result = $this->deliver($message);
+
+        // 单封失败可能使会话状态不可靠, 断开以便下一封干净重连
+        if ($result !== true) {
+            $this->disconnect();
+        }
+
+        return $result;
+    }
+
+    /**
+     * 建立连接并完成 EHLO / STARTTLS / 认证。成功返回 true, 失败返回错误字符串。
+     */
+    private function connect(): bool|string
     {
         $host = (string) ($this->config['host'] ?? '');
         $port = (int) ($this->config['port'] ?? 25);
@@ -48,15 +108,14 @@ class Smtp implements Transport
         stream_set_timeout($this->socket, $timeout);
         $greeting = $this->readResponse();
         if (!$this->isPositive($greeting)) {
-            $this->close();
             return 'SMTP greeting failed: ' . $greeting;
         }
 
-        $ehlo = $this->command('EHLO typerenew');
+        $heloHost = $this->heloHost();
+        $ehlo = $this->command('EHLO ' . $heloHost);
         if (!$this->isPositive($ehlo)) {
-            $helo = $this->command('HELO typerenew');
+            $helo = $this->command('HELO ' . $heloHost);
             if (!$this->isPositive($helo)) {
-                $this->close();
                 return 'SMTP HELO/EHLO failed: ' . $helo;
             }
         }
@@ -64,19 +123,16 @@ class Smtp implements Transport
         if ($secure === 'tls') {
             $startTls = $this->command('STARTTLS');
             if (!$this->isPositive($startTls)) {
-                $this->close();
                 return 'SMTP STARTTLS failed: ' . $startTls;
             }
 
             $cryptoOk = @stream_socket_enable_crypto($this->socket, true, STREAM_CRYPTO_METHOD_TLS_CLIENT);
             if ($cryptoOk !== true) {
-                $this->close();
                 return 'TLS handshake failed';
             }
 
-            $ehlo = $this->command('EHLO typerenew');
+            $ehlo = $this->command('EHLO ' . $heloHost);
             if (!$this->isPositive($ehlo)) {
-                $this->close();
                 return 'SMTP EHLO after STARTTLS failed: ' . $ehlo;
             }
         }
@@ -86,29 +142,33 @@ class Smtp implements Transport
         if ($user !== '') {
             $authResp = $this->authenticate($user, $pass, $ehlo);
             if ($authResp !== true) {
-                $this->close();
                 return (string) $authResp;
             }
         }
 
+        return true;
+    }
+
+    /**
+     * 在已建立的连接上投递一封邮件 (MAIL FROM / RCPT TO / DATA)。
+     */
+    private function deliver(Message $message): bool|string
+    {
         $from = $message->from;
         $to = $message->to;
 
         $mailFrom = $this->command('MAIL FROM:<' . $from . '>');
         if (!$this->isPositive($mailFrom)) {
-            $this->close();
             return 'MAIL FROM failed: ' . $mailFrom;
         }
 
         $rcptTo = $this->command('RCPT TO:<' . $to . '>');
         if (!$this->isPositive($rcptTo)) {
-            $this->close();
             return 'RCPT TO failed: ' . $rcptTo;
         }
 
         $data = $this->command('DATA');
         if (!$this->isPositive($data)) {
-            $this->close();
             return 'DATA failed: ' . $data;
         }
 
@@ -117,13 +177,24 @@ class Smtp implements Transport
         $this->write($raw . "\r\n.\r\n");
         $result = $this->readResponse();
         if (!$this->isPositive($result)) {
-            $this->close();
             return 'SMTP body rejected: ' . $result;
         }
 
-        $this->command('QUIT');
-        $this->close();
         return true;
+    }
+
+    private function heloHost(): string
+    {
+        $host = trim((string) ($this->config['heloHost'] ?? ''));
+        return $host !== '' ? $host : 'localhost';
+    }
+
+    private function quit(): void
+    {
+        if (is_resource($this->socket)) {
+            $this->command('QUIT');
+        }
+        $this->disconnect();
     }
 
     private function buildMime(Message $message): string
@@ -229,7 +300,7 @@ class Smtp implements Transport
         return str_contains($caps, $method);
     }
 
-    private function close(): void
+    private function disconnect(): void
     {
         if (is_resource($this->socket)) {
             fclose($this->socket);

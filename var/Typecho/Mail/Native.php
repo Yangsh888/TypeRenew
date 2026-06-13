@@ -4,6 +4,15 @@ namespace Typecho\Mail;
 
 class Native implements Transport
 {
+    public function open(): void
+    {
+        // mail() 无连接概念, 无需保持
+    }
+
+    public function close(): void
+    {
+    }
+
     public function send(Message $message): bool|string
     {
         $boundary = Mime::boundary();

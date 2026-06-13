@@ -6,8 +6,6 @@ include 'menu.php';
 $stat = \Widget\Stat::alloc();
 
 $db = \Typecho\Db::get();
-$postsData = [];
-$commentsData = [];
 $dayCount = 14;
 $securityWarnings = [];
 
@@ -34,26 +32,56 @@ if (defined('__TYPECHO_ALLOW_MD5_PASSWORD__') && __TYPECHO_ALLOW_MD5_PASSWORD__)
     ];
 }
 
+// async 邮件依赖请求结束后的后台 flush, 非 FastCGI 环境(如 nginx 反代下的非 fpm)不可靠
+if (!function_exists('fastcgi_finish_request') && (string) ($options->mailQueueMode ?? 'async') === 'async') {
+    $securityWarnings[] = [
+        'title' => _t('邮件异步发送可能不可靠'),
+        'detail' => _t('当前运行环境不支持 FastCGI 后台请求，异步邮件依赖的请求结束后台处理在此环境下可能失效。建议在「设置 - 邮件」中将发送模式切换为 Cron 并配置定时任务，邮件队列会更稳定。')
+    ];
+}
+
+// 计算最近 14 天的天边界 (时区感知, 与单条统计口径一致)
+$dayBounds = [];
 for ($i = $dayCount - 1; $i >= 0; $i--) {
     $currentDay = $options->getDateTime()->setTime(0, 0, 0)->modify("-{$i} days");
-    $startTime = $currentDay->getTimestamp();
-    $endTime = $currentDay->modify('+1 day')->getTimestamp();
-
-    $postCount = $db->fetchObject($db->select(['COUNT(cid)' => 'num'])
-        ->from('table.contents')
-        ->where('type = ?', 'post')
-        ->where('status = ?', 'publish')
-        ->where('created >= ?', $startTime)
-        ->where('created < ?', $endTime))->num;
-
-    $commentCount = $db->fetchObject($db->select(['COUNT(coid)' => 'num'])
-        ->from('table.comments')
-        ->where('created >= ?', $startTime)
-        ->where('created < ?', $endTime))->num;
-
-    $postsData[] = (int) $postCount;
-    $commentsData[] = (int) $commentCount;
+    $dayBounds[] = [
+        'start' => $currentDay->getTimestamp(),
+        'end' => $currentDay->modify('+1 day')->getTimestamp(),
+    ];
 }
+
+$rangeStart = $dayBounds[0]['start'];
+$rangeEnd = $dayBounds[$dayCount - 1]['end'];
+
+// 按天分桶: 每表仅一条范围查询取回 created, 在 PHP 内分桶, 替代逐日 28 条 COUNT
+$bucketByDay = static function (array $createdList) use ($dayBounds, $dayCount): array {
+    $buckets = array_fill(0, $dayCount, 0);
+    foreach ($createdList as $created) {
+        $created = (int) $created;
+        for ($d = 0; $d < $dayCount; $d++) {
+            if ($created >= $dayBounds[$d]['start'] && $created < $dayBounds[$d]['end']) {
+                $buckets[$d]++;
+                break;
+            }
+        }
+    }
+    return $buckets;
+};
+
+$postCreatedRows = $db->fetchAll($db->select('created')
+    ->from('table.contents')
+    ->where('type = ?', 'post')
+    ->where('status = ?', 'publish')
+    ->where('created >= ?', $rangeStart)
+    ->where('created < ?', $rangeEnd));
+
+$commentCreatedRows = $db->fetchAll($db->select('created')
+    ->from('table.comments')
+    ->where('created >= ?', $rangeStart)
+    ->where('created < ?', $rangeEnd));
+
+$postsData = $bucketByDay(array_column($postCreatedRows, 'created'));
+$commentsData = $bucketByDay(array_column($commentCreatedRows, 'created'));
 
 $trSpark = function (array $values, int $w = 240, int $h = 44): string {
     static $n = 0;
@@ -92,9 +120,23 @@ $trSpark = function (array $values, int $w = 240, int $h = 44): string {
 
 $postsTotal = (int) $stat->publishedPostsNum;
 $pagesTotal = (int) $stat->publishedPagesNum;
-$commentsApproved = (int) $stat->publishedCommentsNum;
-$commentsWaiting = (int) $stat->waitingCommentsNum;
-$commentsSpam = (int) $stat->spamCommentsNum;
+
+// 三个评论计数同表仅 status 不同, 用一条 GROUP BY 取回并预填 Stat 缓存,
+// 短路 publishedCommentsNum/waitingCommentsNum/spamCommentsNum 三次独立 COUNT。
+$commentStatusNum = ['approved' => 0, 'waiting' => 0, 'spam' => 0];
+foreach ($db->fetchAll($db->select('status', ['COUNT(coid)' => 'num'])
+    ->from('table.comments')
+    ->where('status = ? OR status = ? OR status = ?', 'approved', 'waiting', 'spam')
+    ->group('status')) as $countRow) {
+    $commentStatusNum[$countRow['status']] = (int) $countRow['num'];
+}
+$stat->publishedCommentsNum = $commentStatusNum['approved'];
+$stat->waitingCommentsNum = $commentStatusNum['waiting'];
+$stat->spamCommentsNum = $commentStatusNum['spam'];
+
+$commentsApproved = $commentStatusNum['approved'];
+$commentsWaiting = $commentStatusNum['waiting'];
+$commentsSpam = $commentStatusNum['spam'];
 $commentsTotal = $commentsApproved + $commentsWaiting + $commentsSpam;
 $donutTotal = max(1, $postsTotal + $pagesTotal + $commentsTotal);
 

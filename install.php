@@ -278,7 +278,7 @@ function install_check(string $type): bool
     }
 }
 
-function install_raise_error($error, $config = null)
+function install_raise_error($error, $config = null): never
 {
     if (install_is_cli()) {
         if (is_array($error)) {
@@ -330,7 +330,7 @@ function install_success($step, ?array $config = null)
     }
 }
 
-function install_throw_json($data)
+function install_throw_json($data): never
 {
     \Typecho\Response::getInstance()->setContentType('application/json')
         ->addResponder(function () use ($data) {
