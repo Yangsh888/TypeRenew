@@ -30,8 +30,8 @@ class Schema
                         'sendAt' => '`sendAt` int unsigned NOT NULL default 0',
                         'created' => '`created` int unsigned NOT NULL default 0',
                         'updated' => '`updated` int unsigned NOT NULL default 0',
-                        'lastError' => '`lastError` varchar(500) NOT NULL default ""',
-                        'dedupeKey' => '`dedupeKey` char(40) NOT NULL default ""',
+                        'lastError' => "`lastError` varchar(500) NOT NULL default ''",
+                        'dedupeKey' => "`dedupeKey` char(40) NOT NULL default ''",
                         'payload' => '`payload` longtext',
                     ],
                 ],
@@ -237,8 +237,8 @@ class Schema
                         . '`sendAt` int unsigned NOT NULL default 0,'
                         . '`created` int unsigned NOT NULL default 0,'
                         . '`updated` int unsigned NOT NULL default 0,'
-                        . '`lastError` varchar(500) NOT NULL default "",'
-                        . '`dedupeKey` char(40) NOT NULL default "",'
+                        . '`lastError` varchar(500) NOT NULL default \'\','
+                        . '`dedupeKey` char(40) NOT NULL default \'\','
                         . '`payload` longtext,'
                         . 'PRIMARY KEY (`id`)'
                         . ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=' . $mysqlCollation,

@@ -151,6 +151,10 @@ class Cache extends Options implements ActionInterface
             _t('Redis 密码')
         );
         $cacheRedisPassword->input->setAttribute('class', 'w-100 mono');
+        $cacheRedisPassword->input->setAttribute('autocomplete', 'new-password');
+        if (!empty($this->options->cacheRedisPassword)) {
+            $cacheRedisPassword->input->setAttribute('placeholder', _t('已设置密码，留空保持不变'));
+        }
         $form->addInput($cacheRedisPassword);
 
         $cacheRedisDatabase = new Form\Element\Number(

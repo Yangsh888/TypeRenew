@@ -132,7 +132,7 @@ class Discussion extends Options implements ActionInterface
             <option value="last"' . ('last' == $this->options->commentsPageDisplay ? ' selected="true"' : '') . '>' . _t('最后一页') . '</option></select>'
                 . '<label for="commentsShow-commentsPageDisplay">'),
             'commentsThreaded'        => _t('启用评论回复, 以 %s 层作为每个评论最多的回复层数',
-                    '</label><input name="commentsMaxNestingLevels" type="number" class="text num text-s" value="' . $this->options->commentsMaxNestingLevels . '" id="commentsShow-commentsMaxNestingLevels" />
+                    '</label><input name="commentsMaxNestingLevels" type="number" min="2" max="7" class="text num text-s" value="' . $this->options->commentsMaxNestingLevels . '" id="commentsShow-commentsMaxNestingLevels" />
             <label for="commentsShow-commentsMaxNestingLevels">') . '</label></span><span class="multiline">'
                 . _t('将 %s 的评论显示在前面', '<select id="commentsShow-commentsOrder" name="commentsOrder">
             <option value="DESC"' . ('DESC' == $this->options->commentsOrder ? ' selected="true"' : '') . '>' . _t('较新的') . '</option>
