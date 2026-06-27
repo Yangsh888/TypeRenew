@@ -406,8 +406,9 @@ trait EditTrait
 
                 if ($beforeCount) {
                     $this->db->query($this->db->update('table.metas')
-                        ->expression('count', 'IF(`count` > 0, `count` - 1, 0)', false)
-                        ->where('mid = ?', $category));
+                        ->expression('count', 'count - 1')
+                        ->where('mid = ?', $category)
+                        ->where('count > ?', 0));
                 }
             }
         }
@@ -463,8 +464,9 @@ trait EditTrait
 
                 if ($beforeCount) {
                     $this->db->query($this->db->update('table.metas')
-                        ->expression('count', 'IF(`count` > 0, `count` - 1, 0)', false)
-                        ->where('mid = ?', $tag));
+                        ->expression('count', 'count - 1')
+                        ->where('mid = ?', $tag)
+                        ->where('count > ?', 0));
                 }
             }
         }

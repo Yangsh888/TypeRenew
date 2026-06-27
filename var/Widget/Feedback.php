@@ -162,7 +162,7 @@ class Feedback extends Comments implements ActionInterface
         if (!$this->user->hasLogin()) {
             $comment['author'] = $this->request->filter('trim')->get('author');
             $comment['mail'] = $this->request->filter('trim')->get('mail');
-            $comment['url'] = $this->request->filter('trim', 'url')->get('url');
+            $comment['url'] = $this->request->filter('trim')->get('url');
 
             if (!empty($comment['url'])) {
                 $urlParams = Common::parseUrl((string) $comment['url']);
