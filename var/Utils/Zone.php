@@ -122,6 +122,10 @@ class Zone
             return null;
         }
 
+        if ($time !== '' && preg_match('/^\d{1,2}:\d{2}$/', $time)) {
+            $time .= ':00';
+        }
+
         $local = $date . ' ' . ($time === '' ? '00:00:00' : $time);
         $dateTime = DateTimeImmutable::createFromFormat(
             '!Y-m-d H:i:s',
