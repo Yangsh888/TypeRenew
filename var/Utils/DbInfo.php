@@ -11,16 +11,20 @@ class DbInfo
 
     public static function extractVersion(string $rawVersion): string
     {
-        if (preg_match_all('/\d+\.\d+(?:\.\d+)?/', $rawVersion, $matches) !== 1 || empty($matches[0])) {
+        if (self::isMariaDb($rawVersion)) {
+            $pos = stripos($rawVersion, 'mariadb');
+            $prefix = substr($rawVersion, 0, $pos);
+            if (preg_match_all('/\d+\.\d+(?:\.\d+)?/', $prefix, $m) >= 1 && !empty($m[0])) {
+                return (string) end($m[0]);
+            }
             return '';
         }
 
-        $versions = $matches[0];
-        if (self::isMariaDb($rawVersion)) {
-            return (string) end($versions);
+        if (preg_match('/\d+\.\d+(?:\.\d+)?/', $rawVersion, $m)) {
+            return $m[0];
         }
 
-        return (string) reset($versions);
+        return '';
     }
 
     public static function minimumMysqlVersion(string $rawVersion): string
