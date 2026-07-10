@@ -17,7 +17,7 @@ class Rows extends Metas
 
     public function execute()
     {
-        $this->pushAll($this->getRows($this->orders, $this->parameter->ignore));
+        $this->pushAll($this->getRows($this->orders, (int) $this->parameter->ignore));
     }
 
     public function listCategories($categoryOptions = null)
