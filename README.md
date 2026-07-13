@@ -6,7 +6,7 @@
 [![Based on](https://img.shields.io/badge/Based%20on-Typecho%201.3.0-orange?style=flat-square)](https://github.com/typecho/typecho)
 [![zread](https://img.shields.io/badge/Ask_Zread-_.svg?style=flat-square&color=00b0aa&labelColor=000000&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTQuOTYxNTYgMS42MDAxSDIuMjQxNTZDMS44ODgxIDEuNjAwMSAxLjYwMTU2IDEuODg2NjQgMS42MDE1NiAyLjI0MDFWNC45NjAxQzEuNjAxNTYgNS4zMTM1NiAxLjg4ODEgNS42MDAxIDIuMjQxNTYgNS42MDAxSDQuOTYxNTZDNS4zMTUwMiA1LjYwMDEgNS42MDE1NiA1LjMxMzU2IDUuNjAxNTYgNC45NjAxVjIuMjQwMUM1LjYwMTU2IDEuODg2NjQgNS4zMTUwMiAxLjYwMDEgNC45NjE1NiAxLjYwMDFaIiBmaWxsPSIjZmZmIi8%2BCjxwYXRoIGQ9Ik00Ljk2MTU2IDEwLjM5OTlIMi4yNDE1NkMxLjg4ODEgMTAuMzk5OSAxLjYwMTU2IDEwLjY4NjQgMS42MDE1NiAxMS4wMzk5VjEzLjc1OTlDMS42MDE1NiAxNC4xMTM0IDEuODg4MSAxNC4zOTk5IDIuMjQxNTYgMTQuMzk5OUg0Ljk2MTU2QzUuMzE1MDIgMTQuMzk5OSA1LjYwMTU2IDE0LjExMzQgNS42MDE1NiAxMy43NTk5VjExLjAzOTlDNS42MDE1NiAxMC42ODY0IDUuMzE1MDIgMTAuMzk5OSA0Ljk2MTU2IDEwLjM5OTlaIiBmaWxsPSIjZmZmIi8%2BCjxwYXRoIGQ9Ik0xMy43NTg0IDEuNjAwMUgxMS4wMzg0QzEwLjY4NSAxLjYwMDEgMTAuMzk4NCAxLjg4NjY0IDEwLjM5ODQgMi4yNDAxVjQuOTYwMUMxMC4zOTg0IDUuMzEzNTYgMTAuNjg1IDUuNjAwMSAxMS4wMzg0IDUuNjAwMUgxMy43NTg0QzE0LjExMTkgNS42MDAxIDE0LjM5ODQgNS4zMTM1NiAxNC4zOTg0IDQuOTYwMVYyLjI0MDFDMTQuMzk4NCAxLjg4NjY0IDE0LjExMTkgMS42MDAxIDEzLjc1ODQgMS42MDAxWiIgZmlsbD0iI2ZmZiIvPgo8cGF0aCBkPSJNNCAxMkwxMiA0TDQgMTJaIiBmaWxsPSIjZmZmIi8%2BCjxwYXRoIGQ9Ik00IDEyTDEyIDQiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8L3N2Zz4K&logoColor=ffffff)](https://zread.ai/Yangsh888/TypeRenew)
 
-TypeRenew 是基于开源博客系统 Typecho 所开发的现代化 CMS 程序，完整继承了 Typecho 轻量、简洁、高效的内核基因，同时针对现代运行环境进行全面适配，修复遗留的兼容性问题，并原生集成了缓存、邮件、备份、升级、密码重置等实用功能，同时提供安全中心、SEO、优化加速、外链安全与编辑器增强等官方拓展能力，适合搭建个人博客或轻量内容站点，项目 QQ 交流群：1073739854
+TypeRenew 是基于开源博客系统 Typecho 所开发的现代化 CMS 程序，完整继承了 Typecho 轻量、简洁、高效的内核基因，同时针对现代运行环境进行适配，修复兼容性问题，并原生集成缓存、邮件、备份、升级等实用功能，同时提供安全中心、SEO、优化加速、外链安全与编辑器增强等官方拓展能力，适合搭建个人博客或轻量内容站点，QQ 交流群：1073739854
 
 ## 开发背景
 
@@ -36,7 +36,20 @@ Typecho 作为知名的轻量级博客程序，以代码简洁、运行高效著
 
 为 TypeRenew 提供官方专用拓展集合，请前往官方插件仓库：https://github.com/Yangsh888/TypeRenew-plugins
 
-当前已开发 `RenewBoost`、`RenewShield`、`RenewSEO`、`RenewGo`、`VditorRenew` 五个 TypeRenew 官方插件，可按需启用，分别覆盖优化加速、安全防护、SEO、外链安全与后台编辑器增强能力。
+当前已开发 `RenewBoost`、`RenewShield`、`RenewSEO`、`RenewGo`、`VditorRenew` 六个 TypeRenew 官方插件，可按需启用，分别覆盖优化加速、安全防护、SEO、外链安全、后台编辑器增强、CZDB 纯真数据库解析等能力。
+
+### 社区拓展
+
+`TypeRenew Add-ons`是由社区开发者 abdulhalim 贡献的第三方拓展，为 TypeRenew 补充多语言本地化与界面适配能力，适配 TypeRenew v1.5.1 及以上版本，提供完整的英文（en_US）、波斯语（fa_IR）语言包与全自动从右到左（RTL）布局支持，覆盖前台默认主题、后台管理面板与安装引导页全场景。
+
+项目仓库：https://github.com/abdulhalim/TypeRenew-Add-ons
+
+核心特性：
+- 提供核心系统与默认主题双层语言包，完整覆盖前后台界面文本
+- 基于当前激活语言自动切换 RTL / LTR 布局，原生适配波斯语等右向书写语言
+- 内嵌 Vazirmatn 字体，优化波斯语排版与阅读体验
+- 轻量无插件实现，仅需少量核心代码补丁，无额外性能开销
+- 兼容 TypeRenew 原生深色模式与响应式布局
 
 ## 运行环境
 
