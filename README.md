@@ -36,7 +36,7 @@ Typecho 作为知名的轻量级博客程序，以代码简洁、运行高效著
 
 为 TypeRenew 提供官方专用拓展集合，请前往官方插件仓库：https://github.com/Yangsh888/TypeRenew-plugins
 
-当前已开发 `RenewBoost`、`RenewShield`、`RenewSEO`、`RenewGo`、`VditorRenew` 六个 TypeRenew 官方插件，可按需启用，分别覆盖优化加速、安全防护、SEO、外链安全、后台编辑器增强、CZDB 纯真数据库解析等能力。
+当前已开发 `RenewBoost`、`RenewShield`、`RenewSEO`、`RenewGo`、`VditorRenew`、`RenewLocation` 六个 TypeRenew 官方插件，可按需启用，分别覆盖优化加速、安全防护、SEO、外链安全、后台编辑器增强、CZDB 纯真数据库解析等能力。
 
 ### 社区拓展
 
