@@ -238,7 +238,7 @@ $(document).ready(function () {
 
         $('body').append(form);
         rememberScroll();
-        form.trigger('submit');
+        form[0].submit();
     }
 
     $('.operate-delete').click(function () {
