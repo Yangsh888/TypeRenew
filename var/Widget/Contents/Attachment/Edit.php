@@ -3,6 +3,7 @@
 namespace Widget\Contents\Attachment;
 
 use Typecho\Common;
+use Typecho\Widget\Exception;
 use Typecho\Widget\Helper\Form;
 use Typecho\Widget\Helper\Layout;
 use Widget\ActionInterface;
@@ -173,17 +174,27 @@ class Edit extends Contents implements ActionInterface
 
     public function clearAttachment()
     {
-        $page = 1;
         $deleteCount = 0;
+        $iterations = 0;
+        $maxIterations = 1000;
 
         do {
-            $posts = array_column($this->db->fetchAll($this->db->select('cid')
+            $select = $this->db->select('cid')
                 ->from('table.contents')
                 ->where('type = ? AND parent = ?', 'attachment', 0)
-                ->page($page, 100)), 'cid');
-            $page++;
+                ->limit(100);
+
+            if (!$this->user->pass('editor', true)) {
+                $select->where('authorId = ?', $this->user->uid);
+            }
+
+            $posts = array_column($this->db->fetchAll($select), 'cid');
 
             $this->deleteByIds($posts, $deleteCount);
+
+            if (++$iterations >= $maxIterations) {
+                break;
+            }
         } while (count($posts) == 100);
 
         Notice::alloc()->set(
@@ -196,7 +207,14 @@ class Edit extends Contents implements ActionInterface
 
     public function prepare(): self
     {
-        return $this->prepareEdit('attachment', false, _t('文件不存在'));
+        $notFoundMessage = _t('文件不存在');
+        $this->prepareEdit('attachment', false, $notFoundMessage);
+
+        if (!$this->have()) {
+            throw new Exception($notFoundMessage, 404);
+        }
+
+        return $this;
     }
 
     public function action()

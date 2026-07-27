@@ -390,27 +390,29 @@ class Edit extends Metas implements ActionInterface
 
     public function getMenuTitle(): ?string
     {
-        if ($this->request->is('mid')) {
+        if ($this->request->has('mid')) {
             $category = $this->db->fetchRow($this->select()
                 ->where('type = ? AND mid = ?', 'category', $this->request->filter('int')->get('mid')));
 
             if (!empty($category)) {
                 return _t('编辑分类 %s', $category['name']);
             }
+
+            throw new \Typecho\Widget\Exception(_t('分类不存在'), 404);
         }
 
-        if ($this->request->is('parent')) {
+        if ($this->request->has('parent')) {
             $category = $this->db->fetchRow($this->select()
                 ->where('type = ? AND mid = ?', 'category', $this->request->filter('int')->get('parent')));
 
             if (!empty($category)) {
                 return _t('新增 %s 的子分类', $category['name']);
             }
-        } else {
-            return null;
+
+            throw new \Typecho\Widget\Exception(_t('分类不存在'), 404);
         }
 
-        throw new \Typecho\Widget\Exception(_t('分类不存在'), 404);
+        return _t('新增分类');
     }
 
     public function action()

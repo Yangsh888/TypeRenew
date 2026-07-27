@@ -50,6 +50,7 @@ class Router
     public static function dispatch()
     {
         $pathInfo = Request::getInstance()->getPathInfo();
+        $lastNotFound = null;
 
         foreach (self::route($pathInfo) as $result) {
             [$route, $params] = $result;
@@ -70,12 +71,17 @@ class Router
                 return;
             } catch (\Throwable $e) {
                 if (404 == $e->getCode()) {
+                    $lastNotFound = $e;
                     Widget::destroy($route['widget']);
                     continue;
                 }
 
                 throw $e;
             }
+        }
+
+        if ($lastNotFound !== null) {
+            throw $lastNotFound;
         }
 
         throw new RouterException("Path '{$pathInfo}' not found", 404);

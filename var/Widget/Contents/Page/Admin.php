@@ -69,11 +69,11 @@ class Admin extends Contents
             if (!empty($page)) {
                 return _t('管理 %s 的子页面', $page['title']);
             }
-        } else {
-            return null;
+
+            throw new Exception(_t('页面不存在'), 404);
         }
 
-        throw new Exception(_t('页面不存在'), 404);
+        return _t('管理独立页面');
     }
 
     public function getAddLink(): string

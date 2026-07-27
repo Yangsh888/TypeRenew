@@ -283,19 +283,39 @@ $(document).ready(function () {
             var textarea = $('textarea', box).focus();
 
             $('.btn.primary', box).click(function () {
-                var tr = box.parents('tr'),
-                    reply = $('<div class="comment-reply-content"></div>').insertAfter($('.comment-content', tr));
+                var button = $(this),
+                    text = $.trim(textarea.val());
 
-                var html = DOMPurify.sanitize(textarea.val(), {USE_PROFILES: {html: true}});
-                reply.html('<p>' + html + '</p>');
+                if (!text) {
+                    alert(<?php echo json_encode(_t('回复内容不能为空'), JSON_UNESCAPED_UNICODE); ?>);
+                    textarea.focus();
+                    return;
+                }
+
+                button.prop('disabled', true);
                 $.post(commentAction, {
-                    '_': commentToken, 'do': 'reply', 'coid': t.data('coid'), 'text': textarea.val()
+                    '_': commentToken, 'do': 'reply', 'coid': t.data('coid'), 'text': text
                 }, function (o) {
+                    if (!o || Number(o.success) !== 1 || !o.comment) {
+                        alert(o && o.message
+                            ? o.message
+                            : <?php echo json_encode(_t('回复评论失败'), JSON_UNESCAPED_UNICODE); ?>);
+                        return;
+                    }
+
+                    var tr = box.parents('tr'),
+                        reply = $('<div class="comment-reply-content"></div>').insertAfter($('.comment-content', tr));
                     var html = DOMPurify.sanitize(o.comment.content, {USE_PROFILES: {html: true}});
                     reply.html(html).effect('highlight');
-                }, 'json');
-
-                box.remove();
+                    box.remove();
+                }, 'json').fail(function (xhr) {
+                    var response = xhr.responseJSON;
+                    alert(response && response.message
+                        ? response.message
+                        : <?php echo json_encode(_t('回复评论失败'), JSON_UNESCAPED_UNICODE); ?>);
+                }).always(function () {
+                    button.prop('disabled', false);
+                });
             });
         }
 

@@ -214,7 +214,7 @@ class Menu extends Base
 
                     $this->currentParent = $key;
                     $this->currentChild = $inKey;
-                    $this->title = $title;
+                    $this->title = (string) ($title ?? '');
                     $this->addLink = $addLink ? Common::url($addLink, $adminUrl) : null;
                     $this->currentMenuUrl = $menuUrl;
                 }

@@ -168,6 +168,14 @@ while ($parents->next()) {
                 </div>
             </div>
         </form>
+        <?php if ($page->draft && $page->draft['cid'] != $page->cid): ?>
+            <form id="draft-delete-form" action="<?php echo htmlspecialchars($draftAction, ENT_QUOTES, 'UTF-8'); ?>"
+                  method="post" class="inline-operate-form">
+                <input type="hidden" name="_" value="<?php echo htmlspecialchars($draftToken, ENT_QUOTES, 'UTF-8'); ?>">
+                <input type="hidden" name="do" value="deleteDraft">
+                <input type="hidden" name="cid" value="<?php echo (int) $page->cid; ?>">
+            </form>
+        <?php endif; ?>
     </div>
 </main>
 

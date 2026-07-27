@@ -287,7 +287,14 @@ $(document).ready(function() {
                 var $el = $(el);
                 $.post('<?php $security->index('/action/contents-attachment-edit'); ?>',
                     {'do' : 'delete', 'cid' : cid},
-                    function () {
+                    function (response) {
+                        if (!response || Number(response.code) !== 200) {
+                            alert(response && response.message
+                                ? response.message
+                                : <?php echo json_encode(_t('文件删除失败，请检查网络后重试。'), JSON_UNESCAPED_UNICODE); ?>);
+                            return;
+                        }
+
                         if (Typecho.attachmentDeleted) {
                             Typecho.attachmentDeleted(cid);
                         }
@@ -296,6 +303,11 @@ $(document).ready(function() {
                             $(this).remove();
                             updateAttachmentNumber();
                         });
+                    }, 'json').fail(function (xhr) {
+                        var response = xhr.responseJSON;
+                        alert(response && response.message
+                            ? response.message
+                            : <?php echo json_encode(_t('文件删除失败，请检查网络后重试。'), JSON_UNESCAPED_UNICODE); ?>);
                     });
             }
 

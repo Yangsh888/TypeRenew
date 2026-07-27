@@ -321,14 +321,23 @@ class Profile extends Users implements ActionInterface
         $plugins = Plugin::export();
         $activatedPlugins = $plugins['activated'];
 
+        if (!array_key_exists($pluginName, $activatedPlugins)) {
+            throw new \Typecho\Widget\Exception(_t('无法配置插件'), 500);
+        }
+
         [$pluginFileName, $className] = Plugin::portal(
             $pluginName,
             __TYPECHO_ROOT_DIR__ . '/' . __TYPECHO_PLUGIN_DIR__
         );
+
+        if (!is_file($pluginFileName)) {
+            throw new \Typecho\Widget\Exception(_t('无法配置插件'), 500);
+        }
+
         require_once $pluginFileName;
         $info = Plugin::parseInfo($pluginFileName);
 
-        if (!array_key_exists($pluginName, $activatedPlugins) || !method_exists($className, 'personalConfig')) {
+        if (!method_exists($className, 'personalConfig')) {
             throw new \Typecho\Widget\Exception(_t('无法配置插件'), 500);
         }
 

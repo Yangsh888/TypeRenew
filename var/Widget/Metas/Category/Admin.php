@@ -55,11 +55,11 @@ class Admin extends Metas
             if (!empty($category)) {
                 return _t('管理 %s 的子分类', $category['name']);
             }
-        } else {
-            return null;
+
+            throw new Exception(_t('分类不存在'), 404);
         }
 
-        throw new Exception(_t('分类不存在'), 404);
+        return _t('管理分类');
     }
 
     public function getAddLink(): string

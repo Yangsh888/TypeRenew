@@ -12,6 +12,11 @@ include 'menu.php';
 
             <div class="col-mb-12" role="main">
 
+                <form id="category-default-form" method="post"
+                      action="<?php echo htmlspecialchars($security->getIndex('/action/metas-category-edit'), ENT_QUOTES, 'UTF-8'); ?>">
+                    <input type="hidden" name="do" value="default">
+                </form>
+
                 <form method="post" name="manage_categories" class="operate-form">
                     <div class="typecho-list-operate">
                         <div class="operate">
@@ -87,13 +92,10 @@ include 'menu.php';
                                         <?php if ($options->defaultCategory == $categories->mid): ?>
                                             <?php _e('默认'); ?>
                                         <?php else: ?>
-                                            <form class="inline-operate-form" method="post"
-                                                  action="<?php echo htmlspecialchars($security->getIndex('/action/metas-category-edit'), ENT_QUOTES, 'UTF-8'); ?>">
-                                                <input type="hidden" name="do" value="default">
-                                                <input type="hidden" name="mid" value="<?php echo (int) $categories->mid; ?>">
-                                                <button type="submit" class="btn btn-link hidden-by-mouse"
-                                                        title="<?php _e('设为默认'); ?>"><?php _e('默认'); ?></button>
-                                            </form>
+                                            <button type="submit" form="category-default-form" name="mid"
+                                                    value="<?php echo (int) $categories->mid; ?>"
+                                                    class="btn btn-link hidden-by-mouse"
+                                                    title="<?php _e('设为默认'); ?>"><?php _e('默认'); ?></button>
                                         <?php endif; ?>
                                     </td>
                                     <td class="kit-hidden-mb"><a

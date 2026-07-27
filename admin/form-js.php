@@ -8,8 +8,16 @@
             $('html,body').scrollTop(error.parents('.typecho-option').offset().top);
         }
 
-        $('.main form').submit(function () {
+        $('.main form').submit(function (event) {
             const self = $(this);
+            const submitter = event.originalEvent && event.originalEvent.submitter;
+            const tip = self.hasClass('inline-operate-form')
+                ? $(submitter || $('button[type=submit]', this).get(0)).attr('lang')
+                : null;
+
+            if (tip && !confirm(tip)) {
+                return false;
+            }
 
             if (self.hasClass('submitting')) {
                 return false;
@@ -20,13 +28,6 @@
         }).on('submitted', function () {
             $('button[type=submit]', this).removeAttr('disabled');
             $(this).removeClass('submitting');
-        });
-
-        // 行内操作表单(停用插件/删除草稿/切换外观)的二次确认
-        // 提示语写在提交按钮的 lang 属性上, 没有该属性则不拦
-        $('.inline-operate-form').submit(function () {
-            const tip = $('button[type=submit]', this).attr('lang');
-            return !tip || confirm(tip);
         });
 
         $('label input[type=text]').click(function (e) {
@@ -40,12 +41,18 @@
             const input = $('<input type="hidden" />').attr('name', self.attr('name'));
 
             function setInput() {
-                const url = self.val();
+                const url = $.trim(self.val());
+
+                if (!url) {
+                    input.val('');
+                    return;
+                }
 
                 try {
                     const urlObj = new URL(url);
                     input.val(urlObj.toString());
                 } catch {
+                    input.val(url);
                 }
             }
 

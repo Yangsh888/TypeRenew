@@ -376,7 +376,7 @@ trait EditTrait
     protected function isCountablePublishedPost(?string $status, ?int $created): bool
     {
         return $status === 'publish'
-            && (int) ($created ?? 0) < (int) $this->options->time;
+            && (int) ($created ?? 0) <= (int) $this->options->time;
     }
 
     public function getAdminPreviewUrl(?int $cid = null): string

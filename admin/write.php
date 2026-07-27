@@ -23,12 +23,8 @@ if (class_exists('VditorRenew_Plugin')) {
             <cite class="edit-draft-notice is-revision">
                 <span class="edit-draft-notice-tag"><?php _e('修订版'); ?></span>
                 <span class="edit-draft-notice-text"><?php _e('你正在编辑的是保存于 %s 的修订版，你也可以删除它', $contentModifyDate->word()); ?></span>
-                <form action="<?php echo htmlspecialchars($draftAction, ENT_QUOTES, 'UTF-8'); ?>" method="post" class="inline-operate-form">
-                    <input type="hidden" name="_" value="<?php echo htmlspecialchars($draftToken, ENT_QUOTES, 'UTF-8'); ?>">
-                    <input type="hidden" name="do" value="deleteDraft">
-                    <input type="hidden" name="cid" value="<?php echo (int) $content->cid; ?>">
-                    <button type="submit" class="btn btn-link" lang="<?php _e('您确认要删除这份草稿吗?'); ?>"><?php _e('删除它'); ?></button>
-                </form>
+                <button type="submit" form="draft-delete-form" class="btn btn-link"
+                        lang="<?php _e('您确认要删除这份草稿吗?'); ?>"><?php _e('删除它'); ?></button>
             </cite>
         <?php else: ?>
             <cite class="edit-draft-notice is-draft">

@@ -255,6 +255,15 @@ class Edit extends Comments implements ActionInterface
     public function replyComment()
     {
         $coid = $this->request->filter('int')->get('coid');
+        $text = trim((string) $this->request->get('text'));
+
+        if ($text === '') {
+            $this->response->setStatus(422)->throwJson([
+                'success' => 0,
+                'message' => _t('回复内容不能为空')
+            ]);
+        }
+
         $commentSelect = $this->db->fetchRow($this->select()
             ->where('coid = ?', $coid)->limit(1), [$this, 'push']);
 
@@ -271,7 +280,7 @@ class Edit extends Comments implements ActionInterface
                 'mail'     => $this->user->mail,
                 'url'      => $this->user->url,
                 'parent'   => $coid,
-                'text'     => $this->request->get('text'),
+                'text'     => $text,
                 'status'   => 'approved'
             ];
 
@@ -294,7 +303,7 @@ class Edit extends Comments implements ActionInterface
             ]);
         }
 
-        $this->response->throwJson([
+        $this->response->setStatus(400)->throwJson([
             'success' => 0,
             'message' => _t('回复评论失败')
         ]);
