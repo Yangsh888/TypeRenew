@@ -147,10 +147,11 @@ class Edit extends Contents implements ActionInterface
                         $metas = $this->db->fetchAll(
                             $this->db->select()->from('table.relationships')->where('cid = ?', $post)
                         );
+                        $countColumn = $this->db->getAdapter()->quoteColumn('count');
                         foreach ($metas as $meta) {
                             $countExpression = $op === '-'
-                                ? 'IF(`count` > 0, `count` - 1, 0)'
-                                : '`count` + 1';
+                                ? "CASE WHEN {$countColumn} > 0 THEN {$countColumn} - 1 ELSE 0 END"
+                                : "{$countColumn} + 1";
                             $this->db->query($this->db->update('table.metas')
                                 ->expression('count', $countExpression, false)
                                 ->where('mid = ? AND (type = ? OR type = ?)', $meta['mid'], 'category', 'tag'));

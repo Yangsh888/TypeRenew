@@ -15,6 +15,11 @@ class Reset extends Users implements ActionInterface
 {
     public function action(): void
     {
+        if (!$this->request->isPost()) {
+            $this->response->setStatus(405)->throwContent(_t('Method Not Allowed'));
+            return;
+        }
+
         $this->security->protect();
 
         if ($this->user->hasLogin()) {
@@ -32,7 +37,7 @@ class Reset extends Users implements ActionInterface
 
         if (!Password::validateLength($password)) {
             Notice::alloc()->set(
-                _t('密码长度需在 %d-%d 位之间', Password::minLength(), Password::maxLength()),
+                _t('密码至少需要 %d 个字符，且不能超过 %d 字节', Password::minLength(), Password::maxLength()),
                 'error'
             );
             $this->response->goBack();
@@ -43,46 +48,21 @@ class Reset extends Users implements ActionInterface
             $this->response->goBack();
         }
 
-        PasswordReset::cleanupExpired($this->db);
-
-        $record = PasswordReset::findActiveRecordByToken($this->db, $token);
-
-        if (!$record) {
-            Notice::alloc()->set(_t('重置链接无效或已过期，请重新获取'), 'error');
-            $this->response->redirect(Common::url('forgot.php', $this->options->adminUrl));
-        }
-
-        $recordId = (int) ($record['id'] ?? 0);
-        $recordEmail = (string) ($record['email'] ?? '');
-
-        $locked = $this->db->query(
-            $this->db->update('table.password_resets')
-                ->rows(['used' => 1])
-                ->where('id = ? AND used = ?', $recordId, 0)
-        );
-
-        if (!$locked) {
-            Notice::alloc()->set(_t('重置链接已被使用，请重新获取'), 'error');
-            $this->response->redirect(Common::url('forgot.php', $this->options->adminUrl));
-        }
-
         $hashedPassword = Password::hash($password);
         $authCode = bin2hex(Common::secureRandomBytes(16));
+        try {
+            $applied = PasswordReset::apply($this->db, $token, $hashedPassword, $authCode);
+        } catch (\Throwable $throwable) {
+            error_log('Widget.Reset.apply: ' . $throwable->getMessage());
+            Notice::alloc()->set(_t('密码重置暂时失败，请稍后重试'), 'error');
+            $this->response->goBack();
+            return;
+        }
 
-        $this->db->query(
-            $this->db->update('table.users')
-                ->rows([
-                    'password' => $hashedPassword,
-                    'authCode' => $authCode
-                ])
-                ->where('mail = ?', $recordEmail)
-        );
-
-        $this->db->query(
-            $this->db->delete('table.password_resets')
-                ->where('email = ?', $recordEmail)
-                ->where('id <> ?', $recordId)
-        );
+        if (!$applied) {
+            Notice::alloc()->set(_t('重置链接无效、已过期或已被使用，请重新获取'), 'error');
+            $this->response->redirect(Common::url('forgot.php', $this->options->adminUrl));
+        }
 
         Notice::alloc()->set(_t('密码已重置，请使用新密码登录'), 'success');
         $this->response->redirect(Common::url('login.php', $this->options->adminUrl));

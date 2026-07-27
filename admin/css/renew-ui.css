@@ -392,7 +392,7 @@ body.tr-admin a:hover {
 
 .tr-topbar-title {
     font-weight: 820;
-    letter-spacing: -0.2px;
+    letter-spacing: 0;
     color: rgba(15, 23, 42, 0.92);
     line-height: 1.1;
     white-space: nowrap;
@@ -2145,7 +2145,7 @@ body.tr-admin.tr-sidebar-collapsed .tr-user-actions {
     }
 }
 
-/* R5 + R4 统一断点（lg=1024）：cols-4 中屏先降 2 列，避免 4 张 KPI 卡过窄拥挤。 */
+/* 中屏改为两列，避免指标卡内容被压缩 */
 @media (max-width: 1024px) {
     .tr-grid.cols-4 {
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2166,8 +2166,6 @@ body.tr-admin.tr-sidebar-collapsed .tr-user-actions {
     body.tr-admin.tr-sidebar-collapsed .typecho-foot {
         margin-left: 0;
     }
-
-    /* 手机端脚部纵向堆叠规则置于 .typecho-foot 基块之后的 @media（媒体查询不增特异性，须靠源序胜出）。 */
 
     .tr-shell {
         transform: translateX(-100%);
@@ -2195,7 +2193,7 @@ body.tr-admin.tr-sidebar-collapsed .tr-user-actions {
         display: block;
     }
 
-    /* R3 修复：窄屏顶栏紧凑化并只留图标，隐藏 Ctrl K 文案与用户名文字，防止换行/溢出/拥挤 */
+    /* 窄屏只保留工具图标，防止顶栏换行 */
     .tr-topbar {
         padding: 0 14px;
         gap: 8px;
@@ -2205,7 +2203,12 @@ body.tr-admin.tr-sidebar-collapsed .tr-user-actions {
         display: none;
     }
 
-    /* 仅隐藏用户资料 pill 的用户名文字（它带图标）；不动文字型的"新增"按钮 */
+    /* 保留新增按钮文字 */
+    .tr-topbar-right > .tr-pill-accent {
+        flex-shrink: 0;
+        white-space: nowrap;
+    }
+
     .tr-topbar-right > .tr-pill:not(.tr-pill-accent):last-child > span {
         display: none;
     }
@@ -2231,7 +2234,7 @@ body.tr-admin.tr-sidebar-collapsed .tr-user-actions {
         grid-template-columns: 1fr;
     }
 
-    /* R1 修复：仪表盘欢迎卡在窄屏纵向堆叠，迷你图表栈转整宽，杜绝中文逐字竖排 */
+    /* 纵向排列，避免中文逐字换行 */
     .tr-kpi-start {
         flex-direction: column;
         align-items: stretch;
@@ -2244,12 +2247,18 @@ body.tr-admin.tr-sidebar-collapsed .tr-user-actions {
     }
 }
 
+@media (max-width: 480px) {
+    /* 侧边栏已有个人入口，手机顶栏优先保留页面标题和当前操作 */
+    .tr-topbar-right > .tr-profile-pill {
+        display: none;
+    }
+}
+
 @media (max-width: 620px) {
     body.tr-admin .main > .body.container,
     body.tr-admin.tr-sidebar-collapsed .main > .body.container {
         width: calc(100% - 24px);
         padding: 14px 0 22px;
-        /* J 修复：.main 为 flex column 时子项可能回退到 flex-start，显式重申水平 auto 外边距确保内容居中。 */
         margin-left: auto;
         margin-right: auto;
     }
@@ -2258,7 +2267,7 @@ body.tr-admin.tr-sidebar-collapsed .tr-user-actions {
         grid-template-columns: 1fr;
     }
 
-    /* R1 修复：内容分布甜甜圈+图例在窄屏单列，图例不再被压成竖排 */
+    /* 单列展示，给图例保留完整宽度 */
     .tr-dist {
         grid-template-columns: 1fr;
         justify-items: center;
@@ -2274,7 +2283,7 @@ body.tr-admin.tr-sidebar-collapsed .tr-user-actions {
     }
 }
 
-/* C 修复：搜索筛选行 .search 窄屏换行并解除最小宽地板，避免溢出被裁切。 */
+/* 搜索筛选行在窄屏允许换行 */
 @media (max-width: 620px) {
     body.tr-admin .typecho-list-operate .search {
         flex-wrap: wrap;
@@ -2346,7 +2355,7 @@ body.tr-admin.tr-sidebar-collapsed .tr-user-actions {
     margin-top: 8px;
     font-size: 20px;
     font-weight: 820;
-    letter-spacing: -0.3px;
+    letter-spacing: 0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -2502,7 +2511,7 @@ body.tr-admin.tr-page-index .tr-actions-grid .tr-btn-square span {
 .tr-spark-num {
     font-weight: 850;
     color: rgba(15, 23, 42, 0.86);
-    letter-spacing: -0.2px;
+    letter-spacing: 0;
 }
 
 .tr-spark-card .tr-spark-wrap {
@@ -2665,7 +2674,7 @@ body.tr-admin.tr-page-index .tr-actions-grid .tr-btn-square span {
     margin-top: 6px;
     font-size: 28px;
     font-weight: 820;
-    letter-spacing: -0.4px;
+    letter-spacing: 0;
 }
 
 .tr-kpi-icon {
@@ -2788,7 +2797,7 @@ body.tr-admin.tr-page-index .tr-actions-grid .tr-btn-square span {
 .tr-donut-total {
     font-weight: 850;
     font-size: 22px;
-    letter-spacing: -0.3px;
+    letter-spacing: 0;
 }
 
 .tr-donut-label {
@@ -2809,7 +2818,7 @@ body.tr-admin .typecho-page-title {
 
 body.tr-admin .typecho-page-title h2 {
     font-weight: 820;
-    letter-spacing: -0.3px;
+    letter-spacing: 0;
     color: rgba(15, 23, 42, 0.92);
     margin: 0;
 }
@@ -2906,7 +2915,7 @@ body.tr-admin .typecho-foot .resource a:hover {
     color: rgba(15, 23, 42, 0.92);
 }
 
-/* 手机端脚部：纵向居中堆叠，去掉横向布局的分隔线/内边距（置于桌面基样式之后以靠源序胜出）。 */
+/* 手机端脚部纵向排列 */
 @media (max-width: 768px) {
     body.tr-admin .typecho-foot .tr-foot-inner {
         flex-direction: column;
@@ -2916,7 +2925,6 @@ body.tr-admin .typecho-foot .resource a:hover {
         padding: 16px 0;
     }
 
-    /* L 修复：脚部竖排三段（logo/版权/资源）统一 gap:10px 等距；资源行 line-height 收紧为 1.5 防视觉间距不均。 */
     body.tr-admin .typecho-foot .copyright {
         flex-direction: column;
         align-items: center;
@@ -3083,7 +3091,7 @@ body.tr-admin.tr-page-write .tr-editor-card p.title input.title {
     min-height: 44px;
     font-size: 24px;
     font-weight: 850;
-    letter-spacing: -0.2px;
+    letter-spacing: 0;
 }
 
 body.tr-admin.tr-page-write .tr-editor-card p.title input.title:focus {
@@ -3114,7 +3122,7 @@ body.tr-admin.tr-page-write .tr-editor-card textarea.tr-editor {
     background: var(--tr-surface);
 }
 
-/* 编辑器工具栏 #wmd-button-bar：覆盖 legacy 的 height:26px+负 margin（窄屏换行被裁切、负边距致图标与正文重叠）。 */
+/* 工具栏允许换行，避免窄屏裁切 */
 body.tr-admin.tr-page-write .tr-editor-card #wmd-button-bar {
     height: auto;
     margin: 0 0 12px;
@@ -3553,7 +3561,7 @@ body.tr-admin.tr-page-profile .tr-profile-meta {
 
 body.tr-admin.tr-page-profile .tr-profile-name {
     font-weight: 850;
-    letter-spacing: -0.2px;
+    letter-spacing: 0;
     font-size: 18px;
     line-height: 1.2;
     white-space: nowrap;
@@ -3598,7 +3606,7 @@ body.tr-admin.tr-page-profile .tr-profile-kpi {
 
 body.tr-admin.tr-page-profile .tr-profile-kpi-v {
     font-weight: 900;
-    letter-spacing: -0.2px;
+    letter-spacing: 0;
     color: rgba(15, 23, 42, 0.92);
 }
 
@@ -3638,7 +3646,7 @@ body.tr-admin.tr-page-profile .tr-form-card .tr-card-h-inner {
 body.tr-admin.tr-page-profile .tr-form-card .tr-card-h h3 {
     margin: 0;
     font-weight: 850;
-    letter-spacing: -0.2px;
+    letter-spacing: 0;
     color: rgba(15, 23, 42, 0.92);
     font-size: 16px;
 }
@@ -3866,7 +3874,7 @@ body.tr-admin .tr-flow-desc {
         top: 0;
     }
 
-    /* H 修复：窄屏流程竖列时，标题与第 1 步留出呼吸间距并垂直居中。 */
+    /* 竖排流程需要额外标题间距 */
     body.tr-admin .tr-flow.tr-mt-12 {
         margin-top: 18px;
     }
@@ -3915,13 +3923,12 @@ body.tr-admin .typecho-page-main table.typecho-list-table {
     min-width: 640px;
 }
 
-/* 清除 legacy `.typecho-list-table{border:10px solid #FFF}` 白边（裸表格页表现为多余空白+加剧窄屏溢出）。
- * 被 .typecho-table-wrap / operate-form 包裹的表格已各自重定义 border，不受影响。 */
+/* 清除旧表格白边，避免窄屏溢出 */
 body.tr-admin .typecho-page-main table.typecho-list-table {
     border: 0;
 }
 
-/* R2 修复：表格 min-width:640px 但模板无 .typecho-table-wrap 滚动容器 → 让表格父级成为横滚上下文，窄屏横滑而非裁切。 */
+/* 宽表格在容器内横向滚动 */
 body.tr-admin .typecho-page-main .operate-form,
 body.tr-admin .typecho-page-main > .typecho-list > .operate-form,
 body.tr-admin .typecho-page-main .typecho-table-wrap {
@@ -3929,8 +3936,7 @@ body.tr-admin .typecho-page-main .typecho-table-wrap {
     -webkit-overflow-scrolling: touch;
 }
 
-/* A 修复：分类/标签页批量浮层 .dropdown-menu 与列表同处一个 form.operate-form，R2 的 overflow-x:auto 会裁切它。
- * 这两页恢复 overflow:visible 让浮层正常展开；去掉横滑后分类宽表改 min-width:0 靠 table-layout:fixed 收敛，避免撑出灰卡框。 */
+/* 分类与标签菜单需要越过表格容器显示 */
 body.tr-admin.tr-page-manage-categories .typecho-page-main .operate-form,
 body.tr-admin.tr-page-manage-tags .typecho-page-main .operate-form {
     overflow: visible;
@@ -3940,15 +3946,14 @@ body.tr-admin.tr-page-manage-categories .typecho-page-main form.operate-form > t
     min-width: 0;
 }
 
-/* 裸表格页（plugins/themes/medias，表格直接在带 ::before 装饰的卡片列中，不能加 overflow）：
- * 窄屏放宽 min-width 配合 kit-hidden-mb 隐藏次列，使表格自适应卡片宽度而非固定 640px 溢出。 */
+/* 裸表格在窄屏按可见列收缩 */
 @media (max-width: 768px) {
     body.tr-admin .typecho-page-main > .typecho-list > table.typecho-list-table,
     body.tr-admin .typecho-page-main > [class*="col-"] > table.typecho-list-table {
         min-width: 0;
     }
 
-    /* 裸表格窄屏：收紧单元格内边距，操作按钮允许换行，避免最后一列（操作）被裁出卡片。 */
+    /* 操作列允许换行 */
     body.tr-admin .typecho-page-main > [class*="col-"] > table.typecho-list-table th,
     body.tr-admin .typecho-page-main > [class*="col-"] > table.typecho-list-table td {
         padding: 10px 6px;
@@ -4268,8 +4273,6 @@ body.tr-admin .tr-settings-tabs li.current a {
     body.tr-admin .tr-settings-tabs {
         justify-content: flex-start;
     }
-
-    /* N 修复：移除右侧滚动渐变蒙层（它遮住末尾 tab 如“永久链接”，标签栏已支持触摸横滑无需提示）。 */
 }
 
 body.tr-admin .tr-settings-body > :first-child {
@@ -4361,7 +4364,7 @@ body.tr-admin .typecho-list-table td {
     padding: 12px 12px;
 }
 
-/* K 修复：列表空状态 <td.none>（legacy 无内边距显示为矮空白框）做成居中、留白充足的“暂无数据”占位。 */
+/* 空列表保持可识别的点击与阅读空间 */
 body.tr-admin .typecho-list-table td.none {
     padding: 40px 16px;
     text-align: center;
@@ -5139,7 +5142,7 @@ body.body-100 .tr-auth-hero-inner {
 body.body-100 .tr-auth-hero-title {
     font-size: 38px;
     font-weight: 850;
-    letter-spacing: -0.3px;
+    letter-spacing: 0;
     margin: 0 0 12px;
 }
 
@@ -5780,8 +5783,7 @@ body.tr-admin.tr-page-plugins .tr-plugin-actions .btn.btn-link:hover {
     }
 }
 
-/* D 修复：plugins/medias 表的 colgroup 多列在 ≤575 被 kit-hidden-mb 隐藏，但 legacy table-layout:fixed 仍保留其轨道
- * → 右侧异常空白 + 操作列被挤压竖排。改 table-layout:auto 让浏览器按可见内容铺满整表，隐藏列不再占位。 */
+/* 隐藏列后按剩余内容重新分配宽度 */
 @media (max-width: 575px) {
     body.tr-admin.tr-page-plugins .typecho-page-main table.typecho-list-table,
     body.tr-admin.tr-page-manage-medias .typecho-page-main table.typecho-list-table {
@@ -5873,8 +5875,7 @@ body.tr-admin.tr-page-themes .tr-theme-actions .btn.btn-link:hover {
     text-decoration: none;
 }
 
-/* E 修复：外观页裸表格 .typecho-theme-list 不在 operate-form/table-wrap 内，没拿到白卡配方而退化为扁平。
- * 这里补同套白卡配方恢复“灰底托白卡”纵深。深色态已有 !important 覆盖，本规则不带 !important 故不冲突。 */
+/* 主题列表与其他数据面板保持相同层级 */
 body.tr-admin.tr-page-themes .typecho-page-main table.typecho-theme-list {
     background: var(--tr-surface);
     border: 1px solid rgba(15, 23, 42, 0.08);
@@ -5883,7 +5884,7 @@ body.tr-admin.tr-page-themes .typecho-page-main table.typecho-theme-list {
     overflow: hidden;
 }
 
-/* 当前启用主题行的淡黄高亮（legacy #FFF9E8）保留，但给两侧留出圆角内缩，作为白卡内部的高亮块而非边到边色带。 */
+/* 当前主题使用内嵌高亮 */
 body.tr-admin.tr-page-themes .typecho-theme-list tbody tr.current td {
     border-top: 1px solid rgba(15, 23, 42, 0.06);
 }
@@ -6025,7 +6026,7 @@ html.tr-theme-dark body.tr-admin.tr-page-manage-comments .tr-comment-actions .tr
     font-size: 30px;
     line-height: 1.15;
     font-weight: 820;
-    letter-spacing: -0.03em;
+    letter-spacing: 0;
     color: var(--tr-text-1);
 }
 
@@ -6064,7 +6065,7 @@ html.tr-theme-dark body.tr-admin.tr-page-manage-comments .tr-comment-actions .tr
     font-size: 32px;
     line-height: 1;
     font-weight: 800;
-    letter-spacing: -0.03em;
+    letter-spacing: 0;
     color: var(--tr-text-1);
     font-variant-numeric: tabular-nums;
 }
@@ -6258,7 +6259,7 @@ textarea.tr-panel-input {
     word-break: break-word;
 }
 
-/* 问题4 修复：永久链接示例 <pre> 的长 rewrite 规则覆盖 legacy white-space:pre（否则横向溢出撑破面板），加横滚+软换行。 */
+/* 长规则允许滚动和换行，避免撑破面板 */
 body.tr-admin .tr-card pre {
     margin: 8px 0 0;
     max-width: 100%;

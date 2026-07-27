@@ -552,8 +552,15 @@ class Ajax extends BaseOptions implements ActionInterface
     public function editorResize()
     {
         $this->user->pass('contributor');
+        if (!$this->request->isPost()) {
+            $this->response->setStatus(405)->throwJson([
+                'ok' => false,
+                'message' => _t('编辑器尺寸只能通过 POST 保存。'),
+            ]);
+        }
+
         $this->security->protect();
-        $size = $this->request->filter('int')->get('size');
+        $size = max(100, min(2000, $this->request->filter('int')->get('size')));
 
         if (
             $this->db->fetchObject($this->db->select(['COUNT(*)' => 'num'])

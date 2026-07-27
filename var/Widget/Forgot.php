@@ -71,33 +71,51 @@ class Forgot extends Users implements ActionInterface
         $tokenHash = PasswordReset::hashToken($rawToken);
         $expires = time() + 1800;
 
-        $this->db->query(
-            $this->db->delete('table.password_resets')
-                ->where('email = ?', $mail)
-        );
-
-        $this->db->query(
-            $this->db->insert('table.password_resets')->rows([
-                'email' => $mail,
-                'token' => $tokenHash,
-                'created' => time(),
-                'expires' => $expires,
-                'used' => 0
-            ])
-        );
-
         $resetUrl = Common::url(
             'reset.php?token=' . $rawToken,
             $this->options->adminUrl
         );
 
-        $this->sendResetMail($user, $resetUrl, $expires);
+        $this->db->query('BEGIN');
+
+        try {
+            $this->db->query(
+                $this->db->delete('table.password_resets')
+                    ->where('email = ?', $mail)
+            );
+
+            $this->db->query(
+                $this->db->insert('table.password_resets')->rows([
+                    'email' => $mail,
+                    'token' => $tokenHash,
+                    'created' => time(),
+                    'expires' => $expires,
+                    'used' => 0
+                ])
+            );
+
+            if (!$this->sendResetMail($user, $resetUrl, $expires)) {
+                throw new \RuntimeException('密码重置邮件入队失败');
+            }
+
+            $this->db->query('COMMIT');
+        } catch (\Throwable $throwable) {
+            try {
+                $this->db->query('ROLLBACK');
+            } catch (\Throwable) {
+            }
+
+            error_log('Widget.Forgot.enqueue: ' . $throwable->getMessage());
+            Notice::alloc()->set(_t('重置邮件暂时无法发送，请稍后重试'), 'error');
+            $this->response->goBack();
+            return;
+        }
 
         Notice::alloc()->set(_t('如果该邮箱已注册，您将收到重置邮件'), 'success');
         $this->response->goBack();
     }
 
-    private function sendResetMail(array $user, string $resetUrl, int $expires): void
+    private function sendResetMail(array $user, string $resetUrl, int $expires): bool
     {
         $siteTitle = (string) ($this->options->title ?? 'TypeRenew');
         $siteUrl = (string) ($this->options->siteUrl ?? '');
@@ -117,6 +135,6 @@ class Forgot extends Users implements ActionInterface
 
         $msg = Queue::buildMessage($this->options, (string) ($user['mail'] ?? ''), $subject, $html);
 
-        Queue::enqueue('reset', $msg, Db::get(), $this->options);
+        return Queue::enqueue('reset', $msg, Db::get(), $this->options);
     }
 }

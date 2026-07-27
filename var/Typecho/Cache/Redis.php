@@ -11,6 +11,29 @@ class Redis implements Driver
     private int $failureCount = 0;
     private string $lastError = '';
     private const BACKOFF_STEPS = [5, 15, 60, 120, 300];
+    private const INCREMENT_SCRIPT = <<<'LUA'
+local value = redis.call('GET', KEYS[1])
+if not value then
+    redis.call('SET', KEYS[1], ARGV[2])
+    return tonumber(ARGV[2])
+end
+
+local number = tonumber(value)
+if not number then
+    local ok, decoded = pcall(cjson.decode, value)
+    if ok and type(decoded) == 'table' and decoded['t'] == 'int' then
+        number = tonumber(decoded['v'])
+    end
+end
+
+if not number then
+    return redis.error_reply('cache counter is not an integer')
+end
+
+number = number + tonumber(ARGV[1])
+redis.call('SET', KEYS[1], tostring(number))
+return number
+LUA;
 
     public function __construct(private array $config)
     {
@@ -51,6 +74,11 @@ class Redis implements Driver
             return null;
         }
 
+        if (preg_match('/^-?[0-9]+$/D', $value)) {
+            $hit = true;
+            return (int) $value;
+        }
+
         if (strpos($value, '{"t":') !== 0) {
             return null;
         }
@@ -72,7 +100,7 @@ class Redis implements Driver
             return false;
         }
 
-        $payload = $this->encode($value);
+        $payload = is_int($value) ? (string) $value : $this->encode($value);
         try {
             if ($ttl > 0) {
                 return (bool) $client->setex($key, $ttl, $payload);
@@ -109,11 +137,12 @@ class Redis implements Driver
         }
 
         try {
-            if (!$client->set($key, (string) $initial, ['nx'])) {
-                return (int) $client->incrBy($key, max(1, $step));
-            }
-
-            return (int) $initial;
+            $next = $client->eval(
+                self::INCREMENT_SCRIPT,
+                [$key, (string) max(1, $step), (string) max(1, $initial)],
+                1
+            );
+            return is_int($next) ? $next : (is_numeric($next) ? (int) $next : null);
         } catch (\Throwable $e) {
             $this->markUnavailable();
             return null;

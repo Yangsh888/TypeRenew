@@ -28,7 +28,9 @@ class Password
     public static function validateLength(string $password): bool
     {
         $length = Common::strLen($password);
-        return $length >= self::MIN_LENGTH && $length <= self::MAX_LENGTH;
+        return $length >= self::MIN_LENGTH
+            && $length <= self::MAX_LENGTH
+            && strlen($password) <= self::MAX_LENGTH;
     }
 
     public static function verify(string $password, string $hash): bool

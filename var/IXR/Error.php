@@ -16,6 +16,17 @@ class Error
 
     public function getXml(): string
     {
+        $message = htmlspecialchars(
+            (string) $this->message,
+            ENT_QUOTES | ENT_SUBSTITUTE | ENT_XML1,
+            'UTF-8'
+        );
+        $message = preg_replace(
+            '/[^\x{9}\x{A}\x{D}\x{20}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]/u',
+            '',
+            $message
+        ) ?? '';
+
         return <<<EOD
 <methodResponse>
   <fault>
@@ -27,7 +38,7 @@ class Error
         </member>
         <member>
           <name>faultString</name>
-          <value><string>{$this->message}</string></value>
+          <value><string>{$message}</string></value>
         </member>
       </struct>
     </value>

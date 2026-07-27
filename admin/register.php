@@ -28,7 +28,7 @@ include 'auth.php';
     </div>
     <div class="tr-auth-field">
         <label for="password"><?php _e('密码'); ?></label>
-        <input type="password" id="password" name="password" placeholder="<?php _e('请输入 %d-%d 位密码', \Utils\Password::minLength(), \Utils\Password::maxLength()); ?>" required />
+        <input type="password" id="password" name="password" placeholder="<?php _e('至少 %d 个字符，不超过 %d 字节', \Utils\Password::minLength(), \Utils\Password::maxLength()); ?>" required />
     </div>
     <div class="tr-auth-field">
         <label for="confirm"><?php _e('确认密码'); ?></label>

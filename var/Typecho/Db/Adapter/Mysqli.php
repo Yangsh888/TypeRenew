@@ -74,7 +74,7 @@ class Mysqli implements Adapter
 
     public function getVersion($handle): string
     {
-        return (string) $this->dbLink->server_info;
+        return (string) $handle->server_info;
     }
 
     public function query(
@@ -85,14 +85,14 @@ class Mysqli implements Adapter
         ?string $table = null
     ) {
         try {
-            if ($resource = $this->dbLink->query($query)) {
+            if ($resource = $handle->query($query)) {
                 return $resource;
             }
         } catch (mysqli_sql_exception $e) {
             throw new SQLException($e->getMessage(), $e->getCode());
         }
 
-        throw new SQLException($this->dbLink->error, $this->dbLink->errno);
+        throw new SQLException($handle->error, $handle->errno);
     }
 
     public function quoteColumn(string $string): string

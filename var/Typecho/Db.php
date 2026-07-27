@@ -38,6 +38,12 @@ class Db
 
     private string $adapterName;
 
+    private bool $transactionActive = false;
+
+    private array $pendingInvalidations = [];
+
+    private bool $invalidateAllOnCommit = false;
+
     private static Db $instance;
 
     public function __construct(string $adapterName, string $prefix = 'typecho_')
@@ -106,6 +112,10 @@ class Db
 
     public function selectDb(int $op)
     {
+        if ($this->transactionActive) {
+            $op = self::WRITE;
+        }
+
         if (!isset($this->connectedPool[$op])) {
             $selectConnectionConfig = $this->getConfig($op);
             $selectConnectionHandle = $this->adapter->connect($selectConnectionConfig);
@@ -177,7 +187,7 @@ class Db
     {
         $table = preg_replace("/^table\./", $this->prefix, $table);
         $this->adapter->truncate($table, $this->selectDb(self::WRITE));
-        Cache::getInstance()->invalidate($this->normalizeInvalidateTable($table));
+        $this->invalidateCache($this->normalizeInvalidateTable($table));
     }
 
     public function query($query, int $op = self::READ, string $action = self::SELECT)
@@ -185,14 +195,16 @@ class Db
         $table = null;
         $isWriteSql = false;
         $forceWriteConnection = false;
+        $transactionCommand = null;
 
         if ($query instanceof Query) {
             $action = $query->getAttribute('action');
-            $table = $query->getAttribute('table');
+            $table = $this->normalizeInvalidateTable($query->getAttribute('table'));
             $op = (self::UPDATE == $action || self::DELETE == $action
                 || self::INSERT == $action) ? self::WRITE : self::READ;
         } elseif (is_string($query)) {
             $isWriteSql = (bool) preg_match('/^\s*(INSERT|UPDATE|DELETE|REPLACE|ALTER|DROP|TRUNCATE|CREATE)\b/i', $query);
+            $transactionCommand = $this->transactionCommand($query);
             $forceWriteConnection = (bool) preg_match(
                 '/^\s*(?:START\s+TRANSACTION|BEGIN|COMMIT|ROLLBACK|SAVEPOINT|RELEASE\s+SAVEPOINT|LOCK\s+TABLES|UNLOCK\s+TABLES|SET\s+TRANSACTION)\b/i',
                 $query
@@ -213,25 +225,38 @@ class Db
 
         $resource = $this->adapter->query($sql, $handle, $op, $action, $table);
 
+        if ($transactionCommand === 'begin') {
+            $this->transactionActive = true;
+            $this->pendingInvalidations = [];
+            $this->invalidateAllOnCommit = false;
+        } elseif ($transactionCommand === 'commit') {
+            $this->transactionActive = false;
+            $this->flushPendingInvalidations();
+        } elseif ($transactionCommand === 'rollback') {
+            $this->transactionActive = false;
+            $this->pendingInvalidations = [];
+            $this->invalidateAllOnCommit = false;
+        }
+
         if ($action) {
             switch ($action) {
                 case self::UPDATE:
                 case self::DELETE:
-                    Cache::getInstance()->invalidate($table);
+                    $this->invalidateCache($table);
                     return $this->adapter->affectedRows($resource, $handle);
                 case self::INSERT:
-                    Cache::getInstance()->invalidate($table);
+                    $this->invalidateCache($table);
                     return $this->adapter->lastInsertId($resource, $handle);
                 case self::SELECT:
                 default:
                     if ($isWriteSql) {
-                        Cache::getInstance()->invalidate($table);
+                        $this->invalidateCache($table);
                     }
                     return $resource;
             }
         } else {
             if ($isWriteSql) {
-                Cache::getInstance()->invalidate($table);
+                $this->invalidateCache($table);
             }
             return $resource;
         }
@@ -271,27 +296,74 @@ class Db
             return null;
         }
 
-        if (strpos($name, '.') !== false) {
+        if (strpos($name, 'table.') === 0) {
+            $name = $this->prefix . substr($name, 6);
+        } elseif (strpos($name, '.') !== false) {
             $parts = explode('.', $name);
             $name = end($parts) ?: $name;
-        }
-
-        if (strpos($name, 'table.') === 0) {
-            $name = substr($name, 6);
-        }
-
-        if (strpos($name, $this->prefix) === 0) {
-            $name = substr($name, strlen($this->prefix));
         }
 
         $name = strtolower($name);
         return preg_match('/^[a-z0-9_]+$/', $name) ? $name : null;
     }
 
+    private function transactionCommand(string $sql): ?string
+    {
+        $sql = rtrim(trim($sql), "; \t\n\r\0\x0B");
+
+        if (preg_match('/^(?:START\s+TRANSACTION|BEGIN(?:\s+(?:WORK|TRANSACTION))?)$/i', $sql)) {
+            return 'begin';
+        }
+
+        if (preg_match('/^COMMIT(?:\s+WORK)?$/i', $sql)) {
+            return 'commit';
+        }
+
+        if (preg_match('/^ROLLBACK(?:\s+WORK)?$/i', $sql)) {
+            return 'rollback';
+        }
+
+        return null;
+    }
+
+    private function invalidateCache(?string $table): void
+    {
+        if (!$this->transactionActive) {
+            Cache::getInstance()->invalidate($table);
+            return;
+        }
+
+        if ($table === null) {
+            $this->invalidateAllOnCommit = true;
+            $this->pendingInvalidations = [];
+            return;
+        }
+
+        if (!$this->invalidateAllOnCommit) {
+            $this->pendingInvalidations[$table] = true;
+        }
+    }
+
+    private function flushPendingInvalidations(): void
+    {
+        $cache = Cache::getInstance();
+
+        if ($this->invalidateAllOnCommit) {
+            $cache->invalidate();
+        } else {
+            foreach (array_keys($this->pendingInvalidations) as $table) {
+                $cache->invalidate($table);
+            }
+        }
+
+        $this->pendingInvalidations = [];
+        $this->invalidateAllOnCommit = false;
+    }
+
     public function fetchAll($query, ?callable $filter = null): array
     {
         $cache = Cache::getInstance();
-        $cacheKey = $cache->enabled() ? $cache->queryKey($query) : null;
+        $cacheKey = $cache->enabled() && !$this->transactionActive ? $cache->queryKey($query) : null;
         $locked = false;
         if ($cacheKey) {
             $hit = false;
@@ -327,7 +399,7 @@ class Db
     public function fetchRow($query, ?callable $filter = null): ?array
     {
         $cache = Cache::getInstance();
-        $cacheKey = $cache->enabled() ? $cache->queryKey($query) : null;
+        $cacheKey = $cache->enabled() && !$this->transactionActive ? $cache->queryKey($query) : null;
         $locked = false;
         if ($cacheKey) {
             $hit = false;
@@ -377,7 +449,7 @@ class Db
     public function fetchObject($query, ?callable $filter = null): ?\stdClass
     {
         $cache = Cache::getInstance();
-        $cacheKey = $cache->enabled() ? $cache->queryKey($query) : null;
+        $cacheKey = $cache->enabled() && !$this->transactionActive ? $cache->queryKey($query) : null;
         $locked = false;
         if ($cacheKey) {
             $hit = false;

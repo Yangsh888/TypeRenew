@@ -75,8 +75,11 @@ abstract class Widget
                 if ($sandbox) {
                     Response::getInstance()->endSandbox();
                     Request::getInstance()->endSandbox();
-                    return $widget;
                 }
+            }
+
+            if ($sandbox) {
+                return $widget;
             }
 
             self::$widgetPool[$key] = $widget;

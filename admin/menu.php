@@ -220,7 +220,7 @@ $userAvatarUrl = \Typecho\Common::gravatarUrl($user->mail, 38);
         <div class="tr-topbar-ext" aria-label="<?php _e('扩展操作'); ?>">
             <?php \Typecho\Plugin::factory('admin/menu.php')->call('navBar'); ?>
         </div>
-        <a class="tr-pill" href="<?php $options->adminUrl('profile.php'); ?>" title="<?php _e('个人资料'); ?>">
+        <a class="tr-pill tr-profile-pill" href="<?php $options->adminUrl('profile.php'); ?>" title="<?php _e('个人资料'); ?>">
             <svg class="tr-ico" aria-hidden="true"><use href="<?php echo htmlspecialchars($iconsUrl, ENT_QUOTES, 'UTF-8'); ?>#i-user"></use></svg>
             <span><?php $user->screenName(); ?></span>
         </a>

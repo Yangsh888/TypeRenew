@@ -186,9 +186,13 @@
 
     function toggleFullscreen() {
         if (!document.fullscreenElement) {
-            document.documentElement.requestFullscreen().catch(() => {});
+            if (typeof document.documentElement.requestFullscreen !== 'function') return;
+            const pending = document.documentElement.requestFullscreen();
+            if (pending && typeof pending.catch === 'function') pending.catch(() => {});
         } else {
-            document.exitFullscreen().catch(() => {});
+            if (typeof document.exitFullscreen !== 'function') return;
+            const pending = document.exitFullscreen();
+            if (pending && typeof pending.catch === 'function') pending.catch(() => {});
         }
     }
 

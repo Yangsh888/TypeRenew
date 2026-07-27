@@ -97,6 +97,7 @@ class Schema
         $prefix = $db->getPrefix();
 
         self::ensureIndex($db, $prefix . 'comments', $prefix . 'comments_status', ['status']);
+        self::ensureIndex($db, $prefix . 'comments', $prefix . 'comments_author', ['authorId']);
         self::ensureIndex($db, $prefix . 'comments', $prefix . 'comments_cid_status', ['cid', 'status']);
         self::ensureIndex($db, $prefix . 'comments', $prefix . 'comments_owner_status', ['ownerId', 'status']);
         self::ensureIndex($db, $prefix . 'comments', $prefix . 'comments_parent', ['parent']);
@@ -147,6 +148,12 @@ class Schema
             return;
         }
 
+        $columns = self::mysqlColumns($db, $table);
+        $passwordType = strtolower((string) ($columns['password']['Type'] ?? ''));
+        if ($passwordType === 'varchar(255)') {
+            return;
+        }
+
         $db->query(
             'ALTER TABLE ' . self::quote($table, $dialect)
             . ' MODIFY COLUMN `password` varchar(255) DEFAULT NULL',
@@ -166,6 +173,7 @@ class Schema
             }
 
             $db->query($sql, Db::WRITE);
+            self::ensureColumns($db, $dialect, $tableKey, $table);
 
             foreach (self::tableIndexes($dialect, $tableKey, $table) as $index) {
                 self::ensureIndex(
@@ -177,6 +185,205 @@ class Schema
                 );
             }
         }
+    }
+
+    private static function ensureColumns(Db $db, string $dialect, string $tableKey, string $table): void
+    {
+        $added = [];
+
+        foreach (self::columnDefinitions($dialect, $tableKey) as $column => $definition) {
+            if (self::columnExists($db, $table, $column)) {
+                continue;
+            }
+
+            if ($dialect === 'sqlite' && $column === 'id') {
+                throw new \RuntimeException($table . ' 缺少主键列 id，SQLite 需要重建该表');
+            }
+
+            $db->query(
+                'ALTER TABLE ' . self::quote($table, $dialect)
+                . ' ADD COLUMN ' . $definition,
+                Db::WRITE
+            );
+            $added[] = $column;
+        }
+
+        if ($tableKey === 'mail_queue' && in_array('dedupeKey', $added, true)) {
+            self::backfillMailDedupeKeys($db);
+        }
+    }
+
+    private static function backfillMailDedupeKeys(Db $db): void
+    {
+        do {
+            $rows = $db->fetchAll(
+                $db->select('id')->from('table.mail_queue')
+                    ->where('dedupeKey = ?', '')
+                    ->order('id', Db::SORT_ASC)
+                    ->limit(500)
+            );
+
+            foreach ($rows as $row) {
+                $id = (int) ($row['id'] ?? 0);
+                $db->query(
+                    $db->update('table.mail_queue')
+                        ->rows(['dedupeKey' => sha1('legacy:' . $id)])
+                        ->where('id = ? AND dedupeKey = ?', $id, '')
+                );
+            }
+        } while (count($rows) === 500);
+    }
+
+    private static function columnDefinitions(string $dialect, string $tableKey): array
+    {
+        if ($dialect === 'mysql') {
+            $definitions = (array) (self::criticalSchema()[$tableKey]['mysql']['definitions'] ?? []);
+            if ($definitions === []) {
+                $definitions = match ($tableKey) {
+                    'renew_go_logs' => [
+                        'id' => '`id` bigint unsigned NOT NULL auto_increment',
+                        'ip' => '`ip` varchar(45) NOT NULL default \'\'',
+                        'action' => '`action` varchar(24) NOT NULL default \'\'',
+                        'result' => '`result` varchar(16) NOT NULL default \'\'',
+                        'target' => '`target` varchar(512) DEFAULT NULL',
+                        'referer' => '`referer` varchar(512) DEFAULT NULL',
+                        'created_at' => '`created_at` int unsigned NOT NULL default 0',
+                    ],
+                    'renew_shield_logs' => [
+                        'id' => '`id` bigint unsigned NOT NULL auto_increment',
+                        'scope' => '`scope` varchar(24) NOT NULL default \'\'',
+                        'action' => '`action` varchar(24) NOT NULL default \'\'',
+                        'decision' => '`decision` varchar(16) NOT NULL default \'\'',
+                        'rule_key' => '`rule_key` varchar(64) NOT NULL default \'\'',
+                        'score' => '`score` int NOT NULL DEFAULT 0',
+                        'method' => '`method` varchar(12) NOT NULL default \'\'',
+                        'ip' => '`ip` varchar(45) DEFAULT NULL',
+                        'path' => '`path` varchar(1024) DEFAULT NULL',
+                        'ua' => '`ua` varchar(512) DEFAULT NULL',
+                        'message' => '`message` varchar(255) NOT NULL default \'\'',
+                        'payload' => '`payload` text DEFAULT NULL',
+                        'created_at' => '`created_at` int unsigned NOT NULL default 0',
+                    ],
+                    'renew_shield_state' => [
+                        'id' => '`id` bigint unsigned NOT NULL auto_increment',
+                        'name_hash' => '`name_hash` char(40) NOT NULL default \'\'',
+                        'value' => '`value` mediumtext DEFAULT NULL',
+                        'expires_at' => '`expires_at` int unsigned NOT NULL DEFAULT 0',
+                    ],
+                    'renew_seo_logs' => [
+                        'id' => '`id` bigint unsigned NOT NULL auto_increment',
+                        'channel' => '`channel` varchar(24) NOT NULL default \'\'',
+                        'action' => '`action` varchar(32) NOT NULL default \'\'',
+                        'level' => '`level` varchar(16) NOT NULL default \'\'',
+                        'target' => '`target` varchar(512) DEFAULT NULL',
+                        'message' => '`message` varchar(255) NOT NULL default \'\'',
+                        'payload' => '`payload` text DEFAULT NULL',
+                        'created_at' => '`created_at` int unsigned NOT NULL default 0',
+                    ],
+                    'renew_seo_404' => [
+                        'id' => '`id` bigint unsigned NOT NULL auto_increment',
+                        'path_hash' => '`path_hash` char(40) NOT NULL default \'\'',
+                        'path' => '`path` varchar(512) NOT NULL default \'\'',
+                        'full_url' => '`full_url` varchar(1024) NOT NULL default \'\'',
+                        'referer' => '`referer` varchar(1024) DEFAULT NULL',
+                        'ip' => '`ip` varchar(45) DEFAULT NULL',
+                        'ua' => '`ua` varchar(512) DEFAULT NULL',
+                        'hits' => '`hits` int unsigned NOT NULL DEFAULT 1',
+                        'first_seen' => '`first_seen` int unsigned NOT NULL default 0',
+                        'last_seen' => '`last_seen` int unsigned NOT NULL default 0',
+                    ],
+                    default => [],
+                };
+            }
+            if (isset($definitions['id'])) {
+                $definitions['id'] .= ' PRIMARY KEY';
+            }
+            return $definitions;
+        }
+
+        $definitions = [
+            'mail_queue' => [
+                'id' => $dialect === 'pgsql' ? '"id" BIGSERIAL PRIMARY KEY' : '"id" INTEGER PRIMARY KEY AUTOINCREMENT',
+                'type' => '"type" VARCHAR(16) NOT NULL DEFAULT \'\'',
+                'status' => '"status" VARCHAR(16) NOT NULL DEFAULT \'\'',
+                'attempts' => '"attempts" INT NOT NULL DEFAULT 0',
+                'lockedUntil' => '"lockedUntil" INT NOT NULL DEFAULT 0',
+                'sendAt' => '"sendAt" INT NOT NULL DEFAULT 0',
+                'created' => '"created" INT NOT NULL DEFAULT 0',
+                'updated' => '"updated" INT NOT NULL DEFAULT 0',
+                'lastError' => '"lastError" VARCHAR(500) NOT NULL DEFAULT \'\'',
+                'dedupeKey' => '"dedupeKey" VARCHAR(40) NOT NULL DEFAULT \'\'',
+                'payload' => '"payload" TEXT NULL',
+            ],
+            'mail_unsub' => [
+                'id' => $dialect === 'pgsql' ? '"id" BIGSERIAL PRIMARY KEY' : '"id" INTEGER PRIMARY KEY AUTOINCREMENT',
+                'email' => '"email" VARCHAR(255) NOT NULL DEFAULT \'\'',
+                'scope' => '"scope" VARCHAR(32) NOT NULL DEFAULT \'\'',
+                'created' => '"created" INT NOT NULL DEFAULT 0',
+            ],
+            'password_resets' => [
+                'id' => $dialect === 'pgsql' ? '"id" BIGSERIAL PRIMARY KEY' : '"id" INTEGER PRIMARY KEY AUTOINCREMENT',
+                'email' => '"email" VARCHAR(150) NOT NULL DEFAULT \'\'',
+                'token' => '"token" VARCHAR(64) NOT NULL DEFAULT \'\'',
+                'created' => '"created" INT NOT NULL DEFAULT 0',
+                'expires' => '"expires" INT NOT NULL DEFAULT 0',
+                'used' => '"used" INT NOT NULL DEFAULT 0',
+            ],
+            'renew_go_logs' => [
+                'id' => $dialect === 'pgsql' ? '"id" BIGSERIAL PRIMARY KEY' : '"id" INTEGER PRIMARY KEY AUTOINCREMENT',
+                'ip' => '"ip" VARCHAR(45) NOT NULL DEFAULT \'\'',
+                'action' => '"action" VARCHAR(24) NOT NULL DEFAULT \'\'',
+                'result' => '"result" VARCHAR(16) NOT NULL DEFAULT \'\'',
+                'target' => '"target" TEXT DEFAULT NULL',
+                'referer' => '"referer" TEXT DEFAULT NULL',
+                'created_at' => '"created_at" INT NOT NULL DEFAULT 0',
+            ],
+            'renew_shield_logs' => [
+                'id' => $dialect === 'pgsql' ? '"id" BIGSERIAL PRIMARY KEY' : '"id" INTEGER PRIMARY KEY AUTOINCREMENT',
+                'scope' => '"scope" VARCHAR(24) NOT NULL DEFAULT \'\'',
+                'action' => '"action" VARCHAR(24) NOT NULL DEFAULT \'\'',
+                'decision' => '"decision" VARCHAR(16) NOT NULL DEFAULT \'\'',
+                'rule_key' => '"rule_key" VARCHAR(64) NOT NULL DEFAULT \'\'',
+                'score' => '"score" INT NOT NULL DEFAULT 0',
+                'method' => '"method" VARCHAR(12) NOT NULL DEFAULT \'\'',
+                'ip' => '"ip" VARCHAR(45) DEFAULT NULL',
+                'path' => '"path" TEXT DEFAULT NULL',
+                'ua' => '"ua" TEXT DEFAULT NULL',
+                'message' => '"message" VARCHAR(255) NOT NULL DEFAULT \'\'',
+                'payload' => '"payload" TEXT DEFAULT NULL',
+                'created_at' => '"created_at" INT NOT NULL DEFAULT 0',
+            ],
+            'renew_shield_state' => [
+                'id' => $dialect === 'pgsql' ? '"id" BIGSERIAL PRIMARY KEY' : '"id" INTEGER PRIMARY KEY AUTOINCREMENT',
+                'name_hash' => '"name_hash" VARCHAR(40) NOT NULL DEFAULT \'\'',
+                'value' => '"value" TEXT DEFAULT NULL',
+                'expires_at' => '"expires_at" INT NOT NULL DEFAULT 0',
+            ],
+            'renew_seo_logs' => [
+                'id' => $dialect === 'pgsql' ? '"id" BIGSERIAL PRIMARY KEY' : '"id" INTEGER PRIMARY KEY AUTOINCREMENT',
+                'channel' => '"channel" VARCHAR(24) NOT NULL DEFAULT \'\'',
+                'action' => '"action" VARCHAR(32) NOT NULL DEFAULT \'\'',
+                'level' => '"level" VARCHAR(16) NOT NULL DEFAULT \'\'',
+                'target' => '"target" TEXT DEFAULT NULL',
+                'message' => '"message" VARCHAR(255) NOT NULL DEFAULT \'\'',
+                'payload' => '"payload" TEXT DEFAULT NULL',
+                'created_at' => '"created_at" INT NOT NULL DEFAULT 0',
+            ],
+            'renew_seo_404' => [
+                'id' => $dialect === 'pgsql' ? '"id" BIGSERIAL PRIMARY KEY' : '"id" INTEGER PRIMARY KEY AUTOINCREMENT',
+                'path_hash' => '"path_hash" VARCHAR(40) NOT NULL DEFAULT \'\'',
+                'path' => '"path" TEXT NOT NULL DEFAULT \'\'',
+                'full_url' => '"full_url" TEXT NOT NULL DEFAULT \'\'',
+                'referer' => '"referer" TEXT DEFAULT NULL',
+                'ip' => '"ip" VARCHAR(45) DEFAULT NULL',
+                'ua' => '"ua" TEXT DEFAULT NULL',
+                'hits' => '"hits" INT NOT NULL DEFAULT 1',
+                'first_seen' => '"first_seen" INT NOT NULL DEFAULT 0',
+                'last_seen' => '"last_seen" INT NOT NULL DEFAULT 0',
+            ],
+        ];
+
+        return $definitions[$tableKey] ?? [];
     }
 
     public static function dialect(Db $db): string

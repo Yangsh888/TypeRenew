@@ -34,6 +34,23 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
 
 class XmlRpc extends Contents implements ActionInterface, Hook
 {
+    private const ACCESS_LEVELS = [
+        'wp.getPage' => 'editor',
+        'wp.getPages' => 'editor',
+        'wp.newPage' => 'editor',
+        'wp.deletePage' => 'editor',
+        'wp.editPage' => 'editor',
+        'wp.getPageList' => 'editor',
+        'wp.getAuthors' => 'editor',
+        'wp.newCategory' => 'editor',
+        'wp.deleteCategory' => 'editor',
+        'wp.getPageStatusList' => 'editor',
+        'wp.getPageTemplates' => 'editor',
+        'wp.getOptions' => 'administrator',
+        'wp.setOptions' => 'administrator',
+        'mt.setPostCategories' => 'editor',
+    ];
+
     private array $wpOptions;
 
     public function execute(bool $run = false)
@@ -117,7 +134,9 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
     public function wpGetPage(int $blogId, int $pageId, string $userName, string $password): array
     {
-        $page = PageEdit::alloc(null, ['cid' => $pageId], false);
+        $page = PageEdit::alloc(null, ['cid' => $pageId], function (PageEdit $page): void {
+            $page->prepare();
+        });
 
         [$excerpt, $more] = $this->getPostExtended($page);
 
@@ -154,19 +173,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         $valid = 2;
         $auth = [];
 
-        $accesses = [
-            'wp.newPage'           => 'editor',
-            'wp.deletePage'        => 'editor',
-            'wp.getPageList'       => 'editor',
-            'wp.getAuthors'        => 'editor',
-            'wp.deleteCategory'    => 'editor',
-            'wp.getPageStatusList' => 'editor',
-            'wp.getPageTemplates'  => 'editor',
-            'wp.getOptions'        => 'administrator',
-            'wp.setOptions'        => 'administrator',
-            'mt.setPostCategories' => 'editor',
-        ];
-
         foreach ($reflectionMethod->getParameters() as $key => $parameter) {
             $name = $parameter->getName();
             if (($name == 'userName' || $name == 'password') && array_key_exists($key, $parameters)) {
@@ -177,7 +183,7 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
         if ($valid == 0) {
             if ($this->user->login($auth['userName'], $auth['password'], true)) {
-                if ($this->user->pass($accesses[$methodName] ?? 'contributor', true)) {
+                if ($this->user->pass(self::ACCESS_LEVELS[$methodName] ?? 'contributor', true)) {
                     $this->user->execute();
                 } else {
                     throw new Exception(_t('权限不足'), 403);
@@ -243,6 +249,18 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
     public function mwNewPost(int $blogId, string $userName, string $password, array $content, bool $publish): int
     {
+        return $this->writePostData($blogId, $userName, $password, $content, $publish, null);
+    }
+
+    private function writePostData(
+        int $blogId,
+        string $userName,
+        string $password,
+        array $content,
+        bool $publish,
+        ?int $postId
+    ): int
+    {
         $input = [];
         $type = isset($content['post_type']) && 'page' == $content['post_type'] ? 'page' : 'post';
         $title = $this->arrayString($content, 'title');
@@ -266,8 +284,8 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         $input['tags'] = $content['mt_keywords'] ?? null;
         $input['category'] = [];
 
-        if (isset($content['postId'])) {
-            $input['cid'] = $content['postId'];
+        if ($postId !== null) {
+            $input['cid'] = $postId;
         }
 
         if ('page' == $type && isset($content['wp_page_template'])) {
@@ -340,11 +358,17 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         }
 
         if ('page' == $type) {
-            $widget = PageEdit::alloc(null, $input, function (PageEdit $page) {
+            $widget = PageEdit::alloc(null, $input, function (PageEdit $page) use ($postId) {
+                if ($postId !== null) {
+                    $page->prepare();
+                }
                 $page->writePage();
             });
         } else {
-            $widget = PostEdit::alloc(null, $input, function (PostEdit $post) {
+            $widget = PostEdit::alloc(null, $input, function (PostEdit $post) use ($postId) {
+                if ($postId !== null) {
+                    $post->prepare();
+                }
                 $post->writePost();
             });
         }
@@ -398,23 +422,28 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         array $content,
         bool $publish = true
     ): int {
-        $content['postId'] = $postId;
-        return $this->mwNewPost(1, $userName, $password, $content, $publish);
+        return $this->writePostData(1, $userName, $password, $content, $publish, $postId);
     }
 
     public function wpEditPost(int $blogId, string $userName, string $password, int $postId, array $content): bool
     {
         $post = Archive::alloc('type=single', ['cid' => $postId], false);
         if ($post->type == 'attachment') {
-            $attachment['title'] = $this->arrayString($content, 'post_title', $post->title ?? '');
-            $attachment['slug'] = $this->arrayString($content, 'post_excerpt', $post->slug ?? '');
+            $editable = AttachmentEdit::alloc(null, ['cid' => $postId], function (AttachmentEdit $attachment): void {
+                $attachment->prepare();
+            });
+            $attachment['title'] = $this->arrayString($content, 'post_title', $editable->title ?? '');
+            $attachment['slug'] = $this->arrayString($content, 'post_excerpt', $editable->slug ?? '');
 
-            $text = $this->attachmentPayload((string) $post->text);
+            $text = $this->attachmentPayload((string) $editable->text);
             $text['description'] = $this->arrayString($content, 'description', (string) ($text['description'] ?? ''));
 
             $attachment['text'] = Common::jsonEncode($text, 0, '{}');
 
-            $updateRows = $this->update($attachment, $this->db->sql()->where('cid = ?', $postId));
+            $updateRows = $editable->update(
+                $attachment,
+                $this->db->sql()->where('cid = ? AND type = ?', $postId, 'attachment')
+            );
             return $updateRows > 0;
         }
 
@@ -897,7 +926,9 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
     public function wpGetMediaItem(int $blogId, string $userName, string $password, int $attachmentId): array
     {
-        $attachment = AttachmentEdit::alloc(null, ['cid' => $attachmentId]);
+        $attachment = AttachmentEdit::alloc(null, ['cid' => $attachmentId], function (AttachmentEdit $attachment): void {
+            $attachment->prepare();
+        });
 
         return [
             'attachment_id'    => $attachment->cid,
@@ -917,7 +948,9 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
     public function mwGetPost(int $postId, string $userName, string $password): array
     {
-        $post = PostEdit::alloc(null, ['cid' => $postId], false);
+        $post = PostEdit::alloc(null, ['cid' => $postId], function (PostEdit $post): void {
+            $post->prepare();
+        });
 
         [$excerpt, $more] = $this->getPostExtended($post);
         $categories = array_column($post->categories, 'name');
@@ -1079,7 +1112,9 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
     public function mtGetPostCategories(int $postId, string $userName, string $password): array
     {
-        $post = PostEdit::alloc(null, ['cid' => $postId], false);
+        $post = PostEdit::alloc(null, ['cid' => $postId], function (PostEdit $post): void {
+            $post->prepare();
+        });
 
         $categories = [];
         foreach ($post->categories as $category) {
@@ -1096,6 +1131,7 @@ class XmlRpc extends Contents implements ActionInterface, Hook
     public function mtSetPostCategories(int $postId, string $userName, string $password, array $categories): bool
     {
         PostEdit::alloc(null, ['cid' => $postId], function (PostEdit $post) use ($postId, $categories) {
+            $post->prepare();
             $post->setCategories($postId, array_column($categories, 'categoryId'), 'publish' == $post->status);
         });
 
@@ -1138,7 +1174,9 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
     public function bloggerGetPost(int $blogId, int $postId, string $userName, string $password): array
     {
-        $post = PostEdit::alloc(null, ['cid' => $postId]);
+        $post = PostEdit::alloc(null, ['cid' => $postId], function (PostEdit $post): void {
+            $post->prepare();
+        });
         $categories = array_column($post->categories, 'name');
 
         $content = '<title>' . $post->title . '</title>';
@@ -1356,19 +1394,24 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         }
 
         if (isset($this->request->rsd)) {
+            $charset = preg_match('/^[A-Za-z0-9._-]+$/', (string) $this->options->charset) === 1
+                ? (string) $this->options->charset
+                : 'UTF-8';
+            $siteUrl = self::xmlEscape((string) $this->options->siteUrl);
+            $xmlRpcUrl = self::xmlEscape((string) $this->options->xmlRpcUrl);
             $xml =
             <<<EOF
-<?xml version="1.0" encoding="{$this->options->charset}"?>
+<?xml version="1.0" encoding="{$charset}"?>
 <rsd version="1.0" xmlns="http://archipelago.phrasewise.com/rsd">
     <service>
         <engineName>Typecho</engineName>
         <engineLink>https://typecho.org/</engineLink>
-        <homePageLink>{$this->options->siteUrl}</homePageLink>
+        <homePageLink>{$siteUrl}</homePageLink>
         <apis>
-            <api name="WordPress" blogID="1" preferred="true" apiLink="{$this->options->xmlRpcUrl}" />
-            <api name="Movable Type" blogID="1" preferred="false" apiLink="{$this->options->xmlRpcUrl}" />
-            <api name="MetaWeblog" blogID="1" preferred="false" apiLink="{$this->options->xmlRpcUrl}" />
-            <api name="Blogger" blogID="1" preferred="false" apiLink="{$this->options->xmlRpcUrl}" />
+            <api name="WordPress" blogID="1" preferred="true" apiLink="{$xmlRpcUrl}" />
+            <api name="Movable Type" blogID="1" preferred="false" apiLink="{$xmlRpcUrl}" />
+            <api name="MetaWeblog" blogID="1" preferred="false" apiLink="{$xmlRpcUrl}" />
+            <api name="Blogger" blogID="1" preferred="false" apiLink="{$xmlRpcUrl}" />
         </apis>
     </service>
 </rsd>
@@ -1377,9 +1420,12 @@ EOF;
                 echo $xml;
             }, 'text/xml');
         } elseif (isset($this->request->wlw)) {
+            $charset = preg_match('/^[A-Za-z0-9._-]+$/', (string) $this->options->charset) === 1
+                ? (string) $this->options->charset
+                : 'UTF-8';
             $xml =
             <<<EOF
-<?xml version="1.0" encoding="{$this->options->charset}"?>
+<?xml version="1.0" encoding="{$charset}"?>
 <manifest xmlns="http://schemas.microsoft.com/wlw/manifest/weblog">
     <options>
         <supportsKeywords>Yes</supportsKeywords>
@@ -1456,8 +1502,6 @@ EOF;
                 'blogger.getUserInfo'       => [$this, 'bloggerGetUserInfo'],
                 'blogger.getPost'           => [$this, 'bloggerGetPost'],
                 'blogger.getRecentPosts'    => [$this, 'bloggerGetRecentPosts'],
-                'blogger.getTemplate'       => [$this, 'bloggerGetTemplate'],
-                'blogger.setTemplate'       => [$this, 'bloggerSetTemplate'],
                 'blogger.deletePost'        => [$this, 'bloggerDeletePost'],
 
                 'metaWeblog.newPost'        => [$this, 'mwNewPost'],
@@ -1468,8 +1512,6 @@ EOF;
                 'metaWeblog.newMediaObject' => [$this, 'mwNewMediaObject'],
 
                 'metaWeblog.deletePost'     => [$this, 'bloggerDeletePost'],
-                'metaWeblog.getTemplate'    => [$this, 'bloggerGetTemplate'],
-                'metaWeblog.setTemplate'    => [$this, 'bloggerSetTemplate'],
                 'metaWeblog.getUsersBlogs'  => [$this, 'bloggerGetUsersBlogs'],
 
                 'mt.getCategoryList'        => [$this, 'mtGetCategoryList'],
@@ -1591,5 +1633,10 @@ EOF;
         }
 
         return '';
+    }
+
+    private static function xmlEscape(string $value): string
+    {
+        return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE | ENT_XML1, 'UTF-8');
     }
 }

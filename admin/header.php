@@ -28,13 +28,14 @@ $header .= '<link rel="stylesheet" href="' . $options->adminStaticUrl('css', 'no
 <link rel="stylesheet" href="' . $options->adminStaticUrl('css', 'renew-ui.css', true) . '">';
 
 $header = \Typecho\Plugin::factory('admin/header.php')->filter('header', $header);
+$documentLang = str_replace('_', '-', (string) ($options->lang ?? 'zh_CN'));
 
 ?><!DOCTYPE HTML>
-<html>
+<html lang="<?php echo htmlspecialchars($documentLang, ENT_QUOTES, 'UTF-8'); ?>">
     <head>
         <meta charset="<?php $options->charset(); ?>">
         <meta name="renderer" content="webkit">
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
         <title><?php _e('%s - %s - Powered by TypeRenew', $menu->title, $options->title); ?></title>
         <meta name="robots" content="noindex, nofollow">
         <?php echo $header; ?>

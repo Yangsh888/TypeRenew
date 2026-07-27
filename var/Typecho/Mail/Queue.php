@@ -28,6 +28,7 @@ class Queue
         try {
             $db = Db::get();
             $now = time();
+            $queued = true;
 
             foreach ($jobs as $job) {
                 $payload = [
@@ -58,7 +59,13 @@ class Queue
                     'payload' => \Typecho\Common::jsonEncode($payload, JSON_UNESCAPED_UNICODE, '{}')
                 ];
 
-                self::insertQueueRow($db, $rows);
+                if (!self::insertQueueRow($db, $rows)) {
+                    $queued = false;
+                }
+            }
+
+            if (!$queued) {
+                return;
             }
         } catch (\Throwable $e) {
             self::recordRuntimeError('enqueue', $e->getMessage());
@@ -69,7 +76,7 @@ class Queue
         self::triggerDelivery($db, $options);
     }
 
-    public static function enqueue(string $type, Message $message, Db $db, Options $options): void
+    public static function enqueue(string $type, Message $message, Db $db, Options $options): bool
     {
         $now = time();
         $payload = [
@@ -107,14 +114,17 @@ class Queue
         ];
 
         try {
-            self::insertQueueRow($db, $rows);
+            if (!self::insertQueueRow($db, $rows)) {
+                return false;
+            }
             self::clearRuntimeError();
         } catch (\Throwable $e) {
             self::recordRuntimeError('enqueue', $e->getMessage());
-            return;
+            return false;
         }
 
         self::triggerDelivery($db, $options);
+        return true;
     }
 
     private static function triggerDelivery(Db $db, Options $options): void
@@ -695,19 +705,19 @@ class Queue
         ];
     }
 
-    private static function insertQueueRow(Db $db, array $rows): void
+    private static function insertQueueRow(Db $db, array $rows): bool
     {
         try {
             $db->query($db->insert('table.mail_queue')->rows($rows));
-            return;
+            return true;
         } catch (\Throwable $e) {
             if (self::isDuplicateInsertError($e)) {
-                return;
+                return true;
             }
 
             if (!self::isMissingDedupeColumnError($e)) {
                 self::recordRuntimeError('insert', $e->getMessage());
-                return;
+                return false;
             }
         }
 
@@ -715,8 +725,10 @@ class Queue
             $fallbackRows = $rows;
             unset($fallbackRows['dedupeKey']);
             $db->query($db->insert('table.mail_queue')->rows($fallbackRows));
+            return true;
         } catch (\Throwable $e) {
-            return;
+            self::recordRuntimeError('insert', $e->getMessage());
+            return false;
         }
     }
 

@@ -8,6 +8,7 @@ use Typecho\Widget\Exception as WidgetException;
 class Server
 {
     private const DEFAULT_MAX_BODY_SIZE = 8388608;
+    private const MAX_MULTICALLS = 100;
 
     private array $callbacks;
 
@@ -37,10 +38,30 @@ class Server
 
     public function multiCall(array $methodcalls): array
     {
+        if (count($methodcalls) > self::MAX_MULTICALLS) {
+            throw new Exception('system.multicall accepts at most ' . self::MAX_MULTICALLS . ' calls', -32600);
+        }
+
         $return = [];
         foreach ($methodcalls as $call) {
+            if (!is_array($call) || !isset($call['methodName']) || !is_string($call['methodName'])) {
+                $return[] = [
+                    'faultCode' => -32600,
+                    'faultString' => 'Invalid system.multicall entry',
+                ];
+                continue;
+            }
+
             $method = $call['methodName'];
-            $params = $call['params'];
+            $params = $call['params'] ?? [];
+            if (!is_array($params)) {
+                $return[] = [
+                    'faultCode' => -32602,
+                    'faultString' => 'Invalid system.multicall params',
+                ];
+                continue;
+            }
+
             if ($method == 'system.multicall') {
                 $result = new Error(-32600, 'Recursive calls to system.multicall are forbidden');
             } else {

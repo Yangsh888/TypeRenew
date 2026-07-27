@@ -159,7 +159,7 @@ class Edit extends Users implements ActionInterface
             $mail->addRule('maxLength', _t('电子邮箱最多包含150个字符'), 150);
             $password->addRule(
                 [Password::class, 'validateLength'],
-                _t('密码长度需在 %d-%d 位之间', Password::minLength(), Password::maxLength())
+                _t('密码至少需要 %d 个字符，且不能超过 %d 字节', Password::minLength(), Password::maxLength())
             );
             $confirm->addRule('confirm', _t('两次输入的密码不一致'), 'password');
         }

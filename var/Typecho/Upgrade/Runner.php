@@ -92,15 +92,31 @@ class Runner
 
         $id = date('YmdHis') . '-' . bin2hex(random_bytes(4));
         $packagePath = $this->store->path('Packages/' . $id . '.zip');
+        $lock = $this->store->acquireLock();
 
-        if (!move_uploaded_file($tmp, $packagePath)) {
-            throw new RuntimeException('升级包保存失败');
+        try {
+            if (!move_uploaded_file($tmp, $packagePath)) {
+                throw new RuntimeException('升级包保存失败');
+            }
+
+            return $this->prepareUnlocked($id, $packagePath, $allowInstallOverride);
+        } finally {
+            $this->store->releaseLock($lock);
         }
-
-        return $this->prepare($id, $packagePath, $allowInstallOverride);
     }
 
     public function prepare(string $id, string $packagePath, ?bool $allowInstallOverride = null): array
+    {
+        $lock = $this->store->acquireLock();
+
+        try {
+            return $this->prepareUnlocked($id, $packagePath, $allowInstallOverride);
+        } finally {
+            $this->store->releaseLock($lock);
+        }
+    }
+
+    private function prepareUnlocked(string $id, string $packagePath, ?bool $allowInstallOverride): array
     {
         $stageDir = $this->store->path('Staging/' . $id);
         $this->store->removeTree($stageDir);

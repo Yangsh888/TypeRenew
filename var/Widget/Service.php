@@ -23,7 +23,11 @@ class Service extends BaseOptions implements ActionInterface
 
     public function sendPingHandle()
     {
+        $this->requirePost();
         $data = $this->request->get('@json');
+        if (!is_array($data)) {
+            $data = [];
+        }
         $token = $data['token'] ?? '';
         $permalink = $data['permalink'] ?? '';
         $title = $data['title'] ?? '';
@@ -253,7 +257,11 @@ class Service extends BaseOptions implements ActionInterface
 
     public function asyncHandle()
     {
+        $this->requirePost();
         $data = $this->request->get('@json');
+        if (!is_array($data)) {
+            $data = [];
+        }
         $token = $data['token'] ?? '';
 
         if (!Common::timeTokenValidate($token, $this->options->secret, 3)) {
@@ -283,8 +291,15 @@ class Service extends BaseOptions implements ActionInterface
 
     public function action()
     {
-        $this->on($this->request->isPost() && $this->request->is('do=ping'))->sendPingHandle();
-        $this->on($this->request->isPost() && $this->request->is('do=async'))->asyncHandle();
+        $this->on($this->request->is('do=ping'))->sendPingHandle();
+        $this->on($this->request->is('do=async'))->asyncHandle();
+    }
+
+    private function requirePost(): void
+    {
+        if (!$this->request->isPost()) {
+            $this->response->setStatus(405)->throwContent(_t('Method Not Allowed'), 'text/plain');
+        }
     }
 
     private function reportException(string $scope, \Throwable $e): void

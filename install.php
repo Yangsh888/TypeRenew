@@ -284,7 +284,7 @@ function install_check(string $type): bool
     }
 }
 
-function install_raise_error($error, $config = null): never
+function install_raise_error($error, $config = null)
 {
     if (install_is_cli()) {
         if (is_array($error)) {
@@ -336,7 +336,7 @@ function install_success($step, ?array $config = null)
     }
 }
 
-function install_throw_json($data): never
+function install_throw_json($data)
 {
     \Typecho\Response::getInstance()->setContentType('application/json')
         ->addResponder(function () use ($data) {
@@ -1150,7 +1150,7 @@ function install_step_3()
                     <li>
                         <label class="typecho-label" for="userPassword"><?php _e('登录密码'); ?></label>
                         <input type="password" name="userPassword" id="userPassword" class="text" />
-                        <p class="description"><?php _e('请设置 %d-%d 位登录密码。若留空，系统将自动生成随机密码（不推荐）', \Utils\Password::minLength(), \Utils\Password::maxLength()); ?></p>
+                        <p class="description"><?php _e('登录密码至少需要 %d 个字符，且不能超过 %d 字节。若留空，系统将自动生成随机密码（不推荐）', \Utils\Password::minLength(), \Utils\Password::maxLength()); ?></p>
                     </li>
                 </ul>
                 <ul class="typecho-option">
@@ -1213,7 +1213,7 @@ function install_step_3_perform()
         ->addRule(
             'userPassword',
             [\Utils\Password::class, 'validateLength'],
-            _t('密码长度需在 %d-%d 位之间', \Utils\Password::minLength(), \Utils\Password::maxLength())
+            _t('密码至少需要 %d 个字符，且不能超过 %d 字节', \Utils\Password::minLength(), \Utils\Password::maxLength())
         )
         ->run($config);
 
@@ -1413,10 +1413,10 @@ function install_dispatch()
         }
         ?>
 <!DOCTYPE HTML>
-<html>
+<html lang="<?php echo htmlspecialchars(str_replace('_', '-', (string) ($options->lang ?? 'zh_CN')), ENT_QUOTES, 'UTF-8'); ?>">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?php _e('TypeRenew 安装程序'); ?></title>
     <link rel="stylesheet" type="text/css" href="<?php $options->adminUrl('css/normalize.css'); ?>" />
     <link rel="stylesheet" type="text/css" href="<?php $options->adminUrl('css/grid.css'); ?>" />

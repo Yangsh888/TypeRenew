@@ -289,6 +289,17 @@
 
     initProfileCards();
 
+    document.querySelectorAll('.tr-settings-tabs').forEach((tabs) => {
+        const current = tabs.querySelector('li.current');
+        if (!current || tabs.scrollWidth <= tabs.clientWidth) {
+            return;
+        }
+
+        // 窄屏默认把当前设置项放进可视区域，避免用户误以为选项缺失。
+        const target = current.offsetLeft - (tabs.clientWidth - current.offsetWidth) / 2;
+        tabs.scrollLeft = Math.max(0, target);
+    });
+
     if (sidebar) {
         sidebar.addEventListener('click', (e) => {
             if (!mq.matches) {

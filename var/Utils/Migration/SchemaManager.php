@@ -18,6 +18,14 @@ class SchemaManager
 {
     public static function syncCurrentRelease(Db $db, array $activatedPlugins = []): array
     {
+        return self::withMigrationLock(
+            $db,
+            static fn(): array => self::syncCurrentReleaseUnlocked($db, $activatedPlugins)
+        );
+    }
+
+    private static function syncCurrentReleaseUnlocked(Db $db, array $activatedPlugins): array
+    {
         $messages = [_t('当前版本所需的数据库结构已同步')];
         self::ensureMailInfrastructure($db);
         self::ensureGeneralOptions($db);
@@ -111,6 +119,14 @@ class SchemaManager
     }
 
     public static function repairCriticalSchema(Db $db): array
+    {
+        return self::withMigrationLock(
+            $db,
+            static fn(): array => self::repairCriticalSchemaUnlocked($db)
+        );
+    }
+
+    private static function repairCriticalSchemaUnlocked(Db $db): array
     {
         self::ensureMailInfrastructure($db);
         Schema::repairMailInfra($db);
@@ -315,11 +331,27 @@ class SchemaManager
 
     private static function updateGenerator(Db $db, string $version): void
     {
-        $db->query(
-            $db->update('table.options')
-                ->rows(['value' => Common::generator($version)])
-                ->where('name = ?', 'generator')
+        $generator = Common::generator($version);
+        $exists = $db->fetchRow(
+            $db->select('name')->from('table.options')
+                ->where('name = ? AND user = ?', 'generator', 0)
+                ->limit(1)
         );
+
+        if ($exists) {
+            $db->query(
+                $db->update('table.options')
+                    ->rows(['value' => $generator])
+                    ->where('name = ? AND user = ?', 'generator', 0)
+            );
+            return;
+        }
+
+        $db->query($db->insert('table.options')->rows([
+            'name' => 'generator',
+            'user' => 0,
+            'value' => $generator,
+        ]));
     }
 
     public static function syncCommentAuthors(Db $db): int
@@ -512,5 +544,74 @@ class SchemaManager
             : 'utf8mb4_unicode_ci';
 
         return 'CONVERT(' . $column . ' USING utf8mb4) COLLATE ' . $safeCollation;
+    }
+
+    private static function withMigrationLock(Db $db, callable $callback): array
+    {
+        $lock = self::acquireMigrationLock($db);
+
+        try {
+            return $callback();
+        } finally {
+            self::releaseMigrationLock($db, $lock);
+        }
+    }
+
+    private static function acquireMigrationLock(Db $db): string
+    {
+        $name = 'migrationLock';
+        $now = time();
+        $value = ($now + 3600) . ':' . bin2hex(random_bytes(16));
+        $row = $db->fetchRow(
+            $db->select('value')->from('table.options')
+                ->where('name = ? AND user = ?', $name, 0)
+                ->limit(1)
+        );
+
+        if (!$row) {
+            try {
+                $db->query($db->insert('table.options')->rows([
+                    'name' => $name,
+                    'user' => 0,
+                    'value' => $value,
+                ]));
+                return $value;
+            } catch (\Throwable) {
+                $row = $db->fetchRow(
+                    $db->select('value')->from('table.options')
+                        ->where('name = ? AND user = ?', $name, 0)
+                        ->limit(1)
+                );
+            }
+        }
+
+        $current = (string) ($row['value'] ?? '');
+        $separator = strpos($current, ':');
+        $expires = $separator === false ? 0 : (int) substr($current, 0, $separator);
+        if ($expires >= $now) {
+            throw new \RuntimeException('已有数据库迁移正在执行，请稍后重试');
+        }
+
+        $updated = $db->query(
+            $db->update('table.options')
+                ->rows(['value' => $value])
+                ->where('name = ? AND user = ? AND value = ?', $name, 0, $current)
+        );
+        if ($updated !== 1) {
+            throw new \RuntimeException('已有数据库迁移正在执行，请稍后重试');
+        }
+
+        return $value;
+    }
+
+    private static function releaseMigrationLock(Db $db, string $value): void
+    {
+        try {
+            $db->query(
+                $db->delete('table.options')
+                    ->where('name = ? AND user = ? AND value = ?', 'migrationLock', 0, $value)
+            );
+        } catch (\Throwable) {
+        }
     }
 }

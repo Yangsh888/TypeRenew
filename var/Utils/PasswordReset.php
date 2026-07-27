@@ -69,4 +69,58 @@ class PasswordReset
 
         return null;
     }
+
+    public static function apply(Db $db, string $rawToken, string $passwordHash, string $authCode): bool
+    {
+        $db->query('BEGIN');
+
+        try {
+            $record = self::findActiveRecordByToken($db, $rawToken);
+            if (!$record) {
+                $db->query('ROLLBACK');
+                return false;
+            }
+
+            $recordId = (int) ($record['id'] ?? 0);
+            $email = (string) ($record['email'] ?? '');
+            $locked = $db->query(
+                $db->update('table.password_resets')
+                    ->rows(['used' => 1])
+                    ->where('id = ? AND used = ? AND expires > ?', $recordId, 0, time())
+            );
+
+            if ($locked !== 1) {
+                $db->query('ROLLBACK');
+                return false;
+            }
+
+            $updated = $db->query(
+                $db->update('table.users')
+                    ->rows([
+                        'password' => $passwordHash,
+                        'authCode' => $authCode,
+                    ])
+                    ->where('mail = ?', $email)
+            );
+
+            if ($updated !== 1) {
+                throw new \RuntimeException('密码对应的用户不存在');
+            }
+
+            $db->query(
+                $db->delete('table.password_resets')
+                    ->where('email = ?', $email)
+                    ->where('id <> ?', $recordId)
+            );
+            $db->query('COMMIT');
+            return true;
+        } catch (\Throwable $throwable) {
+            try {
+                $db->query('ROLLBACK');
+            } catch (\Throwable) {
+            }
+
+            throw $throwable;
+        }
+    }
 }

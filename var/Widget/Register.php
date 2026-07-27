@@ -18,6 +18,11 @@ class Register extends Users implements ActionInterface
 
     public function action()
     {
+        if (!$this->request->isPost()) {
+            $this->response->setStatus(405)->throwContent(_t('Method Not Allowed'));
+            return;
+        }
+
         $this->security->protect();
 
         if ($this->user->hasLogin() || !$this->options->allowRegister) {
@@ -39,7 +44,7 @@ class Register extends Users implements ActionInterface
         $validator->addRule(
             'password',
             [Password::class, 'validateLength'],
-            _t('密码长度需在 %d-%d 位之间', Password::minLength(), Password::maxLength())
+            _t('密码至少需要 %d 个字符，且不能超过 %d 字节', Password::minLength(), Password::maxLength())
         );
         $validator->addRule('confirm', 'confirm', _t('两次输入的密码不一致'), 'password');
 

@@ -385,7 +385,7 @@ trait EditTrait
         return Common::url('preview.php?cid=' . max(0, $cid), $this->options->adminUrl);
     }
 
-    protected function setCategories(int $cid, array $categories, bool $beforeCount = true, bool $afterCount = true)
+    public function setCategories(int $cid, array $categories, bool $beforeCount = true, bool $afterCount = true)
     {
         $categories = array_unique(array_map('trim', $categories));
 
