@@ -2,6 +2,7 @@
 /**
  * TypeRenew 官方默认模板，风格简约清爽，为站点提供开箱即用的优雅体验
  *
+ * @package Default
  * @author TypeRenew Team
  * @version 1.0.0
  * @link https://github.com/Yangsh888/TypeRenew
