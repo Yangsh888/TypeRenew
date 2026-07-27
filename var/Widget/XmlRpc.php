@@ -1393,7 +1393,7 @@ class XmlRpc extends Contents implements ActionInterface, Hook
             throw new Exception(_t('请求的地址不存在'), 404);
         }
 
-        if (isset($this->request->rsd)) {
+        if ($this->request->has('rsd', true)) {
             $charset = preg_match('/^[A-Za-z0-9._-]+$/', (string) $this->options->charset) === 1
                 ? (string) $this->options->charset
                 : 'UTF-8';
@@ -1419,7 +1419,7 @@ EOF;
             $this->response->throwCallback(static function () use ($xml) {
                 echo $xml;
             }, 'text/xml');
-        } elseif (isset($this->request->wlw)) {
+        } elseif ($this->request->has('wlw', true)) {
             $charset = preg_match('/^[A-Za-z0-9._-]+$/', (string) $this->options->charset) === 1
                 ? (string) $this->options->charset
                 : 'UTF-8';

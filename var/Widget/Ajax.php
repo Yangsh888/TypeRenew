@@ -436,7 +436,7 @@ class Ajax extends BaseOptions implements ActionInterface
             'ok'        => (bool) $source['ok'],
             'checkedAt' => (int) $source['checkedAt'],
             'cached'    => (bool) $source['cached'],
-            'ttl'       => self::OFFICIAL_PLUGIN_VERSION_CACHE_TTL,
+            'ttl'       => max(1, (int) $source['ttl']),
             'source'    => self::OFFICIAL_PLUGIN_VERSION_SOURCE,
             'message'   => (string) $source['message'],
             'statuses'  => $statuses,

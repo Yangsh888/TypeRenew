@@ -22,9 +22,12 @@ class Edit extends Users implements ActionInterface
     {
         $this->user->pass('administrator');
 
-        if (($this->request->is('uid') && 'delete' != $this->request->get('do')) || $this->request->is('do=update')) {
+        $do = (string) $this->request->get('do', '');
+        $uid = (int) $this->request->filter('int')->get('uid', 0);
+
+        if (($do === '' && $uid > 0) || $do === 'update') {
             $this->db->fetchRow($this->select()
-                ->where('uid = ?', $this->request->get('uid'))->limit(1), [$this, 'push']);
+                ->where('uid = ?', $uid)->limit(1), [$this, 'push']);
 
             if (!$this->have()) {
                 throw new Exception(_t('用户不存在'), 404);

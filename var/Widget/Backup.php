@@ -256,8 +256,8 @@ class Backup extends BaseOptions implements ActionInterface
             return;
         }
 
-        $doRepair = !$this->request->is('repair=0');
-        $doSnapshot = !$this->request->is('snapshot=0');
+        $doRepair = (string) $this->request->get('repair', '1') !== '0';
+        $doSnapshot = (string) $this->request->get('snapshot', '1') !== '0';
 
         try {
             $payload = $this->readBackup($path);

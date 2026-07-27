@@ -57,13 +57,19 @@ class Request
 
     public function __isset(string $key): bool
     {
-        $this->get($key, null, $exists);
-        return (bool) $exists;
+        return $this->has($key);
     }
 
     public function get(string $key, $default = null, ?bool &$exists = true)
     {
         return $this->applyFilter($this->request->proxy($this->params)->get($key, $default, $exists));
+    }
+
+    public function has(string $key, bool $allowEmpty = false): bool
+    {
+        $result = $this->request->proxy($this->params)->has($key, $allowEmpty);
+        $this->request->endProxy();
+        return $result;
     }
 
     public function getArray(string $key): array

@@ -62,6 +62,7 @@ $pluginVersionToolbar = '<div class="tr-plugin-version-toolbar">'
     . '<span class="tr-plugin-version-hint" role="status" aria-live="polite">' . _t('成功缓存 2 小时，失败缓存 10 分钟') . '</span>'
     . '</div>'
     . '</div>';
+$pluginVersionToolbarRendered = false;
 ?>
 <main class="main">
     <div class="body container">
@@ -71,7 +72,10 @@ $pluginVersionToolbar = '<div class="tr-plugin-version-toolbar">'
                 <?php if ($activatedPlugins->have() || !empty($activatedPlugins->activatedPlugins)): ?>
                     <div class="tr-plugin-section-head">
                         <h4 class="typecho-list-table-title"><?php _e('启用的插件'); ?></h4>
-                        <?php echo $pluginVersionToolbar; ?>
+                        <?php if (!$pluginVersionToolbarRendered): ?>
+                            <?php echo $pluginVersionToolbar; ?>
+                            <?php $pluginVersionToolbarRendered = true; ?>
+                        <?php endif; ?>
                     </div>
                     <table class="typecho-list-table">
                         <colgroup>
@@ -147,7 +151,10 @@ $pluginVersionToolbar = '<div class="tr-plugin-version-toolbar">'
                 <?php if ($deactivatedPlugins->have() || !$activatedPlugins->have()): ?>
                     <div class="tr-plugin-section-head">
                         <h4 class="typecho-list-table-title"><?php _e('禁用的插件'); ?></h4>
-                        <?php echo $pluginVersionToolbar; ?>
+                        <?php if (!$pluginVersionToolbarRendered): ?>
+                            <?php echo $pluginVersionToolbar; ?>
+                            <?php $pluginVersionToolbarRendered = true; ?>
+                        <?php endif; ?>
                     </div>
                     <table class="typecho-list-table deactivate">
                         <colgroup>
@@ -211,17 +218,15 @@ include 'form-js.php';
 <script>
     (function () {
         var badges = document.querySelectorAll('.tr-plugin-version-badge[data-plugin-name]');
-        var refreshButtons = document.querySelectorAll('.tr-plugin-version-refresh');
-        var hints = document.querySelectorAll('.tr-plugin-version-hint');
-        if (!badges.length || !hints.length || !window.jQuery) {
+        var refreshButton = document.querySelector('.tr-plugin-version-refresh');
+        var hint = document.querySelector('.tr-plugin-version-hint');
+        if (!badges.length || !refreshButton || !hint || !window.jQuery) {
             return;
         }
 
         var $ = window.jQuery;
-        var store = window.TypechoStore || null;
         var requestUrl = <?php echo json_encode($pluginVersionUrl, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE); ?>;
         var refreshUrl = <?php echo json_encode($pluginVersionRefreshUrl, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE); ?>;
-        var cacheKey = 'trPluginVersionPayload';
         var texts = <?php echo json_encode([
             'refresh' => _t('刷新检测'),
             'refreshing' => _t('刷新中...'),
@@ -243,7 +248,12 @@ include 'form-js.php';
         };
         var badgeMap = {};
 
-        if (typeof requestUrl !== 'string' || requestUrl === '') {
+        if (
+            typeof requestUrl !== 'string'
+            || requestUrl === ''
+            || typeof refreshUrl !== 'string'
+            || refreshUrl === ''
+        ) {
             Array.prototype.forEach.call(badges, function (node) {
                 var defaultState = String(node.getAttribute('data-default-status') || 'failed');
                 var defaultTip = String(node.getAttribute('data-default-tip') || texts.failedHint);
@@ -298,10 +308,8 @@ include 'form-js.php';
         }
 
         function setHint(text, tone) {
-            Array.prototype.forEach.call(hints, function (node) {
-                node.textContent = text;
-                node.className = 'tr-plugin-version-hint' + (tone ? ' is-' + tone : '');
-            });
+            hint.textContent = text;
+            hint.className = 'tr-plugin-version-hint' + (tone ? ' is-' + tone : '');
         }
 
         function setLoading(active) {
@@ -324,11 +332,9 @@ include 'form-js.php';
                 node.setAttribute('aria-label', texts.loadingBadge);
             });
 
-            Array.prototype.forEach.call(refreshButtons, function (node) {
-                node.disabled = active;
-                node.setAttribute('aria-busy', active ? 'true' : 'false');
-                node.textContent = active ? texts.refreshing : texts.refresh;
-            });
+            refreshButton.disabled = active;
+            refreshButton.setAttribute('aria-busy', active ? 'true' : 'false');
+            refreshButton.textContent = active ? texts.refreshing : texts.refresh;
         }
 
         function applyStatus(name, payload) {
@@ -339,9 +345,10 @@ include 'form-js.php';
             nodes.forEach(function (node) {
                 var defaultState = String(node.getAttribute('data-default-status') || 'failed');
                 var defaultMessage = String(node.getAttribute('data-default-tip') || texts.missing);
-                var finalState = state || defaultState;
+                var finalState = symbols[state] ? state : defaultState;
+                finalState = symbols[finalState] ? finalState : 'failed';
                 var finalMessage = message || defaultMessage;
-                var symbol = symbols[finalState] || symbols.failed;
+                var symbol = symbols[finalState];
 
                 node.textContent = symbol;
                 node.className = 'tr-plugin-version-badge is-' + finalState;
@@ -354,39 +361,6 @@ include 'form-js.php';
             Object.keys(badgeMap).forEach(function (name) {
                 applyStatus(name, statuses && typeof statuses === 'object' ? statuses[name] : null);
             });
-        }
-
-        function readSessionCache() {
-            if (!store) {
-                return null;
-            }
-
-            var payload = store.sessionGetJson(cacheKey, null);
-            if (!payload || typeof payload !== 'object' || !payload.statuses) {
-                return null;
-            }
-
-            var checkedAt = parseInt(payload.checkedAt || 0, 10);
-            var ttlMs = Math.max(1, parseInt(payload.ttl || 0, 10)) * 1000;
-            if (!checkedAt || !ttlMs || (Date.now() - checkedAt * 1000) >= ttlMs) {
-                return null;
-            }
-
-            return payload;
-        }
-
-        function writeSessionCache(payload) {
-            if (!store || !payload || typeof payload !== 'object' || !payload.statuses) {
-                return;
-            }
-
-            store.sessionSetJson(cacheKey, payload);
-        }
-
-        function clearSessionCache() {
-            if (store) {
-                store.sessionRemove(cacheKey);
-            }
         }
 
         function applySummary(payload, forced) {
@@ -404,7 +378,7 @@ include 'form-js.php';
             setHint((payload && payload.message) ? String(payload.message) : texts.failedHint, 'error');
         }
 
-        function applyRequestFailure() {
+        function applyRequestFailure(message) {
             Object.keys(badgeMap).forEach(function (name) {
                 var node = (badgeMap[name] || [])[0];
                 if (!node) {
@@ -416,9 +390,18 @@ include 'form-js.php';
                     message: node.getAttribute('data-default-tip') || texts.missing
                 } : {
                     status: 'failed',
-                    message: texts.failedRequest
+                    message: message
                 });
             });
+        }
+
+        function requestFailureMessage(xhr) {
+            var payload = xhr && xhr.responseJSON;
+            var message = payload && typeof payload.message === 'string'
+                ? payload.message.trim()
+                : '';
+
+            return message || texts.failedRequest;
         }
 
         function loadVersions(forceRefresh) {
@@ -426,50 +409,42 @@ include 'form-js.php';
             setHint(forceRefresh ? texts.refreshingHint : texts.loadingHint, '');
 
             var url = requestUrl + (requestUrl.indexOf('?') >= 0 ? '&' : '?') + '_=' + Date.now();
-            var request = forceRefresh
-                ? $.ajax({
-                    url: refreshUrl,
-                    type: 'POST',
-                    dataType: 'json',
-                    data: {
-                        refresh: 1
-                    }
-                })
-                : $.get(url, null, null, 'json');
+            var request = $.ajax({
+                url: forceRefresh ? refreshUrl : url,
+                type: forceRefresh ? 'POST' : 'GET',
+                dataType: 'json',
+                data: forceRefresh ? {refresh: 1} : null,
+                timeout: 10000
+            });
 
             request.done(function (payload) {
-                payload = payload && typeof payload === 'object' ? payload : {};
-                applyStatuses(payload.statuses || null);
-
-                if (payload.ok) {
-                    writeSessionCache(payload);
-                } else {
-                    clearSessionCache();
+                if (
+                    !payload
+                    || typeof payload !== 'object'
+                    || Array.isArray(payload)
+                    || !payload.statuses
+                    || typeof payload.statuses !== 'object'
+                    || Array.isArray(payload.statuses)
+                ) {
+                    applyRequestFailure(texts.failedRequest);
+                    setHint(texts.failedRequest, 'error');
+                    return;
                 }
 
+                applyStatuses(payload.statuses || null);
                 applySummary(payload, forceRefresh);
-            }).fail(function () {
-                clearSessionCache();
-                applyRequestFailure();
-                setHint(texts.failedRequest, 'error');
+            }).fail(function (xhr) {
+                var message = requestFailureMessage(xhr);
+                applyRequestFailure(message);
+                setHint(message, 'error');
             }).always(function () {
                 setLoading(false);
             });
         }
 
-        Array.prototype.forEach.call(refreshButtons, function (node) {
-            node.addEventListener('click', function () {
-                loadVersions(true);
-            });
+        refreshButton.addEventListener('click', function () {
+            loadVersions(true);
         });
-
-        var cachedPayload = readSessionCache();
-        if (cachedPayload) {
-            applyStatuses(cachedPayload.statuses);
-            applySummary(cachedPayload, false);
-            setLoading(false);
-            return;
-        }
 
         loadVersions(false);
     })();

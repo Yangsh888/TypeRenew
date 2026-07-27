@@ -5558,19 +5558,25 @@ body.tr-admin.tr-page-plugins .tr-plugin-actions {
 body.tr-admin.tr-page-plugins .tr-plugin-version-toolbar {
     display: flex;
     justify-content: flex-end;
+    grid-column: 3;
+    min-width: 0;
 }
 
 body.tr-admin.tr-page-plugins .tr-plugin-version-toolbar-actions {
     display: inline-flex;
     align-items: center;
+    justify-content: flex-end;
     gap: 10px;
     flex-wrap: wrap;
+    min-width: 0;
 }
 
 body.tr-admin.tr-page-plugins .tr-plugin-version-hint {
     color: var(--tr-text-2);
     font-size: 12px;
     line-height: 1.5;
+    overflow-wrap: anywhere;
+    text-align: right;
 }
 
 body.tr-admin.tr-page-plugins .tr-plugin-version-hint.is-ok {
@@ -5583,19 +5589,17 @@ body.tr-admin.tr-page-plugins .tr-plugin-version-hint.is-error {
 
 body.tr-admin.tr-page-plugins .tr-plugin-section-head {
     position: relative;
-    display: flex;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
     align-items: center;
-    justify-content: flex-end;
     gap: 12px;
     margin-bottom: 12px;
     min-height: 32px;
 }
 
 body.tr-admin.tr-page-plugins .tr-plugin-section-head .typecho-list-table-title {
+    grid-column: 2;
     margin-bottom: 0;
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
     text-align: center;
     white-space: nowrap;
 }
@@ -5615,6 +5619,13 @@ body.tr-admin.tr-page-plugins .tr-plugin-version-wrap.is-mobile {
 
 body.tr-admin.tr-page-plugins .tr-plugin-version-text {
     font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+body.tr-admin.tr-page-plugins .typecho-list-table th:nth-child(3),
+body.tr-admin.tr-page-plugins .typecho-list-table td:nth-child(3) {
+    min-width: 92px;
+    white-space: nowrap;
 }
 
 body.tr-admin.tr-page-plugins .tr-plugin-version-badge {
@@ -5754,17 +5765,12 @@ body.tr-admin.tr-page-plugins .tr-plugin-actions .btn.btn-link:hover {
     }
 
     body.tr-admin.tr-page-plugins .tr-plugin-section-head {
-        /* 保持 position:relative：col 卡片背景 ::before 为 absolute/z-index:0，
-         * 内容靠 col > * 的 z-index:1 浮于其上；若这里改成 static，z-index 失效，
-         * section-head 会退回背景层之下被 ::before 浅灰卡片遮住（浅色下整块“消失”）。
-         * 仅需取消标题的绝对居中（在下方 .typecho-list-table-title 处理），无需把容器设为 static。 */
+        display: flex;
         align-items: stretch;
         flex-direction: column;
     }
 
     body.tr-admin.tr-page-plugins .tr-plugin-section-head .typecho-list-table-title {
-        position: static;
-        transform: none;
         text-align: center;
         white-space: normal;
     }
@@ -5775,6 +5781,10 @@ body.tr-admin.tr-page-plugins .tr-plugin-actions .btn.btn-link:hover {
 
     body.tr-admin.tr-page-plugins .tr-plugin-version-toolbar-actions {
         justify-content: center;
+        text-align: center;
+    }
+
+    body.tr-admin.tr-page-plugins .tr-plugin-version-hint {
         text-align: center;
     }
 
@@ -5789,6 +5799,65 @@ body.tr-admin.tr-page-plugins .tr-plugin-actions .btn.btn-link:hover {
     body.tr-admin.tr-page-manage-medias .typecho-page-main table.typecho-list-table {
         table-layout: auto;
         min-width: 0;
+    }
+
+    /* 窄屏改为双行信息布局，避免插件名和描述被挤成竖排 */
+    body.tr-admin.tr-page-plugins .typecho-list-table colgroup,
+    body.tr-admin.tr-page-plugins .typecho-list-table thead {
+        display: none;
+    }
+
+    body.tr-admin.tr-page-plugins .typecho-list-table tbody {
+        display: block;
+    }
+
+    body.tr-admin.tr-page-plugins .typecho-list-table tbody > tr {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 8px 12px;
+        padding: 14px 6px;
+        border-top: 1px solid var(--tr-border);
+    }
+
+    body.tr-admin.tr-page-plugins .typecho-list-table tbody > tr:first-child {
+        border-top: 0;
+    }
+
+    body.tr-admin.tr-page-plugins .typecho-list-table tbody > tr > td {
+        display: block;
+        min-width: 0;
+        padding: 0;
+        border: 0;
+        word-break: normal;
+        overflow-wrap: anywhere;
+    }
+
+    body.tr-admin.tr-page-plugins .typecho-list-table tbody > tr > td.kit-hidden-mb {
+        display: none;
+    }
+
+    body.tr-admin.tr-page-plugins .typecho-list-table tbody > tr > td:first-child {
+        grid-column: 1;
+        grid-row: 1;
+        align-self: center;
+        font-weight: 700;
+    }
+
+    body.tr-admin.tr-page-plugins .typecho-list-table tbody > tr > td:nth-child(2) {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        color: var(--tr-text-2);
+    }
+
+    body.tr-admin.tr-page-plugins .typecho-list-table tbody > tr > td:last-child {
+        grid-column: 2;
+        grid-row: 1;
+        align-self: center;
+    }
+
+    body.tr-admin.tr-page-plugins .typecho-list-table tbody > tr > td[colspan] {
+        grid-column: 1 / -1;
+        grid-row: auto;
     }
 }
 

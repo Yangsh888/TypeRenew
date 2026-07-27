@@ -101,7 +101,7 @@ class Request
     {
         $value = $this->fetch($key, $found);
 
-        if (!$found) {
+        if (!$found || $value === '') {
             $exists = false;
             return $default;
         }
@@ -124,8 +124,13 @@ class Request
 
     public function __isset(string $key): bool
     {
-        $this->get($key, null, $exists);
-        return (bool) $exists;
+        return $this->has($key);
+    }
+
+    public function has(string $key, bool $allowEmpty = false): bool
+    {
+        $value = $this->fetch($key, $exists);
+        return (bool) $exists && ($allowEmpty || $value !== '');
     }
 
     public function getRawBody(): string
@@ -646,7 +651,7 @@ class Request
             $validated = true;
             foreach ($params as $key => $val) {
                 $param = $this->get($key, null, $exists);
-                $validated = empty($val) ? $exists : ($val == $param);
+                $validated = $val === '' ? $exists : ($val == $param);
 
                 if (!$validated) {
                     break;
