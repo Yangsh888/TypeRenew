@@ -78,7 +78,7 @@ CREATE SEQUENCE "typecho_metas_seq";
 CREATE TABLE "typecho_metas" (  "mid" INT NOT NULL DEFAULT nextval('typecho_metas_seq'),
   "name" VARCHAR(150) NULL DEFAULT NULL,
   "slug" VARCHAR(150) NULL DEFAULT NULL,
-  "type" VARCHAR(16) NOT NULL DEFAULT '',
+  "type" VARCHAR(32) NOT NULL DEFAULT '',
   "description" VARCHAR(150) NULL DEFAULT NULL,
   "count" INT NULL DEFAULT '0',
   "order" INT NULL DEFAULT '0',

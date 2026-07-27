@@ -2333,6 +2333,14 @@ body.tr-admin.tr-sidebar-collapsed .tr-user-actions {
     justify-content: space-between;
 }
 
+.tr-gap-4 {
+    gap: 4px;
+}
+
+.tr-gap-8 {
+    gap: 8px;
+}
+
 .tr-gap-12 {
     gap: 12px;
 }
@@ -2570,6 +2578,39 @@ body.tr-admin.tr-page-index .tr-actions-grid .tr-btn-square span {
     color: var(--tr-muted);
     font-size: 13px;
     line-height: 1.5;
+}
+
+/* 语气修饰：升级/备份页用它区分「阻断项」与普通说明，缺失时二者同为灰字无法分辨。
+ * 全部走语义 token，深浅色自动跟随，无需 tr-theme-dark 覆盖 */
+.tr-tone-warning {
+    color: var(--tr-warning);
+}
+
+.tr-help.tr-tone-warning {
+    border-left: 3px solid var(--tr-warning);
+    padding-left: 10px;
+}
+
+.tr-tone-muted {
+    color: var(--tr-muted);
+}
+
+.tr-card.tr-tone-muted {
+    background: var(--tr-surface-2);
+    color: inherit;
+}
+
+/* 备份页表单控件：select 的外观已由 body.tr-admin select 统一接管，这里只补排版 */
+.tr-label {
+    color: var(--tr-text);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.tr-select {
+    width: 100%;
+    height: 34px;
+    padding: 0 10px;
 }
 
 .tr-link {
@@ -5203,6 +5244,23 @@ body.body-100 .tr-auth-form {
     gap: 16px;
 }
 
+/* 找回/重置密码页的状态提示（邮件系统未启用、重置链接失效等），语义 token 自动跟随深浅色 */
+body.body-100 .tr-auth-notice {
+    margin: 0 0 16px;
+    padding: 12px 14px;
+    border: 1px solid var(--tr-border);
+    border-left: 3px solid var(--tr-warning);
+    border-radius: 12px;
+    background: var(--tr-surface-2);
+    color: var(--tr-text);
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+body.body-100 .tr-auth-notice p {
+    margin: 0;
+}
+
 body.body-100 .tr-auth-field label {
     display: block;
     margin: 0 0 6px;
@@ -5958,9 +6016,29 @@ body.tr-admin.tr-page-themes .typecho-theme-list tbody tr.current td {
     border-top: 1px solid rgba(15, 23, 42, 0.06);
 }
 
+/* 邮箱与 IPv6 是不可断的长串, 而作者列是固定 20% 宽, 不断行就会挤压内容列 */
+body.tr-admin.tr-page-manage-comments .comment-head,
+body.tr-admin.tr-page-manage-comments .comment-meta {
+    overflow-wrap: anywhere;
+    word-break: normal;
+}
+
 body.tr-admin.tr-page-manage-comments .tr-comment-actions {
     margin-top: 10px;
     line-height: 1.3;
+}
+
+/* 触摸设备没有 hover，style.css 的 .hidden-by-mouse{opacity:0} 会让审核操作永远不可见。
+ * 无 hover 能力时直接常显，键盘 focus 同理 */
+@media (hover: none), (pointer: coarse) {
+    body.tr-admin .typecho-list-table tr td .hidden-by-mouse {
+        opacity: 1;
+    }
+}
+
+body.tr-admin .typecho-list-table tr td .hidden-by-mouse:focus-within,
+body.tr-admin .typecho-list-table tr td .hidden-by-mouse:focus-visible {
+    opacity: 1;
 }
 
 body.tr-admin.tr-page-manage-comments .tr-comment-actions .tr-comment-op {
@@ -6569,4 +6647,29 @@ html.tr-theme-dark body.tr-admin .tr-cmd-empty {
 
 .tr-submit-hidden {
     display: none !important;
+}
+
+/* 媒体库 MIME 图标补丁层
+ * 两个上游遗留问题:
+ * 1. Common::mimeIconType() 返回 unknown, 而 style.css 只定义了 .mime-unknow(少个 n),
+ *    字体等未识别类型会渲染成空白 —— 这里补上正确类名, 复用同一张精灵图的位置
+ * 2. icons.png 是深蓝位图, 无 currentColor, 深色模式下几乎看不见 —— 用 invert 提亮 */
+body.tr-admin .mime-unknown {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    background-image: url("../img/icons.png?_=01c3ae1");
+    background-repeat: no-repeat;
+    background-position: 0 -176px;
+}
+
+@media (-webkit-min-device-pixel-ratio: 1.5), (min-resolution: 144dpi) {
+    body.tr-admin .mime-unknown {
+        background-image: url("../img/icons@2x.png?_=e65bc46");
+        background-size: 24px 256px;
+    }
+}
+
+html.tr-theme-dark body.tr-admin [class*="mime-"] {
+    filter: invert(1) hue-rotate(180deg) brightness(1.35);
 }

@@ -99,7 +99,7 @@ $tplContent = \Typecho\Mail\Template::load($tplName, $options);
                             <div class="tr-mail-actions tr-mt-12">
                                 <form action="<?php echo htmlspecialchars($security->getIndex('/action/options-mail'), ENT_QUOTES, 'UTF-8'); ?>" method="post">
                                     <input type="hidden" name="do" value="deliver">
-                                    <button class="tr-btn tr-btn-primary tr-mail-btn" type="submit"><?php _e('立即投递'); ?></button>
+                                    <button class="tr-btn primary tr-mail-btn" type="submit"><?php _e('立即投递'); ?></button>
                                 </form>
                                 <form action="<?php echo htmlspecialchars($security->getIndex('/action/options-mail'), ENT_QUOTES, 'UTF-8'); ?>" method="post">
                                     <input type="hidden" name="do" value="cleanup">
@@ -124,7 +124,7 @@ $tplContent = \Typecho\Mail\Template::load($tplName, $options);
                                 <input type="hidden" name="do" value="test">
                                 <input type="hidden" name="tpl" value="<?php echo htmlspecialchars($tplName, ENT_QUOTES, 'UTF-8'); ?>">
                                 <input class="text w-100 mono" type="email" name="testTo" placeholder="<?php _e('收件邮箱'); ?>">
-                                <button class="tr-btn tr-btn-primary tr-mail-btn" type="submit"><?php _e('发送模板测试'); ?></button>
+                                <button class="tr-btn primary tr-mail-btn" type="submit"><?php _e('发送模板测试'); ?></button>
                             </form>
                         </div>
                     </div>
@@ -233,7 +233,7 @@ $tplContent = \Typecho\Mail\Template::load($tplName, $options);
                                 <textarea class="text w-100 mono" name="content" rows="14"><?php echo htmlspecialchars($tplContent, ENT_QUOTES, 'UTF-8'); ?></textarea>
                             </form>
                             <div class="tr-tpl-btns tr-mt-12">
-                                <button class="tr-btn tr-btn-primary" type="submit" form="tpl-save-form"><?php _e('保存模板'); ?></button>
+                                <button class="tr-btn primary" type="submit" form="tpl-save-form"><?php _e('保存模板'); ?></button>
                                 <form action="<?php echo htmlspecialchars($security->getIndex('/action/options-mail'), ENT_QUOTES, 'UTF-8'); ?>" method="post" target="_blank">
                                     <input type="hidden" name="do" value="tpl_preview">
                                     <input type="hidden" name="tpl" value="<?php echo htmlspecialchars($tplName, ENT_QUOTES, 'UTF-8'); ?>">

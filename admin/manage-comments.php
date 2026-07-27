@@ -97,8 +97,8 @@ $cancelFilterUrl = 'manage-comments.php' . ($filterBase ? '?' . implode('&', $fi
                         <thead>
                             <tr>
                                 <th class="kit-hidden-mb"> </th>
+                                <th class="kit-hidden"> </th>
                                 <th><?php _e('作者'); ?></th>
-                                <th class="kit-hidden-mb"> </th>
                                 <th><?php _e('内容'); ?></th>
                             </tr>
                         </thead>

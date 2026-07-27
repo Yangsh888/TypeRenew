@@ -16,6 +16,15 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
 
 class Permalink extends Options implements ActionInterface
 {
+    /**
+     * 与 EditTrait::execute() 同理: 不依赖 Widget\Menu 的 URL 匹配作为唯一鉴权
+     * Reading 继承本类, 一并覆盖
+     */
+    public function execute()
+    {
+        $this->user->pass('administrator');
+    }
+
     private function rewriteBasePath(): string
     {
         $parsed = Common::parseUrl((string) $this->options->siteUrl);

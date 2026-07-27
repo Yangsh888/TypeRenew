@@ -165,7 +165,11 @@ include 'common-js.php';
             });
 
             <?php if (isset($request->mid)): ?>
-            $('.typecho-mini-panel').effect('highlight', '#AACB36');
+            // 高亮刚编辑过的那一行(行 id 形如 mid-category-N); 走统一的 TypechoNotice 主题动画,
+            // 深色模式同样正确 —— 原先的 .typecho-mini-panel 选择器全站无人渲染, 等于没有任何反馈
+            if (window.TypechoNotice && window.TypechoNotice.highlight) {
+                window.TypechoNotice.highlight('mid-category-<?php echo (int) $request->filter('int')->get('mid'); ?>');
+            }
             <?php endif; ?>
         });
     })();

@@ -93,7 +93,10 @@ include 'common-js.php';
             });
 
             <?php if (isset($request->mid)): ?>
-            $('.typecho-mini-panel').effect('highlight', '#AACB36');
+            // 高亮刚编辑过的标签(id 形如 tag-N); 原 .typecho-mini-panel 选择器无人渲染, 反馈是空的
+            if (window.TypechoNotice && window.TypechoNotice.highlight) {
+                window.TypechoNotice.highlight('tag-<?php echo (int) $request->filter('int')->get('mid'); ?>');
+            }
             <?php endif; ?>
         });
     })();

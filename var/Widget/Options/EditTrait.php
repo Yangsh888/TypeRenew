@@ -4,6 +4,19 @@ namespace Widget\Options;
 
 trait EditTrait
 {
+    /**
+     * 设置页的 GET 渲染鉴权
+     *
+     * 页面级鉴权由 Widget\Menu 在「菜单 URL 与当前请求匹配」时集中触发, 一旦文件被改名、
+     * __TYPECHO_ADMIN_DIR__ 变化或前置代理改写了 path, 匹配就会静默失败 —— 此时设置页会
+     * 原样渲染给任何已登录用户(options-mail.php 还会连带渲染 mailCronKey)。
+     * 其余后台 widget 都在 execute() 里自查, 这里补齐同一层保护
+     */
+    public function execute()
+    {
+        $this->user->pass('administrator');
+    }
+
     protected function isEnableByCheckbox($settings, string $name): int
     {
         return is_array($settings) && in_array($name, $settings) ? 1 : 0;

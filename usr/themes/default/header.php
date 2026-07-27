@@ -1,9 +1,9 @@
 <?php if (!defined('__TYPECHO_ROOT_DIR__')) exit; ?>
 <!DOCTYPE html>
-<html lang="zh-Hans">
+<html lang="<?php echo htmlspecialchars(str_replace('_', '-', (string) ($this->options->lang ?? 'zh_CN')), ENT_QUOTES, 'UTF-8'); ?>">
 <head>
     <meta charset="<?php $this->options->charset(); ?>">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php $this->archiveTitle([
             'category' => _t('分类 %s 下的文章'),
             'search'   => _t('包含关键字 %s 的文章'),
@@ -20,14 +20,19 @@
         );
         echo "<script>
             (function() {
-                var stored = localStorage.getItem('theme');
+                var stored = null;
+                try {
+                    stored = localStorage.getItem('theme');
+                } catch (e) {
+                    stored = null;
+                }
                 var def = {$defaultSchemaJson};
                 var isDark = false;
                 if (stored === 'dark' || stored === 'light') {
                     isDark = (stored === 'dark');
                 } else if (def === 'dark') {
                     isDark = true;
-                } else if (def === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                } else if (def === 'auto' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
                     isDark = true;
                 }
                 if (isDark) {
@@ -73,7 +78,7 @@
                 </li>
                 
                 <li role="none">
-                    <button id="theme-switch" class="theme-switch" aria-label="<?php _e('切换主题'); ?>" title="<?php _e('切换主题'); ?>">
+                    <button type="button" id="theme-switch" class="theme-switch" aria-label="<?php _e('切换主题'); ?>" title="<?php _e('切换主题'); ?>">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="theme-icon" aria-hidden="true">
                             <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
                         </svg>
