@@ -213,7 +213,8 @@ $userAvatarUrl = \Typecho\Common::gravatarUrl($user->mail, 38);
             </div>
             <button type="button" class="tr-pill tr-pill-btn tr-pill-kbd" id="trCmdBtn" title="<?php _e('快捷命令'); ?>">
                 <svg class="tr-ico" aria-hidden="true"><use href="<?php echo htmlspecialchars($iconsUrl, ENT_QUOTES, 'UTF-8'); ?>#i-command"></use></svg>
-                <span class="tr-kbd"><?php echo stripos(PHP_OS, 'darwin') !== false ? '⌘K' : 'Ctrl K'; ?></span>
+                <!-- 默认按 Ctrl 渲染, 由 tr-palette.js 按浏览器端平台改写; PHP_OS 是服务器系统, 判不出客户端 -->
+                <span class="tr-kbd" data-tr-kbd="mod-k">Ctrl K</span>
             </button>
         </div>
         <div class="tr-topbar-ext" aria-label="<?php _e('扩展操作'); ?>">

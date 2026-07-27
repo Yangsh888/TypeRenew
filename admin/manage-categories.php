@@ -87,9 +87,13 @@ include 'menu.php';
                                         <?php if ($options->defaultCategory == $categories->mid): ?>
                                             <?php _e('默认'); ?>
                                         <?php else: ?>
-                                            <a class="hidden-by-mouse"
-                                               href="<?php $security->index('/action/metas-category-edit?do=default&mid=' . $categories->mid); ?>"
-                                               title="<?php _e('设为默认'); ?>"><?php _e('默认'); ?></a>
+                                            <form class="inline-operate-form" method="post"
+                                                  action="<?php echo htmlspecialchars($security->getIndex('/action/metas-category-edit'), ENT_QUOTES, 'UTF-8'); ?>">
+                                                <input type="hidden" name="do" value="default">
+                                                <input type="hidden" name="mid" value="<?php echo (int) $categories->mid; ?>">
+                                                <button type="submit" class="btn btn-link hidden-by-mouse"
+                                                        title="<?php _e('设为默认'); ?>"><?php _e('默认'); ?></button>
+                                            </form>
                                         <?php endif; ?>
                                     </td>
                                     <td class="kit-hidden-mb"><a

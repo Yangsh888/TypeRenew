@@ -18,6 +18,15 @@ class Apcu implements Driver
         return (bool) apcu_enabled();
     }
 
+    public function lastError(): string
+    {
+        if (!extension_loaded('apcu') || !function_exists('apcu_enabled')) {
+            return _t('PHP apcu 扩展未安装');
+        }
+
+        return apcu_enabled() ? '' : _t('apcu 扩展已安装但未启用');
+    }
+
     public function get(string $key, ?bool &$hit = null)
     {
         $hit = false;

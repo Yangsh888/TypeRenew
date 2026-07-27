@@ -9,6 +9,7 @@ class Redis implements Driver
     private bool $usable = false;
     private float $lastFailure = 0.0;
     private int $failureCount = 0;
+    private string $lastError = '';
     private const BACKOFF_STEPS = [5, 15, 60, 120, 300];
 
     public function __construct(private array $config)
@@ -24,6 +25,11 @@ class Redis implements Driver
     {
         $this->connect();
         return $this->usable;
+    }
+
+    public function lastError(): string
+    {
+        return $this->lastError;
     }
 
     public function get(string $key, ?bool &$hit = null)
@@ -254,6 +260,7 @@ class Redis implements Driver
         $this->usable = false;
 
         if (!extension_loaded('redis') || !class_exists('\Redis')) {
+            $this->lastError = 'PHP redis 扩展未安装';
             return null;
         }
 
@@ -267,17 +274,17 @@ class Redis implements Driver
         try {
             $client = new \Redis();
             if (!$client->connect($host, $port, $timeout, null, 0, $readTimeout)) {
-                $this->markUnavailable();
+                $this->markUnavailable(_t('无法连接 %s:%d', $host, $port));
                 return null;
             }
 
             if ($password !== '' && !$client->auth($password)) {
-                $this->markUnavailable();
+                $this->markUnavailable(_t('密码认证失败'));
                 return null;
             }
 
             if ($database >= 0 && !$client->select($database)) {
-                $this->markUnavailable();
+                $this->markUnavailable(_t('无法选择数据库 %d', $database));
                 return null;
             }
 
@@ -285,9 +292,11 @@ class Redis implements Driver
             $this->usable = true;
             $this->lastFailure = 0.0;
             $this->failureCount = 0;
+            $this->lastError = '';
             return $this->client;
         } catch (\Throwable $e) {
-            $this->markUnavailable();
+            // Redis 端未设密码却收到 AUTH 时会抛异常, 这里的原文是排障关键
+            $this->markUnavailable($e->getMessage());
             return null;
         }
     }
@@ -365,11 +374,15 @@ class Redis implements Driver
         return is_string($json) ? $json : '{"t":"null","v":null}';
     }
 
-    private function markUnavailable(): void
+    private function markUnavailable(string $reason = ''): void
     {
         $this->client = null;
         $this->usable = false;
         $this->lastFailure = microtime(true);
         $this->failureCount = min($this->failureCount + 1, count(self::BACKOFF_STEPS));
+
+        if ($reason !== '') {
+            $this->lastError = mb_substr(trim($reason), 0, 200, 'UTF-8');
+        }
     }
 }

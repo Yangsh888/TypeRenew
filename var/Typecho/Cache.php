@@ -22,6 +22,7 @@ class Cache
     private float $panelCountAt = 0.0;
     private array $tableVersions = [];
     private array $tableSyncAt = [];
+    private string $lastError = '';
     private const MAX_TABLE_TRACK = 32;
 
     public static function getInstance(): self
@@ -55,6 +56,7 @@ class Cache
         $this->panelCountAt = 0.0;
         $this->tableVersions = [];
         $this->tableSyncAt = [];
+        $this->lastError = '';
 
         if (!$this->enabled) {
             return;
@@ -76,6 +78,8 @@ class Cache
             $this->driver = $instance;
             $this->loadNamespaceVersion();
         } else {
+            // 保留原因, 否则后台只会显示"关闭", 排障时无从下手
+            $this->lastError = $instance->lastError();
             $this->enabled = false;
         }
     }
@@ -83,6 +87,14 @@ class Cache
     public function enabled(): bool
     {
         return $this->enabled && $this->driver !== null;
+    }
+
+    /**
+     * 缓存未能启用的原因, 已启用时返回驱动侧最近一次失败原因
+     */
+    public function lastError(): string
+    {
+        return $this->driver !== null ? $this->driver->lastError() : $this->lastError;
     }
 
     public function get(string $key, ?bool &$hit = null)
@@ -264,7 +276,8 @@ class Cache
             'avg' => $this->opCount > 0 ? round(($this->opDuration * 1000) / $this->opCount, 2) : 0,
             'count' => $this->panelCountCache,
             'ttl' => $this->ttl,
-            'prefix' => $this->prefix
+            'prefix' => $this->prefix,
+            'error' => $this->lastError()
         ];
     }
 

@@ -36,6 +36,11 @@ class SchemaManager
             Schema::ensureRenewSeo($db);
         }
 
+        // 漏掉这项会让已启用 RenewShield 的站点升级后拿不到新索引, 且日志写失败是静默的
+        if (in_array('RenewShield', $activatedPlugins, true)) {
+            Schema::ensureRenewShield($db);
+        }
+
         self::updateGenerator($db, Common::VERSION);
 
         return [

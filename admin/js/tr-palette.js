@@ -29,6 +29,16 @@
     let iconsUrl = '';
     let initialized = false;
 
+    // 快捷键提示按客户端平台改写, Mac 上显示 ⌘K
+    const isMac = /Mac|iPhone|iPad|iPod/i.test(
+        (navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || navigator.userAgent || ''
+    );
+    if (isMac) {
+        document.querySelectorAll('[data-tr-kbd="mod-k"]').forEach((el) => {
+            el.textContent = '⌘K';
+        });
+    }
+
     function escapeHtml(str) {
         const div = document.createElement('div');
         div.textContent = str;
@@ -196,7 +206,8 @@
             return;
         }
 
-        ['trTheme', 'trSidebarCollapsed', 'trCmdRecent', 'trCmdHistory'].forEach(k => {
+        // 与命令的确认文案保持一致: 界面偏好要全部重置, 漏掉强调色与登录页配色会让用户以为没生效
+        ['trTheme', 'trAccent', 'trAuthTheme', 'trSidebarCollapsed', 'trCmdRecent', 'trCmdHistory'].forEach(k => {
             store.remove(k);
         });
         showNotice('success', '前端缓存已清除');
@@ -632,11 +643,22 @@
         }
     }
 
+    // 正文编辑区内不抢 Ctrl+K: Markdown 工具栏用它插入代码块
+    function isEditing(target) {
+        if (!target || isOpen) return false;
+        const tag = (target.tagName || '').toLowerCase();
+        return tag === 'textarea' || target.isContentEditable === true;
+    }
+
     document.addEventListener('keydown', (e) => {
         const k = e.key.toLowerCase();
         const mod = e.metaKey || e.ctrlKey;
 
         if (mod && k === 'k') {
+            if (isEditing(e.target)) {
+                return;
+            }
+
             e.preventDefault();
             e.stopPropagation();
             toggle();

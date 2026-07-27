@@ -8,6 +8,11 @@ interface Driver
 
     public function available(): bool;
 
+    /**
+     * 最近一次失败原因, 供后台展示; 无失败时返回空串
+     */
+    public function lastError(): string;
+
     public function get(string $key, ?bool &$hit = null);
 
     public function set(string $key, $value, int $ttl): bool;

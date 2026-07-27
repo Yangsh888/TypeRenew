@@ -331,9 +331,10 @@ trait EditTrait
 
     protected function getCreated(): int
     {
-        $created = $this->options->time;
+        $created = (int) $this->options->time;
         if ($this->request->is('created')) {
-            $created = $this->request->get('created');
+            // 必须过滤: 裸取会把非数字串返回给 int 返回类型, PHP8 下直接 TypeError
+            $created = $this->request->filter('int')->get('created', $created);
         } elseif ($this->request->is('date')) {
             $dateParts = preg_split('/\s+/', trim((string) $this->request->get('date', '')), 2);
             $date = $dateParts[0] ?? $this->options->formatDateTime($created, 'Y-m-d');
@@ -362,7 +363,8 @@ trait EditTrait
             $created = 0;
         }
 
-        return $created;
+        // MySQL 驱动的整型列取出来是字符串, 统一收口避免返回类型报错
+        return (int) $created;
     }
 
     public function isFuturePublish(?int $created = null): bool

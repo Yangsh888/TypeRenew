@@ -68,7 +68,12 @@ class Request
         return $this;
     }
 
-    public function get(string $key, $default = null, ?bool &$exists = true)
+    /**
+     * 原始取值, 不做类型归一
+     *
+     * @param bool|null $exists 出参, 标记该键是否存在
+     */
+    private function fetch(string $key, ?bool &$exists = null)
     {
         $value = null;
 
@@ -81,7 +86,6 @@ class Request
         } elseif ($key === '@json') {
             if ($this->isJson()) {
                 $value = $this->getJsonBody();
-                $default = $default ?? $value;
             }
         } elseif (isset($_POST[$key])) {
             $value = $_POST[$key];
@@ -89,12 +93,27 @@ class Request
             $value = $_GET[$key];
         }
 
-        if (!isset($value)) {
+        $exists = isset($value);
+        return $value;
+    }
+
+    public function get(string $key, $default = null, ?bool &$exists = true)
+    {
+        $value = $this->fetch($key, $found);
+
+        if (!$found) {
             $exists = false;
             return $default;
         }
 
         $exists = true;
+
+        // @json 取的是整个请求体, 未显式指定默认值时直接透传
+        if ($key === '@json' && $default === null) {
+            return $value;
+        }
+
+        // 类型不一致时退回默认值, 挡住"数组注入到字符串形参"导致的 TypeError
         return is_array($default) == is_array($value) ? $value : $default;
     }
 
@@ -142,23 +161,21 @@ class Request
         return $this->jsonBody;
     }
 
+    /**
+     * 取数组入参, 标量自动包成单元素数组
+     *
+     * 必须绕过 get() 的类型归一: 传 [] 作默认值会让标量被判定类型不符而丢成空数组,
+     * 前台附件删除等只传单个 cid 的接口就是这么静默失效的
+     */
     public function getArray(string $key): array
     {
-        $result = $this->get($key, [], $exists);
+        $value = $this->fetch($key, $found);
 
-        if (!$exists) {
+        if (!$found || $value === '') {
             return [];
         }
 
-        if (is_array($result)) {
-            return $result;
-        }
-
-        if ($result === null || $result === '') {
-            return [];
-        }
-
-        return [$result];
+        return is_array($value) ? $value : [$value];
     }
 
     public function from(string|array $params): array

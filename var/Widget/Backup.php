@@ -5,6 +5,7 @@ namespace Widget;
 use Typecho\Common;
 use Typecho\Db;
 use Typecho\Exception;
+use Utils\Helper;
 use Utils\Schema;
 use Utils\Migration\SchemaManager;
 use Throwable;
@@ -105,6 +106,8 @@ class Backup extends BaseOptions implements ActionInterface
             }
         }
 
+        Helper::protectDirectory(__TYPECHO_BACKUP_DIR__);
+
         $files = glob(__TYPECHO_BACKUP_DIR__ . '/*.dat');
         if (!is_array($files)) {
             return [];
@@ -116,6 +119,12 @@ class Backup extends BaseOptions implements ActionInterface
     public function action()
     {
         $this->user->pass('administrator');
+
+        // 导出会输出全库(含密码哈希), 恢复会清空核心表, 一律禁止 GET 触发
+        if (!$this->request->isPost()) {
+            $this->response->setStatus(405)->throwContent(_t('Method Not Allowed'), 'text/plain');
+        }
+
         $this->security->protect();
         $action = (string) $this->request->filter('trim')->get('do');
 
@@ -646,11 +655,14 @@ class Backup extends BaseOptions implements ActionInterface
 
     private function makeSnapshot(): ?string
     {
-        $fileName = date('Ymd_His') . '_before_import_' . uniqid() . '.dat';
+        // uniqid() 是微秒派生的, 配合已知的时间前缀熵太低, 会被枚举下载
+        $fileName = date('Ymd_His') . '_before_import_' . bin2hex(Common::secureRandomBytes(8)) . '.dat';
         $path = __TYPECHO_BACKUP_DIR__ . '/' . $fileName;
         if (!is_dir(__TYPECHO_BACKUP_DIR__) || !is_writable(__TYPECHO_BACKUP_DIR__)) {
             return null;
         }
+
+        Helper::protectDirectory(__TYPECHO_BACKUP_DIR__);
 
         $fp = fopen($path, 'wb');
         if (!$fp) {

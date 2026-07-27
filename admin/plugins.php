@@ -206,6 +206,7 @@ $pluginVersionToolbar = '<div class="tr-plugin-version-toolbar">'
 <?php
 include 'copyright.php';
 include 'common-js.php';
+include 'form-js.php';
 ?>
 <script>
     (function () {

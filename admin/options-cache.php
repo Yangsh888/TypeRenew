@@ -6,6 +6,8 @@ include 'menu.php';
 \Widget\Options\Cache::alloc()->to($cacheWidget);
 $cachePanel = $cacheWidget->panel();
 $cacheOn = $cachePanel['status'] === 'enabled';
+$cacheWanted = (int) ($options->cacheStatus ?? 0) === 1;
+$cacheError = (string) ($cachePanel['error'] ?? '');
 ?>
 
 <main class="main">
@@ -72,6 +74,20 @@ $cacheOn = $cachePanel['status'] === 'enabled';
                         </div>
                     </div>
                 </div>
+
+                <?php if ($cacheWanted && !$cacheOn): ?>
+                    <div class="tr-card tr-mt-16">
+                        <div class="tr-card-b">
+                            <div class="tr-section-title"><?php _e('缓存未能启用'); ?></div>
+                            <div class="tr-help">
+                                <?php echo $cacheError !== ''
+                                    ? htmlspecialchars($cacheError, ENT_QUOTES, 'UTF-8')
+                                    : _t('已开启缓存但驱动不可用，请检查驱动配置'); ?>
+                            </div>
+                            <div class="tr-help"><?php _e('缓存不可用时程序会自动回落到直连数据库，站点功能不受影响'); ?></div>
+                        </div>
+                    </div>
+                <?php endif; ?>
 
                 <div class="tr-card tr-mt-16">
                     <div class="tr-card-b tr-cache-actions">

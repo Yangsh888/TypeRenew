@@ -105,7 +105,7 @@ namespace Typecho {
     class Common
     {
         public const SOFTWARE = 'TypeRenew';
-        public const VERSION = '1.5.1';
+        public const VERSION = '1.5.2';
 
         public static function generator(?string $version = null): string
         {
@@ -697,10 +697,11 @@ EOF;
                 }
             }
 
+            // 兼容 v2 之前签发的旧 token, 比较同样要用定时安全函数
             $now = time();
             $from = $now - $timeout;
             for ($i = $now; $i >= $from; $i--) {
-                if (sha1($secret . '&' . $i) == $token) {
+                if (hash_equals(sha1($secret . '&' . $i), $token)) {
                     return true;
                 }
             }

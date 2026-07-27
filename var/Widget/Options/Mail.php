@@ -20,8 +20,6 @@ class Mail extends Options implements ActionInterface
 {
     use EditTrait;
 
-    private const PASS_PLACEHOLDER = '********';
-
     public function updateMailSettings()
     {
         $this->validateFormOrGoBack($this->form());
@@ -36,7 +34,7 @@ class Mail extends Options implements ActionInterface
             'mailSmtpPort',
             'mailSmtpUser',
             'mailSmtpPass',
-            'mailSmtpPassChanged',
+            'mailSmtpPassClear',
             'mailSmtpSecure',
             'mailQueueMode',
             'mailAsyncIps',
@@ -65,14 +63,14 @@ class Mail extends Options implements ActionInterface
         $settings['mailSmtpPort'] = max(1, min(65535, (int) $settings['mailSmtpPort']));
         $settings['mailSmtpUser'] = trim((string) $settings['mailSmtpUser']);
 
-        $passChanged = !empty($settings['mailSmtpPassChanged']);
-        $pass = trim((string) ($settings['mailSmtpPass'] ?? ''));
-
-        if ($passChanged && $pass !== '' && $pass !== self::PASS_PLACEHOLDER) {
-            $settings['mailSmtpPass'] = Cipher::encrypt($pass, (string) $this->options->secret);
-        } else {
-            $settings['mailSmtpPass'] = (string) ($this->options->mailSmtpPass ?? '');
-        }
+        $secret = (string) $this->options->secret;
+        $plainPass = $this->resolveSecret(
+            (string) $this->request->get('mailSmtpPass', ''),
+            !empty($this->request->getArray('mailSmtpPassClear')),
+            Cipher::decrypt((string) ($this->options->mailSmtpPass ?? ''), $secret)
+        );
+        $settings['mailSmtpPass'] = $plainPass === '' ? '' : Cipher::encrypt($plainPass, $secret);
+        unset($settings['mailSmtpPassClear']);
 
         $secure = (string) ($settings['mailSmtpSecure'] ?? '');
         $settings['mailSmtpSecure'] = in_array($secure, ['', 'ssl', 'tls'], true) ? $secure : '';
@@ -275,22 +273,31 @@ class Mail extends Options implements ActionInterface
         $mailSmtpUser->input->setAttribute('class', 'w-100 mono');
         $form->addInput($mailSmtpUser);
 
-        $existingPass = trim((string) ($this->options->mailSmtpPass ?? ''));
-        $passPlaceholder = $existingPass !== '' ? self::PASS_PLACEHOLDER : '';
+        $hasPass = trim((string) ($this->options->mailSmtpPass ?? '')) !== '';
         $mailSmtpPass = new Form\Element\Password(
             'mailSmtpPass',
             null,
-            $passPlaceholder,
+            '',
             _t('SMTP 密码'),
-            $existingPass !== '' ? _t('已保存密码，修改请输入新密码') : ''
+            $hasPass ? _t('已保存密码，留空表示保持不变') : ''
         );
         $mailSmtpPass->input->setAttribute('class', 'w-100 mono');
         $mailSmtpPass->input->setAttribute('autocomplete', 'new-password');
+        if ($hasPass) {
+            $mailSmtpPass->input->setAttribute('placeholder', _t('留空保持不变'));
+        }
         $form->addInput($mailSmtpPass);
 
-        $mailSmtpPassChanged = new Form\Element\Hidden('mailSmtpPassChanged', null, '0');
-        $mailSmtpPassChanged->input->setAttribute('id', 'mailSmtpPassChanged');
-        $form->addInput($mailSmtpPassChanged);
+        if ($hasPass) {
+            $mailSmtpPassClear = new Form\Element\Checkbox(
+                'mailSmtpPassClear',
+                ['1' => _t('清空已保存的 SMTP 密码')],
+                null,
+                _t('清空密码'),
+                _t('改用无需密码的发信方式时勾选此项')
+            );
+            $form->addInput($mailSmtpPassClear);
+        }
 
         $mailSmtpSecure = new Form\Element\Select(
             'mailSmtpSecure',

@@ -184,7 +184,10 @@ class Edit extends Metas implements ActionInterface
         $tag['type'] = 'tag';
         $tag['slug'] = Common::slugName(Common::strBy($tag['slug'] ?? null, $tag['name']));
 
-        $this->update($tag, $this->db->sql()->where('mid = ?', $this->request->filter('int')->get('mid')));
+        // 限定 type: 否则传分类 mid 会把分类直接翻转成标签
+        $this->update($tag, $this->db->sql()
+            ->where('mid = ?', $this->request->filter('int')->get('mid'))
+            ->where('type = ?', 'tag'));
         $this->push($tag);
         self::pluginHandle()->call('finishUpdate', $tag, $this);
 
@@ -205,7 +208,8 @@ class Edit extends Metas implements ActionInterface
 
         if ($tags) {
             foreach ($tags as $tag) {
-                if ($this->delete($this->db->sql()->where('mid = ?', $tag))) {
+                // 限定 type: 标签接口不能删掉分类, 那会绕过子分类重挂逻辑
+                if ($this->delete($this->db->sql()->where('mid = ?', $tag)->where('type = ?', 'tag'))) {
                     $this->db->query($this->db->delete('table.relationships')->where('mid = ?', $tag));
                     $deleteCount++;
                 }
@@ -270,6 +274,11 @@ class Edit extends Metas implements ActionInterface
 
     public function action()
     {
+        // 全部为写操作, 不能由 GET 触发
+        if (!$this->request->isPost()) {
+            $this->response->setStatus(405)->throwContent(_t('Method Not Allowed'), 'text/plain');
+        }
+
         $this->security->protect();
         $this->on($this->request->is('do=insert'))->insertTag();
         $this->on($this->request->is('do=update'))->updateTag();

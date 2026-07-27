@@ -87,6 +87,8 @@ class Edit extends Metas implements ActionInterface
 
         $category = $this->request->from('name', 'slug', 'description', 'parent');
 
+        // parent 缺省时是 null, getMaxOrder(int) 在 PHP8 下会直接 TypeError
+        $category['parent'] = (int) ($category['parent'] ?? 0);
         $category['slug'] = Common::slugName(Common::strBy($category['slug'] ?? null, $category['name']));
         $category['type'] = 'category';
         $category['order'] = $this->getMaxOrder('category', $category['parent']) + 1;
@@ -249,7 +251,10 @@ class Edit extends Metas implements ActionInterface
             }
         }
 
-        $this->update($category, $this->db->sql()->where('mid = ?', $this->request->filter('int')->get('mid')));
+        // 限定 type: 否则传标签 mid 会把标签翻转成分类
+        $this->update($category, $this->db->sql()
+            ->where('mid = ?', $this->request->filter('int')->get('mid'))
+            ->where('type = ?', 'category'));
         $this->push($category);
         self::pluginHandle()->call('finishUpdate', $category, $current, $this);
 
@@ -268,14 +273,21 @@ class Edit extends Metas implements ActionInterface
         $deleteCount = 0;
 
         foreach ($categories as $category) {
-            $row = $this->db->fetchObject($this->select()->where('mid = ?', $category));
+            $row = $this->db->fetchObject(
+                $this->select()->where('mid = ? AND type = ?', $category, 'category')
+            );
             if (!$row) {
+                continue;
+            }
+
+            // 默认分类被删掉会让 defaultCategory 指向空 mid, 后续发布直接写坏分类关系
+            if ((int) $category === (int) $this->options->defaultCategory) {
                 continue;
             }
 
             $parent = (int) ($row->parent ?? 0);
 
-            if ($this->delete($this->db->sql()->where('mid = ?', $category))) {
+            if ($this->delete($this->db->sql()->where('mid = ?', $category)->where('type = ?', 'category'))) {
                 $this->db->query($this->db->delete('table.relationships')->where('mid = ?', $category));
                 $this->update(['parent' => $parent], $this->db->sql()->where('parent = ?', $category));
                 $deleteCount++;
@@ -358,8 +370,9 @@ class Edit extends Metas implements ActionInterface
             Notice::alloc()->set($error, 'error');
         } else {
             $this->db->query($this->db->update('table.options')
-                ->rows(['value' => $this->request->get('mid')])
-                ->where('name = ?', 'defaultCategory'));
+                ->rows(['value' => $this->request->filter('int')->get('mid')])
+                ->where('name = ?', 'defaultCategory')
+                ->where('user = ?', 0));
 
             $this->db->fetchRow($this->select()->where('mid = ?', $this->request->get('mid'))
                 ->where('type = ?', 'category')->limit(1), [$this, 'push']);
@@ -402,6 +415,11 @@ class Edit extends Metas implements ActionInterface
 
     public function action()
     {
+        // 全部为写操作, 不能由 GET 触发(链接预取/Referer 泄漏令牌都会变成真实写入)
+        if (!$this->request->isPost()) {
+            $this->response->setStatus(405)->throwContent(_t('Method Not Allowed'), 'text/plain');
+        }
+
         $this->security->protect();
         $this->on($this->request->is('do=insert'))->insertCategory();
         $this->on($this->request->is('do=update'))->updateCategory();

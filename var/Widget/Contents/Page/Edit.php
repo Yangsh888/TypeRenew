@@ -102,6 +102,11 @@ class Edit extends Contents implements ActionInterface
             self::pluginHandle()->call('mark', $status, $page, $this);
             $condition = $this->db->sql()->where('cid = ?', $page);
 
+            // 限定 type: 否则传入文章 cid 会走独立页面分支, 把文章改成 page 专属状态
+            if (!$this->pageExists((int) $page)) {
+                continue;
+            }
+
             if ($this->db->query($condition->update('table.contents')->rows(['status' => $status]))) {
                 $draft = $this->db->fetchRow($this->revisionSelect((int) $page));
 
@@ -132,6 +137,12 @@ class Edit extends Contents implements ActionInterface
 
         foreach ($pages as $page) {
             self::pluginHandle()->call('delete', $page, $this);
+
+            // 限定 type: 走这里删文章会绕过分类/标签计数回退, 留下孤儿 relationships
+            if (!$this->pageExists((int) $page)) {
+                continue;
+            }
+
             $row = $this->db->fetchObject($this->select()->where('cid = ?', $page));
             if (!$row) {
                 continue;
@@ -218,7 +229,7 @@ class Edit extends Contents implements ActionInterface
         if ($pages) {
             foreach ($pages as $sort => $cid) {
                 $this->db->query($this->db->update('table.contents')->rows(['order' => $sort + 1])
-                    ->where('cid = ?', $cid));
+                    ->where('cid = ? AND (type = ? OR type = ?)', $cid, 'page', 'page_draft'));
             }
         }
 
@@ -232,6 +243,22 @@ class Edit extends Contents implements ActionInterface
     public function prepare(): self
     {
         return $this->prepareEdit('page', true, _t('页面不存在'));
+    }
+
+    /**
+     * 该 cid 是否确实是独立页面, 防止用页面接口操作文章或附件
+     */
+    private function pageExists(int $cid): bool
+    {
+        if ($cid <= 0) {
+            return false;
+        }
+
+        return null !== $this->db->fetchRow(
+            $this->db->select('cid')->from('table.contents')
+                ->where('cid = ? AND (type = ? OR type = ?)', $cid, 'page', 'page_draft')
+                ->limit(1)
+        );
     }
 
     public function action()

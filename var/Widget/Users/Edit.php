@@ -239,7 +239,11 @@ class Edit extends Users implements ActionInterface
         $ownedContentCount = 0;
 
         foreach ($users as $user) {
-            if ($masterUserId === $user || $user === $this->user->uid) {
+            $user = (int) $user;
+
+            // 必须强制转 int: MySQL 驱动返回的 uid 是字符串, 全等比较恒为 false,
+            // 会让管理员把自己和站长账号一起删掉
+            if ($masterUserId === $user || $user === (int) $this->user->uid) {
                 $protectedCount++;
                 continue;
             }

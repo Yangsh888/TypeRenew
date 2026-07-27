@@ -446,5 +446,6 @@ $dbOverviewUrl = $options->adminUrl('upgrade.php', true);
 include 'copyright.php';
 include 'dropzone-js.php';
 include 'common-js.php';
+include 'form-js.php';
 ?>
 <?php include 'footer.php'; ?>

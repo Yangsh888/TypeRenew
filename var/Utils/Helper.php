@@ -110,6 +110,32 @@ class Helper
         return self::isPathInsideRoots($path, [$rootPath], $mustBeFile) ? $path : null;
     }
 
+    /**
+     * 给文档根内的私有目录落一层 Web 访问防护
+     *
+     * 备份包含 users.password / authCode / 邮箱 / 评论 IP, 升级目录含被覆盖的源码副本,
+     * 这些是非 PHP 文件, 会被服务器当静态资源直出, 必须挡掉
+     * 仅对 Apache 生效; Nginx/IIS 需在站点配置里另行拒绝, 见 ARCHITECTURE.md
+     */
+    public static function protectDirectory(string $dir): void
+    {
+        if ($dir === '' || !is_dir($dir) || !is_writable($dir)) {
+            return;
+        }
+
+        $guards = [
+            '.htaccess' => "Require all denied\n<IfModule !mod_authz_core.c>\n    Order allow,deny\n    Deny from all\n</IfModule>\n",
+            'index.html' => ''
+        ];
+
+        foreach ($guards as $name => $content) {
+            $file = $dir . '/' . $name;
+            if (!file_exists($file)) {
+                @file_put_contents($file, $content);
+            }
+        }
+    }
+
     public static function isPathInsideRoots(string $path, array $roots, bool $mustBeFile = true): bool
     {
         $realPath = realpath($path);

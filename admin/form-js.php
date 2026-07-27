@@ -22,6 +22,13 @@
             $(this).removeClass('submitting');
         });
 
+        // 行内操作表单(停用插件/删除草稿/切换外观)的二次确认
+        // 提示语写在提交按钮的 lang 属性上, 没有该属性则不拦
+        $('.inline-operate-form').submit(function () {
+            const tip = $('button[type=submit]', this).attr('lang');
+            return !tip || confirm(tip);
+        });
+
         $('label input[type=text]').click(function (e) {
             const check = $('#' + $(this).parents('label').attr('for'));
             check.prop('checked', true);

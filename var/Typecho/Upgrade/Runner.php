@@ -12,9 +12,17 @@ class Runner
     private string $rootDir;
     private const MAX_ZIP_FILES = 20000;
     private const MAX_ZIP_UNPACKED_BYTES = 2147483648;
+    /**
+     * 允许被升级包覆盖的 usr 子路径
+     *
+     * 必须与 usr/plugins 下实际存在的内置插件保持一致, 漏一个就会让整包以
+     * "升级包包含受保护路径" 失败; RenewAvatar 已并入 RenewBoost, 保留仅为兼容老站点
+     */
     private const ALLOWED_USR_PREFIXES = [
         'usr/plugins/RenewAvatar/',
+        'usr/plugins/RenewBoost/',
         'usr/plugins/RenewGo/',
+        'usr/plugins/RenewLocation/',
         'usr/plugins/RenewSEO/',
         'usr/plugins/RenewShield/',
         'usr/plugins/VditorRenew/',

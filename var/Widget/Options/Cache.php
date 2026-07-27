@@ -4,6 +4,7 @@ namespace Widget\Options;
 
 use Typecho\Cache as CacheFacade;
 use Typecho\Widget\Helper\Form;
+use Utils\Cipher;
 use Widget\ActionInterface;
 use Widget\Base\Options;
 
@@ -13,6 +14,8 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
 
 class Cache extends Options implements ActionInterface
 {
+    use EditTrait;
+
     public function updateCacheSettings()
     {
         $this->validateFormOrGoBack($this->form());
@@ -26,6 +29,7 @@ class Cache extends Options implements ActionInterface
             'cacheRedisHost',
             'cacheRedisPort',
             'cacheRedisPassword',
+            'cacheRedisPasswordClear',
             'cacheRedisDatabase'
         );
 
@@ -44,10 +48,17 @@ class Cache extends Options implements ActionInterface
         }
 
         $settings['cacheRedisPort'] = max(1, min(65535, (int) $settings['cacheRedisPort']));
-        $settings['cacheRedisPassword'] = (string) ($settings['cacheRedisPassword'] ?? '');
-        if ($settings['cacheRedisPassword'] === '') {
-            $settings['cacheRedisPassword'] = (string) ($this->options->cacheRedisPassword ?? '');
-        }
+
+        $secret = (string) ($this->options->secret ?? '');
+        $plainPassword = $this->resolveSecret(
+            (string) $this->request->get('cacheRedisPassword', ''),
+            !empty($this->request->getArray('cacheRedisPasswordClear')),
+            Cipher::decrypt((string) ($this->options->cacheRedisPassword ?? ''), $secret)
+        );
+        // 与 SMTP 密码一致落密文, 旧的明文值 decrypt 时原样返回, 无需迁移
+        $settings['cacheRedisPassword'] = $plainPassword === '' ? '' : Cipher::encrypt($plainPassword, $secret);
+        unset($settings['cacheRedisPasswordClear']);
+
         $settings['cacheRedisDatabase'] = max(0, min(15, (int) $settings['cacheRedisDatabase']));
 
         $this->persistOptions($settings);
@@ -59,9 +70,18 @@ class Cache extends Options implements ActionInterface
             'prefix' => $settings['cachePrefix'],
             'redisHost' => $settings['cacheRedisHost'],
             'redisPort' => $settings['cacheRedisPort'],
-            'redisPassword' => $settings['cacheRedisPassword'],
+            'redisPassword' => $plainPassword,
             'redisDatabase' => $settings['cacheRedisDatabase']
         ]);
+
+        // 保存后立刻回报连通性, 免得用户改错密码后只看到"关闭"却不知原因
+        $probe = CacheFacade::getInstance();
+        if ($settings['cacheStatus'] === 1 && !$probe->enabled()) {
+            $this->noticeAndGoBack(
+                _t('设置已保存，但缓存未能启用：%s', $probe->lastError() ?: _t('驱动不可用')),
+                'error'
+            );
+        }
 
         $this->saveSuccessAndGoBack();
     }
@@ -144,18 +164,31 @@ class Cache extends Options implements ActionInterface
         $cacheRedisPort->input->setAttribute('class', 'w-20');
         $form->addInput($cacheRedisPort->addRule('isInteger', _t('请填入一个数字')));
 
+        $hasPassword = trim((string) ($this->options->cacheRedisPassword ?? '')) !== '';
         $cacheRedisPassword = new Form\Element\Password(
             'cacheRedisPassword',
             null,
             '',
-            _t('Redis 密码')
+            _t('Redis 密码'),
+            $hasPassword ? _t('已设置密码，留空表示保持不变') : _t('Redis 未设置密码时留空')
         );
         $cacheRedisPassword->input->setAttribute('class', 'w-100 mono');
         $cacheRedisPassword->input->setAttribute('autocomplete', 'new-password');
-        if (!empty($this->options->cacheRedisPassword)) {
-            $cacheRedisPassword->input->setAttribute('placeholder', _t('已设置密码，留空保持不变'));
+        if ($hasPassword) {
+            $cacheRedisPassword->input->setAttribute('placeholder', _t('留空保持不变'));
         }
         $form->addInput($cacheRedisPassword);
+
+        if ($hasPassword) {
+            $cacheRedisPasswordClear = new Form\Element\Checkbox(
+                'cacheRedisPasswordClear',
+                ['1' => _t('清空已保存的 Redis 密码')],
+                null,
+                _t('清空密码'),
+                _t('Redis 端取消了密码认证时勾选此项，否则程序会继续用旧密码连接而导致缓存无法启用')
+            );
+            $form->addInput($cacheRedisPasswordClear);
+        }
 
         $cacheRedisDatabase = new Form\Element\Number(
             'cacheRedisDatabase',

@@ -197,6 +197,7 @@ $reportLines = \Widget\Backup::consumeReport();
 include 'copyright.php';
 include 'dropzone-js.php';
 include 'common-js.php';
+include 'form-js.php';
 ?>
 <script>
     document.addEventListener('DOMContentLoaded', function() {

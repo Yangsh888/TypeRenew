@@ -27,7 +27,7 @@ if (class_exists('VditorRenew_Plugin')) {
                     <input type="hidden" name="_" value="<?php echo htmlspecialchars($draftToken, ENT_QUOTES, 'UTF-8'); ?>">
                     <input type="hidden" name="do" value="deleteDraft">
                     <input type="hidden" name="cid" value="<?php echo (int) $content->cid; ?>">
-                    <button type="submit" class="btn btn-link"><?php _e('删除它'); ?></button>
+                    <button type="submit" class="btn btn-link" lang="<?php _e('您确认要删除这份草稿吗?'); ?>"><?php _e('删除它'); ?></button>
                 </form>
             </cite>
         <?php else: ?>

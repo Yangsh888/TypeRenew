@@ -56,7 +56,6 @@ include 'menu.php';
                             <li class="none"><?php _e('没有任何标签'); ?></li>
                         </ul>
                     <?php endif; ?>
-                    <input type="hidden" name="do" value="delete"/>
                 </form>
 
             </div>
