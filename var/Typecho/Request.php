@@ -68,11 +68,6 @@ class Request
         return $this;
     }
 
-    /**
-     * 原始取值, 不做类型归一
-     *
-     * @param bool|null $exists 出参, 标记该键是否存在
-     */
     private function fetch(string $key, ?bool &$exists = null)
     {
         $value = null;
@@ -108,7 +103,6 @@ class Request
 
         $exists = true;
 
-        // @json 取的是整个请求体, 未显式指定默认值时直接透传
         if ($key === '@json' && $default === null) {
             return $value;
         }
@@ -165,12 +159,6 @@ class Request
         return $this->jsonBody;
     }
 
-    /**
-     * 取数组入参, 标量自动包成单元素数组
-     *
-     * 必须绕过 get() 的类型归一: 传 [] 作默认值会让标量被判定类型不符而丢成空数组,
-     * 前台附件删除等只传单个 cid 的接口就是这么静默失效的
-     */
     public function getArray(string $key): array
     {
         $value = $this->fetch($key, $found);

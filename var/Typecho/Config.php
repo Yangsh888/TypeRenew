@@ -80,10 +80,6 @@ class Config extends \stdClass implements \Iterator, \ArrayAccess
         return $this->offsetExists($name);
     }
 
-    /**
-     * 模板里 $config->name() 直接输出值, 保持与 Typecho 原生模板 API 一致
-     * 移除此方法会让 admin/media.php 与第三方主题的 $attachment->url() 全部致命报错
-     */
     public function __call(string $name, array $args): void
     {
         $value = $this->offsetGet($name);

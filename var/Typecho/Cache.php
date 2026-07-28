@@ -88,9 +88,6 @@ class Cache
         return $this->enabled && $this->driver !== null;
     }
 
-    /**
-     * 缓存未能启用的原因, 已启用时返回驱动侧最近一次失败原因
-     */
     public function lastError(): string
     {
         return $this->driver !== null ? $this->driver->lastError() : $this->lastError;

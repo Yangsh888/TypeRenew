@@ -243,9 +243,6 @@ class Edit extends Contents implements ActionInterface
         return $this->prepareEdit('page', true, _t('页面不存在'));
     }
 
-    /**
-     * 该 cid 是否确实是独立页面, 防止用页面接口操作文章或附件
-     */
     private function pageExists(int $cid): bool
     {
         if ($cid <= 0) {

@@ -62,12 +62,6 @@ class Client
         return true;
     }
 
-    /**
-     * 增加前缀
-     * <code>
-     * $rpc->metaWeblog->newPost();
-     * </code>
-     */
     public function __get(string $prefix): Client
     {
         return new self($this->url, $this->prefix . $prefix . '.');
