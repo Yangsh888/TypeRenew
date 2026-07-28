@@ -118,7 +118,6 @@ class Store
             }
         }
 
-        // 升级目录里有上传的 zip 与被覆盖文件的原始副本, 默认位于文档根内
         \Utils\Helper::protectDirectory($this->root);
     }
 

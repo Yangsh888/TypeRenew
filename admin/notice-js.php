@@ -41,8 +41,6 @@ if (session_status() === PHP_SESSION_ACTIVE) {
                 cookies.highlight = sessionHighlight;
             }
 
-            // 必须在 notice 分支外声明: 下面的 highlight 分支也要用,
-            // 否则只有高亮 cookie 时它是 undefined, 新 UI 会退回 jQuery 的写死黄底高亮
             var isTrAdmin = document.body && (' ' + document.body.className + ' ').indexOf(' tr-admin ') >= 0;
 
             if (!!cookies.notice && 'success|notice|error'.indexOf(cookies.noticeType) >= 0) {

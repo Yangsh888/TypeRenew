@@ -113,8 +113,6 @@ function install_normalize_sqlite_file(string $path): ?string
     } else {
         $relative = ltrim($normalized, '/');
 
-        // 相对路径统一相对 usr/, 但手填 "usr/site.db" 是最自然的写法,
-        // 不剥掉这层前缀会拼成 usr/usr/site.db 并以"无法打开数据库文件"告败
         if ($relative === 'usr' || str_starts_with($relative, 'usr/')) {
             $relative = ltrim(substr($relative, 3), '/');
         }

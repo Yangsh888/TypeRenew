@@ -29,7 +29,6 @@
     let iconsUrl = '';
     let initialized = false;
 
-    // 快捷键提示按客户端平台改写, Mac 上显示 ⌘K
     const isMac = /Mac|iPhone|iPad|iPod/i.test(
         (navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || navigator.userAgent || ''
     );
@@ -210,7 +209,6 @@
             return;
         }
 
-        // 与命令的确认文案保持一致: 界面偏好要全部重置, 漏掉强调色与登录页配色会让用户以为没生效
         ['trTheme', 'trAccent', 'trAuthTheme', 'trSidebarCollapsed', 'trCmdRecent', 'trCmdHistory'].forEach(k => {
             store.remove(k);
         });
@@ -647,7 +645,6 @@
         }
     }
 
-    // 正文编辑区内不抢 Ctrl+K: Markdown 工具栏用它插入代码块
     function isEditing(target) {
         if (!target || isOpen) return false;
         const tag = (target.tagName || '').toLowerCase();

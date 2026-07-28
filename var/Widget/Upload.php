@@ -280,7 +280,6 @@ class Upload extends Contents implements ActionInterface
         $dir = dirname($target);
         if (!is_dir($dir)) {
             if (!self::makeUploadDir($dir)) {
-                // 不回显绝对路径: 该异常会以 JSON 返回给 contributor, 会泄漏 webroot 真实位置
                 error_log('TypeRenew.Upload: attachment dir not writable: ' . $dir);
                 throw new \RuntimeException(_t('附件目录不可写，请检查上传目录权限'));
             }

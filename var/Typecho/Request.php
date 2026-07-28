@@ -113,7 +113,6 @@ class Request
             return $value;
         }
 
-        // 类型不一致时退回默认值, 挡住"数组注入到字符串形参"导致的 TypeError
         return is_array($default) == is_array($value) ? $value : $default;
     }
 

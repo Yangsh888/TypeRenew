@@ -333,7 +333,6 @@ trait EditTrait
     {
         $created = (int) $this->options->time;
         if ($this->request->is('created')) {
-            // 必须过滤: 裸取会把非数字串返回给 int 返回类型, PHP8 下直接 TypeError
             $created = $this->request->filter('int')->get('created', $created);
         } elseif ($this->request->is('date')) {
             $dateParts = preg_split('/\s+/', trim((string) $this->request->get('date', '')), 2);

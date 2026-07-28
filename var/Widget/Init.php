@@ -80,7 +80,6 @@ class Init extends Widget
             'prefix' => (string) ($options->cachePrefix ?? 'typerenew:cache:'),
             'redisHost' => (string) ($options->cacheRedisHost ?? '127.0.0.1'),
             'redisPort' => (int) ($options->cacheRedisPort ?? 6379),
-            // 密文存储, 旧版明文值 decrypt 后原样返回
             'redisPassword' => \Utils\Cipher::decrypt(
                 (string) ($options->cacheRedisPassword ?? ''),
                 (string) ($options->secret ?? '')

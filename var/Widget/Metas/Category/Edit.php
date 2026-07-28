@@ -251,7 +251,6 @@ class Edit extends Metas implements ActionInterface
             }
         }
 
-        // 限定 type: 否则传标签 mid 会把标签翻转成分类
         $this->update($category, $this->db->sql()
             ->where('mid = ?', $this->request->filter('int')->get('mid'))
             ->where('type = ?', 'category'));
@@ -280,7 +279,6 @@ class Edit extends Metas implements ActionInterface
                 continue;
             }
 
-            // 默认分类被删掉会让 defaultCategory 指向空 mid, 后续发布直接写坏分类关系
             if ((int) $category === (int) $this->options->defaultCategory) {
                 continue;
             }
@@ -417,7 +415,6 @@ class Edit extends Metas implements ActionInterface
 
     public function action()
     {
-        // 全部为写操作, 不能由 GET 触发(链接预取/Referer 泄漏令牌都会变成真实写入)
         if (!$this->request->isPost()) {
             $this->response->setStatus(405)->throwContent(_t('Method Not Allowed'), 'text/plain');
         }

@@ -191,7 +191,6 @@
         });
     }
 
-    // 主题色（强调色）切换：独立于浅/深色模式，写 trAccent，切 html.tr-accent-*
     const ACCENT_KEY = 'trAccent';
     const ACCENT_IDS = ['blue', 'violet', 'indigo', 'emerald', 'teal', 'cyan', 'rose', 'pink', 'red', 'amber', 'orange', 'slate'];
     const accentDots = themePop

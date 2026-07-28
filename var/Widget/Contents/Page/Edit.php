@@ -102,7 +102,6 @@ class Edit extends Contents implements ActionInterface
             self::pluginHandle()->call('mark', $status, $page, $this);
             $condition = $this->db->sql()->where('cid = ?', $page);
 
-            // 限定 type: 否则传入文章 cid 会走独立页面分支, 把文章改成 page 专属状态
             if (!$this->pageExists((int) $page)) {
                 continue;
             }
@@ -138,7 +137,6 @@ class Edit extends Contents implements ActionInterface
         foreach ($pages as $page) {
             self::pluginHandle()->call('delete', $page, $this);
 
-            // 限定 type: 走这里删文章会绕过分类/标签计数回退, 留下孤儿 relationships
             if (!$this->pageExists((int) $page)) {
                 continue;
             }

@@ -471,8 +471,8 @@ EOF;
             $params = array_map(function ($string) {
                 $string = str_replace(['%0d', '%0a'], '', strip_tags($string));
                 $string = preg_replace([
-                    "/\(\s*([\"'])/i",           //函数开头
-                    "/([\"'])\s*\)/i",           //函数结尾
+                    "/\(\s*([\"'])/i",
+                    "/([\"'])\s*\)/i",
                 ], '', $string);
                 $string = str_replace(['"', "'", '<', '>'], '', $string);
                 return $string;
@@ -697,7 +697,6 @@ EOF;
                 }
             }
 
-            // 兼容 v2 之前签发的旧 token, 比较同样要用定时安全函数
             $now = time();
             $from = $now - $timeout;
             for ($i = $now; $i >= $from; $i--) {

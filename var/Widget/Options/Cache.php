@@ -55,7 +55,6 @@ class Cache extends Options implements ActionInterface
             !empty($this->request->getArray('cacheRedisPasswordClear')),
             Cipher::decrypt((string) ($this->options->cacheRedisPassword ?? ''), $secret)
         );
-        // 与 SMTP 密码一致落密文, 旧的明文值 decrypt 时原样返回, 无需迁移
         $settings['cacheRedisPassword'] = $plainPassword === '' ? '' : Cipher::encrypt($plainPassword, $secret);
         unset($settings['cacheRedisPasswordClear']);
 
@@ -74,7 +73,6 @@ class Cache extends Options implements ActionInterface
             'redisDatabase' => $settings['cacheRedisDatabase']
         ]);
 
-        // 保存后立刻回报连通性, 免得用户改错密码后只看到"关闭"却不知原因
         $probe = CacheFacade::getInstance();
         if ($settings['cacheStatus'] === 1 && !$probe->enabled()) {
             $this->noticeAndGoBack(

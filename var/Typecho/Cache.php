@@ -78,7 +78,6 @@ class Cache
             $this->driver = $instance;
             $this->loadNamespaceVersion();
         } else {
-            // 保留原因, 否则后台只会显示"关闭", 排障时无从下手
             $this->lastError = $instance->lastError();
             $this->enabled = false;
         }
