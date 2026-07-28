@@ -1,4 +1,4 @@
-:root {
+﻿:root {
     --tr-accent-rgb: 37 99 235;
     --tr-accent: rgb(var(--tr-accent-rgb));
     --tr-accent-2: #1d4ed8;
@@ -59,7 +59,7 @@ body.tr-admin {
     overflow-x: hidden;
 }
 
-/* 丝滑切换：仅 <html>.tr-theme-anim（切换瞬间 JS 临时加）时对大面积表面做颜色过渡，首屏不动画避免闪烁。 */
+
 html.tr-theme-anim body.tr-admin,
 html.tr-theme-anim body.tr-admin .tr-shell,
 html.tr-theme-anim body.tr-admin .tr-topbar,
@@ -758,8 +758,7 @@ html.tr-theme-dark body.tr-admin {
     --tr-danger-rgb: 248 113 113;
 }
 
-/* 主题色预设：每套只覆盖 --tr-accent-rgb 与 --tr-accent-2，全站强调色经 rgb(var(--tr-accent-rgb)/α) 自动跟随。
- * 浅色规则 (0,2,2) 压浅色 :root；深色规则 (0,3,2) 压深色 :root → 主题色优先 + 深色自动提亮。默认蓝即 :root 值。 */
+
 html.tr-accent-blue body.tr-admin { --tr-accent-rgb: 37 99 235; --tr-accent-2: #1d4ed8; }
 html.tr-theme-dark.tr-accent-blue body.tr-admin { --tr-accent-rgb: 96 165 250; --tr-accent-2: #3b82f6; }
 
@@ -2098,8 +2097,7 @@ body.tr-admin.tr-sidebar-collapsed .tr-user-actions {
     display: none;
 }
 
-/* 仪表盘布局基元（base）— 必须置于下方响应式 @media 之前。
- * 否则同特异性下源码靠后者获胜，无条件的 repeat() 会反向覆盖断点里的折叠规则，导致窄屏不塌缩、中文逐字竖排。 */
+
 .tr-grid {
     display: grid;
     gap: var(--tr-gap);
@@ -2128,7 +2126,7 @@ body.tr-admin.tr-sidebar-collapsed .tr-user-actions {
     align-items: center;
 }
 
-/* 平板区间（769–980，侧边栏仍占 284px）：≤980 即让 .tr-kpi-start 纵向堆叠、迷你图表栈转整宽，避免中文逐字换行。 */
+
 @media (max-width: 980px) {
     .tr-kpi-start {
         flex-direction: column;
@@ -2142,7 +2140,7 @@ body.tr-admin.tr-sidebar-collapsed .tr-user-actions {
     }
 }
 
-/* 中屏改为两列，避免指标卡内容被压缩 */
+
 @media (max-width: 1024px) {
     .tr-grid.cols-4 {
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2190,7 +2188,7 @@ body.tr-admin.tr-sidebar-collapsed .tr-user-actions {
         display: block;
     }
 
-    /* 窄屏只保留工具图标，防止顶栏换行 */
+    
     .tr-topbar {
         padding: 0 14px;
         gap: 8px;
@@ -2200,7 +2198,7 @@ body.tr-admin.tr-sidebar-collapsed .tr-user-actions {
         display: none;
     }
 
-    /* 保留新增按钮文字 */
+    
     .tr-topbar-right > .tr-pill-accent {
         flex-shrink: 0;
         white-space: nowrap;
@@ -2231,7 +2229,7 @@ body.tr-admin.tr-sidebar-collapsed .tr-user-actions {
         grid-template-columns: 1fr;
     }
 
-    /* 纵向排列，避免中文逐字换行 */
+    
     .tr-kpi-start {
         flex-direction: column;
         align-items: stretch;
@@ -2245,7 +2243,7 @@ body.tr-admin.tr-sidebar-collapsed .tr-user-actions {
 }
 
 @media (max-width: 480px) {
-    /* 侧边栏已有个人入口，手机顶栏优先保留页面标题和当前操作 */
+    
     .tr-topbar-right > .tr-profile-pill {
         display: none;
     }
@@ -2264,7 +2262,7 @@ body.tr-admin.tr-sidebar-collapsed .tr-user-actions {
         grid-template-columns: 1fr;
     }
 
-    /* 单列展示，给图例保留完整宽度 */
+    
     .tr-dist {
         grid-template-columns: 1fr;
         justify-items: center;
@@ -2280,7 +2278,7 @@ body.tr-admin.tr-sidebar-collapsed .tr-user-actions {
     }
 }
 
-/* 搜索筛选行在窄屏允许换行 */
+
 @media (max-width: 620px) {
     body.tr-admin .typecho-list-operate .search {
         flex-wrap: wrap;
@@ -2577,8 +2575,7 @@ body.tr-admin.tr-page-index .tr-actions-grid .tr-btn-square span {
     line-height: 1.5;
 }
 
-/* 语气修饰：升级/备份页用它区分「阻断项」与普通说明，缺失时二者同为灰字无法分辨。
- * 全部走语义 token，深浅色自动跟随，无需 tr-theme-dark 覆盖 */
+
 .tr-tone-warning {
     color: var(--tr-warning);
 }
@@ -2597,7 +2594,7 @@ body.tr-admin.tr-page-index .tr-actions-grid .tr-btn-square span {
     color: inherit;
 }
 
-/* 备份页表单控件：select 的外观已由 body.tr-admin select 统一接管，这里只补排版 */
+
 .tr-label {
     color: var(--tr-text);
     font-size: 13px;
@@ -2953,7 +2950,7 @@ body.tr-admin .typecho-foot .resource a:hover {
     color: rgba(15, 23, 42, 0.92);
 }
 
-/* 手机端脚部纵向排列 */
+
 @media (max-width: 768px) {
     body.tr-admin .typecho-foot .tr-foot-inner {
         flex-direction: column;
@@ -3160,7 +3157,7 @@ body.tr-admin.tr-page-write .tr-editor-card textarea.tr-editor {
     background: var(--tr-surface);
 }
 
-/* 工具栏允许换行，避免窄屏裁切 */
+
 body.tr-admin.tr-page-write .tr-editor-card #wmd-button-bar {
     height: auto;
     margin: 0 0 12px;
@@ -3912,7 +3909,7 @@ body.tr-admin .tr-flow-desc {
         top: 0;
     }
 
-    /* 竖排流程需要额外标题间距 */
+    
     body.tr-admin .tr-flow.tr-mt-12 {
         margin-top: 18px;
     }
@@ -3961,12 +3958,12 @@ body.tr-admin .typecho-page-main table.typecho-list-table {
     min-width: 640px;
 }
 
-/* 清除旧表格白边，避免窄屏溢出 */
+
 body.tr-admin .typecho-page-main table.typecho-list-table {
     border: 0;
 }
 
-/* 宽表格在容器内横向滚动 */
+
 body.tr-admin .typecho-page-main .operate-form,
 body.tr-admin .typecho-page-main > .typecho-list > .operate-form,
 body.tr-admin .typecho-page-main .typecho-table-wrap {
@@ -3974,7 +3971,7 @@ body.tr-admin .typecho-page-main .typecho-table-wrap {
     -webkit-overflow-scrolling: touch;
 }
 
-/* 分类与标签菜单需要越过表格容器显示 */
+
 body.tr-admin.tr-page-manage-categories .typecho-page-main .operate-form,
 body.tr-admin.tr-page-manage-tags .typecho-page-main .operate-form {
     overflow: visible;
@@ -3984,14 +3981,14 @@ body.tr-admin.tr-page-manage-categories .typecho-page-main form.operate-form > t
     min-width: 0;
 }
 
-/* 裸表格在窄屏按可见列收缩 */
+
 @media (max-width: 768px) {
     body.tr-admin .typecho-page-main > .typecho-list > table.typecho-list-table,
     body.tr-admin .typecho-page-main > [class*="col-"] > table.typecho-list-table {
         min-width: 0;
     }
 
-    /* 操作列允许换行 */
+    
     body.tr-admin .typecho-page-main > [class*="col-"] > table.typecho-list-table th,
     body.tr-admin .typecho-page-main > [class*="col-"] > table.typecho-list-table td {
         padding: 10px 6px;
@@ -4402,7 +4399,7 @@ body.tr-admin .typecho-list-table td {
     padding: 12px 12px;
 }
 
-/* 空列表保持可识别的点击与阅读空间 */
+
 body.tr-admin .typecho-list-table td.none {
     padding: 40px 16px;
     text-align: center;
@@ -5241,7 +5238,7 @@ body.body-100 .tr-auth-form {
     gap: 16px;
 }
 
-/* 找回/重置密码页的状态提示（邮件系统未启用、重置链接失效等），语义 token 自动跟随深浅色 */
+
 body.body-100 .tr-auth-notice {
     margin: 0 0 16px;
     padding: 12px 14px;
@@ -5848,7 +5845,7 @@ body.tr-admin.tr-page-plugins .tr-plugin-actions .btn.btn-link:hover {
     }
 }
 
-/* 隐藏列后按剩余内容重新分配宽度 */
+
 @media (max-width: 575px) {
     body.tr-admin.tr-page-plugins .typecho-page-main table.typecho-list-table,
     body.tr-admin.tr-page-manage-medias .typecho-page-main table.typecho-list-table {
@@ -5856,7 +5853,7 @@ body.tr-admin.tr-page-plugins .tr-plugin-actions .btn.btn-link:hover {
         min-width: 0;
     }
 
-    /* 窄屏改为双行信息布局，避免插件名和描述被挤成竖排 */
+    
     body.tr-admin.tr-page-plugins .typecho-list-table colgroup,
     body.tr-admin.tr-page-plugins .typecho-list-table thead {
         display: none;
@@ -5999,7 +5996,7 @@ body.tr-admin.tr-page-themes .tr-theme-actions .btn.btn-link:hover {
     text-decoration: none;
 }
 
-/* 主题列表与其他数据面板保持相同层级 */
+
 body.tr-admin.tr-page-themes .typecho-page-main table.typecho-theme-list {
     background: var(--tr-surface);
     border: 1px solid rgba(15, 23, 42, 0.08);
@@ -6008,12 +6005,12 @@ body.tr-admin.tr-page-themes .typecho-page-main table.typecho-theme-list {
     overflow: hidden;
 }
 
-/* 当前主题使用内嵌高亮 */
+
 body.tr-admin.tr-page-themes .typecho-theme-list tbody tr.current td {
     border-top: 1px solid rgba(15, 23, 42, 0.06);
 }
 
-/* 邮箱与 IPv6 是不可断的长串, 而作者列是固定 20% 宽, 不断行就会挤压内容列 */
+
 body.tr-admin.tr-page-manage-comments .comment-head,
 body.tr-admin.tr-page-manage-comments .comment-meta {
     overflow-wrap: anywhere;
@@ -6025,8 +6022,7 @@ body.tr-admin.tr-page-manage-comments .tr-comment-actions {
     line-height: 1.3;
 }
 
-/* 触摸设备没有 hover，style.css 的 .hidden-by-mouse{opacity:0} 会让审核操作永远不可见。
- * 无 hover 能力时直接常显，键盘 focus 同理 */
+
 @media (hover: none), (pointer: coarse) {
     body.tr-admin .typecho-list-table tr td .hidden-by-mouse {
         opacity: 1;
@@ -6403,7 +6399,7 @@ textarea.tr-panel-input {
     word-break: break-word;
 }
 
-/* 长规则允许滚动和换行，避免撑破面板 */
+
 body.tr-admin .tr-card pre {
     margin: 8px 0 0;
     max-width: 100%;
@@ -6646,11 +6642,7 @@ html.tr-theme-dark body.tr-admin .tr-cmd-empty {
     display: none !important;
 }
 
-/* 媒体库 MIME 图标补丁层
- * 两个上游遗留问题:
- * 1. Common::mimeIconType() 返回 unknown, 而 style.css 只定义了 .mime-unknow(少个 n),
- *    字体等未识别类型会渲染成空白 —— 这里补上正确类名, 复用同一张精灵图的位置
- * 2. icons.png 是深蓝位图, 无 currentColor, 深色模式下几乎看不见 —— 用 invert 提亮 */
+
 body.tr-admin .mime-unknown {
     display: inline-block;
     width: 16px;
