@@ -36,7 +36,6 @@
     --tr-table-head-bg: rgba(15, 23, 42, 0.04);
     --tr-row-hover-bg: rgba(2, 6, 23, 0.02);
 
-    /* 强调色派生（主题色切换只需改 --tr-accent-rgb 与 --tr-accent-2） */
     --tr-accent-soft: rgb(var(--tr-accent-rgb) / 0.12);
     --tr-accent-strong: var(--tr-accent-2);
 
@@ -46,8 +45,6 @@
     --tr-warning: #b45309;
     --tr-danger: #dc2626;
     --tr-danger-rgb: 239 68 68;
-
-    /* 断点约定（仅团队规范记录）：xs480/sm640/md768/lg1024/xl1280；主力 768（侧边栏转抽屉）与 1024（平板）。 */
 }
 
 body.tr-admin {

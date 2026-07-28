@@ -120,7 +120,6 @@ class Backup extends BaseOptions implements ActionInterface
     {
         $this->user->pass('administrator');
 
-        // 导出会输出全库(含密码哈希), 恢复会清空核心表, 一律禁止 GET 触发
         if (!$this->request->isPost()) {
             $this->response->setStatus(405)->throwContent(_t('Method Not Allowed'), 'text/plain');
         }

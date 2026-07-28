@@ -145,8 +145,6 @@ class Defaults
     {
         return [
             'theme' => 'default',
-            // 播种项必须与 default 主题 themeConfig() 声明的字段一致:
-            // 该主题已无侧栏, 只有 logoUrl 与 colorSchema 两个配置
             'theme:default' => json_encode([
                 'logoUrl' => '',
                 'colorSchema' => 'auto',
