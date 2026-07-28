@@ -457,7 +457,7 @@ class Options extends Base
         $pos = strpos($version, '/');
 
         if ($pos !== false) {
-            $version = substr($version, 0, $pos) . '.0';
+            $version = substr($version, 0, $pos);
         }
 
         return $version;
@@ -526,6 +526,11 @@ class Options extends Base
             return null;
         }
 
+        $decoded = json_decode($value, true);
+        if (is_array($decoded)) {
+            return $decoded;
+        }
+
         $isSerialized = preg_match('/^(a|O|s|i|d|b|N):/', $value) === 1;
         if ($isSerialized) {
             set_error_handler(static function (): bool {
@@ -544,7 +549,6 @@ class Options extends Base
             return $result;
         }
 
-        $decoded = json_decode($value, true);
-        return is_array($decoded) ? $decoded : null;
+        return null;
     }
 }

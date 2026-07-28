@@ -531,7 +531,7 @@ EOF;
             $found = true;
             while ($found == true) {
                 $found = false;
-                for ($i = 0; $i < sizeof($ra); $i++) {
+                for ($i = 0; $i < count($ra); $i++) {
                     $val_before = $val;
                     $pattern = '/';
                     for ($j = 0; $j < strlen($ra[$i]); $j++) {

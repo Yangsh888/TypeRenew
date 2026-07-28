@@ -23,19 +23,24 @@ include 'common-js.php';
 include 'form-js.php';
 ?>
 <script>
-$(function () {
-    var select = $('select[name=ipSource]'),
-        custom = $('input[name=ipSourceCustom]').closest('.typecho-option');
+(function () {
+    'use strict';
+    var select = document.querySelector('select[name=ipSource]');
+    if (!select) return;
+
+    var customInput = document.querySelector('input[name=ipSourceCustom]');
+    if (!customInput) return;
+
+    var customOption = customInput.closest('.typecho-option');
+    if (!customOption) return;
 
     function toggleCustom() {
-        select.val() === 'custom' ? custom.show() : custom.hide();
+        customOption.style.display = select.value === 'custom' ? '' : 'none';
     }
 
-    if (select.length > 0) {
-        toggleCustom();
-        select.on('change', toggleCustom);
-    }
-});
+    toggleCustom();
+    select.addEventListener('change', toggleCustom);
+})();
 </script>
 <?php
 include 'footer.php';

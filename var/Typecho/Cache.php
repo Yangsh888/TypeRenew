@@ -279,7 +279,7 @@ class Cache
 
     private function key(string $key): string
     {
-        $this->syncNamespaceVersion(true);
+        $this->syncNamespaceVersion(false);
         return $this->namespacePrefix() . $key;
     }
 

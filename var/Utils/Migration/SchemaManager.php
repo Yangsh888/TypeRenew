@@ -560,7 +560,7 @@ class SchemaManager
     {
         $name = 'migrationLock';
         $now = time();
-        $value = ($now + 3600) . ':' . bin2hex(random_bytes(16));
+        $value = ($now + 600) . ':' . bin2hex(random_bytes(16));
         $row = $db->fetchRow(
             $db->select('value')->from('table.options')
                 ->where('name = ? AND user = ?', $name, 0)

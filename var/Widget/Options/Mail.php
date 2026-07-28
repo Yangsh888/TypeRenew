@@ -134,6 +134,8 @@ class Mail extends Options implements ActionInterface
         $html = Template::render($tpl, $vars, $this->options);
 
         $this->response->throwCallback(static function () use ($html) {
+            header('X-Frame-Options: SAMEORIGIN');
+            header('X-Content-Type-Options: nosniff');
             echo $html;
         }, 'text/html');
     }
@@ -522,10 +524,21 @@ class Mail extends Options implements ActionInterface
         $ips = [];
         foreach (preg_split('/[\s,]+/', trim($value)) ?: [] as $item) {
             $item = trim((string) $item);
-            if ($item === '' || !filter_var($item, FILTER_VALIDATE_IP)) {
+            if ($item === '') {
                 continue;
             }
-            $ips[$item] = $item;
+
+            if (filter_var($item, FILTER_VALIDATE_IP)) {
+                $ips[$item] = $item;
+                continue;
+            }
+
+            if (strpos($item, '/') !== false) {
+                if (preg_match('#^(\d{1,3}\.){3}\d{1,3}/\d{1,2}$#', $item) ||
+                    preg_match('#^[0-9a-f:]+/\d{1,3}$#i', $item)) {
+                    $ips[$item] = $item;
+                }
+            }
         }
 
         return implode(', ', array_values($ips));
