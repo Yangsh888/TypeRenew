@@ -303,9 +303,95 @@ function install_raise_error($error, $config = null)
     }
 }
 
+function install_step_token_name(): string
+{
+    return '__install_token';
+}
+
+function install_issue_step_token(): void
+{
+    global $installDb;
+
+    if (install_is_cli() || empty($installDb)) {
+        return;
+    }
+
+    $token = bin2hex(\Typecho\Common::secureRandomBytes(16));
+
+    try {
+        $installDb->query(
+            $installDb->delete('table.options')->where('name = ? AND user = 0', install_step_token_name())
+        );
+        $installDb->query(
+            $installDb->insert('table.options')
+                ->rows(['name' => install_step_token_name(), 'user' => 0, 'value' => $token])
+        );
+    } catch (\Throwable $e) {
+        return;
+    }
+
+    if (headers_sent()) {
+        return;
+    }
+
+    setcookie('__typecho_install_token', $token, [
+        'expires'  => 0,
+        'path'     => (string) (parse_url(\Utils\Defaults::siteUrl(), PHP_URL_PATH) ?: '/'),
+        'secure'   => \Typecho\Request::getInstance()->isSecure(),
+        'httponly' => true,
+        'samesite' => 'Lax'
+    ]);
+}
+
+function install_assert_step_token(): void
+{
+    global $installDb;
+
+    if (install_is_cli() || empty($installDb)) {
+        return;
+    }
+
+    $provided = (string) ($_COOKIE['__typecho_install_token'] ?? '');
+    $stored = '';
+
+    try {
+        $row = $installDb->fetchRow(
+            $installDb->select('value')->from('table.options')
+                ->where('name = ? AND user = 0', install_step_token_name())->limit(1)
+        );
+        $stored = (string) ($row['value'] ?? '');
+    } catch (\Throwable $e) {
+        $stored = '';
+    }
+
+    if ($stored === '' || $provided === '' || !hash_equals($stored, $provided)) {
+        install_raise_error(_t('安装会话已失效, 请返回上一步重新执行数据库配置'));
+    }
+}
+
+function install_clear_step_token(): void
+{
+    global $installDb;
+
+    if (empty($installDb)) {
+        return;
+    }
+
+    try {
+        $installDb->query(
+            $installDb->delete('table.options')->where('name = ? AND user = 0', install_step_token_name())
+        );
+    } catch (\Throwable $e) {
+    }
+}
+
 function install_success($step, ?array $config = null)
 {
     global $installDb;
+
+    if ($step == 3) {
+        install_issue_step_token();
+    }
 
     if (install_is_cli()) {
         if ($step == 3) {
@@ -1174,6 +1260,8 @@ function install_step_3_perform()
 {
     global $installDb;
 
+    install_assert_step_token();
+
     $request = \Typecho\Request::getInstance();
     $defaultPassword = \Typecho\Common::randString(8);
     $options = \Widget\Options::alloc();
@@ -1336,6 +1424,8 @@ function install_step_3_perform()
 
         install_raise_error($e->getMessage());
     }
+
+    install_clear_step_token();
 
     \Typecho\Cookie::set('__typecho_remember_name', $config['userName']);
     $loginUrl = \Typecho\Common::url(

@@ -100,7 +100,6 @@ class Palette
                 'title' => _t('切换浅色主题'),
                 'category' => 'appearance',
                 'icon' => 'i-sun',
-                'shortcut' => 'T L',
                 'keywords' => [_t('主题'), _t('外观'), _t('亮色'), 'light', 'theme'],
                 'action' => 'theme:light'
             ],
@@ -109,7 +108,6 @@ class Palette
                 'title' => _t('切换深色主题'),
                 'category' => 'appearance',
                 'icon' => 'i-moon',
-                'shortcut' => 'T D',
                 'keywords' => [_t('主题'), _t('外观'), _t('暗色'), 'dark', 'theme'],
                 'action' => 'theme:dark'
             ],
@@ -118,7 +116,6 @@ class Palette
                 'title' => _t('跟随系统主题'),
                 'category' => 'appearance',
                 'icon' => 'i-monitor',
-                'shortcut' => 'T S',
                 'keywords' => [_t('主题'), _t('外观'), _t('自动'), 'system', 'theme'],
                 'action' => 'theme:system'
             ],
@@ -127,7 +124,6 @@ class Palette
                 'title' => _t('切换侧边栏'),
                 'category' => 'interface',
                 'icon' => 'i-sidebar',
-                'shortcut' => 'Ctrl B',
                 'keywords' => [_t('侧边栏'), 'sidebar', _t('折叠'), _t('展开')],
                 'action' => 'sidebar:toggle'
             ],
@@ -136,7 +132,6 @@ class Palette
                 'title' => _t('切换全屏模式'),
                 'category' => 'interface',
                 'icon' => 'i-maximize',
-                'shortcut' => 'Ctrl Shift F',
                 'keywords' => [_t('全屏'), 'fullscreen', _t('最大化')],
                 'action' => 'fullscreen:toggle'
             ],
@@ -145,7 +140,6 @@ class Palette
                 'title' => _t('回到页面顶部'),
                 'category' => 'interface',
                 'icon' => 'i-arrow-up',
-                'shortcut' => 'Ctrl Home',
                 'keywords' => [_t('顶部'), _t('滚动'), 'scroll', 'top'],
                 'action' => 'scroll:top'
             ],
@@ -154,7 +148,6 @@ class Palette
                 'title' => _t('刷新当前页面'),
                 'category' => 'interface',
                 'icon' => 'i-refresh',
-                'shortcut' => 'Ctrl R',
                 'keywords' => [_t('刷新'), 'reload', 'refresh'],
                 'action' => 'page:refresh'
             ],
@@ -163,7 +156,6 @@ class Palette
                 'title' => _t('撰写新文章'),
                 'category' => 'create',
                 'icon' => 'i-pencil',
-                'shortcut' => 'N P',
                 'keywords' => [_t('文章'), _t('撰写'), _t('新建'), 'post', 'write'],
                 'access' => 'contributor',
                 'url' => $adminUrl . 'write-post.php'
@@ -173,7 +165,6 @@ class Palette
                 'title' => _t('创建独立页面'),
                 'category' => 'create',
                 'icon' => 'i-file',
-                'shortcut' => 'N G',
                 'keywords' => [_t('页面'), _t('创建'), _t('新建'), 'page'],
                 'access' => 'editor',
                 'url' => $adminUrl . 'write-page.php'
@@ -183,7 +174,6 @@ class Palette
                 'title' => _t('新建分类'),
                 'category' => 'create',
                 'icon' => 'i-folder',
-                'shortcut' => 'N C',
                 'keywords' => [_t('分类'), _t('新建'), 'category'],
                 'access' => 'editor',
                 'url' => $adminUrl . 'category.php'
@@ -193,7 +183,6 @@ class Palette
                 'title' => _t('新建用户'),
                 'category' => 'create',
                 'icon' => 'i-user-plus',
-                'shortcut' => 'N U',
                 'keywords' => [_t('用户'), _t('新建'), 'user'],
                 'access' => 'administrator',
                 'url' => $adminUrl . 'user.php'
@@ -203,7 +192,6 @@ class Palette
                 'title' => _t('上传媒体文件'),
                 'category' => 'create',
                 'icon' => 'i-upload',
-                'shortcut' => 'N M',
                 'keywords' => [_t('上传'), _t('媒体'), _t('文件'), 'upload', 'media'],
                 'access' => 'editor',
                 'url' => $adminUrl . 'manage-medias.php'
@@ -213,7 +201,6 @@ class Palette
                 'title' => _t('管理文章'),
                 'category' => 'manage',
                 'icon' => 'i-file-text',
-                'shortcut' => 'M P',
                 'keywords' => [_t('文章'), _t('管理'), 'posts'],
                 'access' => 'contributor',
                 'url' => $adminUrl . 'manage-posts.php'
@@ -223,7 +210,6 @@ class Palette
                 'title' => _t('管理独立页面'),
                 'category' => 'manage',
                 'icon' => 'i-files',
-                'shortcut' => 'M G',
                 'keywords' => [_t('页面'), _t('管理'), 'pages'],
                 'access' => 'editor',
                 'url' => $adminUrl . 'manage-pages.php'
@@ -233,7 +219,6 @@ class Palette
                 'title' => _t('管理评论'),
                 'category' => 'manage',
                 'icon' => 'i-message',
-                'shortcut' => 'M C',
                 'keywords' => [_t('评论'), _t('管理'), 'comments'],
                 'access' => 'contributor',
                 'url' => $adminUrl . 'manage-comments.php'
@@ -243,7 +228,6 @@ class Palette
                 'title' => _t('待审核评论'),
                 'category' => 'manage',
                 'icon' => 'i-inbox',
-                'shortcut' => 'M W',
                 'keywords' => [_t('评论'), _t('待审核'), 'waiting', 'pending'],
                 'access' => 'contributor',
                 'url' => $adminUrl . 'manage-comments.php?status=waiting'
@@ -253,7 +237,6 @@ class Palette
                 'title' => _t('管理分类'),
                 'category' => 'manage',
                 'icon' => 'i-folder',
-                'shortcut' => 'M T',
                 'keywords' => [_t('分类'), _t('管理'), 'categories'],
                 'access' => 'editor',
                 'url' => $adminUrl . 'manage-categories.php'
@@ -263,7 +246,6 @@ class Palette
                 'title' => _t('管理标签'),
                 'category' => 'manage',
                 'icon' => 'i-tag',
-                'shortcut' => 'M A',
                 'keywords' => [_t('标签'), _t('管理'), 'tags'],
                 'access' => 'editor',
                 'url' => $adminUrl . 'manage-tags.php'
@@ -273,7 +255,6 @@ class Palette
                 'title' => _t('管理媒体文件'),
                 'category' => 'manage',
                 'icon' => 'i-image',
-                'shortcut' => 'M M',
                 'keywords' => [_t('媒体'), _t('文件'), _t('附件'), 'medias'],
                 'access' => 'editor',
                 'url' => $adminUrl . 'manage-medias.php'
@@ -283,7 +264,6 @@ class Palette
                 'title' => _t('管理用户'),
                 'category' => 'manage',
                 'icon' => 'i-users',
-                'shortcut' => 'M U',
                 'keywords' => [_t('用户'), _t('管理'), 'users'],
                 'access' => 'administrator',
                 'url' => $adminUrl . 'manage-users.php'
@@ -293,7 +273,6 @@ class Palette
                 'title' => _t('基本设置'),
                 'category' => 'settings',
                 'icon' => 'i-gear',
-                'shortcut' => 'S G',
                 'keywords' => [_t('设置'), _t('基本'), 'general', 'options'],
                 'access' => 'administrator',
                 'url' => $adminUrl . 'options-general.php'
@@ -303,7 +282,6 @@ class Palette
                 'title' => _t('阅读设置'),
                 'category' => 'settings',
                 'icon' => 'i-book',
-                'shortcut' => 'S R',
                 'keywords' => [_t('设置'), _t('阅读'), 'reading'],
                 'access' => 'administrator',
                 'url' => $adminUrl . 'options-reading.php'
@@ -313,7 +291,6 @@ class Palette
                 'title' => _t('评论设置'),
                 'category' => 'settings',
                 'icon' => 'i-message',
-                'shortcut' => 'S D',
                 'keywords' => [_t('设置'), _t('评论'), 'discussion'],
                 'access' => 'administrator',
                 'url' => $adminUrl . 'options-discussion.php'
@@ -323,7 +300,6 @@ class Palette
                 'title' => _t('永久链接设置'),
                 'category' => 'settings',
                 'icon' => 'i-link',
-                'shortcut' => 'S P',
                 'keywords' => [_t('设置'), _t('链接'), 'permalink', 'url'],
                 'access' => 'administrator',
                 'url' => $adminUrl . 'options-permalink.php'
@@ -333,7 +309,6 @@ class Palette
                 'title' => _t('邮件设置'),
                 'category' => 'settings',
                 'icon' => 'i-mail',
-                'shortcut' => 'S M',
                 'keywords' => [_t('设置'), _t('邮件'), 'mail', 'email', 'smtp'],
                 'access' => 'administrator',
                 'url' => $adminUrl . 'options-mail.php'
@@ -343,7 +318,6 @@ class Palette
                 'title' => _t('缓存设置'),
                 'category' => 'settings',
                 'icon' => 'i-database',
-                'shortcut' => 'S C',
                 'keywords' => [_t('设置'), _t('缓存'), 'cache', 'redis', 'apcu'],
                 'access' => 'administrator',
                 'url' => $adminUrl . 'options-cache.php'
@@ -353,7 +327,6 @@ class Palette
                 'title' => _t('插件管理'),
                 'category' => 'settings',
                 'icon' => 'i-plug',
-                'shortcut' => 'P',
                 'keywords' => [_t('插件'), 'plugins', _t('扩展')],
                 'access' => 'administrator',
                 'url' => $adminUrl . 'plugins.php'
@@ -363,7 +336,6 @@ class Palette
                 'title' => _t('主题管理'),
                 'category' => 'settings',
                 'icon' => 'i-sliders',
-                'shortcut' => 'T',
                 'keywords' => [_t('主题'), 'themes', _t('外观')],
                 'access' => 'administrator',
                 'url' => $adminUrl . 'themes.php'
@@ -373,7 +345,6 @@ class Palette
                 'title' => _t('主题编辑器'),
                 'category' => 'settings',
                 'icon' => 'i-code',
-                'shortcut' => 'T E',
                 'keywords' => [_t('主题'), _t('编辑器'), 'editor', 'code'],
                 'access' => 'administrator',
                 'url' => $adminUrl . 'theme-editor.php'
@@ -383,7 +354,6 @@ class Palette
                 'title' => _t('数据备份'),
                 'category' => 'tools',
                 'icon' => 'i-download',
-                'shortcut' => 'B',
                 'keywords' => [_t('备份'), 'backup', _t('导出')],
                 'access' => 'administrator',
                 'url' => $adminUrl . 'backup.php'
@@ -393,7 +363,6 @@ class Palette
                 'title' => _t('个人资料设置'),
                 'category' => 'settings',
                 'icon' => 'i-user',
-                'shortcut' => 'P R',
                 'keywords' => [_t('个人'), _t('资料'), 'profile', _t('设置')],
                 'url' => $adminUrl . 'profile.php'
             ],
@@ -402,7 +371,6 @@ class Palette
                 'title' => _t('返回仪表盘'),
                 'category' => 'nav',
                 'icon' => 'i-home',
-                'shortcut' => 'G H',
                 'keywords' => [_t('仪表盘'), _t('首页'), 'dashboard', 'home'],
                 'url' => $adminUrl . 'index.php'
             ],
@@ -411,7 +379,6 @@ class Palette
                 'title' => _t('查看网站首页'),
                 'category' => 'nav',
                 'icon' => 'i-globe',
-                'shortcut' => 'G S',
                 'keywords' => [_t('网站'), _t('首页'), 'visit', 'site'],
                 'url' => $siteUrl,
                 'target' => '_blank'
@@ -421,7 +388,6 @@ class Palette
                 'title' => _t('退出登录'),
                 'category' => 'nav',
                 'icon' => 'i-log-out',
-                'shortcut' => 'L',
                 'keywords' => [_t('退出'), _t('登出'), 'logout', 'signout'],
                 'url' => $logoutUrl
             ],
@@ -430,7 +396,6 @@ class Palette
                 'title' => _t('清除前端缓存'),
                 'category' => 'tools',
                 'icon' => 'i-trash',
-                'shortcut' => 'C C',
                 'keywords' => [_t('清除'), _t('缓存'), 'cache', 'clear'],
                 'confirm' => _t('确定要清除前端缓存吗？这将重置您的界面偏好设置。'),
                 'action' => 'cache:clear'

@@ -417,8 +417,11 @@
             });
 
             results.push(...recentCmds.slice(0, 6));
-            results.push(...actionCmds.slice(0, MAX_RESULTS - results.length));
+            results.push(...actionCmds
+                .filter(cmd => !results.includes(cmd))
+                .slice(0, MAX_RESULTS - results.length));
 
+            activeIndex = results.length > 0 ? 0 : -1;
             hint.textContent = recent.length > 0 ? '最近访问' : '输入关键词搜索命令';
             render(q);
             return;

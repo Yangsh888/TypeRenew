@@ -656,8 +656,10 @@ class Request
         }
 
         $requestUri = '/';
+        $remote = $this->filterIp($this->getServer('REMOTE_ADDR', ''));
+        $trusted = $remote !== '' && $this->isTrustedProxy($remote);
 
-        if (isset($_SERVER['HTTP_X_REWRITE_URL'])) {
+        if ($trusted && isset($_SERVER['HTTP_X_REWRITE_URL'])) {
             $requestUri = $_SERVER['HTTP_X_REWRITE_URL'];
         } elseif (
             isset($_SERVER['IIS_WasUrlRewritten'])

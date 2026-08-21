@@ -1903,6 +1903,14 @@ html.tr-theme-dark body.body-100 {
     background: var(--tr-bg);
 }
 
+html.tr-theme-dark body.body-100 .tr-auth {
+    background:
+        radial-gradient(circle at 20% 18%, var(--tr-auth-bg-a), transparent 42%),
+        radial-gradient(circle at 85% 0%, var(--tr-auth-bg-b), transparent 46%),
+        var(--tr-auth-bg);
+    color: var(--tr-text);
+}
+
 html.tr-theme-dark body.body-100 .tr-auth-panel {
     background: var(--tr-auth-panel-bg);
 }
