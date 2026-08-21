@@ -373,13 +373,6 @@ class Archive extends Contents
 
         self::pluginHandle()->call('handleInit', $this, $select);
 
-        if (isset($handles[$this->parameter->type])) {
-            $handle = $handles[$this->parameter->type];
-            $this->{$handle}($select, $hasPushed);
-        } else {
-            $hasPushed = self::pluginHandle()->call('handle', $this->parameter->type, $this, $select);
-        }
-
         $functionsFile = $this->themeDir . 'functions.php';
         if (
             (!$this->invokeFromOutside || $this->parameter->type == 404 || $this->parameter->preview)
@@ -389,6 +382,13 @@ class Archive extends Contents
             if (function_exists('themeInit')) {
                 themeInit($this);
             }
+        }
+
+        if (isset($handles[$this->parameter->type])) {
+            $handle = $handles[$this->parameter->type];
+            $this->{$handle}($select, $hasPushed);
+        } else {
+            $hasPushed = self::pluginHandle()->call('handle', $this->parameter->type, $this, $select);
         }
 
         if ($hasPushed) {

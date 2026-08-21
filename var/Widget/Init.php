@@ -114,8 +114,6 @@ class Init extends Widget
         Plugin::init($options->plugins);
         $this->response->setCharset($options->charset);
         $this->response->setContentType($options->contentType);
-        $this->response->setHeader('X-Content-Type-Options', 'nosniff');
-        $this->response->setHeader('X-Frame-Options', 'SAMEORIGIN');
 
         if (
             $options->installed

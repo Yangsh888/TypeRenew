@@ -16,7 +16,10 @@ class Logout extends Users implements ActionInterface
 
         $this->user->logout();
         self::pluginHandle()->call('logout');
-        @session_destroy();
+        try {
+            session_destroy();
+        } catch (\Throwable $e) {
+        }
         $this->response->goBack(null, $this->options->index);
     }
 }

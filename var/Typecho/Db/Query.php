@@ -196,8 +196,9 @@ class Query
     public function page(int $page, int $pageSize): Query
     {
         $safePageSize = max($pageSize, 1);
+        $safePage = max(1, min($page, 10000));
         $this->sqlPreBuild['limit'] = $safePageSize;
-        $this->sqlPreBuild['offset'] = (max($page, 1) - 1) * $safePageSize;
+        $this->sqlPreBuild['offset'] = ($safePage - 1) * $safePageSize;
         return $this;
     }
 

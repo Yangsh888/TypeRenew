@@ -261,10 +261,11 @@ class Client
             ],
         ]);
 
-        $response = @file_get_contents($url, false, $context);
+        $prevError = error_get_last();
+        $response = file_get_contents($url, false, $context);
+        $error = error_get_last();
         if ($response === false) {
-            $error = error_get_last();
-            throw new Exception($error['message'] ?? 'Stream request failed', 500);
+            throw new Exception(($error['message'] ?? $prevError['message'] ?? 'Stream request failed'), 500);
         }
 
         $this->responseHeader = [];

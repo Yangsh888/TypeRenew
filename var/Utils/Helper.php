@@ -124,7 +124,7 @@ class Helper
         foreach ($guards as $name => $content) {
             $file = $dir . '/' . $name;
             if (!file_exists($file)) {
-                @file_put_contents($file, $content);
+                file_put_contents($file, $content);
             }
         }
     }

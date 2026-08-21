@@ -17,19 +17,11 @@ if not value then
     redis.call('SET', KEYS[1], ARGV[2])
     return tonumber(ARGV[2])
 end
-
 local number = tonumber(value)
 if not number then
-    local ok, decoded = pcall(cjson.decode, value)
-    if ok and type(decoded) == 'table' and decoded['t'] == 'int' then
-        number = tonumber(decoded['v'])
-    end
+    redis.call('SET', KEYS[1], ARGV[2])
+    return tonumber(ARGV[2])
 end
-
-if not number then
-    return redis.error_reply('cache counter is not an integer')
-end
-
 number = number + tonumber(ARGV[1])
 redis.call('SET', KEYS[1], tostring(number))
 return number
@@ -79,18 +71,13 @@ LUA;
             return (int) $value;
         }
 
-        if (strpos($value, '{"t":') !== 0) {
-            return null;
-        }
-
-        $ok = false;
-        $decoded = $this->decode((string) $value, $ok);
-        if (!$ok) {
+        $result = @unserialize($value);
+        if ($result === false && $value !== serialize(false)) {
             return null;
         }
 
         $hit = true;
-        return $decoded;
+        return $result;
     }
 
     public function set(string $key, $value, int $ttl): bool
@@ -100,7 +87,7 @@ LUA;
             return false;
         }
 
-        $payload = is_int($value) ? (string) $value : $this->encode($value);
+        $payload = is_int($value) ? (string) $value : serialize($value);
         try {
             if ($ttl > 0) {
                 return (bool) $client->setex($key, $ttl, $payload);
@@ -120,7 +107,7 @@ LUA;
             return false;
         }
 
-        $payload = $this->encode($value);
+        $payload = serialize($value);
         try {
             return (bool) $client->set($key, $payload, ['nx', 'ex' => max(1, $ttl)]);
         } catch (\Throwable $e) {
@@ -173,9 +160,8 @@ LUA;
 
         $total = 0;
         $pattern = $prefix . '*';
-        $maxRounds = 3;
 
-        for ($round = 0; $round < $maxRounds; $round++) {
+        for ($round = 0; $round < 3; $round++) {
             $roundDeleted = $this->scanAndDelete($client, $pattern);
             $total += $roundDeleted;
             if ($roundDeleted === 0) {
@@ -324,83 +310,9 @@ LUA;
             $this->lastError = '';
             return $this->client;
         } catch (\Throwable $e) {
-            // Redis 端未设密码却收到 AUTH 时会抛异常, 这里的原文是排障关键
             $this->markUnavailable($e->getMessage());
             return null;
         }
-    }
-
-    private function encode($value): string
-    {
-        if ($value instanceof \stdClass) {
-            return $this->json(['t' => 'object', 'v' => (array) $value]);
-        }
-
-        if (is_array($value)) {
-            return $this->json(['t' => 'array', 'v' => $value]);
-        }
-
-        if (is_int($value)) {
-            return $this->json(['t' => 'int', 'v' => $value]);
-        }
-
-        if (is_float($value)) {
-            return $this->json(['t' => 'float', 'v' => $value]);
-        }
-
-        if (is_bool($value)) {
-            return $this->json(['t' => 'bool', 'v' => $value]);
-        }
-
-        if ($value === null) {
-            return $this->json(['t' => 'null', 'v' => null]);
-        }
-
-        return $this->json(['t' => 'string', 'v' => (string) $value]);
-    }
-
-    private function decode(string $payload, bool &$ok)
-    {
-        $ok = false;
-        $decoded = json_decode($payload, true);
-        if (!is_array($decoded) || !isset($decoded['t'])) {
-            return null;
-        }
-
-        switch ($decoded['t']) {
-            case 'object':
-                if (!is_array($decoded['v'] ?? null)) {
-                    return null;
-                }
-                $ok = true;
-                return (object) $decoded['v'];
-            case 'array':
-                $ok = true;
-                return is_array($decoded['v'] ?? null) ? $decoded['v'] : [];
-            case 'int':
-                $ok = true;
-                return (int) ($decoded['v'] ?? 0);
-            case 'float':
-                $ok = true;
-                return (float) ($decoded['v'] ?? 0);
-            case 'bool':
-                $ok = true;
-                return (bool) ($decoded['v'] ?? false);
-            case 'null':
-                $ok = true;
-                return null;
-            case 'string':
-                $ok = true;
-                return (string) ($decoded['v'] ?? '');
-            default:
-                return null;
-        }
-    }
-
-    private function json(array $data): string
-    {
-        $json = json_encode($data, JSON_UNESCAPED_UNICODE);
-        return is_string($json) ? $json : '{"t":"null","v":null}';
     }
 
     private function markUnavailable(string $reason = ''): void

@@ -32,7 +32,8 @@ class Pgsql implements Adapter
             $dsn .= " options='--client_encoding={$config->charset}'";
         }
 
-        if ($dbLink = @pg_connect($dsn)) {
+        $dbLink = pg_connect($dsn);
+        if ($dbLink) {
             return $dbLink;
         }
 
@@ -52,9 +53,12 @@ class Pgsql implements Adapter
             return $resource;
         }
 
+        $lastError = pg_last_error($handle);
+        $sqlState = @pg_result_error_field(pg_get_result($handle), PGSQL_DIAG_SQLSTATE);
+
         throw new SQLException(
-            @pg_last_error($handle),
-            pg_result_error_field(pg_get_result($handle), PGSQL_DIAG_SQLSTATE)
+            $lastError !== false ? $lastError : '',
+            $sqlState !== false ? $sqlState : null
         );
     }
 

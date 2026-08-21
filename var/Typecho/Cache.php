@@ -20,10 +20,7 @@ class Cache
     private float $namespaceSyncAt = 0.0;
     private int $panelCountCache = 0;
     private float $panelCountAt = 0.0;
-    private array $tableVersions = [];
-    private array $tableSyncAt = [];
     private string $lastError = '';
-    private const MAX_TABLE_TRACK = 32;
 
     public static function getInstance(): self
     {
@@ -54,8 +51,6 @@ class Cache
         $this->namespaceSyncAt = 0.0;
         $this->panelCountCache = 0;
         $this->panelCountAt = 0.0;
-        $this->tableVersions = [];
-        $this->tableSyncAt = [];
         $this->lastError = '';
 
         if (!$this->enabled) {
@@ -155,30 +150,6 @@ class Cache
         $this->track($started);
     }
 
-    public function waitFor(string $key, &$value, int $attempts = 2, int $sleepUs = 5000): bool
-    {
-        $value = null;
-        if (!$this->enabled()) {
-            return false;
-        }
-
-        $attempts = max(1, $attempts);
-        for ($i = 0; $i < $attempts; $i++) {
-            if ($sleepUs > 0) {
-                usleep($sleepUs);
-            }
-
-            $hit = false;
-            $cached = $this->get($key, $hit);
-            if ($hit) {
-                $value = $cached;
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     public function flush(): int
     {
         if (!$this->driver) {
@@ -210,20 +181,7 @@ class Cache
             return;
         }
 
-        $name = $this->normalizeTableName($table);
-        if ($name !== null) {
-            $version = $this->bumpVersion($this->tableMetaKey($name), $this->tableVersions[$name] ?? 1);
-            $this->tableVersions[$name] = $version;
-            $this->tableSyncAt[$name] = microtime(true);
-            $this->panelCountAt = 0.0;
-            return;
-        }
-
-        if ($this->namespaceVersion >= 100000) {
-            $this->rotateNamespace();
-            return;
-        }
-
+        unset($table);
         $this->rotateNamespace();
     }
 
@@ -239,17 +197,7 @@ class Cache
             return null;
         }
 
-        $tables = $this->queryTables($query, $trimmed);
-        if (!empty($tables)) {
-            $versionParts = [];
-            foreach ($tables as $table) {
-                $versionParts[] = $table . '.' . $this->loadTableVersion($table, true);
-            }
-            sort($versionParts, SORT_STRING);
-            return 'sql:' . implode(',', $versionParts) . ':' . sha1($trimmed);
-        }
-
-        return 'sql:' . sha1($trimmed);
+        return 'sql:' . $this->namespaceVersion . ':' . sha1($trimmed);
     }
 
     public function panel(): array
@@ -332,103 +280,12 @@ class Cache
         $this->namespaceSyncAt = $now;
     }
 
-    private function queryTables($query, string $sql): array
+    private function rotateNamespace(): void
     {
-        $tables = [];
-        if ($query instanceof Query) {
-            $table = $this->normalizeTableName($query->getAttribute('table'));
-            if ($table !== null) {
-                $tables[$table] = true;
-            }
-        }
-
-        $sql = substr($sql, 0, 4096);
-
-        if (preg_match_all('/\b(?:FROM|JOIN)\s+([a-zA-Z_][a-zA-Z0-9_]*)/i', $sql, $matches, PREG_SET_ORDER)) {
-            foreach ($matches as $match) {
-                $table = $this->normalizeTableName($match[1]);
-                if ($table !== null) {
-                    $tables[$table] = true;
-                }
-            }
-        }
-
-        return array_keys($tables);
-    }
-
-    private function normalizeTableName(?string $table): ?string
-    {
-        if (!$table) {
-            return null;
-        }
-
-        $name = trim((string) $table);
-        if ($name === '') {
-            return null;
-        }
-
-        $name = str_replace('`', '', $name);
-        $parts = preg_split('/\s+/', $name);
-        $name = $parts[0] ?? $name;
-        $name = explode(',', $name)[0] ?? $name;
-        if (strpos($name, '.') !== false) {
-            $dotParts = explode('.', $name);
-            $name = end($dotParts) ?: $name;
-        }
-
-        if (strpos($name, 'table.') === 0) {
-            $name = substr($name, 6);
-        }
-
-        $name = strtolower($name);
-        if ($name === '' || !preg_match('/^[a-z0-9_]+$/', $name)) {
-            return null;
-        }
-
-        return $name;
-    }
-
-    private function loadTableVersion(string $table, bool $force): int
-    {
-        if (!$this->driver) {
-            return 1;
-        }
-
-        $now = microtime(true);
-        $last = $this->tableSyncAt[$table] ?? 0.0;
-        if (!$force && isset($this->tableVersions[$table]) && ($now - $last) < 1.0) {
-            return $this->tableVersions[$table];
-        }
-
-        $this->pruneTableTracking($table);
-
-        $hit = false;
-        $version = $this->driver->get($this->tableMetaKey($table), $hit);
-        if ($hit && is_numeric($version) && (int) $version > 0) {
-            $this->tableVersions[$table] = (int) $version;
-        } else {
-            $this->tableVersions[$table] = 1;
-            $this->driver->set($this->tableMetaKey($table), 1, 0);
-        }
-
-        $this->tableSyncAt[$table] = $now;
-        return $this->tableVersions[$table];
-    }
-
-    private function pruneTableTracking(string $newTable): void
-    {
-        if (count($this->tableVersions) < self::MAX_TABLE_TRACK) {
-            return;
-        }
-
-        unset($this->tableVersions[$newTable], $this->tableSyncAt[$newTable]);
-
-        $keys = array_keys($this->tableVersions);
-        $evict = (int) floor(self::MAX_TABLE_TRACK / 4);
-        for ($i = 0; $i < $evict && $i < count($keys); $i++) {
-            $key = $keys[$i];
-            unset($this->tableVersions[$key], $this->tableSyncAt[$key]);
-        }
+        $this->namespaceVersion = $this->bumpVersion($this->metaKey(), $this->namespaceVersion);
+        $this->namespaceSyncAt = microtime(true);
+        $this->panelCountCache = 0;
+        $this->panelCountAt = microtime(true);
     }
 
     private function bumpVersion(string $metaKey, int $fallback): int
@@ -444,21 +301,6 @@ class Cache
         }
 
         return $next;
-    }
-
-    private function rotateNamespace(): void
-    {
-        $this->namespaceVersion = $this->bumpVersion($this->metaKey(), $this->namespaceVersion);
-        $this->namespaceSyncAt = microtime(true);
-        $this->panelCountCache = 0;
-        $this->panelCountAt = microtime(true);
-        $this->tableVersions = [];
-        $this->tableSyncAt = [];
-    }
-
-    private function tableMetaKey(string $table): string
-    {
-        return $this->prefix . '__table:' . $table;
     }
 
     private function querySql($query): ?string

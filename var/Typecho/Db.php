@@ -360,37 +360,33 @@ class Db
         $this->invalidateAllOnCommit = false;
     }
 
-    public function fetchAll($query, ?callable $filter = null): array
+    private function cacheKey($query): ?string
     {
         $cache = Cache::getInstance();
-        $cacheKey = $cache->enabled() && !$this->transactionActive ? $cache->queryKey($query) : null;
-        $locked = false;
+        if (!$cache->enabled() || $this->transactionActive) {
+            return null;
+        }
+
+        return $cache->queryKey($query);
+    }
+
+    public function fetchAll($query, ?callable $filter = null): array
+    {
+        $cacheKey = $this->cacheKey($query);
         if ($cacheKey) {
+            $cache = Cache::getInstance();
             $hit = false;
             $cached = $cache->get($cacheKey, $hit);
             if ($hit && is_array($cached)) {
                 return $filter ? array_map($filter, $cached) : $cached;
             }
-
-            $locked = $cache->tryLock($cacheKey, 6);
-            if (!$locked) {
-                $waited = null;
-                if ($cache->waitFor($cacheKey, $waited, 60, 50000) && is_array($waited)) {
-                    return $filter ? array_map($filter, $waited) : $waited;
-                }
-            }
         }
 
-        try {
-            $resource = $this->query($query);
-            $result = $this->adapter->fetchAll($resource);
-            if ($cacheKey) {
-                $cache->set($cacheKey, $result);
-            }
-        } finally {
-            if ($cacheKey && $locked) {
-                $cache->unlock($cacheKey);
-            }
+        $resource = $this->query($query);
+        $result = $this->adapter->fetchAll($resource);
+
+        if ($cacheKey) {
+            Cache::getInstance()->set($cacheKey, $result);
         }
 
         return $filter ? array_map($filter, $result) : $result;
@@ -398,10 +394,9 @@ class Db
 
     public function fetchRow($query, ?callable $filter = null): ?array
     {
-        $cache = Cache::getInstance();
-        $cacheKey = $cache->enabled() && !$this->transactionActive ? $cache->queryKey($query) : null;
-        $locked = false;
+        $cacheKey = $this->cacheKey($query);
         if ($cacheKey) {
+            $cache = Cache::getInstance();
             $hit = false;
             $cached = $cache->get($cacheKey, $hit);
             if ($hit) {
@@ -412,31 +407,13 @@ class Db
                     return $filter ? $filter($cached) : $cached;
                 }
             }
-
-            $locked = $cache->tryLock($cacheKey, 6);
-            if (!$locked) {
-                $waited = null;
-                if ($cache->waitFor($cacheKey, $waited, 60, 50000)) {
-                    if ($waited === null) {
-                        return null;
-                    }
-                    if (is_array($waited)) {
-                        return $filter ? $filter($waited) : $waited;
-                    }
-                }
-            }
         }
 
-        try {
-            $resource = $this->query($query);
-            $rows = $this->adapter->fetch($resource);
-            if ($cacheKey) {
-                $cache->set($cacheKey, $rows);
-            }
-        } finally {
-            if ($cacheKey && $locked) {
-                $cache->unlock($cacheKey);
-            }
+        $resource = $this->query($query);
+        $rows = $this->adapter->fetch($resource);
+
+        if ($cacheKey) {
+            Cache::getInstance()->set($cacheKey, $rows);
         }
 
         if (!$rows) {
@@ -448,10 +425,9 @@ class Db
 
     public function fetchObject($query, ?callable $filter = null): ?\stdClass
     {
-        $cache = Cache::getInstance();
-        $cacheKey = $cache->enabled() && !$this->transactionActive ? $cache->queryKey($query) : null;
-        $locked = false;
+        $cacheKey = $this->cacheKey($query);
         if ($cacheKey) {
+            $cache = Cache::getInstance();
             $hit = false;
             $cached = $cache->get($cacheKey, $hit);
             if ($hit) {
@@ -462,31 +438,13 @@ class Db
                     return $filter ? $filter($cached) : $cached;
                 }
             }
-
-            $locked = $cache->tryLock($cacheKey, 6);
-            if (!$locked) {
-                $waited = null;
-                if ($cache->waitFor($cacheKey, $waited, 60, 50000)) {
-                    if ($waited === null) {
-                        return null;
-                    }
-                    if ($waited instanceof \stdClass) {
-                        return $filter ? $filter($waited) : $waited;
-                    }
-                }
-            }
         }
 
-        try {
-            $resource = $this->query($query);
-            $rows = $this->adapter->fetchObject($resource);
-            if ($cacheKey) {
-                $cache->set($cacheKey, $rows);
-            }
-        } finally {
-            if ($cacheKey && $locked) {
-                $cache->unlock($cacheKey);
-            }
+        $resource = $this->query($query);
+        $rows = $this->adapter->fetchObject($resource);
+
+        if ($cacheKey) {
+            Cache::getInstance()->set($cacheKey, $rows);
         }
 
         if (!$rows) {
