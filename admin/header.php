@@ -40,4 +40,4 @@ $documentLang = str_replace('_', '-', (string) ($options->lang ?? 'zh_CN'));
         <meta name="robots" content="noindex, nofollow">
         <?php echo $header; ?>
     </head>
-    <body<?php if ($bodyClass !== '') {echo ' class="' . $bodyClass . '"';} ?>>
+    <body<?php if ($bodyClass !== '') {echo ' class="' . htmlspecialchars($bodyClass, ENT_QUOTES, 'UTF-8') . '"';} ?>>

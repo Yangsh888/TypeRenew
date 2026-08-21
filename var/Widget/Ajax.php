@@ -445,10 +445,17 @@ class Ajax extends BaseOptions implements ActionInterface
 
     public function remoteCallback()
     {
-        if ($this->options->generator == $this->request->getAgent()) {
-            $this->response->throwCallback(static function () {
-                echo 'OK';
-            }, 'text/plain');
+        $token = (string) $this->request->get('token');
+        $ts = (int) $this->request->get('ts');
+        $secret = (string) ($this->options->secret ?? '');
+
+        if ($secret !== '' && $ts > 0 && abs(time() - $ts) <= 30) {
+            $expected = hash_hmac('sha256', 'callback|' . $ts, $secret);
+            if (hash_equals($expected, $token)) {
+                $this->response->throwCallback(static function () {
+                    echo 'OK';
+                }, 'text/plain');
+            }
         }
 
         $this->response->setStatus(403)->throwContent('', 'text/plain');

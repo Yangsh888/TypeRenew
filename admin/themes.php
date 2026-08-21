@@ -56,7 +56,7 @@ $themeHomepage = static function ($value): string {
                                     <?php if ($themes->author): ?><?php _e('作者'); ?>: <?php if ($homepage !== ''): ?><a href="<?php echo $homepage; ?>" target="_blank" rel="noopener noreferrer"><?php endif; ?><?php echo htmlspecialchars($themes->author, ENT_QUOTES, 'UTF-8'); ?><?php if ($homepage !== ''): ?></a><?php endif; ?> &nbsp;&nbsp;<?php endif; ?>
                                     <?php if ($themes->version): ?><?php _e('版本'); ?>: <?php $themes->version() ?><?php endif; ?>
                                 </cite>
-                                <p><?php echo nl2br($themes->description); ?></p>
+                                <p><?php echo nl2br(htmlspecialchars($themes->description, ENT_QUOTES, 'UTF-8')); ?></p>
                                 <?php if ($options->theme != $themes->name || $options->missingTheme): ?>
                                     <div class="tr-theme-actions">
                                         <?php if (\Widget\Themes\Files::isWriteable()): ?>

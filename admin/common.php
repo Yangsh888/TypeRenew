@@ -23,6 +23,13 @@ $menu = \Widget\Menu::alloc();
 $request = $options->request;
 $response = $options->response;
 
+$publicPages = ['login.php', 'register.php', 'forgot.php', 'reset.php'];
+$currentScript = basename((string) ($_SERVER['SCRIPT_NAME'] ?? ''));
+
+if (!in_array($currentScript, $publicPages, true) && !$user->hasLogin()) {
+    $response->redirect(\Typecho\Common::url('login.php', $options->adminUrl));
+}
+
 $currentMenu = $menu->getCurrentMenu();
 
 if (!empty($currentMenu)) {

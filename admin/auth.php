@@ -24,7 +24,7 @@ function tr_auth_open(array $config): void
                 <div class="tr-auth-hero-title"><?php echo htmlspecialchars($heroTitle, ENT_QUOTES, 'UTF-8'); ?></div>
                 <div class="tr-auth-hero-subtitle"><?php echo htmlspecialchars($heroSubtitle, ENT_QUOTES, 'UTF-8'); ?></div>
             </div>
-            <div class="tr-auth-hero-foot"><?php echo $heroFoot; ?></div>
+            <div class="tr-auth-hero-foot"><?php echo htmlspecialchars($heroFoot, ENT_QUOTES, 'UTF-8'); ?></div>
         </section>
         <section class="tr-auth-panel">
             <div class="tr-auth-box">

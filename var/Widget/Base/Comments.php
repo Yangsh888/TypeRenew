@@ -54,8 +54,9 @@ class Comments extends Base implements QueryInterface, RowFilterInterface, Prima
             $insertStruct['coid'] = $rows['coid'];
         }
 
-        if (Common::strLen($insertStruct['agent']) > 511) {
-            $insertStruct['agent'] = Common::subStr($insertStruct['agent'], 0, 511, '');
+        $agent = (string) ($insertStruct['agent'] ?? '');
+        if (Common::strLen($agent) > 511) {
+            $insertStruct['agent'] = Common::subStr($agent, 0, 511, '');
         }
 
         $insertId = $this->db->query($this->db->insert('table.comments')->rows($insertStruct));

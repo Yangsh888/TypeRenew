@@ -497,55 +497,13 @@ EOF;
         public static function removeXSS(?string $val): string
         {
             $val = (string) $val;
-            $val = preg_replace('/([\x00-\x08]|[\x0b-\x0c]|[\x0e-\x19])/', '', $val);
-            $val = self::cleanHex($val);
-
-            $ra1 = ['javascript', 'vbscript', 'expression', 'applet', 'meta', 'xml', 'blink', 'link', 'style', 'script',
-                    'embed', 'object', 'iframe', 'frame', 'frameset', 'ilayer', 'layer', 'bgsound', 'title', 'base'];
-            $ra2 = [
-                'onabort', 'onactivate', 'onafterprint', 'onafterupdate', 'onbeforeactivate', 'onbeforecopy',
-                'onbeforecut', 'onbeforedeactivate', 'onbeforeeditfocus', 'onbeforepaste', 'onbeforeprint',
-                'onbeforeunload', 'onbeforeupdate', 'onblur', 'onbounce', 'oncellchange', 'onchange', 'onclick',
-                'oncontextmenu', 'oncontrolselect', 'oncopy', 'oncut', 'ondataavailable', 'ondatasetchanged',
-                'ondatasetcomplete', 'ondblclick', 'ondeactivate', 'ondrag', 'ondragend', 'ondragenter', 'ondragleave',
-                'ondragover', 'ondragstart', 'ondrop', 'onerror', 'onerrorupdate', 'onfilterchange', 'onfinish',
-                'onfocus', 'onfocusin', 'onfocusout', 'onhelp', 'onkeydown', 'onkeypress', 'onkeyup',
-                'onlayoutcomplete', 'onload', 'onlosecapture', 'onmousedown', 'onmouseenter',
-                'onmouseleave', 'onmousemove', 'onmouseout', 'onmouseover', 'onmouseup', 'onmousewheel',
-                'onmove', 'onmoveend', 'onmovestart', 'onpaste', 'onpropertychange', 'onreadystatechange',
-                'onreset', 'onresize', 'onresizeend', 'onresizestart', 'onrowenter', 'onrowexit', 'onrowsdelete',
-                'onrowsinserted', 'onscroll', 'onselect', 'onselectionchange', 'onselectstart', 'onstart', 'onstop',
-                'onsubmit', 'onunload'
-            ];
-            $ra = array_merge($ra1, $ra2);
-
-            $found = true;
-            while ($found == true) {
-                $found = false;
-                for ($i = 0; $i < count($ra); $i++) {
-                    $val_before = $val;
-                    $pattern = '/';
-                    for ($j = 0; $j < strlen($ra[$i]); $j++) {
-                        if ($j > 0) {
-                            $pattern .= '(';
-                            $pattern .= '(&#[xX]0{0,8}([9ab]);)';
-                            $pattern .= '|';
-                            $pattern .= '(&#0{0,8}(9|10|13);)';
-                            $pattern .= ')*';
-                        }
-                        $pattern .= $ra[$i][$j];
-                    }
-                    $pattern .= '/i';
-                    $replacement = substr($ra[$i], 0, 2) . '<x>' . substr($ra[$i], 2);
-                    $val = preg_replace($pattern, $replacement, $val);
-
-                    if ($val_before != $val) {
-                        $found = true;
-                    }
-                }
-            }
-
-            return $val;
+            $val = preg_replace('/[\x00-\x08\x0b\x0c\x0e-\x1f]/', '', $val);
+            $val = preg_replace('/&#[xX]0{0,8}([0-9a-fA-F]+);?/i', '', $val);
+            $val = preg_replace('/&#0{0,8}([0-9]+);?/', '', $val);
+            $val = preg_replace('/javascript\s*:/i', '', $val);
+            $val = preg_replace('/vbscript\s*:/i', '', $val);
+            $val = preg_replace('/on\w+\s*=/i', '', $val);
+            return strip_tags($val);
         }
 
         public static function subStr(string $str, int $start, int $length, string $trim = "..."): string
@@ -625,16 +583,8 @@ EOF;
 
             $result = '';
             $max = strlen($chars) - 1;
-            try {
-                for ($i = 0; $i < $length; $i++) {
-                    $result .= $chars[random_int(0, $max)];
-                }
-                return $result;
-            } catch (\Throwable $e) {
-                $bytes = self::secureRandomBytes($length);
-                for ($i = 0; $i < $length; $i++) {
-                    $result .= $chars[ord($bytes[$i]) % ($max + 1)];
-                }
+            for ($i = 0; $i < $length; $i++) {
+                $result .= $chars[random_int(0, $max)];
             }
             return $result;
         }

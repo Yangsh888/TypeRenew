@@ -53,10 +53,10 @@ $cancelFilterUrl = 'manage-posts.php' . ($filterBase ? '?' . implode('&', $filte
                     <?php if ($user->pass('editor', true) && !isset($request->uid)): ?>
                     <ul class="typecho-option-tabs">
                         <li class="<?php if ($isAllPosts): ?> current<?php endif; ?>"><a
-                                href="<?php echo $request->makeUriByRequest('__typecho_all_posts=on&page=1'); ?>"><?php _e('所有'); ?></a>
+                                href="<?php echo htmlspecialchars($request->makeUriByRequest('__typecho_all_posts=on&page=1'), ENT_QUOTES, 'UTF-8'); ?>"><?php _e('所有'); ?></a>
                         </li>
                         <li class="<?php if (!$isAllPosts): ?> current<?php endif; ?>"><a
-                                href="<?php echo $request->makeUriByRequest('__typecho_all_posts=off&page=1'); ?>"><?php _e('我的'); ?></a>
+                                href="<?php echo htmlspecialchars($request->makeUriByRequest('__typecho_all_posts=off&page=1'), ENT_QUOTES, 'UTF-8'); ?>"><?php _e('我的'); ?></a>
                         </li>
                     </ul>
                     <?php endif; ?>

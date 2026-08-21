@@ -48,8 +48,8 @@ $cancelFilterUrl = 'manage-comments.php' . ($filterBase ? '?' . implode('&', $fi
 
                     <?php if($user->pass('editor', true) && !isset($request->cid)): ?>
                     <ul class="typecho-option-tabs">
-                        <li class="<?php if($isAllComments): ?> current<?php endif; ?>"><a href="<?php echo $request->makeUriByRequest('__typecho_all_comments=on'); ?>"><?php _e('所有'); ?></a></li>
-                        <li class="<?php if(!$isAllComments): ?> current<?php endif; ?>"><a href="<?php echo $request->makeUriByRequest('__typecho_all_comments=off'); ?>"><?php _e('我的'); ?></a></li>
+                        <li class="<?php if($isAllComments): ?> current<?php endif; ?>"><a href="<?php echo htmlspecialchars($request->makeUriByRequest('__typecho_all_comments=on'), ENT_QUOTES, 'UTF-8'); ?>"><?php _e('所有'); ?></a></li>
+                        <li class="<?php if(!$isAllComments): ?> current<?php endif; ?>"><a href="<?php echo htmlspecialchars($request->makeUriByRequest('__typecho_all_comments=off'), ENT_QUOTES, 'UTF-8'); ?>"><?php _e('我的'); ?></a></li>
                     </ul>
                     <?php endif; ?>
                 </div>

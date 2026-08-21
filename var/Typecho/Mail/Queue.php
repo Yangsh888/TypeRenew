@@ -191,6 +191,7 @@ class Queue
                 }
             });
         } catch (\Throwable $e) {
+            self::recordRuntimeError('drain-outer', $e->getMessage());
         }
     }
 
@@ -568,13 +569,9 @@ class Queue
             return false;
         }
 
-        try {
-            $row = $db->fetchRow(
-                $db->select('id')->from('table.mail_unsub')->where('email = ? AND scope = ?', $email, $scope)->limit(1)
-            );
-        } catch (\Throwable $e) {
-            return false;
-        }
+        $row = $db->fetchRow(
+            $db->select('id')->from('table.mail_unsub')->where('email = ? AND scope = ?', $email, $scope)->limit(1)
+        );
 
         return !empty($row);
     }
@@ -586,13 +583,9 @@ class Queue
             return false;
         }
 
-        try {
-            $exists = $db->fetchRow(
-                $db->select('id')->from('table.mail_unsub')->where('email = ? AND scope = ?', $email, $scope)->limit(1)
-            );
-        } catch (\Throwable $e) {
-            return false;
-        }
+        $exists = $db->fetchRow(
+            $db->select('id')->from('table.mail_unsub')->where('email = ? AND scope = ?', $email, $scope)->limit(1)
+        );
 
         if ($exists) {
             return true;
@@ -771,15 +764,11 @@ class Queue
 
     private static function clearRulesRuntimeError(): void
     {
-        try {
-            $db = Db::get();
-            $row = $db->fetchRow($db->select('value')->from('table.options')->where('name = ?', 'mailRuntimeError')->limit(1));
-            $value = trim((string) ($row['value'] ?? ''));
-            if (str_starts_with($value, '[rules]')) {
-                self::clearRuntimeError();
-            }
-        } catch (\Throwable $e) {
-            self::logRuntimeOptionFailure('clearRulesRuntimeError', $e);
+        $db = Db::get();
+        $row = $db->fetchRow($db->select('value')->from('table.options')->where('name = ?', 'mailRuntimeError')->limit(1));
+        $value = trim((string) ($row['value'] ?? ''));
+        if (str_starts_with($value, '[rules]')) {
+            self::clearRuntimeError();
         }
     }
 

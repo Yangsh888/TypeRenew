@@ -362,7 +362,11 @@ RewriteRule . {$basePath}index.php [L]
             return false;
         }
 
-        $client->setData(['do' => 'remoteCallback'])
+        $secret = (string) ($this->options->secret ?? '');
+        $ts = time();
+        $token = $secret !== '' ? hash_hmac('sha256', 'callback|' . $ts, $secret) : '';
+
+        $client->setData(['do' => 'remoteCallback', 'token' => $token, 'ts' => $ts])
             ->setHeader('User-Agent', $this->options->generator)
             ->setHeader('X-Requested-With', 'XMLHttpRequest')
             ->send(Common::url('/action/ajax', $this->options->siteUrl));

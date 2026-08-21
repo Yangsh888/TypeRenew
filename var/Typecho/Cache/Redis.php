@@ -10,7 +10,7 @@ class Redis implements Driver
     private float $lastFailure = 0.0;
     private int $failureCount = 0;
     private string $lastError = '';
-    private const BACKOFF_STEPS = [5, 15, 60, 120, 300];
+    private const BACKOFF_STEPS = [5, 15];
     private const INCREMENT_SCRIPT = <<<'LUA'
 local value = redis.call('GET', KEYS[1])
 if not value then

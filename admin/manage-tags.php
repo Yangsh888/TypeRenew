@@ -44,9 +44,9 @@ include 'menu.php';
                                 <li class="size-<?php $tags->split(5, 10, 20, 30); ?>" id="<?php $tags->theId(); ?>">
                                     <input type="checkbox" value="<?php $tags->mid(); ?>" name="mid[]"/>
                                     <span
-                                        rel="<?php echo $request->makeUriByRequest('mid=' . $tags->mid); ?>"><?php $tags->name(); ?></span>
+                                        rel="<?php echo htmlspecialchars($request->makeUriByRequest('mid=' . $tags->mid), ENT_QUOTES, 'UTF-8'); ?>"><?php $tags->name(); ?></span>
                                     <a class="tag-edit-link"
-                                       href="<?php echo $request->makeUriByRequest('mid=' . $tags->mid); ?>"><i
+                                       href="<?php echo htmlspecialchars($request->makeUriByRequest('mid=' . $tags->mid), ENT_QUOTES, 'UTF-8'); ?>"><i
                                             class="i-edit"></i></a>
                                 </li>
                             <?php endwhile; ?>
