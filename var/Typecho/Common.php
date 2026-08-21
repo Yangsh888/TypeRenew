@@ -405,13 +405,7 @@ EOF;
 
             $return = '';
 
-            if (
-                function_exists('mb_regex_encoding')
-                && function_exists('mb_ereg_search_init')
-                && function_exists('mb_ereg_search')
-                && function_exists('mb_ereg_search_getregs')
-                && function_exists('mb_ereg_search_regs')
-            ) {
+            if (function_exists('mb_ereg_search')) {
                 mb_regex_encoding('UTF-8');
                 mb_ereg_search_init($str, "[\w" . preg_quote('_-') . "]+");
                 $result = mb_ereg_search();
@@ -427,9 +421,6 @@ EOF;
             } else {
                 $matches = [];
                 $matched = preg_match_all('/[\pL\pN_-]+/u', $str, $matches);
-                if ($matched === false) {
-                    $matched = preg_match_all('/[A-Za-z0-9_-]+/', $str, $matches);
-                }
 
                 if ($matched && !empty($matches[0])) {
                     $return = implode('-', $matches[0]);
@@ -657,15 +648,6 @@ EOF;
             try {
                 return random_bytes($length);
             } catch (\Throwable $e) {
-                if (function_exists('openssl_random_pseudo_bytes')) {
-                    $strong = false;
-                    $bytes = openssl_random_pseudo_bytes($length, $strong);
-
-                    if ($bytes !== false && $strong) {
-                        return $bytes;
-                    }
-                }
-
                 throw new \RuntimeException(_t('当前环境缺少安全随机源，无法继续执行敏感操作。'), 0, $e);
             }
         }
@@ -879,14 +861,12 @@ EOF;
 
             $addresses = [];
 
-            if (function_exists('gethostbynamel')) {
-                $ipv4s = gethostbynamel($host);
-                if (is_array($ipv4s)) {
-                    foreach ($ipv4s as $ip) {
-                        $validated = filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4);
-                        if ($validated !== false) {
-                            $addresses[] = $validated;
-                        }
+            $ipv4s = gethostbynamel($host);
+            if (is_array($ipv4s)) {
+                foreach ($ipv4s as $ip) {
+                    $validated = filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4);
+                    if ($validated !== false) {
+                        $addresses[] = $validated;
                     }
                 }
             } else {

@@ -107,16 +107,7 @@ class Mysqli implements Adapter
 
     public function fetchAll($resource): array
     {
-        if (method_exists($resource, 'fetch_all')) {
-            return $resource->fetch_all(MYSQLI_ASSOC);
-        }
-
-        $rows = [];
-        while ($row = $resource->fetch_assoc()) {
-            $rows[] = $row;
-        }
-
-        return $rows;
+        return $resource->fetch_all(MYSQLI_ASSOC);
     }
 
     public function fetchObject($resource): ?\stdClass

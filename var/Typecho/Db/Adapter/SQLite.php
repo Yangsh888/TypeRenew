@@ -22,13 +22,10 @@ class SQLite implements Adapter
     public function connect(Config $config): \SQLite3
     {
         try {
-            $dbHandle = new \SQLite3($config->file);
-            $this->isSQLite2 = version_compare(\SQLite3::version()['versionString'], '3.0.0', '<');
+            return new \SQLite3($config->file);
         } catch (\Throwable $e) {
             throw new ConnectionException($e->getMessage(), $e->getCode());
         }
-
-        return $dbHandle;
     }
 
     public function getVersion($handle): string

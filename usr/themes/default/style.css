@@ -667,7 +667,7 @@ textarea.form-input {
     }
     
     .search-input, .form-input {
-        font-size: 16px; /* 防止 iOS Safari 自动放大 */
+        font-size: 16px;
     }
     
     .nav-toggle-label {

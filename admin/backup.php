@@ -155,7 +155,7 @@ $reportLines = \Widget\Backup::consumeReport();
                                         <label class="tr-label" for="backup-select-file"><?php _e('选择一个备份文件恢复数据'); ?></label>
                                         <select name="file" id="backup-select-file" class="tr-select">
                                             <?php foreach ($backupFiles as $file): ?>
-                                                <option value="<?php echo $file; ?>"><?php echo $file; ?></option>
+                                                <option value="<?php echo htmlspecialchars($file, ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($file, ENT_QUOTES, 'UTF-8'); ?></option>
                                             <?php endforeach; ?>
                                         </select>
                                     </div>

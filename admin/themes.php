@@ -53,7 +53,7 @@ $themeHomepage = static function ($value): string {
                                 <h3><?php '' != $themes->title ? $themes->title() : $themes->name(); ?></h3>
                                 <?php $homepage = $themeHomepage($themes->homepage); ?>
                                 <cite>
-                                    <?php if ($themes->author): ?><?php _e('作者'); ?>: <?php if ($homepage !== ''): ?><a href="<?php echo $homepage; ?>" target="_blank" rel="noopener noreferrer"><?php endif; ?><?php $themes->author(); ?><?php if ($homepage !== ''): ?></a><?php endif; ?> &nbsp;&nbsp;<?php endif; ?>
+                                    <?php if ($themes->author): ?><?php _e('作者'); ?>: <?php if ($homepage !== ''): ?><a href="<?php echo $homepage; ?>" target="_blank" rel="noopener noreferrer"><?php endif; ?><?php echo htmlspecialchars($themes->author, ENT_QUOTES, 'UTF-8'); ?><?php if ($homepage !== ''): ?></a><?php endif; ?> &nbsp;&nbsp;<?php endif; ?>
                                     <?php if ($themes->version): ?><?php _e('版本'); ?>: <?php $themes->version() ?><?php endif; ?>
                                 </cite>
                                 <p><?php echo nl2br($themes->description); ?></p>

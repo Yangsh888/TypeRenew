@@ -60,11 +60,7 @@ class Mysql extends Pdo
             $pdo->exec($sql);
         }
 
-        if (class_exists('\Pdo\Mysql')) {
-            $pdo->setAttribute(\Pdo\Mysql::ATTR_USE_BUFFERED_QUERY, true);
-        } else {
-            $pdo->setAttribute(\PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, true);
-        }
+        $pdo->setAttribute(\PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, true);
 
         return $pdo;
     }

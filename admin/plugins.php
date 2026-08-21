@@ -107,7 +107,7 @@ $pluginVersionToolbarRendered = false;
                                 <td><?php $activatedPlugins->description(); ?></td>
                                 <td class="kit-hidden-mb"><?php echo $pluginVersionMeta($activatedPlugins->name, $activatedPlugins->version, $activatedPlugins->author, $activatedPlugins->homepage); ?></td>
                                 <td class="kit-hidden-mb"><?php $homepage = $pluginHomepage($activatedPlugins->homepage); ?>
-                                    <?php echo $homepage === '' ? $activatedPlugins->author : '<a href="' . $homepage . '" target="_blank" rel="noopener noreferrer">' . $activatedPlugins->author . '</a>'; ?></td>
+                                    <?php echo $homepage === '' ? htmlspecialchars($activatedPlugins->author, ENT_QUOTES, 'UTF-8') : '<a href="' . $homepage . '" target="_blank" rel="noopener noreferrer">' . htmlspecialchars($activatedPlugins->author, ENT_QUOTES, 'UTF-8') . '</a>'; ?></td>
                                 <td>
                                     <?php if ($activatedPlugins->activate || $activatedPlugins->deactivate || $activatedPlugins->config || $activatedPlugins->personalConfig): ?>
                                         <div class="tr-plugin-actions">
@@ -182,8 +182,8 @@ $pluginVersionToolbarRendered = false;
                                     </td>
                                     <td><?php $deactivatedPlugins->description(); ?></td>
                                     <td class="kit-hidden-mb"><?php echo $pluginVersionMeta($deactivatedPlugins->name, $deactivatedPlugins->version, $deactivatedPlugins->author, $deactivatedPlugins->homepage); ?></td>
-                                    <td class="kit-hidden-mb"><?php $homepage = $pluginHomepage($deactivatedPlugins->homepage); ?>
-                                        <?php echo $homepage === '' ? $deactivatedPlugins->author : '<a href="' . $homepage . '" target="_blank" rel="noopener noreferrer">' . $deactivatedPlugins->author . '</a>'; ?></td>
+                                <td class="kit-hidden-mb"><?php $homepage = $pluginHomepage($deactivatedPlugins->homepage); ?>
+                                    <?php echo $homepage === '' ? htmlspecialchars($deactivatedPlugins->author, ENT_QUOTES, 'UTF-8') : '<a href="' . $homepage . '" target="_blank" rel="noopener noreferrer">' . htmlspecialchars($deactivatedPlugins->author, ENT_QUOTES, 'UTF-8') . '</a>'; ?></td>
                                     <td>
                                         <div class="tr-plugin-actions">
                                             <form action="<?php echo $pluginAction; ?>" method="post" class="inline-operate-form">

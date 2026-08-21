@@ -877,7 +877,7 @@ EOF;
         }
     }
 
-    public function archiveTitle($defines = null, string $before = ' &raquo; ', string $end = '')
+    public function archiveTitle($defines = null, string $before = ' &raquo; ', string $end = ''): void
     {
         if ($this->archiveTitle) {
             $define = '%s';

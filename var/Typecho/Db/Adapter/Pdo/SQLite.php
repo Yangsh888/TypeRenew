@@ -21,9 +21,7 @@ class SQLite extends Pdo
 
     public function init(Config $config): \PDO
     {
-        $pdo = new \PDO("sqlite:{$config->file}");
-        $this->isSQLite2 = version_compare($pdo->getAttribute(\PDO::ATTR_SERVER_VERSION), '3.0.0', '<');
-        return $pdo;
+        return new \PDO("sqlite:{$config->file}");
     }
 
     public function fetchObject($resource): ?\stdClass

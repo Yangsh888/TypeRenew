@@ -33,7 +33,7 @@ if (isset($post) || isset($page)) {
     </div>
     <ul id="file-list">
     <?php if ($attachment): while ($attachment->next()): ?>
-        <li data-cid="<?php $attachment->cid(); ?>" data-url="<?php echo $attachment->attachment->url; ?>" data-image="<?php echo $attachment->attachment->isImage ? 1 : 0; ?>"><input type="hidden" name="attachment[]" value="<?php $attachment->cid(); ?>" />
+        <li data-cid="<?php $attachment->cid(); ?>" data-url="<?php echo htmlspecialchars($attachment->attachment->url, ENT_QUOTES, 'UTF-8'); ?>" data-image="<?php echo $attachment->attachment->isImage ? 1 : 0; ?>"><input type="hidden" name="attachment[]" value="<?php $attachment->cid(); ?>" />
             <a class="insert" title="<?php _e('点击插入文件'); ?>" href="###"><?php $attachment->title(); ?></a>
             <div class="info">
                 <?php echo number_format(ceil($attachment->attachment->size / 1024)); ?> Kb
