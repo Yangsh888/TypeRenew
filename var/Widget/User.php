@@ -183,7 +183,10 @@ class User extends Users
     public function pass(string $group, bool $return = false): bool
     {
         if ($this->hasLogin()) {
-            if (array_key_exists($group, $this->groups) && $this->groups[$this->group] <= $this->groups[$group]) {
+            if (
+                isset($this->groups[$group], $this->groups[$this->group])
+                && $this->groups[$this->group] <= $this->groups[$group]
+            ) {
                 return true;
             }
         } else {

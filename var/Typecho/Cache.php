@@ -181,7 +181,6 @@ class Cache
             return;
         }
 
-        unset($table);
         $this->rotateNamespace();
     }
 

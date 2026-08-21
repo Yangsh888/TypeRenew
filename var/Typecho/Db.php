@@ -40,9 +40,7 @@ class Db
 
     private bool $transactionActive = false;
 
-    private array $pendingInvalidations = [];
-
-    private bool $invalidateAllOnCommit = false;
+    private bool $pendingInvalidation = false;
 
     private static Db $instance;
 
@@ -187,7 +185,7 @@ class Db
     {
         $table = preg_replace("/^table\./", $this->prefix, $table);
         $this->adapter->truncate($table, $this->selectDb(self::WRITE));
-        $this->invalidateCache($this->normalizeInvalidateTable($table));
+        $this->invalidateCache();
     }
 
     public function query($query, int $op = self::READ, string $action = self::SELECT)
@@ -211,7 +209,6 @@ class Db
             );
             if ($isWriteSql) {
                 $op = self::WRITE;
-                $table = $this->normalizeInvalidateTable($this->parseWriteTable($query));
             } elseif ($forceWriteConnection) {
                 $op = self::WRITE;
             }
@@ -223,66 +220,49 @@ class Db
 
         $sql = $query instanceof Query ? $query->prepare($query) : $query;
 
-        $resource = $this->adapter->query($sql, $handle, $op, $action, $table);
+        try {
+            $resource = $this->adapter->query($sql, $handle, $op, $action, $table);
+        } catch (\Throwable $e) {
+            if ($transactionCommand === 'commit' || $transactionCommand === 'rollback') {
+                $this->transactionActive = false;
+                $this->flushPendingInvalidations();
+            }
+
+            throw $e;
+        }
 
         if ($transactionCommand === 'begin') {
             $this->transactionActive = true;
-            $this->pendingInvalidations = [];
-            $this->invalidateAllOnCommit = false;
         } elseif ($transactionCommand === 'commit') {
             $this->transactionActive = false;
             $this->flushPendingInvalidations();
         } elseif ($transactionCommand === 'rollback') {
             $this->transactionActive = false;
-            $this->pendingInvalidations = [];
-            $this->invalidateAllOnCommit = false;
+            $this->pendingInvalidation = false;
         }
 
         if ($action) {
             switch ($action) {
                 case self::UPDATE:
                 case self::DELETE:
-                    $this->invalidateCache($table);
+                    $this->invalidateCache();
                     return $this->adapter->affectedRows($resource, $handle);
                 case self::INSERT:
-                    $this->invalidateCache($table);
+                    $this->invalidateCache();
                     return $this->adapter->lastInsertId($resource, $handle);
                 case self::SELECT:
                 default:
                     if ($isWriteSql) {
-                        $this->invalidateCache($table);
+                        $this->invalidateCache();
                     }
                     return $resource;
             }
         } else {
             if ($isWriteSql) {
-                $this->invalidateCache($table);
+                $this->invalidateCache();
             }
             return $resource;
         }
-    }
-
-    private function parseWriteTable(string $sql): ?string
-    {
-        $trimmed = trim($sql);
-        $patterns = [
-            '/^\s*INSERT\s+INTO\s+`?([a-zA-Z0-9_]+)`?/i',
-            '/^\s*REPLACE\s+INTO\s+`?([a-zA-Z0-9_]+)`?/i',
-            '/^\s*UPDATE\s+`?([a-zA-Z0-9_]+)`?/i',
-            '/^\s*DELETE\s+FROM\s+`?([a-zA-Z0-9_]+)`?/i',
-            '/^\s*TRUNCATE(?:\s+TABLE)?\s+`?([a-zA-Z0-9_]+)`?/i',
-            '/^\s*ALTER\s+TABLE\s+`?([a-zA-Z0-9_]+)`?/i',
-            '/^\s*DROP\s+TABLE(?:\s+IF\s+EXISTS)?\s+`?([a-zA-Z0-9_]+)`?/i',
-            '/^\s*CREATE\s+TABLE(?:\s+IF\s+NOT\s+EXISTS)?\s+`?([a-zA-Z0-9_]+)`?/i'
-        ];
-
-        foreach ($patterns as $pattern) {
-            if (preg_match($pattern, $trimmed, $matches)) {
-                return $matches[1];
-            }
-        }
-
-        return null;
     }
 
     private function normalizeInvalidateTable(?string $table): ?string
@@ -326,38 +306,22 @@ class Db
         return null;
     }
 
-    private function invalidateCache(?string $table): void
+    private function invalidateCache(): void
     {
-        if (!$this->transactionActive) {
-            Cache::getInstance()->invalidate($table);
+        if ($this->transactionActive) {
+            $this->pendingInvalidation = true;
             return;
         }
 
-        if ($table === null) {
-            $this->invalidateAllOnCommit = true;
-            $this->pendingInvalidations = [];
-            return;
-        }
-
-        if (!$this->invalidateAllOnCommit) {
-            $this->pendingInvalidations[$table] = true;
-        }
+        Cache::getInstance()->invalidate();
     }
 
     private function flushPendingInvalidations(): void
     {
-        $cache = Cache::getInstance();
-
-        if ($this->invalidateAllOnCommit) {
-            $cache->invalidate();
-        } else {
-            foreach (array_keys($this->pendingInvalidations) as $table) {
-                $cache->invalidate($table);
-            }
+        if ($this->pendingInvalidation) {
+            Cache::getInstance()->invalidate();
+            $this->pendingInvalidation = false;
         }
-
-        $this->pendingInvalidations = [];
-        $this->invalidateAllOnCommit = false;
     }
 
     private function cacheKey($query): ?string

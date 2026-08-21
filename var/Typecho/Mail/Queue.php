@@ -428,7 +428,7 @@ class Queue
             }
 
             if ($cache->enabled()) {
-                $cache->delete($cacheLockKey);
+                $cache->unlock($cacheLockKey);
             }
         }
 
@@ -549,6 +549,7 @@ class Queue
             $ok = $db->query(
                 $db->update('table.mail_queue')->rows([
                     'status' => 'pending',
+                    'attempts' => 0,
                     'lockedUntil' => 0,
                     'sendAt' => $now,
                     'updated' => $now

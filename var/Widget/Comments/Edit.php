@@ -54,6 +54,8 @@ class Edit extends Comments implements ActionInterface
             $this->refreshCommentsNum((int) $comment['cid']);
 
             if ('approved' != $comment['status'] && 'approved' == $status) {
+                $this->db->fetchRow($this->select()
+                    ->where('coid = ?', $coid)->limit(1), [$this, 'push']);
                 \Typecho\Mail\Queue::enqueueComment($this, 'approved', $this->options);
             }
 

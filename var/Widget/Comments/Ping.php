@@ -4,6 +4,7 @@ namespace Widget\Comments;
 
 use Typecho\Config;
 use Widget\Base\Comments;
+use Widget\Base\Contents;
 
 if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
@@ -69,7 +70,7 @@ class Ping extends Comments
         }
     }
 
-    private function singlePingCallback(string $singlePingOptions): void
+    private function singlePingCallback(Config $singlePingOptions): void
     {
         if ($this->customSinglePingCallback) {
             singlePing($this, $singlePingOptions);
@@ -95,7 +96,7 @@ class Ping extends Comments
         <?php
     }
 
-    protected function ___parentContent(): ?array
+    protected function ___parentContent(): Contents
     {
         return $this->parameter->parentContent;
     }

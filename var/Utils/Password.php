@@ -73,8 +73,7 @@ class Password
     private static function verifyLegacy(string $password, string $hash): bool
     {
         if (strpos($hash, '$P$') === 0) {
-            $computed = self::verifyPhpass($password, $hash);
-            return hash_equals($hash, $computed);
+            return hash_equals($hash, self::cryptPrivate($password, $hash));
         }
 
         if (strpos($hash, '$T$') === 0) {
@@ -87,11 +86,6 @@ class Password
 
         $computed = md5($password);
         return hash_equals($hash, $computed);
-    }
-
-    private static function verifyPhpass(string $password, string $hash): bool
-    {
-        return self::cryptPrivate($password, $hash) === $hash;
     }
 
     private static function cryptPrivate(string $password, string $setting): string

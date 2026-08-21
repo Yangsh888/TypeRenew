@@ -14,8 +14,6 @@ abstract class Pdo implements Adapter
 {
     protected \PDO $object;
 
-    protected ?string $lastTable;
-
     public static function isAvailable(): bool
     {
         return class_exists('PDO');
@@ -47,7 +45,6 @@ abstract class Pdo implements Adapter
         ?string $table = null
     ): \PDOStatement {
         try {
-            $this->lastTable = $table;
             $resource = $handle->prepare($query);
             $resource->execute();
         } catch (\PDOException $e) {

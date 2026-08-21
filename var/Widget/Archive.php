@@ -520,7 +520,7 @@ class Archive extends Contents
     {
         return Ping::alloc([
             'parentId'      => $this->hidden ? 0 : $this->cid,
-            'parentContent' => $this->row,
+            'parentContent' => $this,
             'allowPing'     => $this->allow('ping')
         ]);
     }

@@ -111,6 +111,10 @@ class HyperDown
 
     private function initText(string $text): string
     {
+        if (!mb_check_encoding($text, 'UTF-8')) {
+            $text = mb_convert_encoding($text, 'UTF-8', 'UTF-8');
+        }
+
         $text = str_replace(["\t", "\r"], ['    ', ''], $text);
         $text = $this->normalizeDefinitionLinks($text);
         return $text;
