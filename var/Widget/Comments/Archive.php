@@ -46,13 +46,30 @@ class Archive extends Comments
         echo sprintf($args[$num] ?? array_pop($args), $num);
     }
 
+    private function unapprovedCommentId(): int
+    {
+        $raw = (string) Cookie::get('__typecho_unapproved_comment', '');
+        if (!str_contains($raw, '.')) {
+            return 0;
+        }
+
+        [$coid, $signature] = explode('.', $raw, 2);
+        if (!ctype_digit($coid)) {
+            return 0;
+        }
+
+        return hash_equals(hash_hmac('sha256', $coid, (string) $this->options->secret), $signature)
+            ? (int) $coid
+            : 0;
+    }
+
     public function execute()
     {
         if (!$this->parameter->parentId) {
             return;
         }
 
-        $unapprovedCommentId = intval(Cookie::get('__typecho_unapproved_comment', 0));
+        $unapprovedCommentId = $this->unapprovedCommentId();
         $select = $this->select()->where('cid = ?', $this->parameter->parentId)
             ->where(
                 'status = ? OR (coid = ? AND status <> ?)',

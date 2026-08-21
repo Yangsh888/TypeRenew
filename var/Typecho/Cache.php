@@ -296,7 +296,10 @@ class Cache
         $next = $this->driver->increment($metaKey, 1, max(1, $fallback + 1));
         if ($next === null || $next < 1) {
             $next = max(1, $fallback + 1);
-            $this->driver->set($metaKey, $next, 0);
+
+            if (!$this->driver->set($metaKey, $next, 0)) {
+                $this->enabled = false;
+            }
         }
 
         return $next;

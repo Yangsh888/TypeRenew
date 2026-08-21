@@ -479,7 +479,8 @@ class Options extends Base
 
             $attachmentTypesResult = array_values(array_unique(array_filter(
                 array_map('trim', explode(',', $attachmentTypes)),
-                static fn(string $type): bool => $type !== '' && !in_array($type, ['html', 'htm'], true)
+                static fn(string $type): bool => $type !== ''
+                    && !in_array($type, ['html', 'htm', 'xhtml', 'xml', 'svg', 'svgz'], true)
             )));
         }
 

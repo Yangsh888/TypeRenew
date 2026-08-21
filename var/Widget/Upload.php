@@ -24,6 +24,8 @@ class Upload extends Contents implements ActionInterface
         'application/x-httpd-php-source',
         'application/x-msdownload',
         'application/x-sh',
+        'application/xhtml+xml',
+        'image/svg+xml',
         'text/html',
         'text/x-php',
         'text/x-script',

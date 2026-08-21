@@ -89,7 +89,7 @@ class Feedback extends Comments implements ActionInterface
                         ->limit(1));
 
                     if (
-                        $latestComment && ($this->options->time - $latestComment['created'] > 0 &&
+                        $latestComment && ($this->options->time - $latestComment['created'] >= 0 &&
                             $this->options->time - $latestComment['created'] < $this->options->commentsPostInterval)
                     ) {
                         throw new Exception(_t('对不起, 您的发言过于频繁, 请稍候再次发布.'), 403);
@@ -223,7 +223,10 @@ class Feedback extends Comments implements ActionInterface
         $this->purgeCommentCache();
 
         if ($this->status !== 'approved') {
-            Cookie::set('__typecho_unapproved_comment', $commentId);
+            Cookie::set(
+                '__typecho_unapproved_comment',
+                $commentId . '.' . hash_hmac('sha256', (string) $commentId, (string) $this->options->secret)
+            );
         }
 
         $this->response->setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');

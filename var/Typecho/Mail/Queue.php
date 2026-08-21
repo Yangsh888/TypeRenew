@@ -271,7 +271,14 @@ class Queue
             return false;
         }
 
-        return in_array($ip, $allowedIps, true);
+        $request = \Typecho\Request::getInstance();
+        foreach ($allowedIps as $rule) {
+            if ($rule === $ip || $request->ipInCidr($ip, $rule)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public static function guardReplay(string $scope, string $value, int $ttl): bool
@@ -295,7 +302,7 @@ class Queue
             if ($item === '') {
                 continue;
             }
-            if (filter_var($item, FILTER_VALIDATE_IP)) {
+            if (filter_var($item, FILTER_VALIDATE_IP) || str_contains($item, '/')) {
                 $ips[] = $item;
             }
         }

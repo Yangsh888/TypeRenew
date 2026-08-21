@@ -384,7 +384,7 @@ class Request
         return false;
     }
 
-    private function ipInCidr(string $ip, string $cidr): bool
+    public function ipInCidr(string $ip, string $cidr): bool
     {
         if (!str_contains($cidr, '/')) {
             return false;
