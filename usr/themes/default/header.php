@@ -59,11 +59,11 @@
         </div>
         <nav class="site-nav" aria-label="<?php _e('全局导航'); ?>">
             <input type="checkbox" id="nav-toggle" class="nav-toggle-input" aria-label="<?php _e('展开导航'); ?>">
-            <label for="nav-toggle" class="nav-toggle-label" aria-hidden="true">
+            <label for="nav-toggle" class="nav-toggle-label" aria-label="<?php _e('展开导航'); ?>">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
             </label>
             <ul class="nav-menu" role="menubar">
-                <li role="none"><a role="menuitem" <?php if ($this->is('index')): ?> class="active"<?php endif; ?> href="<?php $this->options->siteUrl(); ?>"><?php _e('首页'); ?></a></li>
+                <li role="none"><a role="menuitem" <?php if ($this->is('index') || $this->is('index_page')): ?> class="active"<?php endif; ?> href="<?php $this->options->siteUrl(); ?>"><?php _e('首页'); ?></a></li>
                 <?php \Widget\Contents\Page\Rows::alloc()->to($pages); ?>
                 <?php while ($pages->next()): ?>
                     <li role="none"><a role="menuitem" <?php if ($this->is('page', $pages->slug)): ?> class="active"<?php endif; ?> href="<?php $pages->permalink(); ?>"><?php $pages->title(); ?></a></li>

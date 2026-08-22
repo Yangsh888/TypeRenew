@@ -17,7 +17,7 @@
                     'commentStatus' => _t('等待审核')
                 ]); ?>
                 
-                <?php $comments->pageNav('&laquo;', '&raquo;'); ?>
+                <?php $comments->pageNav('&laquo;', '&raquo;', 3, '...', ['wrapClass' => 'page-navigator']); ?>
             </div>
         <?php endif; ?>
 

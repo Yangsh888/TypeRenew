@@ -642,6 +642,7 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         foreach ($options as $option) {
             if (isset($this->wpOptions[$option])) {
                 $struct[$option] = $this->wpOptions[$option];
+                $optionName = $struct[$option]['option'] ?? null;
                 if (isset($struct[$option]['option'])) {
                     $struct[$option]['value'] = $this->options->{$struct[$option]['option']};
                     unset($struct[$option]['option']);
@@ -663,7 +664,7 @@ class XmlRpc extends Contents implements ActionInterface, Hook
                     unset($struct[$option]['option']);
                 }
 
-                if (!$this->wpOptions[$option]['readonly'] && isset($this->wpOptions[$option]['option'])) {
+                if (!$this->wpOptions[$option]['readonly'] && $optionName !== null) {
                     if ('time_zone' === $option) {
                         if (!is_scalar($value)) {
                             continue;
@@ -686,7 +687,7 @@ class XmlRpc extends Contents implements ActionInterface, Hook
                     if (
                         $this->db->query($this->db->update('table.options')
                             ->rows(['value' => $value])
-                            ->where('name = ?', $this->wpOptions[$option]['option'])) > 0
+                            ->where('name = ?', $optionName)) > 0
                     ) {
                         $struct[$option]['value'] = $value;
                     }
@@ -699,8 +700,10 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
     public function wpGetComment(int $blogId, string $userName, string $password, int $commentId): array
     {
-        $comment = CommentsEdit::alloc(null, ['coid' => $commentId], function (CommentsEdit $comment) {
-            $comment->getComment();
+        $comment = CommentsEdit::alloc(null, ['coid' => $commentId], function (CommentsEdit $comment) use ($commentId) {
+            \Typecho\Db::get()->fetchRow($comment->select()
+                ->where('coid = ?', $commentId)
+                ->limit(1), [$comment, 'push']);
         });
 
         if (!$comment->have()) {

@@ -170,7 +170,9 @@ class Edit extends Comments implements ActionInterface
         if ($comment && $this->commentIsWriteable()) {
             $this->response->throwJson([
                 'success' => 1,
-                'comment' => $comment
+                'comment' => array_intersect_key($comment, array_flip([
+                    'coid', 'cid', 'author', 'mail', 'url', 'text', 'status'
+                ]))
             ]);
         } else {
             $this->response->throwJson([
