@@ -18,10 +18,12 @@ class Select extends Element
         $input = new Layout('select');
         $this->container($input->setAttribute('name', $name)
             ->setAttribute('id', $name . '-0-' . self::$uniqueId));
-        $this->label->setAttribute('for', $name . '-0-' . self::$uniqueId);
+        if (isset($this->label)) {
+            $this->label->setAttribute('for', $name . '-0-' . self::$uniqueId);
+        }
         $this->inputs[] = $input;
 
-        foreach ($options as $value => $label) {
+        foreach ($options ?? [] as $value => $label) {
             $this->options[$value] = new Layout('option');
             $input->addItem($this->options[$value]->setAttribute('value', $value)->html($label));
         }

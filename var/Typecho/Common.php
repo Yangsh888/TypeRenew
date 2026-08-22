@@ -269,7 +269,7 @@ EOF;
 
             $startPos = strrpos($string, "<");
 
-            if (false == $startPos) {
+            if (false === $startPos) {
                 return $string;
             }
 
@@ -513,7 +513,7 @@ EOF;
             }
 
             $iLength = self::strLen($str) - $start;
-            $tLength = $length < $iLength ? ($length - self::strLen($trim)) : $length;
+            $tLength = $length < $iLength ? max(0, $length - self::strLen($trim)) : $length;
             $str = mb_substr($str, $start, $tLength, 'UTF-8');
 
             return $length < $iLength ? ($str . $trim) : $str;
@@ -661,11 +661,11 @@ EOF;
             $url .= '?s=' . $size;
 
             if (isset($rating)) {
-                $url .= '&amp;r=' . $rating;
+                $url .= '&amp;r=' . rawurlencode($rating);
             }
 
             if (isset($default)) {
-                $url .= '&amp;d=' . $default;
+                $url .= '&amp;d=' . rawurlencode($default);
             }
 
             return $url;
@@ -731,9 +731,8 @@ EOF;
 
             $meta = fread($fp, $realMetaLen);
             $offset += $realMetaLen;
-            $metaLen = strlen($meta);
 
-            if (false === $meta || $metaLen != $realMetaLen) {
+            if (false === $meta || strlen($meta) != $realMetaLen) {
                 return false;
             }
 

@@ -60,7 +60,7 @@ CREATE TABLE typecho_metas ( "mid" INTEGER NOT NULL PRIMARY KEY,
 
 CREATE INDEX typecho_metas_slug ON typecho_metas ("slug");
 
-CREATE TABLE typecho_options ( "name" varchar(32) NOT NULL , 
+CREATE TABLE typecho_options ( "name" varchar(64) NOT NULL ,
 "user" int(10) NOT NULL default '0' , 
 "value" text );
 

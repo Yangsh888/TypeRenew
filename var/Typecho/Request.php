@@ -678,7 +678,7 @@ class Request
                     $requestUri = (empty($parts['path']) ? '' : $parts['path'])
                         . ((empty($parts['query'])) ? '' : '?' . $parts['query']);
                 }
-            } elseif (!empty($_SERVER['QUERY_STRING']) && empty($parts['query'])) {
+            } elseif (!empty($_SERVER['QUERY_STRING']) && (false === $parts || empty($parts['query']))) {
                 $requestUri .= '?' . $_SERVER['QUERY_STRING'];
             }
         } elseif (isset($_SERVER['ORIG_PATH_INFO'])) {

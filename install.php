@@ -385,6 +385,66 @@ function install_clear_step_token(): void
     }
 }
 
+function install_form_nonce(): string
+{
+    static $nonce = null;
+
+    if ($nonce !== null) {
+        return $nonce;
+    }
+
+    $nonce = (string) ($_COOKIE['__typecho_install_nonce'] ?? '');
+    if ($nonce === '' || !preg_match('/^[a-f0-9]{32}$/', $nonce)) {
+        $nonce = bin2hex(\Typecho\Common::secureRandomBytes(16));
+        if (!headers_sent()) {
+            setcookie('__typecho_install_nonce', $nonce, [
+                'expires'  => 0,
+                'path'     => (string) (parse_url(\Utils\Defaults::siteUrl(), PHP_URL_PATH) ?: '/'),
+                'secure'   => \Typecho\Request::getInstance()->isSecure(),
+                'httponly' => true,
+                'samesite' => 'Lax'
+            ]);
+        }
+    }
+
+    return $nonce;
+}
+
+function install_assert_form_nonce(): void
+{
+    if (install_is_cli()) {
+        return;
+    }
+
+    $cookie = (string) ($_COOKIE['__typecho_install_nonce'] ?? '');
+    $posted = (string) ($_POST['installNonce'] ?? '');
+
+    if ($cookie === '' || $posted === '' || !hash_equals($cookie, $posted)) {
+        install_raise_error(_t('安装会话已失效, 请刷新页面后重新提交'));
+    }
+}
+
+function install_protect_sqlite_dir(): void
+{
+    $usrDir = __TYPECHO_ROOT_DIR__ . '/usr';
+    if (!is_dir($usrDir) || !is_writable($usrDir)) {
+        return;
+    }
+
+    $htaccess = $usrDir . '/.htaccess';
+    if (!file_exists($htaccess)) {
+        file_put_contents(
+            $htaccess,
+            "<FilesMatch \"\\.(db|sqlite|sqlite3)$\">\nRequire all denied\n<IfModule !mod_authz_core.c>\n    Order allow,deny\n    Deny from all\n</IfModule>\n</FilesMatch>\n"
+        );
+    }
+
+    $index = $usrDir . '/index.html';
+    if (!file_exists($index)) {
+        file_put_contents($index, '');
+    }
+}
+
 function install_success($step, ?array $config = null)
 {
     global $installDb;
@@ -831,6 +891,7 @@ function install_step_2()
                     <li>
                         <button id="confirm" type="submit" class="btn primary"><?php _e('确认配置并开始安装 &raquo;'); ?></button>
                         <input type="hidden" name="step" value="2">
+                        <input type="hidden" name="installNonce" value="<?php echo htmlspecialchars(install_form_nonce(), ENT_QUOTES, 'UTF-8'); ?>">
                     </li>
                 </ul>
             </form>
@@ -911,6 +972,8 @@ function install_step_2()
 function install_step_2_perform()
 {
     global $installDb;
+
+    install_assert_form_nonce();
 
     $request = \Typecho\Request::getInstance();
     $drivers = install_get_db_drivers();
@@ -1174,6 +1237,10 @@ function install_step_2_perform()
 
         \Utils\Schema::ensureCoreIndexes($installDb);
         \Utils\Schema::ensureMailInfra($installDb);
+
+        if ($type === 'SQLite') {
+            install_protect_sqlite_dir();
+        }
     } catch (\Typecho\Db\Exception $e) {
         $code = $e->getCode();
 

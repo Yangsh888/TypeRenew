@@ -19,6 +19,7 @@ class Native implements Transport
 
         $headers = [];
         $headers[] = 'MIME-Version: 1.0';
+        $headers[] = 'Message-ID: ' . Mime::messageId($message->from);
         $headers[] = 'Content-Type: multipart/alternative; boundary="' . $boundary . '"';
         $headers[] = 'From: ' . Mime::formatAddress($message->from, $message->fromName);
 

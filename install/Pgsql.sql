@@ -93,7 +93,7 @@ CREATE INDEX "typecho_metas_slug" ON "typecho_metas" ("slug");
 -- Table structure for table "typecho_options"
 --
 
-CREATE TABLE "typecho_options" (  "name" VARCHAR(32) NOT NULL DEFAULT '',
+CREATE TABLE "typecho_options" (  "name" VARCHAR(64) NOT NULL DEFAULT '',
   "user" INT NOT NULL DEFAULT '0',
   "value" TEXT NULL DEFAULT NULL,
   PRIMARY KEY ("name","user")

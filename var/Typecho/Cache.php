@@ -238,7 +238,7 @@ class Cache
         if (!empty($tables)) {
             $versionParts = [];
             foreach ($tables as $table) {
-                $versionParts[] = $table . '.' . $this->loadTableVersion($table, true);
+                $versionParts[] = $table . '.' . $this->loadTableVersion($table, false);
             }
             sort($versionParts, SORT_STRING);
             return 'sql:' . implode(',', $versionParts) . ':' . sha1($trimmed);

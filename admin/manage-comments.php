@@ -211,7 +211,7 @@ include 'table-js.php';
 $(document).ready(function () {
     function rememberScroll () {
         $(window).bind('beforeunload', function () {
-            $.cookie('__typecho_comments_scroll', $('body').scrollTop());
+            $.cookie('__typecho_comments_scroll', $(window).scrollTop());
         });
     }
 

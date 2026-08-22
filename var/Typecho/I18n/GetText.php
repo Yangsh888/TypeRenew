@@ -77,6 +77,7 @@ class GetText
             $this->BYTE_ORDER = 1;
         } else {
             $this->error = 1;
+            $this->short_circuit = true;
             return;
         }
 
@@ -188,7 +189,7 @@ class GetText
         if ($this->enable_cache) {
             $this->cache_translations = ['' => null];
             for ($i = 0; $i < $this->total; $i++) {
-                if ($this->table_originals[$i * 2 + 1] > 0) {
+                if ($this->table_originals[$i * 2 + 1] > 0 || $this->table_translations[$i * 2 + 1] > 0) {
                     fseek($this->STREAM, $this->table_originals[$i * 2 + 2]);
                     $original = fread($this->STREAM, $this->table_originals[$i * 2 + 1]);
                     fseek($this->STREAM, $this->table_translations[$i * 2 + 2]);

@@ -31,6 +31,7 @@ class SchemaManager
         self::ensureGeneralOptions($db);
         Schema::ensureCoreIndexes($db);
         Schema::ensureUserPasswordStorage($db);
+        self::protectSqliteStorage($db);
         $syncedComments = self::syncCommentAuthors($db);
         if ($syncedComments > 0) {
             $messages[] = _t('已同步 %d 条历史评论的作者昵称', $syncedComments);
@@ -325,6 +326,31 @@ class SchemaManager
 
         if (!empty($missing)) {
             OptionsStorage::alloc()->saveOptions($missing);
+        }
+    }
+
+    private static function protectSqliteStorage(Db $db): void
+    {
+        if (!in_array($db->getAdapterName(), ['SQLite', 'Pdo_SQLite'], true)) {
+            return;
+        }
+
+        $usrDir = __TYPECHO_ROOT_DIR__ . '/usr';
+        if (!is_dir($usrDir) || !is_writable($usrDir)) {
+            return;
+        }
+
+        $htaccess = $usrDir . '/.htaccess';
+        if (!file_exists($htaccess)) {
+            file_put_contents(
+                $htaccess,
+                "<FilesMatch \"\\.(db|sqlite|sqlite3)$\">\nRequire all denied\n<IfModule !mod_authz_core.c>\n    Order allow,deny\n    Deny from all\n</IfModule>\n</FilesMatch>\n"
+            );
+        }
+
+        $index = $usrDir . '/index.html';
+        if (!file_exists($index)) {
+            file_put_contents($index, '');
         }
     }
 

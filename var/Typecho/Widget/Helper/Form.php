@@ -132,7 +132,7 @@ class Form extends Layout
                 $input->value($record[$name] ?? $input->value);
 
                 if (isset($message[$name])) {
-                    $input->message($message[$name]);
+                    $input->message(htmlspecialchars((string) $message[$name], ENT_QUOTES, 'UTF-8'));
                 }
             }
 

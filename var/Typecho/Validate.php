@@ -94,7 +94,7 @@ class Validate
 
         foreach ($rules as $key => $rule) {
             $this->key = $key;
-            $data[$key] = (is_array($data[$key]) ? 0 == count($data[$key])
+            $data[$key] = (is_array($data[$key] ?? null) ? 0 == count($data[$key])
                 : 0 == strlen($data[$key] ?? '')) ? null : $data[$key];
 
             foreach ($rule as $params) {

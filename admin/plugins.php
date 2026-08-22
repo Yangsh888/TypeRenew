@@ -130,7 +130,7 @@ $pluginVersionToolbarRendered = false;
                         <?php if (!empty($activatedPlugins->activatedPlugins)): ?>
                             <?php foreach (array_keys($activatedPlugins->activatedPlugins) as $key): ?>
                                 <tr>
-                                    <td><?php echo $key; ?></td>
+                                    <td><?php echo htmlspecialchars((string) $key, ENT_QUOTES, 'UTF-8'); ?></td>
                                     <td colspan="3"><span
                                             class="warning"><?php _e('此插件文件已经损坏或者被不安全移除, 强烈建议你禁用它'); ?></span></td>
                                     <td><form action="<?php echo $pluginAction; ?>" method="post" class="inline-operate-form">

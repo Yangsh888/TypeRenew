@@ -1299,7 +1299,11 @@ class HyperDown
             }
         }
 
-        if (preg_match("/^\w+:/i", $url) && !preg_match("/^(https?|mailto):/i", $url)) {
+        $schemeProbe = preg_replace('/&(?:colon|#[xX]0*3[aA]|#0*58);?/i', ':', $url);
+        $schemeProbe = str_ireplace(['&tab;', '&newline;'], '', (string) $schemeProbe);
+        $schemeProbe = preg_replace('/[\x00-\x20\x7f]/', '', html_entity_decode((string) $schemeProbe, ENT_QUOTES, 'UTF-8'));
+
+        if (preg_match("/^\w+:/i", $schemeProbe) && !preg_match("/^(https?|mailto):/i", $schemeProbe)) {
             return '#';
         }
 

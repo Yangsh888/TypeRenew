@@ -6,6 +6,16 @@ if (!defined('__TYPECHO_ADMIN__')) {
 $content = $write['content'];
 $draftAction = $options->index . '/action/' . $write['draftAction'];
 $draftToken = $security->getToken($request->getRequestUrl());
+$editorSize = (int) $options->editorSize;
+if ($user->hasLogin()) {
+    $personal = \Typecho\Db::get()->fetchRow(
+        \Typecho\Db::get()->select('value')->from('table.options')
+            ->where('name = ? AND user = ?', 'editorSize', $user->uid)
+    );
+    if ($personal && (int) $personal['value'] >= 100) {
+        $editorSize = min(2000, (int) $personal['value']);
+    }
+}
 $vditorForceMarkdown = false;
 if (class_exists('VditorRenew_Plugin')) {
     $vditorSettings = \VditorRenew_Plugin::getSettings();
@@ -57,7 +67,7 @@ if (class_exists('VditorRenew_Plugin')) {
         <?php endif; ?>
         <p>
             <label for="text" class="sr-only"><?php echo htmlspecialchars((string) $write['textLabel'], ENT_QUOTES, 'UTF-8'); ?></label>
-            <textarea style="--tr-editor-h: <?php $options->editorSize(); ?>px" autocomplete="off" id="text"
+            <textarea style="--tr-editor-h: <?php echo $editorSize; ?>px" autocomplete="off" id="text"
                       name="text" class="w-100 mono tr-editor"><?php echo htmlspecialchars((string) $content->text); ?></textarea>
         </p>
 

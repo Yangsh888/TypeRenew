@@ -89,6 +89,18 @@ class Edit extends Metas implements ActionInterface
 
         // parent 缺省时是 null, getMaxOrder(int) 在 PHP8 下会直接 TypeError
         $category['parent'] = (int) ($category['parent'] ?? 0);
+
+        if ($category['parent'] > 0) {
+            $parent = $this->db->fetchRow(
+                $this->select()->where('mid = ?', $category['parent'])->where('type = ?', 'category')
+            );
+
+            if (!is_array($parent)) {
+                Notice::alloc()->set(_t('父分类不存在'), 'error');
+                $this->response->goBack();
+            }
+        }
+
         $category['slug'] = Common::slugName(Common::strBy($category['slug'] ?? null, $category['name']));
         $category['type'] = 'category';
         $category['order'] = $this->getMaxOrder('category', $category['parent']) + 1;
@@ -226,7 +238,9 @@ class Edit extends Metas implements ActionInterface
 
         if ((int) ($current['parent'] ?? 0) !== $category['parent']) {
             if ($category['parent'] > 0) {
-                $parent = $this->db->fetchRow($this->select()->where('mid = ?', $category['parent']));
+                $parent = $this->db->fetchRow(
+                    $this->select()->where('mid = ?', $category['parent'])->where('type = ?', 'category')
+                );
 
                 if (!is_array($parent)) {
                     Notice::alloc()->set(_t('父分类不存在'), 'error');
@@ -234,18 +248,31 @@ class Edit extends Metas implements ActionInterface
                 }
 
                 if ((int) ($parent['mid'] ?? 0) === (int) $category['mid']) {
-                    $currentParent = (int) ($current['parent'] ?? 0);
-                    $currentOrder = (int) ($current['order'] ?? 0);
-                    $parentOrder = (int) ($parent['order'] ?? 0);
-
-                    $category['order'] = $parentOrder;
-                    $this->update([
-                        'parent' => $currentParent,
-                        'order'  => $currentOrder
-                    ], $this->db->sql()->where('mid = ?', (int) $parent['mid']));
-                } else {
-                    $category['order'] = $this->getMaxOrder('category', $category['parent']) + 1;
+                    Notice::alloc()->set(_t('不能将分类自身设置为父分类'), 'error');
+                    $this->response->goBack();
                 }
+
+                $ancestor = $parent;
+                for ($i = 0; $i < 100; $i++) {
+                    $ancestorParent = (int) ($ancestor['parent'] ?? 0);
+                    if ($ancestorParent <= 0) {
+                        break;
+                    }
+
+                    if ($ancestorParent === (int) $category['mid']) {
+                        Notice::alloc()->set(_t('不能将分类移动到它的子分类下'), 'error');
+                        $this->response->goBack();
+                    }
+
+                    $ancestor = $this->db->fetchRow(
+                        $this->select()->where('mid = ?', $ancestorParent)->where('type = ?', 'category')
+                    );
+                    if (!is_array($ancestor)) {
+                        break;
+                    }
+                }
+
+                $category['order'] = $this->getMaxOrder('category', $category['parent']) + 1;
             } else {
                 $category['order'] = $this->getMaxOrder('category', 0) + 1;
             }

@@ -113,7 +113,11 @@ class Smtp implements Transport
                 return 'SMTP STARTTLS failed: ' . $startTls;
             }
 
-            $cryptoOk = @stream_socket_enable_crypto($this->socket, true, STREAM_CRYPTO_METHOD_TLS_CLIENT);
+            $cryptoOk = @stream_socket_enable_crypto(
+                $this->socket,
+                true,
+                STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT | STREAM_CRYPTO_METHOD_TLSv1_3_CLIENT
+            );
             if ($cryptoOk !== true) {
                 return 'TLS handshake failed';
             }
@@ -186,6 +190,7 @@ class Smtp implements Transport
         $boundary = Mime::boundary();
         $headers = [];
         $headers[] = 'Date: ' . gmdate('D, d M Y H:i:s') . ' +0000';
+        $headers[] = 'Message-ID: ' . Mime::messageId($message->from);
         $headers[] = 'From: ' . Mime::formatAddress($message->from, $message->fromName);
         $headers[] = 'To: ' . Mime::formatAddress($message->to, $message->toName);
         $headers[] = 'Subject: ' . Mime::encodeHeader($message->subject);

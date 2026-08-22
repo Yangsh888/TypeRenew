@@ -316,16 +316,19 @@ class Helper
         int $style = 2
     ) {
         if (self::options()->commentsThreaded) {
-            echo '<a href="#' . $formId . '" rel="nofollow" onclick="return typechoAddCommentReply(\'' .
-                $theId . '\', ' . $coid . ', \'' . $formId . '\', ' . $style . ');">' . $word . '</a>';
+            echo '<a href="#' . htmlspecialchars($formId, ENT_QUOTES) . '" rel="nofollow" onclick="return typechoAddCommentReply(\'' .
+                htmlspecialchars(addslashes($theId), ENT_QUOTES) . '\', ' . $coid . ', \'' .
+                htmlspecialchars(addslashes($formId), ENT_QUOTES) . '\', ' . $style . ');">' .
+                htmlspecialchars($word, ENT_QUOTES) . '</a>';
         }
     }
 
     public static function cancelCommentReplyLink(string $word = 'Cancel', string $formId = 'respond')
     {
         if (self::options()->commentsThreaded) {
-            echo '<a href="#' . $formId . '" rel="nofollow" onclick="return typechoCancelCommentReply(\'' .
-                $formId . '\');">' . $word . '</a>';
+            echo '<a href="#' . htmlspecialchars($formId, ENT_QUOTES) . '" rel="nofollow" onclick="return typechoCancelCommentReply(\'' .
+                htmlspecialchars(addslashes($formId), ENT_QUOTES) . '\');">' .
+                htmlspecialchars($word, ENT_QUOTES) . '</a>';
         }
     }
 

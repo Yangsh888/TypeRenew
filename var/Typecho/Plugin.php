@@ -134,6 +134,8 @@ class Plugin
 
         if (
             $pluginName === ''
+            || $pluginName === '.'
+            || $pluginName === '..'
             || str_contains($pluginName, "\0")
             || str_contains($pluginName, '/')
             || str_contains($pluginName, '\\')

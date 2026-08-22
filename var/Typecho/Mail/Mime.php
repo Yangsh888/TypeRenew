@@ -9,6 +9,16 @@ class Mime
         return 'b' . bin2hex(random_bytes(12));
     }
 
+    public static function messageId(string $from): string
+    {
+        $host = strtolower((string) (substr(strrchr($from, '@'), 1) ?: 'localhost'));
+        if ($host === '' || !preg_match('/^[a-z0-9.-]+$/', $host)) {
+            $host = 'localhost';
+        }
+
+        return '<' . bin2hex(random_bytes(12)) . '.' . base_convert((string) time(), 10, 36) . '@' . $host . '>';
+    }
+
     public static function formatAddress(string $email, string $name): string
     {
         $email = trim(str_replace(["\r", "\n"], '', $email));

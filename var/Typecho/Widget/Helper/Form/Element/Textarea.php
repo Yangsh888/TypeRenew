@@ -14,7 +14,9 @@ class Textarea extends Element
     public function input(?string $name = null, ?array $options = null): ?Layout
     {
         $input = new Layout('textarea', ['id' => $name . '-0-' . self::$uniqueId, 'name' => $name]);
-        $this->label->setAttribute('for', $name . '-0-' . self::$uniqueId);
+        if (isset($this->label)) {
+            $this->label->setAttribute('for', $name . '-0-' . self::$uniqueId);
+        }
         $this->container($input->setClose(false));
         $this->inputs[] = $input;
 
