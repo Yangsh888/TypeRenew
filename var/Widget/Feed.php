@@ -18,6 +18,12 @@ class Feed extends Contents
 {
     private FeedGenerator $feed;
 
+    private string $feedContentType = 'application/rss+xml';
+
+    private bool $isComments = false;
+
+    private ?Archive $feedArchive = null;
+
     protected function initParameter(Config $parameter)
     {
         $parameter->setDefault([
@@ -86,9 +92,65 @@ class Feed extends Contents
         if ($currentFeedUrl != $this->request->getRequestUrl()) {
             $this->response->redirect($currentFeedUrl, true);
         }
-        $feed->setFeedUrl($currentFeedUrl);
-        $this->feed($feed, $feedContentType, $isComments, $archive ?? null);
+
         $this->feed = $feed;
+        $this->feedContentType = $feedContentType;
+        $this->isComments = $isComments;
+        $this->feedArchive = $archive ?? null;
+
+        if ($isComments || $archive->is('single')) {
+            $feed->setTitle(_t(
+                '%s 的评论',
+                $this->options->title . ($isComments ? '' : ' - ' . $archive->getArchiveTitle())
+            ));
+        } else {
+            $feed->setTitle($this->options->title
+                . ($archive->getArchiveTitle() ? ' - ' . $archive->getArchiveTitle() : ''));
+        }
+
+        $feed->setFeedUrl($currentFeedUrl);
+        $this->prescan($feed);
+    }
+
+    private function prescan(FeedGenerator $feed)
+    {
+        $lastUpdate = 0;
+        $links = [];
+        $needLinks = FeedGenerator::RSS1 === $feed->getType();
+        $archive = $this->feedArchive;
+
+        if ($this->isComments || $archive->is('single')) {
+            $comments = $this->isComments
+                ? Recent::alloc('pageSize=10')
+                : Recent::alloc('pageSize=10&parentId=' . $archive->cid);
+
+            while ($comments->next()) {
+                $created = (int) $comments->created;
+                if ($created > $lastUpdate) {
+                    $lastUpdate = $created;
+                }
+
+                if ($needLinks) {
+                    $links[] = $comments->permalink;
+                }
+            }
+        } else {
+            while ($archive->next()) {
+                $created = (int) $archive->created;
+                if ($created > $lastUpdate) {
+                    $lastUpdate = $created;
+                }
+
+                if ($needLinks) {
+                    $links[] = $archive->permalink;
+                }
+            }
+        }
+
+        $feed->setLastUpdate($lastUpdate);
+        if ($needLinks) {
+            $feed->setLinks($links);
+        }
     }
 
     public function feed(
@@ -98,11 +160,6 @@ class Feed extends Contents
         ?Archive $archive
     ) {
         if ($isComments || $archive->is('single')) {
-            $feed->setTitle(_t(
-                '%s 的评论',
-                $this->options->title . ($isComments ? '' : ' - ' . $archive->getArchiveTitle())
-            ));
-
             if ($isComments) {
                 $comments = Recent::alloc('pageSize=10');
             } else {
@@ -120,7 +177,7 @@ class Feed extends Contents
                     $suffix = null;
                 }
 
-                $feed->addItem([
+                echo $feed->item([
                     'title'   => $comments->author,
                     'content' => $comments->content,
                     'date'    => $comments->created,
@@ -133,11 +190,9 @@ class Feed extends Contents
                     'excerpt' => strip_tags($comments->content),
                     'suffix'  => $suffix
                 ]);
+                $this->streamFlush();
             }
         } else {
-            $feed->setTitle($this->options->title
-                . ($archive->getArchiveTitle() ? ' - ' . $archive->getArchiveTitle() : ''));
-
             while ($archive->next()) {
                 $suffix = self::pluginHandle()->trigger($plugged)->call('feedItem', $feed->getType(), $archive);
 
@@ -145,7 +200,7 @@ class Feed extends Contents
                     $suffix = null;
                 }
 
-                $feed->addItem([
+                echo $feed->item([
                     'title'           => $archive->title,
                     'content'         => $this->options->feedFullText ? $archive->content
                         : (false !== strpos((string) $archive->text, '<!--more-->') ? $archive->excerpt .
@@ -160,6 +215,7 @@ class Feed extends Contents
                     'commentsFeedUrl' => Common::url($archive->path, $feed->getFeedUrl()),
                     'suffix'          => $suffix
                 ]);
+                $this->streamFlush();
             }
         }
 
@@ -168,6 +224,23 @@ class Feed extends Contents
 
     public function render()
     {
-        echo $this->feed;
+        $this->response->setContentType($this->feedContentType);
+        \Typecho\Response::getInstance()->sendHeaders();
+
+        echo $this->feed->head();
+        $this->streamFlush();
+
+        $this->feed($this->feed, $this->feedContentType, $this->isComments, $this->feedArchive);
+
+        echo $this->feed->foot();
+    }
+
+    private function streamFlush()
+    {
+        if (ob_get_level() > 0) {
+            ob_flush();
+        }
+
+        flush();
     }
 }
