@@ -337,8 +337,6 @@ class Cache
             }
         }
 
-        $sql = substr($sql, 0, 4096);
-
         if (preg_match_all('/\b(?:FROM|JOIN)\s+([a-zA-Z_][a-zA-Z0-9_]*)/i', $sql, $matches, PREG_SET_ORDER)) {
             foreach ($matches as $match) {
                 $table = $this->normalizeTableName($match[1]);

@@ -362,32 +362,40 @@ $(document).ready(function () {
             comment.url    = $('input[name=url]', tr).val();
             comment.text   = $('textarea', tr).val();
 
-            var unsafeHTML = '<strong class="comment-author">'
-                + (comment.url ? '<a target="_blank" href="' + comment.url + '">'
-                + comment.author + '</a>' : comment.author) + '</strong>'
-                + ('comment' != comment.type ? '<small><?php _e('引用'); ?></small>' : '')
-                + (comment.mail ? '<br /><span><a href="mailto:' + comment.mail + '">'
-                + comment.mail + '</a></span>' : '')
-                + (comment.ip ? '<br /><span>' + comment.ip + '</span>' : '');
-
-            var html = DOMPurify.sanitize(unsafeHTML, {USE_PROFILES: {html: true}});
-            var content = DOMPurify.sanitize(comment.text, {USE_PROFILES: {html: true}});
-            $('.comment-meta', oldTr).html(html).effect('highlight');
-            $('.comment-content', oldTr).html('<p>' + content + '</p>');
-            oldTr.data('comment', comment);
-
+            var submitButton = $(this).prop('disabled', true);
             $.post(commentAction, {
                 '_': commentToken, 'do': 'edit',
                 'coid': t.data('coid'),
                 'author': comment.author, 'mail': comment.mail,
                 'url': comment.url, 'text': comment.text
             }, function (o) {
-                var content = DOMPurify.sanitize(o.comment.content, {USE_PROFILES: {html: true}});
-                $('.comment-content', oldTr).html('<p>' + content + '</p>').effect('highlight');
-            }, 'json');
+                if (!o || o.success !== 1 || !o.comment) {
+                    submitButton.prop('disabled', false);
+                    alert(o && o.message ? o.message : '<?php _e('评论保存失败'); ?>');
+                    return;
+                }
 
-            oldTr.show();
-            tr.remove();
+                var unsafeHTML = '<strong class="comment-author">'
+                    + (comment.url ? '<a target="_blank" href="' + comment.url + '">'
+                    + comment.author + '</a>' : comment.author) + '</strong>'
+                    + ('comment' != comment.type ? '<small><?php _e('引用'); ?></small>' : '')
+                    + (comment.mail ? '<br /><span><a href="mailto:' + comment.mail + '">'
+                    + comment.mail + '</a></span>' : '')
+                    + (comment.ip ? '<br /><span>' + comment.ip + '</span>' : '');
+                var html = DOMPurify.sanitize(unsafeHTML, {USE_PROFILES: {html: true}});
+                var content = DOMPurify.sanitize(o.comment.content, {USE_PROFILES: {html: true}});
+                $('.comment-meta', oldTr).html(html).effect('highlight');
+                $('.comment-content', oldTr).html('<p>' + content + '</p>').effect('highlight');
+                oldTr.data('comment', comment).show();
+                tr.remove();
+            }, 'json').fail(function (xhr) {
+                submitButton.prop('disabled', false);
+                var message = '<?php _e('评论保存失败'); ?>';
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    message = xhr.responseJSON.message;
+                }
+                alert(message);
+            });
         });
 
         return false;

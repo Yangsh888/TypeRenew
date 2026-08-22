@@ -208,8 +208,18 @@ class Schema
             $added[] = $column;
         }
 
-        if ($tableKey === 'mail_queue' && in_array('dedupeKey', $added, true)) {
+        if ($tableKey === 'mail_queue' && (in_array('dedupeKey', $added, true) || self::indexNeedsBackfill($db, $table, 'dedupeKey'))) {
             self::backfillMailDedupeKeys($db);
+        }
+    }
+
+    private static function indexNeedsBackfill(Db $db, string $table, string $column): bool
+    {
+        try {
+            $row = $db->fetchRow($db->select('COUNT(*) AS count')->from($table)->where($column . ' = ?', ''));
+            return (int) ($row['count'] ?? 0) > 1;
+        } catch (\Throwable) {
+            return false;
         }
     }
 

@@ -225,7 +225,11 @@ class Query
             $this->sqlPreBuild['order'] .= ', ';
         }
 
-        $this->sqlPreBuild['order'] .= $this->filterColumn($orderBy) . (empty($sort) ? null : ' ' . $sort);
+        $sort = strtoupper(trim($sort));
+        if ($sort !== '' && $sort !== Db::SORT_ASC && $sort !== Db::SORT_DESC) {
+            $sort = Db::SORT_ASC;
+        }
+        $this->sqlPreBuild['order'] .= $this->filterColumn($orderBy) . ($sort === '' ? null : ' ' . $sort);
         return $this;
     }
 
@@ -270,7 +274,7 @@ class Query
         foreach ($parameters as $value) {
             if (is_array($value)) {
                 foreach ($value as $key => $val) {
-                    $fields[] = $key . ' AS ' . $val;
+                    $fields[] = $this->filterColumn($key) . ' AS ' . $this->filterColumn($val);
                 }
             } else {
                 $fields[] = $value;
