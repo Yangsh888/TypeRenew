@@ -62,31 +62,55 @@ class Request
 
     public function get(string $key, $default = null, ?bool &$exists = true)
     {
-        return $this->applyFilter($this->request->proxy($this->params)->get($key, $default, $exists));
+        $this->request->proxy($this->params);
+        try {
+            return $this->applyFilter($this->request->get($key, $default, $exists));
+        } finally {
+            $this->filter = [];
+            $this->request->endProxy();
+        }
     }
 
     public function has(string $key, bool $allowEmpty = false): bool
     {
-        $result = $this->request->proxy($this->params)->has($key, $allowEmpty);
-        $this->request->endProxy();
-        return $result;
+        $this->request->proxy($this->params);
+        try {
+            return $this->request->has($key, $allowEmpty);
+        } finally {
+            $this->request->endProxy();
+        }
     }
 
     public function getArray(string $key): array
     {
-        return $this->applyFilter($this->request->proxy($this->params)->getArray($key));
+        $this->request->proxy($this->params);
+        try {
+            return $this->applyFilter($this->request->getArray($key));
+        } finally {
+            $this->filter = [];
+            $this->request->endProxy();
+        }
     }
 
     public function from(...$params): array
     {
-        return $this->applyFilter($this->request->proxy($this->params)->from(...$params));
+        $this->request->proxy($this->params);
+        try {
+            return $this->applyFilter($this->request->from(...$params));
+        } finally {
+            $this->filter = [];
+            $this->request->endProxy();
+        }
     }
 
     public function is(string|array $query): bool
     {
-        $result = $this->request->proxy($this->params)->is($query);
-        $this->request->endProxy();
-        return $result;
+        $this->request->proxy($this->params);
+        try {
+            return $this->request->is($query);
+        } finally {
+            $this->request->endProxy();
+        }
     }
 
     public function getRequestRoot(): string
@@ -199,7 +223,6 @@ class Request
             $this->filter = [];
         }
 
-        $this->request->endProxy();
         return $value;
     }
 

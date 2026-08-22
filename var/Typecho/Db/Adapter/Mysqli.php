@@ -44,14 +44,16 @@ class Mysqli implements Adapter
                     $port = null;
                 }
 
-                $mysqli->real_connect(
+                if (!$mysqli->real_connect(
                     $host,
                     $config->user,
                     $config->password,
                     $config->database,
                     $port,
                     $socket
-                );
+                )) {
+                    throw new ConnectionException($mysqli->connect_error ?: "Couldn't connect to database.", $mysqli->connect_errno);
+                }
 
                 $this->dbLink = $mysqli;
 

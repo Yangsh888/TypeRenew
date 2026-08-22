@@ -211,7 +211,7 @@ class Edit extends Comments implements ActionInterface
             return true;
         }
 
-        $this->response->throwJson([
+        $this->response->setStatus(422)->throwJson([
             'success' => 0,
             'message' => _t('修评论失败')
         ]);

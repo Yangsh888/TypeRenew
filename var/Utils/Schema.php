@@ -63,10 +63,9 @@ class Schema
         ];
     }
 
-    public static function criticalColumns(string $tableKey): array
+    public static function criticalColumns(Db $db, string $tableKey): array
     {
-        $mysqlMeta = (array) (self::criticalSchema()[$tableKey]['mysql'] ?? []);
-        return array_keys((array) ($mysqlMeta['definitions'] ?? []));
+        return array_keys(self::columnDefinitions(self::dialect($db), $tableKey));
     }
 
     public static function criticalIndexes(Db $db, string $tableKey, string $table): array

@@ -139,7 +139,38 @@ function install_normalize_sqlite_file(string $path): ?string
         return null;
     }
 
-    return $usrRoot . '/' . implode('/', array_merge($segments, [$fileName]));
+    $candidate = $usrRoot . '/' . implode('/', array_merge($segments, [$fileName]));
+    $realUsrRoot = realpath($usrRoot);
+    $parent = realpath(dirname($candidate));
+    if ($realUsrRoot === false || $parent === false) {
+        return null;
+    }
+
+    $realUsrRoot = rtrim(str_replace('\\', '/', $realUsrRoot), '/');
+    $parent = rtrim(str_replace('\\', '/', $parent), '/');
+    if (strtolower($parent) !== strtolower($realUsrRoot)
+        && !str_starts_with(strtolower($parent), strtolower($realUsrRoot) . '/')) {
+        return null;
+    }
+
+    if (file_exists($candidate)) {
+        $realCandidate = realpath($candidate);
+        if ($realCandidate === false) {
+            return null;
+        }
+
+        $realCandidate = str_replace('\\', '/', $realCandidate);
+        if (strtolower($realCandidate) !== strtolower($realUsrRoot)
+            && !str_starts_with(strtolower($realCandidate), strtolower($realUsrRoot) . '/')) {
+            return null;
+        }
+    }
+
+    if (is_link($candidate)) {
+        return null;
+    }
+
+    return $candidate;
 }
 
 function install_get_default_options(): array

@@ -20,6 +20,30 @@ CREATE TABLE "typecho_comments" (  "coid" INT NOT NULL DEFAULT nextval('typecho_
   PRIMARY KEY ("coid")
 );
 
+CREATE TABLE "typecho_mail_queue" (
+  "id" BIGSERIAL PRIMARY KEY, "type" VARCHAR(16) NOT NULL, "status" VARCHAR(16) NOT NULL,
+  "attempts" INT NOT NULL DEFAULT 0, "lockedUntil" INT NOT NULL DEFAULT 0,
+  "sendAt" INT NOT NULL DEFAULT 0, "created" INT NOT NULL DEFAULT 0, "updated" INT NOT NULL DEFAULT 0,
+  "lastError" VARCHAR(500) NOT NULL DEFAULT '', "dedupeKey" VARCHAR(40) NOT NULL DEFAULT '', "payload" TEXT NULL
+);
+CREATE INDEX "typecho_mail_queue_status_sendat" ON "typecho_mail_queue" ("status", "sendAt");
+CREATE INDEX "typecho_mail_queue_status_updated" ON "typecho_mail_queue" ("status", "updated");
+CREATE INDEX "typecho_mail_queue_locked" ON "typecho_mail_queue" ("lockedUntil");
+CREATE UNIQUE INDEX "typecho_mail_queue_dedupeKey" ON "typecho_mail_queue" ("dedupeKey");
+
+CREATE TABLE "typecho_mail_unsub" (
+  "id" BIGSERIAL PRIMARY KEY, "email" VARCHAR(255) NOT NULL, "scope" VARCHAR(32) NOT NULL, "created" INT NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX "typecho_mail_unsub_email_scope" ON "typecho_mail_unsub" ("email", "scope");
+
+CREATE TABLE "typecho_password_resets" (
+  "id" BIGSERIAL PRIMARY KEY, "email" VARCHAR(150) NOT NULL, "token" VARCHAR(64) NOT NULL,
+  "created" INT NOT NULL DEFAULT 0, "expires" INT NOT NULL DEFAULT 0, "used" INT NOT NULL DEFAULT 0
+);
+CREATE INDEX "typecho_password_resets_email" ON "typecho_password_resets" ("email");
+CREATE INDEX "typecho_password_resets_token" ON "typecho_password_resets" ("token");
+CREATE INDEX "typecho_password_resets_expires" ON "typecho_password_resets" ("expires");
+
 CREATE INDEX "typecho_comments_cid" ON "typecho_comments" ("cid");
 CREATE INDEX "typecho_comments_created" ON "typecho_comments" ("created");
 

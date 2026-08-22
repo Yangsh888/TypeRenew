@@ -337,9 +337,9 @@ class Cache
             }
         }
 
-        if (preg_match_all('/\b(?:FROM|JOIN)\s+([a-zA-Z_][a-zA-Z0-9_]*)/i', $sql, $matches, PREG_SET_ORDER)) {
+        if (preg_match_all('/\b(?:FROM|JOIN)\s+(?:(?:`[^`]+`|[a-zA-Z_][a-zA-Z0-9_]*)\.)?(?:`([^`]+)`|([a-zA-Z_][a-zA-Z0-9_]*))/i', $sql, $matches, PREG_SET_ORDER)) {
             foreach ($matches as $match) {
-                $table = $this->normalizeTableName($match[1]);
+                $table = $this->normalizeTableName($match[1] !== '' ? $match[1] : $match[2]);
                 if ($table !== null) {
                     $tables[$table] = true;
                 }

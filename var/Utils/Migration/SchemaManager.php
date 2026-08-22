@@ -68,7 +68,7 @@ class SchemaManager
         foreach ($tables as $key => $meta) {
             $exists = self::tableExists($db, 'table.' . $key);
             $missingColumns = $exists
-                ? self::missingColumns($db, $prefix . $key, Schema::criticalColumns($key))
+                ? self::missingColumns($db, $prefix . $key, Schema::criticalColumns($db, $key))
                 : [];
             $missingIndexes = $exists
                 ? self::missingIndexes($db, $prefix . $key, Schema::criticalIndexes($db, $key, $prefix . $key))

@@ -84,8 +84,7 @@ $(document).ready(function() {
     });
 
     function fileUploadStart (file) {
-        $('<li id="' + file.id + '" class="loading">'
-            + file.name + '</li>').appendTo('#file-list');
+        $('<li></li>').attr('id', file.id).addClass('loading').text(file.name).appendTo('#file-list');
     }
 
     function fileUploadError (type, file) {
@@ -118,9 +117,15 @@ $(document).ready(function() {
             li, exist = $('#' + file.id);
 
         if (exist.length > 0) {
-            li = exist.removeClass('loading').html(fileError + '<br />' + word);
+            li = exist.removeClass('loading').empty()
+                .append(document.createTextNode(fileError))
+                .append('<br />')
+                .append(document.createTextNode(word));
         } else {
-            li = $('<li>' + fileError + '<br />' + word + '</li>').appendTo('#file-list');
+            li = $('<li></li>').append(document.createTextNode(fileError))
+                .append('<br />')
+                .append(document.createTextNode(word))
+                .appendTo('#file-list');
         }
 
         li.effect('highlight', {color : '#FBC2C4'}, 2000, function () {
@@ -137,12 +142,13 @@ $(document).ready(function() {
             .data('cid', attachment.cid)
             .data('url', attachment.url)
             .data('image', attachment.isImage)
-            .html('<input type="hidden" name="attachment[]" value="' + attachment.cid + '" />'
-                + '<a class="insert" target="_blank" href="###" title="<?php _e('点击插入文件'); ?>">'
-                + attachment.title + '</a><div class="info">' + attachment.bytes
-                + ' <a class="file" target="_blank" href="<?php $options->adminUrl('media.php'); ?>?cid='
-                + attachment.cid + '" title="<?php _e('编辑'); ?>"><i class="i-edit"></i></a>'
-                + ' <a class="delete" href="###" title="<?php _e('删除'); ?>"><i class="i-delete"></i></a></div>')
+            .empty()
+            .append($('<input>').attr({type: 'hidden', name: 'attachment[]', value: attachment.cid}))
+            .append($('<a>').addClass('insert').attr({target: '_blank', href: '###', title: '<?php _e('点击插入文件'); ?>'}).text(attachment.title))
+            .append($('<div>').addClass('info').append(document.createTextNode(attachment.bytes + ' '))
+                .append($('<a>').addClass('file').attr({target: '_blank', href: '<?php $options->adminUrl('media.php'); ?>?cid=' + encodeURIComponent(attachment.cid), title: '<?php _e('编辑'); ?>'}).append($('<i>').addClass('i-edit')))
+                .append(document.createTextNode(' '))
+                .append($('<a>').addClass('delete').attr({href: '###', title: '<?php _e('删除'); ?>'}).append($('<i>').addClass('i-delete'))))
             .effect('highlight', 1000);
 
         attachInsertEvent(target);

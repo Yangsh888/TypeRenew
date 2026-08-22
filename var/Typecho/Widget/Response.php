@@ -173,12 +173,18 @@ class Response
 
             foreach ($message as $key => $val) {
                 $tagName = is_int($key) ? 'item' : $key;
+                if (!preg_match('/^[A-Za-z_][A-Za-z0-9_.-]*$/', (string) $tagName)) {
+                    $tagName = 'item';
+                }
                 $result .= '<' . $tagName . '>' . $this->parseXml($val) . '</' . $tagName . '>';
             }
 
             return $result;
         } else {
-            return preg_match("/^[^<>]+$/is", $message) ? $message : '<![CDATA[' . $message . ']]>';
+            $value = (string) $message;
+            return preg_match("/^[^<>]+$/is", $value)
+                ? htmlspecialchars($value, ENT_XML1 | ENT_QUOTES, $this->response->getCharset())
+                : '<![CDATA[' . str_replace(']]>', ']]]]><![CDATA[>', $value) . ']]>';
         }
     }
 }

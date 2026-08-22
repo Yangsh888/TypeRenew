@@ -85,3 +85,41 @@ CREATE TABLE typecho_users ( "uid" INTEGER NOT NULL PRIMARY KEY,
 
 CREATE UNIQUE INDEX typecho_users_name ON typecho_users ("name");
 CREATE UNIQUE INDEX typecho_users_mail ON typecho_users ("mail");
+
+CREATE TABLE typecho_mail_queue (
+  "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  "type" VARCHAR(16) NOT NULL DEFAULT '',
+  "status" VARCHAR(16) NOT NULL DEFAULT '',
+  "attempts" INT NOT NULL DEFAULT 0,
+  "lockedUntil" INT NOT NULL DEFAULT 0,
+  "sendAt" INT NOT NULL DEFAULT 0,
+  "created" INT NOT NULL DEFAULT 0,
+  "updated" INT NOT NULL DEFAULT 0,
+  "lastError" VARCHAR(500) NOT NULL DEFAULT '',
+  "dedupeKey" VARCHAR(40) NOT NULL DEFAULT '',
+  "payload" TEXT NULL
+);
+CREATE INDEX typecho_mail_queue_status_sendat ON typecho_mail_queue ("status", "sendAt");
+CREATE INDEX typecho_mail_queue_status_updated ON typecho_mail_queue ("status", "updated");
+CREATE INDEX typecho_mail_queue_locked ON typecho_mail_queue ("lockedUntil");
+CREATE UNIQUE INDEX typecho_mail_queue_dedupeKey ON typecho_mail_queue ("dedupeKey");
+
+CREATE TABLE typecho_mail_unsub (
+  "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  "email" VARCHAR(255) NOT NULL,
+  "scope" VARCHAR(32) NOT NULL,
+  "created" INT NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX typecho_mail_unsub_email_scope ON typecho_mail_unsub ("email", "scope");
+
+CREATE TABLE typecho_password_resets (
+  "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  "email" VARCHAR(150) NOT NULL,
+  "token" VARCHAR(64) NOT NULL,
+  "created" INT NOT NULL DEFAULT 0,
+  "expires" INT NOT NULL DEFAULT 0,
+  "used" INT NOT NULL DEFAULT 0
+);
+CREATE INDEX typecho_password_resets_email ON typecho_password_resets ("email");
+CREATE INDEX typecho_password_resets_token ON typecho_password_resets ("token");
+CREATE INDEX typecho_password_resets_expires ON typecho_password_resets ("expires");
