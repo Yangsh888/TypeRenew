@@ -276,25 +276,7 @@ class SchemaManager
     private static function ensureMailInfrastructure(Db $db): void
     {
         Schema::ensureMailInfra($db);
-        $defaults = self::defaultMailOptions();
-        $existing = $db->fetchAll(
-            $db->select('name')
-                ->from('table.options')
-                ->where('user = ? AND name IN ?', 0, array_keys($defaults))
-        );
-        $existingNames = array_flip(array_map('strval', array_column($existing, 'name')));
-        $missing = [];
-
-        foreach ($defaults as $name => $value) {
-            if (isset($existingNames[$name])) {
-                continue;
-            }
-            $missing[$name] = $value;
-        }
-
-        if (!empty($missing)) {
-            OptionsStorage::alloc()->saveOptions($missing);
-        }
+        self::ensureOptions($db, self::defaultMailOptions());
     }
 
     private static function defaultMailOptions(): array
@@ -306,10 +288,11 @@ class SchemaManager
 
     private static function ensureGeneralOptions(Db $db): void
     {
-        $defaults = [
-            'ipSource' => 'REMOTE_ADDR',
-        ];
+        self::ensureOptions($db, ['ipSource' => 'REMOTE_ADDR']);
+    }
 
+    private static function ensureOptions(Db $db, array $defaults): void
+    {
         $existing = $db->fetchAll(
             $db->select('name')
                 ->from('table.options')

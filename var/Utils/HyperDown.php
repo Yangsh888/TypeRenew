@@ -111,7 +111,7 @@ class HyperDown
 
     private function initText(string $text): string
     {
-        if (!mb_check_encoding($text, 'UTF-8')) {
+        if (function_exists('mb_check_encoding') && !mb_check_encoding($text, 'UTF-8') && function_exists('mb_convert_encoding')) {
             $text = mb_convert_encoding($text, 'UTF-8', 'UTF-8');
         }
 

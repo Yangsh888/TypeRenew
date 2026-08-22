@@ -323,7 +323,7 @@ LUA;
         $this->failureCount = min($this->failureCount + 1, count(self::BACKOFF_STEPS));
 
         if ($reason !== '') {
-            $this->lastError = mb_substr(trim($reason), 0, 200, 'UTF-8');
+            $this->lastError = function_exists('mb_substr') ? mb_substr(trim($reason), 0, 200, 'UTF-8') : substr(trim($reason), 0, 200);
         }
     }
 }

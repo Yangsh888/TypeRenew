@@ -531,7 +531,7 @@ EOF;
 
             $iLength = self::strLen($str) - $start;
             $tLength = $length < $iLength ? max(0, $length - self::strLen($trim)) : $length;
-            $str = mb_substr($str, $start, $tLength, 'UTF-8');
+            $str = function_exists('mb_substr') ? mb_substr($str, $start, $tLength, 'UTF-8') : substr($str, $start, $tLength);
 
             return $length < $iLength ? ($str . $trim) : $str;
         }
@@ -543,7 +543,7 @@ EOF;
 
         public static function strLen(string $str): int
         {
-            return mb_strlen($str, 'UTF-8');
+            return function_exists('mb_strlen') ? mb_strlen($str, 'UTF-8') : strlen($str);
         }
 
         public static function hashValidate(?string $from, ?string $to): bool

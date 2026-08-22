@@ -423,7 +423,7 @@ class Queue
                 $errors[] = ['id' => $id, 'error' => $err];
                 $nextAttempts = $attempts + 1;
                 $isDead = $nextAttempts >= $maxAttempts;
-                $truncatedErr = mb_substr($err, 0, 500, 'UTF-8');
+                $truncatedErr = function_exists('mb_substr') ? mb_substr($err, 0, 500, 'UTF-8') : substr($err, 0, 500);
                 $db->query($db->update('table.mail_queue')->rows([
                     'status' => $isDead ? 'dead' : 'failed',
                     'lockedUntil' => 0,
@@ -758,7 +758,7 @@ class Queue
         if ($text === '') {
             return;
         }
-        $value = '[' . $scope . '] ' . mb_substr($text, 0, 500, 'UTF-8');
+        $value = '[' . $scope . '] ' . (function_exists('mb_substr') ? mb_substr($text, 0, 500, 'UTF-8') : substr($text, 0, 500));
         error_log('TypeRenew.MailQueue ' . $value);
         self::setRuntimeOption('mailRuntimeError', $value);
         self::setRuntimeOption('mailRuntimeErrorAt', (string) time());

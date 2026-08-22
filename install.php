@@ -1183,10 +1183,10 @@ function install_step_2_perform()
             if (('Mysql' == $type && 1049 == $code) || ('Pgsql' == $type && 7 == $code)) {
                 install_raise_error(_t('数据库: "%s"不存在，请手动创建后重试', $config['dbDatabase']));
             } else {
-                install_raise_error(_t('对不起, 无法连接数据库, 请先检查数据库配置再继续进行安装: "%s"', $e->getMessage()));
+                install_raise_error(_t('对不起, 无法连接数据库, 请先检查数据库配置再继续进行安装'));
             }
         } catch (\Typecho\Db\Exception $e) {
-            install_raise_error(_t('安装程序捕捉到以下错误: "%s". 程序被终止, 请检查您的配置信息.', $e->getMessage()));
+            install_raise_error(_t('安装程序无法完成数据库连接，请检查您的配置信息'));
         }
 
         $code = install_config_file($config['dbAdapter'], $config['dbPrefix'], $dbConfig);
@@ -1243,7 +1243,7 @@ function install_step_2_perform()
                 }
             }
         } catch (\Typecho\Db\Exception $e) {
-            install_raise_error(_t('安装程序捕捉到以下错误: "%s"，程序被终止，请检查您的配置信息。', $e->getMessage()));
+            install_raise_error(_t('安装程序无法删除原有数据表，请检查数据库权限和配置信息。'));
         }
     }
 
@@ -1301,7 +1301,7 @@ function install_step_2_perform()
         } else {
             install_remove_config_file();
 
-            install_raise_error(_t('安装程序捕捉到以下错误: "%s". 程序被终止, 请检查您的配置信息.', $e->getMessage()));
+            install_raise_error(_t('安装程序无法初始化数据库，请检查数据库权限和配置信息'));
         }
     }
 
@@ -1524,7 +1524,7 @@ function install_step_3_perform()
             }
         }
 
-        install_raise_error($e->getMessage());
+        install_raise_error(_t('安装程序无法创建管理员帐号，请检查数据库权限和配置信息'));
     }
 
     install_clear_step_token();
