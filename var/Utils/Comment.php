@@ -71,7 +71,9 @@ class Comment
         }
 
         $cache = Cache::getInstance();
-        foreach (['comments', 'contents', 'metas'] as $scope) {
+        $prefix = Db::get()->getPrefix();
+        foreach (['comments', 'contents', 'metas'] as $name) {
+            $scope = $prefix . $name;
             try {
                 $cache->invalidate($scope);
             } catch (\Throwable $e) {

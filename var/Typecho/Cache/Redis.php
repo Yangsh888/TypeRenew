@@ -71,7 +71,7 @@ LUA;
             return (int) $value;
         }
 
-        $result = @unserialize($value);
+        $result = @unserialize($value, ['allowed_classes' => ['stdClass']]);
         if ($result === false && $value !== serialize(false)) {
             return null;
         }
