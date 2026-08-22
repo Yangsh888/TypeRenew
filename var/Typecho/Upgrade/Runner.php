@@ -68,12 +68,16 @@ class Runner
             throw new RuntimeException('当前环境缺少 ZipArchive 扩展');
         }
 
-        $name = (string) ($file['name'] ?? '');
-        $tmp = (string) ($file['tmp_name'] ?? '');
-        $error = (int) ($file['error'] ?? 4);
-        $size = (int) ($file['size'] ?? 0);
+        $nameValue = $file['name'] ?? null;
+        $name = is_scalar($nameValue) ? (string) $nameValue : '';
+        $tmpValue = $file['tmp_name'] ?? null;
+        $tmp = is_string($tmpValue) ? $tmpValue : '';
+        $errorValue = $file['error'] ?? null;
+        $error = is_scalar($errorValue) ? (int) $errorValue : UPLOAD_ERR_NO_FILE;
+        $sizeValue = $file['size'] ?? null;
+        $size = is_scalar($sizeValue) ? (int) $sizeValue : 0;
 
-        if ($error !== UPLOAD_ERR_OK || !is_uploaded_file($tmp)) {
+        if ($error !== UPLOAD_ERR_OK || $tmp === '' || !is_uploaded_file($tmp)) {
             throw new RuntimeException('升级包上传失败');
         }
 

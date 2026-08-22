@@ -94,17 +94,24 @@ class Validate
 
         foreach ($rules as $key => $rule) {
             $this->key = $key;
-            $data[$key] = (is_array($data[$key] ?? null) ? 0 == count($data[$key])
-                : 0 == strlen($data[$key] ?? '')) ? null : $data[$key];
+            $value = $data[$key] ?? null;
+            $isArray = is_array($value);
+            $isEmpty = $isArray ? 0 == count($value) : 0 == strlen((string) ($value ?? ''));
+            $data[$key] = $isEmpty ? null : $value;
 
             foreach ($rule as $params) {
                 $method = $params[0];
+                $message = $params[1];
 
-                if ('required' != $method && 'confirm' != $method && 0 == strlen($data[$key] ?? '')) {
+                if ($isArray && !$isEmpty && 'required' != $method && !is_callable($method)) {
+                    $result[$key] = $message;
+                    break;
+                }
+
+                if ('required' != $method && 'confirm' != $method && $isEmpty) {
                     continue;
                 }
 
-                $message = $params[1];
                 $params[1] = $data[$key];
                 $params = array_slice($params, 1);
 

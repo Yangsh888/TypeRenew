@@ -37,7 +37,10 @@ class Layout
 
     public function removeItem(Layout $item): Layout
     {
-        unset($this->items[array_search($item, $this->items)]);
+        $index = array_search($item, $this->items, true);
+        if ($index !== false) {
+            unset($this->items[$index]);
+        }
         return $this;
     }
 

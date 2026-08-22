@@ -374,15 +374,20 @@ class Backup extends BaseOptions implements ActionInterface
                 return $this->failAndFinish(_t('没有选择任何备份文件'));
             }
 
-            if (UPLOAD_ERR_NO_FILE == $file['error']) {
+            $errorValue = $file['error'] ?? null;
+            $error = is_scalar($errorValue) ? (int) $errorValue : UPLOAD_ERR_NO_FILE;
+            $tmpValue = $file['tmp_name'] ?? null;
+            $tmp = is_string($tmpValue) ? $tmpValue : '';
+
+            if (UPLOAD_ERR_NO_FILE === $error) {
                 return $this->failAndFinish(_t('没有选择任何备份文件'));
             }
 
-            if (UPLOAD_ERR_OK == $file['error'] && is_uploaded_file($file['tmp_name'])) {
-                return $file['tmp_name'];
+            if (UPLOAD_ERR_OK === $error && $tmp !== '' && is_uploaded_file($tmp)) {
+                return $tmp;
             }
 
-            return $this->failAndFinish(Common::uploadErrorMessage((int) $file['error'], '备份文件上传'));
+            return $this->failAndFinish(Common::uploadErrorMessage($error, '备份文件上传'));
         }
 
         if (!$this->request->is('file')) {
@@ -398,7 +403,12 @@ class Backup extends BaseOptions implements ActionInterface
         $path = __TYPECHO_BACKUP_DIR__ . '/' . $file;
         $real = realpath($path);
 
-        if (!$base || !$real || strpos($real, $base) !== 0 || !is_file($real)) {
+        if (
+            !$base
+            || !$real
+            || ($real !== $base && !str_starts_with($real, $base . DIRECTORY_SEPARATOR))
+            || !is_file($real)
+        ) {
             return $this->failAndFinish(_t('备份文件不存在'));
         }
 
@@ -654,7 +664,6 @@ class Backup extends BaseOptions implements ActionInterface
 
     private function makeSnapshot(): ?string
     {
-        // uniqid() 是微秒派生的, 配合已知的时间前缀熵太低, 会被枚举下载
         $fileName = date('Ymd_His') . '_before_import_' . bin2hex(Common::secureRandomBytes(8)) . '.dat';
         $path = __TYPECHO_BACKUP_DIR__ . '/' . $fileName;
         if (!is_dir(__TYPECHO_BACKUP_DIR__) || !is_writable(__TYPECHO_BACKUP_DIR__)) {

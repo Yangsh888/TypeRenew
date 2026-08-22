@@ -15,7 +15,7 @@ class Checkbox extends Element
 
     public function input(?string $name = null, ?array $options = null): ?Layout
     {
-        foreach ($options as $value => $label) {
+        foreach ($options ?? [] as $value => $label) {
             $this->options[$value] = new Layout('input');
             $item = $this->multiline();
             $id = $this->name . '-' . $this->filterValue($value);

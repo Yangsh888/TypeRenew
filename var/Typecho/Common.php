@@ -327,7 +327,7 @@ EOF;
                 }
             }
 
-            $html = strip_tags($html, $normalizeTags);
+            $html = strip_tags((string) $html, $normalizeTags);
             return preg_replace_callback(
                 "/<([_a-z0-9-]+)(\s+[^>]+)?>/is",
                 function ($matches) use ($allowableAttributes) {
@@ -447,6 +447,23 @@ EOF;
             if (empty($url)) {
                 return '/';
             }
+
+            $schemeProbe = preg_replace('/&(?:colon|#[xX]0*3[aA]|#0*58);?/i', ':', (string) $url);
+            $schemeProbe = str_ireplace(['&tab;', '&newline;'], '', (string) $schemeProbe);
+            $schemeProbe = preg_replace(
+                '/[\x00-\x20\x7f]/',
+                '',
+                html_entity_decode((string) $schemeProbe, ENT_QUOTES | ENT_HTML5, 'UTF-8')
+            );
+
+            if (
+                is_string($schemeProbe)
+                && preg_match('/^([a-z][a-z0-9+.-]*):/i', $schemeProbe, $schemeMatch)
+                && !in_array(strtolower($schemeMatch[1]), ['http', 'https'], true)
+            ) {
+                return '/';
+            }
+
             $params = self::parseUrl(str_replace(["\r", "\n", "\t", ' '], '', $url));
 
             if ($params === []) {
@@ -454,7 +471,7 @@ EOF;
             }
 
             if (isset($params['scheme'])) {
-                if (!in_array($params['scheme'], ['http', 'https'])) {
+                if (!in_array(strtolower((string) $params['scheme']), ['http', 'https'], true)) {
                     return '/';
                 }
             }

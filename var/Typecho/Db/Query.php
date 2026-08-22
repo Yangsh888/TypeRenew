@@ -150,7 +150,9 @@ class Query
     {
         foreach ($values as &$value) {
             if (is_array($value)) {
-                $value = '(' . implode(',', array_map([$this, 'quoteValue'], $value)) . ')';
+                $value = empty($value)
+                    ? '(SELECT NULL WHERE 0)'
+                    : '(' . implode(',', array_map([$this, 'quoteValue'], $value)) . ')';
             } else {
                 $value = $this->quoteValue($value);
             }

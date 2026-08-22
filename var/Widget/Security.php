@@ -37,7 +37,12 @@ class Security extends Base
         if (!$this->enabled) {
             return;
         }
-        $current = (string) $this->request->get('_');
+        $current = $this->request->get('_');
+        if (!is_scalar($current)) {
+            $this->response->goBack();
+            return;
+        }
+        $current = (string) $current;
         $referer = (string) $this->request->getReferer();
         $requestUrl = (string) $this->request->getRequestUrl();
         $valid = hash_equals($this->getToken($referer), $current)

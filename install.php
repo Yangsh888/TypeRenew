@@ -31,7 +31,7 @@ function install_default_db_prefix(): string
 
 function install_default_sqlite_file(): string
 {
-    return __TYPECHO_ROOT_DIR__ . '/usr/' . uniqid() . '.db';
+    return __TYPECHO_ROOT_DIR__ . '/usr/' . bin2hex(\Typecho\Common::secureRandomBytes(16)) . '.db';
 }
 
 function install_register_exception_handler(): void
@@ -382,7 +382,8 @@ function install_assert_step_token(): void
         return;
     }
 
-    $provided = (string) ($_COOKIE['__typecho_install_token'] ?? '');
+    $providedValue = $_COOKIE['__typecho_install_token'] ?? '';
+    $provided = is_string($providedValue) ? $providedValue : '';
     $stored = '';
 
     try {
@@ -424,7 +425,8 @@ function install_form_nonce(): string
         return $nonce;
     }
 
-    $nonce = (string) ($_COOKIE['__typecho_install_nonce'] ?? '');
+    $cookieNonce = $_COOKIE['__typecho_install_nonce'] ?? '';
+    $nonce = is_string($cookieNonce) ? $cookieNonce : '';
     if ($nonce === '' || !preg_match('/^[a-f0-9]{32}$/', $nonce)) {
         $nonce = bin2hex(\Typecho\Common::secureRandomBytes(16));
         if (!headers_sent()) {
@@ -447,8 +449,10 @@ function install_assert_form_nonce(): void
         return;
     }
 
-    $cookie = (string) ($_COOKIE['__typecho_install_nonce'] ?? '');
-    $posted = (string) ($_POST['installNonce'] ?? '');
+    $cookieValue = $_COOKIE['__typecho_install_nonce'] ?? '';
+    $postedValue = $_POST['installNonce'] ?? '';
+    $cookie = is_string($cookieValue) ? $cookieValue : '';
+    $posted = is_string($postedValue) ? $postedValue : '';
 
     if ($cookie === '' || $posted === '' || !hash_equals($cookie, $posted)) {
         install_raise_error(_t('安装会话已失效, 请刷新页面后重新提交'));

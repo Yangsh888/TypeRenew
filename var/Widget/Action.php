@@ -50,7 +50,7 @@ class Action extends Widget implements ActionInterface
     {
         $action = $this->request->get('action');
         $actionTable = array_merge(Options::alloc()->actionTable, $this->map);
-        $widgetName = $actionTable[$action] ?? null;
+        $widgetName = is_string($action) ? ($actionTable[$action] ?? null) : null;
 
         if (is_string($widgetName) && class_exists($widgetName)) {
             $widget = self::widget($widgetName);
