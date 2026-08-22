@@ -40,7 +40,9 @@ class Db
 
     private bool $transactionActive = false;
 
-    private bool $pendingInvalidation = false;
+    private array $pendingInvalidations = [];
+
+    private bool $invalidateAllOnCommit = false;
 
     private static Db $instance;
 
@@ -185,7 +187,7 @@ class Db
     {
         $table = preg_replace("/^table\./", $this->prefix, $table);
         $this->adapter->truncate($table, $this->selectDb(self::WRITE));
-        $this->invalidateCache();
+        $this->invalidateCache($this->normalizeInvalidateTable($table));
     }
 
     public function query($query, int $op = self::READ, string $action = self::SELECT)
@@ -203,6 +205,9 @@ class Db
         } elseif (is_string($query)) {
             $isWriteSql = (bool) preg_match('/^\s*(INSERT|UPDATE|DELETE|REPLACE|ALTER|DROP|TRUNCATE|CREATE)\b/i', $query);
             $transactionCommand = $this->transactionCommand($query);
+            if ($isWriteSql) {
+                $table = $this->normalizeInvalidateTable($this->parseWriteTable($query));
+            }
             $forceWriteConnection = (bool) preg_match(
                 '/^\s*(?:START\s+TRANSACTION|BEGIN|COMMIT|ROLLBACK|SAVEPOINT|RELEASE\s+SAVEPOINT|LOCK\s+TABLES|UNLOCK\s+TABLES|SET\s+TRANSACTION)\b/i',
                 $query
@@ -265,6 +270,29 @@ class Db
         }
     }
 
+    private function parseWriteTable(string $sql): ?string
+    {
+        $trimmed = trim($sql);
+        $patterns = [
+            '/^\s*INSERT\s+INTO\s+`?([a-zA-Z0-9_]+)`?/i',
+            '/^\s*REPLACE\s+INTO\s+`?([a-zA-Z0-9_]+)`?/i',
+            '/^\s*UPDATE\s+`?([a-zA-Z0-9_]+)`?/i',
+            '/^\s*DELETE\s+FROM\s+`?([a-zA-Z0-9_]+)`?/i',
+            '/^\s*TRUNCATE(?:\s+TABLE)?\s+`?([a-zA-Z0-9_]+)`?/i',
+            '/^\s*ALTER\s+TABLE\s+`?([a-zA-Z0-9_]+)`?/i',
+            '/^\s*DROP\s+TABLE(?:\s+IF\s+EXISTS)?\s+`?([a-zA-Z0-9_]+)`?/i',
+            '/^\s*CREATE\s+TABLE(?:\s+IF\s+NOT\s+EXISTS)?\s+`?([a-zA-Z0-9_]+)`?/i'
+        ];
+
+        foreach ($patterns as $pattern) {
+            if (preg_match($pattern, $trimmed, $matches)) {
+                return $matches[1];
+            }
+        }
+
+        return null;
+    }
+
     private function normalizeInvalidateTable(?string $table): ?string
     {
         if ($table === null) {
@@ -306,22 +334,38 @@ class Db
         return null;
     }
 
-    private function invalidateCache(): void
+    private function invalidateCache(?string $table): void
     {
-        if ($this->transactionActive) {
-            $this->pendingInvalidation = true;
+        if (!$this->transactionActive) {
+            Cache::getInstance()->invalidate($table);
             return;
         }
 
-        Cache::getInstance()->invalidate();
+        if ($table === null) {
+            $this->invalidateAllOnCommit = true;
+            $this->pendingInvalidations = [];
+            return;
+        }
+
+        if (!$this->invalidateAllOnCommit) {
+            $this->pendingInvalidations[$table] = true;
+        }
     }
 
     private function flushPendingInvalidations(): void
     {
-        if ($this->pendingInvalidation) {
-            Cache::getInstance()->invalidate();
-            $this->pendingInvalidation = false;
+        $cache = Cache::getInstance();
+
+        if ($this->invalidateAllOnCommit) {
+            $cache->invalidate();
+        } else {
+            foreach (array_keys($this->pendingInvalidations) as $table) {
+                $cache->invalidate($table);
+            }
         }
+
+        $this->pendingInvalidations = [];
+        $this->invalidateAllOnCommit = false;
     }
 
     private function cacheKey($query): ?string
