@@ -3,10 +3,11 @@
     <?php if (!empty($trAdminEnabled)): ?>
         <div class="tr-overlay"></div>
         <div class="tr-cmd" id="trCmd" aria-hidden="true">
-            <div class="tr-cmd-overlay" id="trCmdOverlay"></div>
-            <div class="tr-cmd-dialog" role="dialog" aria-modal="true" aria-label="<?php _e('快捷命令'); ?>">
+            <div class="tr-cmd-overlay" id="trCmdOverlay" aria-hidden="true"></div>
+            <div class="tr-cmd-dialog" id="trCmdDialog" role="dialog" aria-modal="true" aria-labelledby="trCmdTitle">
                 <div class="tr-cmd-head">
-                    <input class="tr-cmd-input" id="trCmdInput" type="text" autocomplete="off" placeholder="<?php _e('输入以搜索或执行命令'); ?>" />
+                    <span id="trCmdTitle" class="screen-reader-text"><?php _e('快捷命令'); ?></span>
+                    <input class="tr-cmd-input" id="trCmdInput" type="text" role="combobox" aria-autocomplete="list" aria-controls="trCmdList" aria-expanded="false" aria-activedescendant="" autocomplete="off" placeholder="<?php _e('输入以搜索或执行命令'); ?>" />
                     <div class="tr-cmd-kbd">
                         <span class="tr-kbd">Esc</span>
                     </div>

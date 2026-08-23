@@ -28,6 +28,8 @@
     let debounceTimer = null;
     let iconsUrl = '';
     let initialized = false;
+    let restoreFocus = null;
+    let inertNodes = [];
 
     const isMac = /Mac|iPhone|iPad|iPod/i.test(
         (navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || navigator.userAgent || ''
@@ -474,6 +476,7 @@
             row.type = 'button';
             row.className = 'tr-cmd-item' + (i === activeIndex ? ' is-active' : '');
             row.setAttribute('role', 'option');
+            row.id = 'trCmdOption-' + i;
             row.setAttribute('aria-selected', i === activeIndex ? 'true' : 'false');
 
             const main = document.createElement('div');
@@ -520,6 +523,7 @@
 
             list.appendChild(row);
         });
+        syncActive();
     }
 
     function syncActive() {
@@ -529,6 +533,28 @@
             el.classList.toggle('is-active', on);
             el.setAttribute('aria-selected', on ? 'true' : 'false');
         });
+        input.setAttribute('aria-activedescendant', activeIndex >= 0 && items[activeIndex]
+            ? items[activeIndex].id
+            : '');
+    }
+
+    function setBackgroundInert(on) {
+        if (on) {
+            inertNodes = Array.from(body.children)
+                .filter((node) => node !== wrap)
+                .map((node) => ({ node, hadInert: node.hasAttribute('inert') }));
+            inertNodes.forEach(({ node }) => node.setAttribute('inert', ''));
+            return;
+        }
+        inertNodes.forEach(({ node, hadInert }) => {
+            if (!hadInert) node.removeAttribute('inert');
+        });
+        inertNodes = [];
+    }
+
+    function getFocusable(container) {
+        return Array.from(container.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'))
+            .filter((el) => !el.hidden && el.getClientRects().length > 0);
     }
 
     function execute(index) {
@@ -567,11 +593,15 @@
     function open() {
         if (isOpen) return;
         isOpen = true;
+        restoreFocus = document.activeElement instanceof HTMLElement ? document.activeElement : btn;
 
         initFromConfig();
 
         wrap.style.display = 'block';
         wrap.setAttribute('aria-hidden', 'false');
+        input.setAttribute('aria-expanded', 'true');
+        if (btn) btn.setAttribute('aria-expanded', 'true');
+        setBackgroundInert(true);
         body.classList.add('tr-cmd-open');
 
         input.value = '';
@@ -588,10 +618,18 @@
 
         wrap.style.display = 'none';
         wrap.setAttribute('aria-hidden', 'true');
+        input.setAttribute('aria-expanded', 'false');
+        input.setAttribute('aria-activedescendant', '');
+        if (btn) btn.setAttribute('aria-expanded', 'false');
         body.classList.remove('tr-cmd-open');
+        setBackgroundInert(false);
 
         results.length = 0;
         activeIndex = -1;
+        if (restoreFocus && restoreFocus.isConnected && typeof restoreFocus.focus === 'function') {
+            restoreFocus.focus({ preventScroll: true });
+        }
+        restoreFocus = null;
     }
 
     function toggle() {
@@ -638,6 +676,25 @@
         if (e.key === 'Enter') {
             e.preventDefault();
             execute(activeIndex);
+        }
+    });
+
+    wrap.addEventListener('keydown', (e) => {
+        if (!isOpen || e.key !== 'Tab') return;
+        const focusable = getFocusable(wrap);
+        if (!focusable.length) {
+            e.preventDefault();
+            input.focus();
+            return;
+        }
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
         }
     });
 

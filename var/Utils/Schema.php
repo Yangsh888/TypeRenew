@@ -15,6 +15,23 @@ class Schema
         self::ensureTables($db, ['mail_queue', 'mail_unsub', 'password_resets']);
     }
 
+    public static function ensureAuthInfra(Db $db): void
+    {
+        self::ensureTables($db, ['login_attempts']);
+    }
+
+    public static function repairAuthInfra(Db $db): void
+    {
+        if (self::dialect($db) !== 'mysql') {
+            return;
+        }
+
+        $expectedCollation = self::detectMysqlCollation($db);
+        $table = $db->getPrefix() . 'login_attempts';
+        self::ensureMysqlTableCollation($db, $table, $expectedCollation);
+        self::ensureMysqlColumnDefinitions($db, 'login_attempts', $table);
+    }
+
     public static function criticalSchema(): array
     {
         return [
@@ -57,6 +74,21 @@ class Schema
                         'created' => '`created` int unsigned NOT NULL default 0',
                         'expires' => '`expires` int unsigned NOT NULL default 0',
                         'used' => '`used` tinyint unsigned NOT NULL default 0',
+                    ],
+                ],
+            ],
+            'login_attempts' => [
+                'label' => '登录限流表',
+                'mysql' => [
+                    'definitions' => [
+                        'id' => '`id` bigint unsigned NOT NULL auto_increment',
+                        'scope' => "`scope` varchar(16) NOT NULL default ''",
+                        'ipHash' => "`ipHash` char(40) NOT NULL default ''",
+                        'identityHash' => "`identityHash` char(40) NOT NULL default ''",
+                        'failures' => '`failures` int unsigned NOT NULL default 0',
+                        'firstAt' => '`firstAt` int unsigned NOT NULL default 0',
+                        'lastAt' => '`lastAt` int unsigned NOT NULL default 0',
+                        'lockedUntil' => '`lockedUntil` int unsigned NOT NULL default 0',
                     ],
                 ],
             ],
@@ -338,6 +370,16 @@ class Schema
                 'expires' => '"expires" INT NOT NULL DEFAULT 0',
                 'used' => '"used" INT NOT NULL DEFAULT 0',
             ],
+            'login_attempts' => [
+                'id' => $dialect === 'pgsql' ? '"id" BIGSERIAL PRIMARY KEY' : '"id" INTEGER PRIMARY KEY AUTOINCREMENT',
+                'scope' => '"scope" VARCHAR(16) NOT NULL DEFAULT \'\'',
+                'ipHash' => '"ipHash" VARCHAR(40) NOT NULL DEFAULT \'\'',
+                'identityHash' => '"identityHash" VARCHAR(40) NOT NULL DEFAULT \'\'',
+                'failures' => '"failures" INT NOT NULL DEFAULT 0',
+                'firstAt' => '"firstAt" INT NOT NULL DEFAULT 0',
+                'lastAt' => '"lastAt" INT NOT NULL DEFAULT 0',
+                'lockedUntil' => '"lockedUntil" INT NOT NULL DEFAULT 0',
+            ],
             'renew_go_logs' => [
                 'id' => $dialect === 'pgsql' ? '"id" BIGSERIAL PRIMARY KEY' : '"id" INTEGER PRIMARY KEY AUTOINCREMENT',
                 'ip' => '"ip" VARCHAR(45) NOT NULL DEFAULT \'\'',
@@ -509,6 +551,42 @@ class Schema
                         . '`expires` int unsigned NOT NULL default 0,'
                         . '`used` tinyint unsigned NOT NULL default 0,'
                         . 'PRIMARY KEY (`id`)'
+                        . ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=' . $mysqlCollation,
+                };
+
+            case 'login_attempts':
+                return match ($dialect) {
+                    'sqlite' => 'CREATE TABLE IF NOT EXISTS ' . $name . ' ('
+                        . '"id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,'
+                        . '"scope" varchar(16) NOT NULL default \'\','
+                        . '"ipHash" varchar(40) NOT NULL default \'\','
+                        . '"identityHash" varchar(40) NOT NULL default \'\','
+                        . '"failures" int(10) NOT NULL default 0,'
+                        . '"firstAt" int(10) NOT NULL default 0,'
+                        . '"lastAt" int(10) NOT NULL default 0,'
+                        . '"lockedUntil" int(10) NOT NULL default 0'
+                        . ')',
+                    'pgsql' => 'CREATE TABLE IF NOT EXISTS ' . $name . ' ('
+                        . '"id" BIGSERIAL PRIMARY KEY,'
+                        . '"scope" VARCHAR(16) NOT NULL DEFAULT \'\','
+                        . '"ipHash" VARCHAR(40) NOT NULL DEFAULT \'\','
+                        . '"identityHash" VARCHAR(40) NOT NULL DEFAULT \'\','
+                        . '"failures" INT NOT NULL DEFAULT 0,'
+                        . '"firstAt" INT NOT NULL DEFAULT 0,'
+                        . '"lastAt" INT NOT NULL DEFAULT 0,'
+                        . '"lockedUntil" INT NOT NULL DEFAULT 0'
+                        . ')',
+                    default => 'CREATE TABLE IF NOT EXISTS ' . $name . ' ('
+                        . '`id` bigint unsigned NOT NULL auto_increment,'
+                        . '`scope` varchar(16) NOT NULL default \'\','
+                        . '`ipHash` char(40) NOT NULL default \'\','
+                        . '`identityHash` char(40) NOT NULL default \'\','
+                        . '`failures` int unsigned NOT NULL default 0,'
+                        . '`firstAt` int unsigned NOT NULL default 0,'
+                        . '`lastAt` int unsigned NOT NULL default 0,'
+                        . '`lockedUntil` int unsigned NOT NULL default 0,'
+                        . 'PRIMARY KEY (`id`),'
+                        . 'UNIQUE KEY `uniq_scope_ip_identity` (`scope`, `ipHash`, `identityHash`)'
                         . ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=' . $mysqlCollation,
                 };
 
@@ -708,7 +786,7 @@ class Schema
             'mail_queue' => [
                 ['name' => $name('idx_status_sendat', 'status_sendat'), 'columns' => ['status', 'sendAt']],
                 ['name' => $name('idx_status_updated', 'status_updated'), 'columns' => ['status', 'updated']],
-                ['name' => $name('idx_locked', 'lockedUntil'), 'columns' => ['lockedUntil']],
+                ['name' => $name('idx_locked', 'locked'), 'columns' => ['lockedUntil']],
                 ['name' => $name('uniq_dedupe', 'dedupeKey'), 'columns' => ['dedupeKey'], 'unique' => true],
             ],
             'mail_unsub' => [
@@ -718,6 +796,15 @@ class Schema
                 ['name' => $name('idx_email', 'email'), 'columns' => ['email']],
                 ['name' => $name('idx_token', 'token'), 'columns' => ['token']],
                 ['name' => $name('idx_expires', 'expires'), 'columns' => ['expires']],
+            ],
+            'login_attempts' => [
+                [
+                    'name' => $name('uniq_scope_ip_identity', 'scope_ip_identity'),
+                    'columns' => ['scope', 'ipHash', 'identityHash'],
+                    'unique' => true
+                ],
+                ['name' => $name('idx_locked', 'locked'), 'columns' => ['lockedUntil']],
+                ['name' => $name('idx_last', 'last'), 'columns' => ['lastAt']],
             ],
             'renew_go_logs' => [
                 ['name' => $name('idx_ip_action_created', 'ip_action_created'), 'columns' => ['ip', 'action', 'created_at']],

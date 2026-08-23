@@ -5,6 +5,8 @@ namespace Widget;
 use Typecho\Common;
 use Typecho\Cookie;
 use Typecho\Validate;
+use Utils\LoginGuard;
+use Utils\Session;
 use Widget\Base\Users;
 
 if (!defined('__TYPECHO_ROOT_DIR__')) {
@@ -44,33 +46,51 @@ class Login extends Users implements ActionInterface
             $this->response->goBack();
         }
 
+        $name = (string) $this->request->get('name', '');
+        $referer = (string) $this->request->get('referer', '');
+        $ip = $this->request->getIp();
+        $retryAfter = LoginGuard::retryAfter($this->db, LoginGuard::SCOPE_LOGIN, $ip, $name);
+
+        if ($retryAfter > 0) {
+            Cookie::set('__typecho_remember_name', $name);
+            Notice::alloc()->set(
+                _t('登录尝试过于频繁，请在 %d 分钟后重试', (int) ceil($retryAfter / 60)),
+                'error'
+            );
+            $this->response->goBack('?referer=' . urlencode($referer));
+        }
+
         $valid = $this->user->login(
-            $this->request->get('name'),
-            $this->request->get('password'),
+            $name,
+            (string) $this->request->get('password', ''),
             false,
             $this->request->is('remember=1') ? $rememberTtl : 0
         );
 
         if (!$valid) {
+            LoginGuard::recordFailure($this->db, LoginGuard::SCOPE_LOGIN, $ip, $name);
             sleep(3);
 
             self::pluginHandle()->call(
                 'loginFailure',
                 $this->user,
-                $this->request->get('name'),
+                $name,
                 null,
                 $this->request->is('remember=1')
             );
 
-            Cookie::set('__typecho_remember_name', $this->request->get('name'));
+            Cookie::set('__typecho_remember_name', $name);
             Notice::alloc()->set(_t('用户名或密码无效'), 'error');
-            $this->response->goBack('?referer=' . urlencode($this->request->get('referer')));
+            $this->response->goBack('?referer=' . urlencode($referer));
         }
+
+        LoginGuard::clear($this->db, LoginGuard::SCOPE_LOGIN, $ip, $name);
+        Session::rotate();
 
         self::pluginHandle()->call(
             'loginSuccess',
             $this->user,
-            $this->request->get('name'),
+            $name,
             null,
             $this->request->is('remember=1')
         );

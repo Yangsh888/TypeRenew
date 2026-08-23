@@ -15,6 +15,10 @@ CREATE TABLE typecho_comments ( "coid" INTEGER NOT NULL PRIMARY KEY,
 
 CREATE INDEX typecho_comments_cid ON typecho_comments ("cid");
 CREATE INDEX typecho_comments_created ON typecho_comments ("created");
+CREATE INDEX typecho_comments_status ON typecho_comments ("status");
+CREATE INDEX typecho_comments_cid_status ON typecho_comments ("cid", "status");
+CREATE INDEX typecho_comments_owner_status ON typecho_comments ("ownerId", "status");
+CREATE INDEX typecho_comments_parent ON typecho_comments ("parent");
 
 CREATE TABLE typecho_contents ( "cid" INTEGER NOT NULL PRIMARY KEY, 
 "title" varchar(150) default NULL ,
@@ -36,6 +40,9 @@ CREATE TABLE typecho_contents ( "cid" INTEGER NOT NULL PRIMARY KEY,
 
 CREATE UNIQUE INDEX typecho_contents_slug ON typecho_contents ("slug");
 CREATE INDEX typecho_contents_created ON typecho_contents ("created");
+CREATE INDEX typecho_contents_type_status_created ON typecho_contents ("type", "status", "created");
+CREATE INDEX typecho_contents_author_type_status_created ON typecho_contents ("authorId", "type", "status", "created");
+CREATE INDEX typecho_contents_parent_type ON typecho_contents ("parent", "type");
 
 CREATE TABLE "typecho_fields" ("cid" INTEGER NOT NULL,
   "name" varchar(150) NOT NULL,
@@ -59,6 +66,9 @@ CREATE TABLE typecho_metas ( "mid" INTEGER NOT NULL PRIMARY KEY,
 "parent" int(10) default '0');
 
 CREATE INDEX typecho_metas_slug ON typecho_metas ("slug");
+CREATE INDEX typecho_metas_type_slug ON typecho_metas ("type", "slug");
+CREATE INDEX typecho_metas_type_order ON typecho_metas ("type", "order");
+CREATE INDEX typecho_metas_type_parent_order ON typecho_metas ("type", "parent", "order");
 
 CREATE TABLE typecho_options ( "name" varchar(64) NOT NULL ,
 "user" int(10) NOT NULL default '0' , 
@@ -70,6 +80,7 @@ CREATE TABLE typecho_relationships ( "cid" int(10) NOT NULL ,
 "mid" int(10) NOT NULL );
 
 CREATE UNIQUE INDEX typecho_relationships_cid_mid ON typecho_relationships ("cid", "mid");
+CREATE INDEX typecho_relationships_mid ON typecho_relationships ("mid");
 
 CREATE TABLE typecho_users ( "uid" INTEGER NOT NULL PRIMARY KEY, 
 "name" varchar(32) default NULL ,
@@ -123,3 +134,17 @@ CREATE TABLE typecho_password_resets (
 CREATE INDEX typecho_password_resets_email ON typecho_password_resets ("email");
 CREATE INDEX typecho_password_resets_token ON typecho_password_resets ("token");
 CREATE INDEX typecho_password_resets_expires ON typecho_password_resets ("expires");
+
+CREATE TABLE typecho_login_attempts (
+  "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  "scope" VARCHAR(16) NOT NULL DEFAULT '',
+  "ipHash" VARCHAR(40) NOT NULL DEFAULT '',
+  "identityHash" VARCHAR(40) NOT NULL DEFAULT '',
+  "failures" INT NOT NULL DEFAULT 0,
+  "firstAt" INT NOT NULL DEFAULT 0,
+  "lastAt" INT NOT NULL DEFAULT 0,
+  "lockedUntil" INT NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX typecho_login_attempts_scope_ip_identity ON typecho_login_attempts ("scope", "ipHash", "identityHash");
+CREATE INDEX typecho_login_attempts_locked ON typecho_login_attempts ("lockedUntil");
+CREATE INDEX typecho_login_attempts_last ON typecho_login_attempts ("lastAt");

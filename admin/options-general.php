@@ -25,21 +25,24 @@ include 'form-js.php';
 <script>
 (function () {
     'use strict';
-    var select = document.querySelector('select[name=ipSource]');
-    if (!select) return;
+    function bindCustom(selectName, inputName, customValue) {
+        var select = document.querySelector('select[name=' + selectName + ']');
+        var input = document.querySelector('input[name=' + inputName + ']');
+        if (!select || !input) return;
 
-    var customInput = document.querySelector('input[name=ipSourceCustom]');
-    if (!customInput) return;
+        var option = input.closest('.typecho-option');
+        if (!option) return;
 
-    var customOption = customInput.closest('.typecho-option');
-    if (!customOption) return;
+        function toggle() {
+            option.style.display = select.value === customValue ? '' : 'none';
+        }
 
-    function toggleCustom() {
-        customOption.style.display = select.value === 'custom' ? '' : 'none';
+        toggle();
+        select.addEventListener('change', toggle);
     }
 
-    toggleCustom();
-    select.addEventListener('change', toggleCustom);
+    bindCustom('ipSource', 'ipSourceCustom', 'custom');
+    bindCustom('githubRawMirror', 'githubRawMirrorCustom', '_');
 })();
 </script>
 <?php

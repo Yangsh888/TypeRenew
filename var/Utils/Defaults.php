@@ -211,6 +211,7 @@ class Defaults
             'cacheRedisDatabase' => 0,
             'allowXmlRpc' => 0,
             'ipSource' => 'REMOTE_ADDR',
+            'githubRawMirror' => '',
         ];
     }
 

@@ -6,6 +6,7 @@ use Typecho\Common;
 use Typecho\Db;
 use Typecho\Mail\Queue;
 use Typecho\Mail\Template;
+use Utils\LoginGuard;
 use Utils\PasswordReset;
 use Widget\Base\Users;
 
@@ -40,6 +41,18 @@ class Forgot extends Users implements ActionInterface
             $this->response->goBack();
         }
 
+        $ip = $this->request->getIp();
+        $retryAfter = LoginGuard::retryAfter($this->db, LoginGuard::SCOPE_RESET, $ip, $mail);
+
+        if ($retryAfter > 0) {
+            Notice::alloc()->set(
+                _t('重置请求过于频繁，请在 %d 分钟后重试', (int) ceil($retryAfter / 60)),
+                'error'
+            );
+            $this->response->goBack();
+        }
+
+        LoginGuard::recordFailure($this->db, LoginGuard::SCOPE_RESET, $ip, $mail);
         PasswordReset::cleanupExpired($this->db);
 
         $recent = $this->db->fetchRow(

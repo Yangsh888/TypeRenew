@@ -16,7 +16,10 @@ class Ajax extends BaseOptions implements ActionInterface
         'https://www.typerenew.com/feed/',
     ];
 
-    private const OFFICIAL_PLUGIN_VERSION_SOURCE = 'https://raw.githubusercontent.com/Yangsh888/TypeRenew-plugins/main/README.md';
+    private const OFFICIAL_PLUGIN_VERSION_PATH = '/Yangsh888/TypeRenew-plugins/main/README.md';
+    private const OFFICIAL_PLUGIN_VERSION_REPOSITORY = 'Yangsh888/TypeRenew-plugins';
+
+    private const OFFICIAL_PLUGIN_VERSION_DEFAULT_HOST = 'raw.githubusercontent.com';
 
     private const OFFICIAL_PLUGIN_VERSION_CACHE = 'pluginVersionCache';
 
@@ -238,6 +241,7 @@ class Ajax extends BaseOptions implements ActionInterface
             'checkedAt' => $checkedAt,
             'ttl'       => $ttl,
             'message'   => $message,
+            'source'    => (string) ($data['source'] ?? ''),
             'versions'  => $versions,
         ];
     }
@@ -253,8 +257,38 @@ class Ajax extends BaseOptions implements ActionInterface
             'checkedAt' => $checkedAt,
             'ttl'       => $ttl,
             'message'   => $message,
+            'source'    => $this->getPluginVersionSource(),
             'versions'  => $versions,
         ]);
+    }
+
+    private function getPluginVersionHost(): string
+    {
+        $mirror = strtolower(trim((string) ($this->options->githubRawMirror ?? '')));
+        if ($mirror === '') {
+            return self::OFFICIAL_PLUGIN_VERSION_DEFAULT_HOST;
+        }
+
+        return $mirror;
+    }
+
+    private function getPluginVersionSource(): string
+    {
+        $host = $this->getPluginVersionHost();
+        if ($host === 'mirrors.tuna.tsinghua.edu.cn') {
+            return 'https://' . $host . '/github-raw/' . self::OFFICIAL_PLUGIN_VERSION_REPOSITORY . '/main/README.md';
+        }
+        if (str_ends_with($host, 'jsdelivr.net')) {
+            return 'https://' . $host . '/gh/' . self::OFFICIAL_PLUGIN_VERSION_REPOSITORY . '@main/README.md';
+        }
+        if ($host === 'raw.staticaly.net') {
+            return 'https://' . $host . '/gh/' . self::OFFICIAL_PLUGIN_VERSION_REPOSITORY . '/main/README.md';
+        }
+        if ($host === 'mirror.ghproxy.com') {
+            return 'https://' . $host . '/raw.githubusercontent.com' . self::OFFICIAL_PLUGIN_VERSION_PATH;
+        }
+
+        return 'https://' . $host . self::OFFICIAL_PLUGIN_VERSION_PATH;
     }
 
     private function loadOfficialPluginVersions(bool $forceRefresh = false): array
@@ -264,6 +298,7 @@ class Ajax extends BaseOptions implements ActionInterface
             $cache = $this->readOfficialPluginVersionCache();
             if (
                 $cache !== null
+                && ($cache['source'] ?? '') === $this->getPluginVersionSource()
                 && ($now - (int) $cache['checkedAt']) < (int) ($cache['ttl'] ?? self::OFFICIAL_PLUGIN_VERSION_CACHE_TTL)
             ) {
                 return [
@@ -279,7 +314,7 @@ class Ajax extends BaseOptions implements ActionInterface
 
         $client = Client::get();
         if (!$client) {
-            $message = _t('当前环境缺少 curl 扩展，无法访问 GitHub Raw 地址。');
+            $message = _t('当前环境缺少 curl 扩展，无法访问版本源地址。');
             $this->writeOfficialPluginVersionCache(false, [], $now, $message, self::OFFICIAL_PLUGIN_VERSION_FAILURE_TTL);
             return [
                 'ok'        => false,
@@ -295,7 +330,7 @@ class Ajax extends BaseOptions implements ActionInterface
             $client->setHeader('User-Agent', $this->options->generator)
                 ->setHeader('Accept', 'text/plain')
                 ->setTimeout(self::OFFICIAL_PLUGIN_VERSION_TIMEOUT)
-                ->send(self::OFFICIAL_PLUGIN_VERSION_SOURCE);
+                ->send($this->getPluginVersionSource());
 
             if ($client->getResponseStatus() !== 200) {
                 $message = _t('官方插件仓库返回异常状态，暂时无法检测版本。');
@@ -313,7 +348,8 @@ class Ajax extends BaseOptions implements ActionInterface
             $responseUrl = $client->getResponseUrl();
             $parts = \Typecho\Common::parseUrl($responseUrl);
             $host = strtolower((string) ($parts['host'] ?? ''));
-            if ($host !== 'raw.githubusercontent.com') {
+            $expectedHost = $this->getPluginVersionHost();
+            if ($host !== $expectedHost) {
                 $message = _t('官方版本源校验失败，暂时无法检测版本。');
                 $this->writeOfficialPluginVersionCache(false, [], $now, $message, self::OFFICIAL_PLUGIN_VERSION_FAILURE_TTL);
                 return [
@@ -351,7 +387,7 @@ class Ajax extends BaseOptions implements ActionInterface
                 'message'   => '',
             ];
         } catch (\Throwable) {
-            $message = _t('当前服务器可能无法访问 GitHub Raw 地址，或网络 / SSL 临时异常。');
+            $message = _t('当前服务器可能无法访问版本源地址，或网络 / SSL 临时异常。');
             $this->writeOfficialPluginVersionCache(false, [], $now, $message, self::OFFICIAL_PLUGIN_VERSION_FAILURE_TTL);
             return [
                 'ok'        => false,
@@ -437,7 +473,7 @@ class Ajax extends BaseOptions implements ActionInterface
             'checkedAt' => (int) $source['checkedAt'],
             'cached'    => (bool) $source['cached'],
             'ttl'       => max(1, (int) $source['ttl']),
-            'source'    => self::OFFICIAL_PLUGIN_VERSION_SOURCE,
+            'source'    => $this->getPluginVersionSource(),
             'message'   => (string) $source['message'],
             'statuses'  => $statuses,
         ];

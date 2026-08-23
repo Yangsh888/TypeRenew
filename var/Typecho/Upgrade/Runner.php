@@ -14,13 +14,6 @@ class Runner
     private const MAX_ZIP_UNPACKED_BYTES = 2147483648;
 
     private const ALLOWED_USR_PREFIXES = [
-        'usr/plugins/RenewAvatar/',
-        'usr/plugins/RenewBoost/',
-        'usr/plugins/RenewGo/',
-        'usr/plugins/RenewLocation/',
-        'usr/plugins/RenewSEO/',
-        'usr/plugins/RenewShield/',
-        'usr/plugins/VditorRenew/',
         'usr/themes/default/',
     ];
 

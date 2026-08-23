@@ -77,6 +77,10 @@ class Password
         }
 
         if (strpos($hash, '$T$') === 0) {
+            if (strpos($password, "\0") !== false) {
+                return false;
+            }
+
             return Common::hashValidate($password, $hash);
         }
 

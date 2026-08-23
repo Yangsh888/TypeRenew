@@ -143,15 +143,44 @@ include 'table-js.php';
         (function () {
             $(document).ready(function () {
                 var table = $('.typecho-list-table').tableDnD({
+                    onDragStart: function () {
+                        table.data('tr-sort-original-rows', $('tbody', table).children().get());
+                    },
                     onDrop: function () {
                         var ids = [];
+                        var restoreRows = function () {
+                            var rows = table.data('tr-sort-original-rows') || [];
+                            var body = $('tbody', table);
+
+                            $.each(rows, function (_, row) {
+                                body.append(row);
+                            });
+
+                            $('tr', table).each(function (i) {
+                                $(this).toggleClass('even', i % 2 === 1);
+                            });
+                        };
+                        var showError = function () {
+                            restoreRows();
+                            if (window.TypechoNotice && typeof window.TypechoNotice.show === 'function') {
+                                window.TypechoNotice.show('error', ['<?php _e('页面排序失败, 已恢复原顺序'); ?>']);
+                            } else {
+                                alert('<?php _e('页面排序失败, 已恢复原顺序'); ?>');
+                            }
+                        };
 
                         $('input[type=checkbox]', table).each(function () {
                             ids.push($(this).val());
                         });
 
                         $.post('<?php echo $pageAction; ?>',
-                            $.param({do: 'sort', cid: ids, _: '<?php echo $pageToken; ?>'}));
+                            $.param({do: 'sort', cid: ids, _: '<?php echo $pageToken; ?>'}), null, 'json')
+                            .done(function (response) {
+                                if (!response || response.success != 1) {
+                                    showError();
+                                }
+                            })
+                            .fail(showError);
                     }
                 });
             });

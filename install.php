@@ -1207,6 +1207,7 @@ function install_step_2_perform()
             $config['dbPrefix'] . 'comments',
             $config['dbPrefix'] . 'contents',
             $config['dbPrefix'] . 'fields',
+            $config['dbPrefix'] . 'login_attempts',
             $config['dbPrefix'] . 'mail_queue',
             $config['dbPrefix'] . 'mail_unsub',
             $config['dbPrefix'] . 'metas',

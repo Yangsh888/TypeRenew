@@ -152,7 +152,7 @@ svg {
     gap: var(--sp-4);
 }
 
-.nav-toggle-input, .nav-toggle-label {
+.nav-toggle-label {
     display: none;
 }
 
@@ -369,6 +369,17 @@ svg {
     border-top: 1px solid var(--border-color);
 }
 
+.post-footer-meta .read-more {
+    color: var(--accent-color);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.2s;
+}
+
+.post-footer-meta .read-more:hover {
+    color: var(--accent-hover);
+}
+
 .tags {
     font-size: 0.85rem;
     color: var(--text-secondary);
@@ -469,6 +480,15 @@ svg {
     font-size: 1.1rem;
     font-weight: 600;
     color: var(--text-primary);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.comments-edit-link {
+    font-size: 0.85rem;
+    font-weight: 400;
+    color: var(--accent-color);
 }
 
 .comments-body {
@@ -503,6 +523,11 @@ svg {
     padding-left: var(--sp-3);
     border-bottom: none;
     border-left: 2px solid var(--border-color);
+}
+
+.comment-body {
+    display: flex;
+    gap: var(--sp-3);
 }
 
 .comment-inner {
@@ -560,6 +585,21 @@ svg {
     font-weight: 500;
 }
 
+.comment-reply-link {
+    margin-left: auto;
+    font-size: 0.8rem;
+    color: var(--accent-color);
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.comment-content-text {
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    overflow-wrap: anywhere;
+    margin-top: var(--sp-1);
+}
+
 .comment-content {
     color: var(--text-primary);
     font-size: 0.95rem;
@@ -574,7 +614,14 @@ svg {
     margin-bottom: 0;
 }
 
-.respond {
+.comments-section {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+}
+
+.respond, .comment-respond {
     padding: var(--sp-4);
     background: var(--bg-secondary);
     border-top: 1px solid var(--border-color);
@@ -615,9 +662,22 @@ svg {
     box-shadow: 0 0 0 3px var(--focus-ring);
 }
 
-textarea.form-input {
+textarea.form-input,
+.form-textarea {
     resize: vertical;
     min-height: 100px;
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
 }
 
 .btn-submit {
@@ -671,7 +731,13 @@ textarea.form-input {
     }
     
     .nav-toggle-label {
-        display: block;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        font: inherit;
         cursor: pointer;
         color: var(--text-primary);
     }
@@ -690,7 +756,7 @@ textarea.form-input {
         z-index: 99;
     }
     
-    .nav-toggle-input:checked ~ .nav-menu {
+    .nav-menu.is-open {
         display: flex;
     }
     
@@ -714,4 +780,110 @@ textarea.form-input {
         margin-left: 0;
         padding-left: var(--sp-2);
     }
+}
+
+.error-page {
+    text-align: center;
+    padding: var(--sp-6) 0;
+}
+
+.error-page .error-code {
+    font-size: 4rem;
+    margin: 0;
+    font-weight: 300;
+    color: var(--text-tertiary);
+    line-height: 1;
+}
+
+.error-page .error-message {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    margin-bottom: var(--sp-4);
+}
+
+.error-page .search-form {
+    justify-content: center;
+    gap: var(--sp-2);
+}
+
+.error-page .search-input {
+    width: 200px;
+    text-align: center;
+}
+
+.comment-user-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--sp-3);
+    margin-bottom: var(--sp-3);
+}
+
+.comment-user-info .form-group {
+    margin-bottom: 0;
+}
+
+.comment-form-actions {
+    margin-bottom: 0;
+    text-align: right;
+}
+
+.comment-logged-in {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: var(--sp-3);
+}
+
+.comment-logged-in a {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.respond-title {
+    display: block;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: var(--sp-3);
+    color: var(--text-primary);
+}
+
+.comments-edit-link {
+    font-size: 0.85rem;
+    color: var(--text-tertiary);
+    text-decoration: none;
+}
+
+.comments-edit-link:hover {
+    color: var(--accent-color);
+}
+
+.comment-closed {
+    padding: var(--sp-4);
+    text-align: center;
+    color: var(--text-tertiary);
+    font-size: 0.9rem;
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border-color);
+}
+
+.archive-title {
+    font-size: 1.2rem;
+    margin-bottom: var(--sp-4);
+    color: var(--text-secondary);
+    font-weight: normal;
+}
+
+.empty-state {
+    text-align: center;
+    padding: var(--sp-6) 0;
+}
+
+.empty-title {
+    font-size: 1.2rem;
+    color: var(--text-primary);
+    margin-bottom: var(--sp-2);
+}
+
+.empty-hint {
+    color: var(--text-tertiary);
+    font-size: 0.9rem;
 }

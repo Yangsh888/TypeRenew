@@ -3,8 +3,10 @@
 namespace Widget;
 
 use Typecho\Common;
+use Utils\LoginGuard;
 use Utils\Password;
 use Utils\PasswordReset;
+use Utils\Session;
 use Widget\Base\Users;
 
 if (!defined('__TYPECHO_ROOT_DIR__')) {
@@ -30,7 +32,19 @@ class Reset extends Users implements ActionInterface
         $password = (string) $this->request->get('password');
         $confirm = (string) $this->request->get('confirm');
 
+        $ip = $this->request->getIp();
+        $retryAfter = LoginGuard::retryAfter($this->db, LoginGuard::SCOPE_RESET, $ip);
+
+        if ($retryAfter > 0) {
+            Notice::alloc()->set(
+                _t('重置请求过于频繁，请在 %d 分钟后重试', (int) ceil($retryAfter / 60)),
+                'error'
+            );
+            $this->response->redirect(Common::url('login.php', $this->options->adminUrl));
+        }
+
         if (!PasswordReset::isValidRawToken($token)) {
+            LoginGuard::recordFailure($this->db, LoginGuard::SCOPE_RESET, $ip);
             Notice::alloc()->set(_t('重置链接无效或已过期，请重新获取'), 'error');
             $this->response->redirect(Common::url('forgot.php', $this->options->adminUrl));
         }
@@ -60,10 +74,12 @@ class Reset extends Users implements ActionInterface
         }
 
         if (!$applied) {
+            LoginGuard::recordFailure($this->db, LoginGuard::SCOPE_RESET, $ip);
             Notice::alloc()->set(_t('重置链接无效、已过期或已被使用，请重新获取'), 'error');
             $this->response->redirect(Common::url('forgot.php', $this->options->adminUrl));
         }
 
+        Session::rotate();
         Notice::alloc()->set(_t('密码已重置，请使用新密码登录'), 'success');
         $this->response->redirect(Common::url('login.php', $this->options->adminUrl));
     }

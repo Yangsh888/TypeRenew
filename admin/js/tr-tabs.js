@@ -14,12 +14,56 @@
             return null;
         }
 
+        var tabList = tabs[0].parentNode;
+        var idPrefix = root === document ? 'tr-tab' : 'tr-tab-' + Math.random().toString(36).slice(2, 8);
+
+        if (tabList && !tabList.getAttribute('role')) {
+            tabList.setAttribute('role', 'tablist');
+        }
+
+        for (var a = 0; a < tabs.length; a++) {
+            var tabTarget = tabs[a].getAttribute('data-target') || '';
+            var pane = null;
+            for (var b = 0; b < panes.length; b++) {
+                if (panes[b].getAttribute('data-tab') === tabTarget) {
+                    pane = panes[b];
+                    break;
+                }
+            }
+
+            if (!tabs[a].id) {
+                tabs[a].id = idPrefix + '-' + a;
+            }
+            tabs[a].setAttribute('role', 'tab');
+            if (pane) {
+                if (!pane.id) {
+                    pane.id = idPrefix + '-panel-' + a;
+                }
+                tabs[a].setAttribute('aria-controls', pane.id);
+                pane.setAttribute('role', 'tabpanel');
+                pane.setAttribute('aria-labelledby', tabs[a].id);
+                pane.setAttribute('tabindex', '0');
+            }
+        }
+
         function activate(tab, focusTab) {
             if (!tab) {
                 return;
             }
 
             var target = tab.getAttribute('data-target') || '';
+            var targetPane = null;
+            for (var n = 0; n < panes.length; n++) {
+                if (panes[n].getAttribute('data-tab') === target) {
+                    targetPane = panes[n];
+                    break;
+                }
+            }
+
+            if (!targetPane) {
+                return;
+            }
+
             for (var i = 0; i < tabs.length; i++) {
                 var isActive = tabs[i] === tab;
                 tabs[i].classList.toggle('is-active', isActive);
@@ -30,6 +74,7 @@
             for (var j = 0; j < panes.length; j++) {
                 var paneActive = panes[j].getAttribute('data-tab') === target;
                 panes[j].classList.toggle('is-active', paneActive);
+                panes[j].setAttribute('aria-hidden', paneActive ? 'false' : 'true');
                 if (manageHidden) {
                     panes[j].hidden = !paneActive;
                 }
@@ -101,6 +146,27 @@
         }
 
         activate(initial, false);
+
+        var controls = root.querySelectorAll('input, select, textarea');
+        for (var c = 0; c < controls.length; c++) {
+            if (controls[c].hasAttribute('aria-label') || controls[c].hasAttribute('aria-labelledby')) {
+                continue;
+            }
+
+            var label = controls[c].closest('label');
+            if (label && label.textContent.trim()) {
+                continue;
+            }
+
+            var heading = controls[c].closest('.renewseo-list-item, .renewseo-block-item, .shield-list-item, .shield-block-item, .renewseo-field, .shield-field');
+            var headingNode = heading && heading.querySelector('.renewseo-list-item-title, .shield-list-item-title, .renewseo-field > span, .shield-field > span');
+            if (headingNode) {
+                if (!headingNode.id) {
+                    headingNode.id = idPrefix + '-label-' + c;
+                }
+                controls[c].setAttribute('aria-labelledby', headingNode.id);
+            }
+        }
 
         return {
             activate: activate,

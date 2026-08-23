@@ -3,6 +3,7 @@
 namespace Widget\Options;
 
 use Typecho\I18n\GetText;
+use Typecho\Common;
 use Typecho\Widget\Helper\Form;
 use Utils\Zone;
 use Widget\ActionInterface;
@@ -100,6 +101,86 @@ class General extends Options implements ActionInterface
         return '';
     }
 
+    public static function githubRawMirrors(): array
+    {
+        return [
+            ''                => _t('默认（raw.githubusercontent.com）'),
+            'raw.gitmirror.com' => _t('GitMirror 镜像'),
+            'raw.staticaly.net' => _t('Statically 镜像'),
+            'gcore.jsdelivr.net' => _t('jsDelivr 镜像'),
+            'mirror.ghproxy.com' => _t('GHProxy 镜像'),
+            'mirrors.tuna.tsinghua.edu.cn' => _t('清华大学镜像'),
+            '_'               => _t('自定义域名'),
+        ];
+    }
+
+    private function addGithubRawMirrorInput(Form $form): void
+    {
+        $current = (string) ($this->options->githubRawMirror ?? '');
+        $presets = self::githubRawMirrors();
+        $isCustom = $current !== '' && !array_key_exists($current, $presets);
+
+        $options = [];
+        foreach ($presets as $key => $label) {
+            $options[$key] = $label;
+        }
+
+        $mirror = new Form\Element\Select(
+            'githubRawMirror',
+            $options,
+            $isCustom ? '_' : $current,
+            _t('GitHub Raw 镜像域名'),
+            _t('用于检测官方插件版本信息。国内服务器可切换镜像以解决 GitHub Raw 访问不稳定的问题。')
+            . '<br />' . _t('选择"自定义域名"后，在下方填写自定义镜像域名（仅域名，不含 https:// 前缀和路径）。')
+        );
+        $form->addInput($mirror);
+
+        $mirrorCustom = new Form\Element\Text(
+            'githubRawMirrorCustom',
+            null,
+            $isCustom ? $current : '',
+            _t('自定义镜像域名'),
+            _t('仅当上方选择"自定义域名"时填写，例如 raw.example.com')
+        );
+        $mirrorCustom->input->setAttribute('class', 'w-100 mono');
+        $form->addInput($mirrorCustom->addRule([$this, 'checkGithubRawMirror'], _t('请输入可访问的公网镜像域名')));
+    }
+
+    private function resolveGithubRawMirrorInput(): string
+    {
+        $choice = (string) $this->request->get('githubRawMirror', '');
+
+        if ($choice === '_') {
+            $custom = strtolower(trim((string) $this->request->get('githubRawMirrorCustom', '')));
+            $custom = preg_replace('/^https?:\/\//', '', $custom);
+            $custom = preg_replace('/\/.*$/', '', $custom);
+
+            if ($custom === '' || !preg_match('/^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/', $custom)
+                || !Common::checkSafeHost($custom)) {
+                return '';
+            }
+
+            return $custom;
+        }
+
+        return array_key_exists($choice, self::githubRawMirrors()) ? $choice : '';
+    }
+
+    public function checkGithubRawMirror(string $custom): bool
+    {
+        if ((string) $this->request->get('githubRawMirror', '') !== '_') {
+            return true;
+        }
+
+        $custom = strtolower(trim($custom));
+        $custom = preg_replace('/^https?:\/\//', '', $custom);
+        $custom = preg_replace('/\/.*$/', '', $custom);
+
+        return $custom !== ''
+            && preg_match('/^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/', $custom) === 1
+            && Common::checkSafeHost($custom);
+    }
+
     private function addIpSourceInput(Form $form): void
     {
         $current = $this->normalizeIpSource((string) ($this->options->ipSource ?? 'REMOTE_ADDR'));
@@ -168,6 +249,7 @@ class General extends Options implements ActionInterface
         $settings['attachmentTypes'] = $this->request->getArray('attachmentTypes');
         $settings['timezoneId'] = (string) ($settings['timezoneId'] ?? '');
         $settings['ipSource'] = $this->resolveIpSourceInput();
+        $settings['githubRawMirror'] = $this->resolveGithubRawMirrorInput();
         $settings['timezone'] = Zone::offsetAt(
             $settings['timezoneId'],
             (int) ($this->options->timezone ?? 0),
@@ -276,6 +358,7 @@ class General extends Options implements ActionInterface
         $form->addInput($allowXmlRpc);
 
         $this->addIpSourceInput($form);
+        $this->addGithubRawMirrorInput($form);
 
         _t('lang');
 

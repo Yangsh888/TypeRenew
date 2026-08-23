@@ -44,8 +44,22 @@ CREATE INDEX "typecho_password_resets_email" ON "typecho_password_resets" ("emai
 CREATE INDEX "typecho_password_resets_token" ON "typecho_password_resets" ("token");
 CREATE INDEX "typecho_password_resets_expires" ON "typecho_password_resets" ("expires");
 
+CREATE TABLE "typecho_login_attempts" (
+  "id" BIGSERIAL PRIMARY KEY, "scope" VARCHAR(16) NOT NULL DEFAULT '',
+  "ipHash" VARCHAR(40) NOT NULL DEFAULT '', "identityHash" VARCHAR(40) NOT NULL DEFAULT '',
+  "failures" INT NOT NULL DEFAULT 0, "firstAt" INT NOT NULL DEFAULT 0,
+  "lastAt" INT NOT NULL DEFAULT 0, "lockedUntil" INT NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX "typecho_login_attempts_scope_ip_identity" ON "typecho_login_attempts" ("scope", "ipHash", "identityHash");
+CREATE INDEX "typecho_login_attempts_locked" ON "typecho_login_attempts" ("lockedUntil");
+CREATE INDEX "typecho_login_attempts_last" ON "typecho_login_attempts" ("lastAt");
+
 CREATE INDEX "typecho_comments_cid" ON "typecho_comments" ("cid");
 CREATE INDEX "typecho_comments_created" ON "typecho_comments" ("created");
+CREATE INDEX "typecho_comments_status" ON "typecho_comments" ("status");
+CREATE INDEX "typecho_comments_cid_status" ON "typecho_comments" ("cid", "status");
+CREATE INDEX "typecho_comments_owner_status" ON "typecho_comments" ("ownerId", "status");
+CREATE INDEX "typecho_comments_parent" ON "typecho_comments" ("parent");
 
 
 --
@@ -76,6 +90,9 @@ CREATE TABLE "typecho_contents" (  "cid" INT NOT NULL DEFAULT nextval('typecho_c
 );
 
 CREATE INDEX "typecho_contents_created" ON "typecho_contents" ("created");
+CREATE INDEX "typecho_contents_type_status_created" ON "typecho_contents" ("type", "status", "created");
+CREATE INDEX "typecho_contents_author_type_status_created" ON "typecho_contents" ("authorId", "type", "status", "created");
+CREATE INDEX "typecho_contents_parent_type" ON "typecho_contents" ("parent", "type");
 
 --
 -- Table structure for table "typecho_fields"
@@ -111,6 +128,9 @@ CREATE TABLE "typecho_metas" (  "mid" INT NOT NULL DEFAULT nextval('typecho_meta
 );
 
 CREATE INDEX "typecho_metas_slug" ON "typecho_metas" ("slug");
+CREATE INDEX "typecho_metas_type_slug" ON "typecho_metas" ("type", "slug");
+CREATE INDEX "typecho_metas_type_order" ON "typecho_metas" ("type", "order");
+CREATE INDEX "typecho_metas_type_parent_order" ON "typecho_metas" ("type", "parent", "order");
 
 
 --
@@ -130,7 +150,9 @@ CREATE TABLE "typecho_options" (  "name" VARCHAR(64) NOT NULL DEFAULT '',
 CREATE TABLE "typecho_relationships" (  "cid" INT NOT NULL DEFAULT '0',
   "mid" INT NOT NULL DEFAULT '0',
   PRIMARY KEY ("cid","mid")
-); 
+);
+
+CREATE INDEX "typecho_relationships_mid" ON "typecho_relationships" ("mid");
 
 --
 -- Table structure for table "typecho_users"

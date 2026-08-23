@@ -296,12 +296,7 @@ class Request
             return $this->ipFromSource($source) ?: $remote;
         }
 
-        $source = $this->resolveIpSource();
-        if ($source === '' || $source === 'REMOTE_ADDR') {
-            return $remote;
-        }
-
-        return $this->ipFromSource($source) ?: $remote;
+        return $remote;
     }
 
     private function resolveIpSource(): string

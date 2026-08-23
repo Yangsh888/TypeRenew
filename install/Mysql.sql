@@ -60,6 +60,16 @@ CREATE TABLE `typecho_password_resets` (
   PRIMARY KEY (`id`), KEY `idx_email` (`email`), KEY `idx_token` (`token`), KEY `idx_expires` (`expires`)
 ) ENGINE=%engine% DEFAULT CHARSET=%charset% COLLATE=%collate%;
 
+CREATE TABLE `typecho_login_attempts` (
+  `id` bigint unsigned NOT NULL auto_increment,
+  `scope` varchar(16) NOT NULL default '',
+  `ipHash` char(40) NOT NULL default '', `identityHash` char(40) NOT NULL default '',
+  `failures` int unsigned NOT NULL default 0, `firstAt` int unsigned NOT NULL default 0,
+  `lastAt` int unsigned NOT NULL default 0, `lockedUntil` int unsigned NOT NULL default 0,
+  PRIMARY KEY (`id`), UNIQUE KEY `uniq_scope_ip_identity` (`scope`, `ipHash`, `identityHash`),
+  KEY `idx_locked` (`lockedUntil`), KEY `idx_last` (`lastAt`)
+) ENGINE=%engine% DEFAULT CHARSET=%charset% COLLATE=%collate%;
+
 -- --------------------------------------------------------
 
 --

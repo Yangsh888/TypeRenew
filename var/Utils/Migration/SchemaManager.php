@@ -28,6 +28,7 @@ class SchemaManager
     {
         $messages = [_t('当前版本所需的数据库结构已同步')];
         self::ensureMailInfrastructure($db);
+        Schema::ensureAuthInfra($db);
         self::ensureGeneralOptions($db);
         Schema::ensureCoreIndexes($db);
         Schema::ensureUserPasswordStorage($db);
@@ -129,7 +130,9 @@ class SchemaManager
     private static function repairCriticalSchemaUnlocked(Db $db): array
     {
         self::ensureMailInfrastructure($db);
+        Schema::ensureAuthInfra($db);
         Schema::repairMailInfra($db);
+        Schema::repairAuthInfra($db);
         $after = self::inspectCriticalSchema($db);
         $syncedComments = self::syncCommentAuthors($db);
 

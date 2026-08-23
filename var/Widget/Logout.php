@@ -2,6 +2,7 @@
 
 namespace Widget;
 
+use Utils\Session;
 use Widget\Base\Users;
 
 if (!defined('__TYPECHO_ROOT_DIR__')) {
@@ -16,10 +17,7 @@ class Logout extends Users implements ActionInterface
 
         $this->user->logout();
         self::pluginHandle()->call('logout');
-        try {
-            session_destroy();
-        } catch (\Throwable $e) {
-        }
+        Session::destroy();
         $this->response->goBack(null, $this->options->index);
     }
 }

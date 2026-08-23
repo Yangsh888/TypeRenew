@@ -127,15 +127,44 @@ include 'common-js.php';
     (function () {
         $(document).ready(function () {
             var table = $('.typecho-list-table').tableDnD({
+                onDragStart: function () {
+                    table.data('tr-sort-original-rows', $('tbody', table).children().get());
+                },
                 onDrop: function () {
                     var ids = [];
+                    var restoreRows = function () {
+                        var rows = table.data('tr-sort-original-rows') || [];
+                        var body = $('tbody', table);
+
+                        $.each(rows, function (_, row) {
+                            body.append(row);
+                        });
+
+                        $('tr', table).each(function (i) {
+                            $(this).toggleClass('even', i % 2 === 1);
+                        });
+                    };
+                    var showError = function () {
+                        restoreRows();
+                        if (window.TypechoNotice && typeof window.TypechoNotice.show === 'function') {
+                            window.TypechoNotice.show('error', ['<?php _e('分类排序失败, 已恢复原顺序'); ?>']);
+                        } else {
+                            alert('<?php _e('分类排序失败, 已恢复原顺序'); ?>');
+                        }
+                    };
 
                     $('input[type=checkbox]', table).each(function () {
                         ids.push($(this).val());
                     });
 
                     $.post('<?php $security->index('/action/metas-category-edit?do=sort'); ?>',
-                        $.param({mid: ids}));
+                        $.param({mid: ids}), null, 'json')
+                        .done(function (response) {
+                            if (!response || response.success != 1) {
+                                showError();
+                            }
+                        })
+                        .fail(showError);
 
                     $('tr', table).each(function (i) {
                         if (i % 2) {

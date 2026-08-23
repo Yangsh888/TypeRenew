@@ -13,6 +13,7 @@ use Typecho\Request;
 use Typecho\Response;
 use Typecho\Router;
 use Typecho\Widget;
+use Utils\Session;
 use Utils\Zone;
 use Widget\Base\Options as OptionsStorage;
 
@@ -115,13 +116,8 @@ class Init extends Widget
         $this->response->setCharset($options->charset);
         $this->response->setContentType($options->contentType);
 
-        if (
-            $options->installed
-            && User::alloc()->hasLogin()
-            && session_status() !== PHP_SESSION_ACTIVE
-            && !headers_sent()
-        ) {
-            session_start();
+        if ($options->installed && User::alloc()->hasLogin()) {
+            Session::start();
         }
     }
 

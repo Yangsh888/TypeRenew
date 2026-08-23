@@ -71,5 +71,47 @@
     })();
 </script>
 
+<script>
+    (function() {
+        var toggle = document.getElementById('nav-toggle');
+        var menu = document.getElementById('nav-menu');
+        if (!toggle || !menu) return;
+
+        var mobileQuery = window.matchMedia('(max-width: 768px)');
+
+        function setMenuOpen(open, restoreFocus) {
+            menu.classList.toggle('is-open', open);
+            toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+            if (!open && restoreFocus) toggle.focus();
+        }
+
+        toggle.addEventListener('click', function() {
+            setMenuOpen(toggle.getAttribute('aria-expanded') !== 'true', false);
+        });
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape' && toggle.getAttribute('aria-expanded') === 'true') {
+                setMenuOpen(false, true);
+            }
+        });
+
+        document.addEventListener('click', function(event) {
+            if (mobileQuery.matches && toggle.getAttribute('aria-expanded') === 'true' && !menu.contains(event.target) && !toggle.contains(event.target)) {
+                setMenuOpen(false, false);
+            }
+        });
+
+        function handleViewportChange(event) {
+            if (!event.matches) setMenuOpen(false, false);
+        }
+
+        if (mobileQuery.addEventListener) {
+            mobileQuery.addEventListener('change', handleViewportChange);
+        } else if (mobileQuery.addListener) {
+            mobileQuery.addListener(handleViewportChange);
+        }
+    })();
+</script>
+
 </body>
 </html>

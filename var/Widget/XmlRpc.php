@@ -1538,7 +1538,7 @@ EOF;
 
     private function getPostExtended(Contents $content): array
     {
-        $agent = $this->request->getAgent();
+        $agent = (string) $this->request->getAgent();
 
         if (
             false !== strpos($agent, 'wp-iphone')
