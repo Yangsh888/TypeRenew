@@ -30,15 +30,6 @@ class Zone
 
     public static function normalizeStoredId(?string $timezoneId): ?string
     {
-        $timezoneId = self::normalizeId($timezoneId) ?? (is_string($timezoneId) ? trim($timezoneId) : '');
-        if ($timezoneId === '') {
-            return null;
-        }
-
-        if (preg_match('/^[+-]\d{2}:\d{2}$/', $timezoneId)) {
-            return $timezoneId;
-        }
-
         return self::normalizeId($timezoneId);
     }
 

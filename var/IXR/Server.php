@@ -179,11 +179,6 @@ class Server
                 -32001,
                 $e->getMessage()
             );
-        } catch (\Exception $e) {
-            return new Error(
-                -32001,
-                'server error. requested class method "' . $methodName . '" failed.'
-            );
         } catch (\Throwable $e) {
             return new Error(
                 -32001,

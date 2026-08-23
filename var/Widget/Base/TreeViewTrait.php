@@ -2,6 +2,7 @@
 
 namespace Widget\Base;
 
+use Typecho\Common;
 use Typecho\Config;
 
 trait TreeViewTrait

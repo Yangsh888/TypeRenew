@@ -23,8 +23,7 @@ class Session
             return false;
         }
 
-        $secure = (!empty($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) !== 'off')
-            || (($_SERVER['SERVER_PORT'] ?? 80) == 443);
+        $secure = \Typecho\Request::getInstance()->isSecure();
 
         session_set_cookie_params([
             'lifetime' => 0,

@@ -33,7 +33,6 @@ class Message
 
     public function parse(): bool
     {
-        $this->message = preg_replace('/<\?xml(.*)?\?' . '>/', '', $this->message);
         if (trim($this->message) == '') {
             return false;
         }
@@ -54,10 +53,6 @@ class Message
             }
         }
 
-        if (!function_exists('xml_parser_create')) {
-            return false;
-        }
-
         $parser = xml_parser_create();
         xml_parser_set_option($parser, XML_OPTION_CASE_FOLDING, false);
         xml_set_element_handler($parser, [$this, 'tagOpen'], [$this, 'tagClose']);
@@ -65,7 +60,6 @@ class Message
         if (!xml_parse($parser, $this->message)) {
             return false;
         }
-        xml_parser_free($parser);
 
         if ($this->messageType === '') {
             return false;
@@ -121,12 +115,12 @@ class Message
                 $this->markTypedValue();
                 break;
             case 'double':
-                $value = (double) trim($this->currentTagContents);
+                $value = (float) trim($this->currentTagContents);
                 $this->currentTagContents = '';
                 $this->markTypedValue();
                 break;
             case 'string':
-                $value = trim($this->currentTagContents);
+                $value = $this->currentTagContents;
                 $this->currentTagContents = '';
                 $this->markTypedValue();
                 break;
@@ -175,8 +169,12 @@ class Message
         if (isset($value)) {
             if (count($this->arrayStructs) > 0) {
                 if ($this->arrayStructsTypes[count($this->arrayStructsTypes) - 1] == 'struct') {
-                    $this->arrayStructs[count($this->arrayStructs) - 1]
-                        [$this->currentStructName[count($this->currentStructName) - 1]] = $value;
+                    if ($this->currentStructName === []) {
+                        $this->arrayStructs[count($this->arrayStructs) - 1][] = $value;
+                    } else {
+                        $this->arrayStructs[count($this->arrayStructs) - 1]
+                            [$this->currentStructName[count($this->currentStructName) - 1]] = $value;
+                    }
                 } else {
                     $this->arrayStructs[count($this->arrayStructs) - 1][] = $value;
                 }

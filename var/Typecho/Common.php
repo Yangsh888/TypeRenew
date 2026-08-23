@@ -404,32 +404,15 @@ EOF;
             }
 
             $return = '';
+            $matches = [];
 
-            if (function_exists('mb_ereg_search')) {
-                mb_regex_encoding('UTF-8');
-                mb_ereg_search_init($str, "[\w" . preg_quote('_-') . "]+");
-                $result = mb_ereg_search();
-
-                if ($result) {
-                    $regs = mb_ereg_search_getregs();
-                    $pos = 0;
-                    do {
-                        $return .= ($pos > 0 ? '-' : '') . $regs[0];
-                        $pos++;
-                    } while ($regs = mb_ereg_search_regs());
-                }
-            } else {
-                $matches = [];
-                $matched = preg_match_all('/[\pL\pN_-]+/u', $str, $matches);
-
-                if ($matched && !empty($matches[0])) {
-                    $return = implode('-', $matches[0]);
-                }
+            if (preg_match_all('/[\pL\pN_-]+/u', $str, $matches) && !empty($matches[0])) {
+                $return = implode('-', $matches[0]);
             }
 
             $str = trim($return, '-_');
             $str = !strlen($str) ? $default : $str;
-            return substr($str, 0, $maxLength);
+            return mb_strcut($str, 0, $maxLength, 'UTF-8');
         }
 
         public static function parseUrl(?string $url): array
@@ -504,11 +487,17 @@ EOF;
         public static function cleanHex(string $val): string
         {
             $search = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&*()~`";:?+/={}[]-_|\'\\';
-            for ($i = 0; $i < strlen($search); $i++) {
-                $val = preg_replace('/(&#[xX]0{0,8}' . dechex(ord($search[$i])) . ';?)/i', $search[$i], $val);
-                $val = preg_replace('/(&#0{0,8}' . ord($search[$i]) . ';?)/', $search[$i], $val);
-            }
-            return $val;
+
+            return preg_replace_callback(
+                '/&#(?:[xX]([0-9a-fA-F]+)|([0-9]+));?/',
+                static function (array $matches) use ($search): string {
+                    $code = ($matches[1] ?? '') !== '' ? hexdec($matches[1]) : (int) $matches[2];
+                    $char = $code > 0 && $code < 256 ? chr($code) : '';
+
+                    return $char !== '' && str_contains($search, $char) ? $char : $matches[0];
+                },
+                $val
+            ) ?? $val;
         }
 
         public static function removeXSS(?string $val): string
@@ -525,13 +514,14 @@ EOF;
 
         public static function subStr(string $str, int $start, int $length, string $trim = "..."): string
         {
-            if (!strlen($str)) {
+            if (!strlen($str) || $length <= 0) {
                 return '';
             }
 
             $iLength = self::strLen($str) - $start;
             $tLength = $length < $iLength ? max(0, $length - self::strLen($trim)) : $length;
-            $str = function_exists('mb_substr') ? mb_substr($str, $start, $tLength, 'UTF-8') : substr($str, $start, $tLength);
+
+            $str = mb_substr($str, $start, $tLength, 'UTF-8');
 
             return $length < $iLength ? ($str . $trim) : $str;
         }
@@ -543,7 +533,7 @@ EOF;
 
         public static function strLen(string $str): int
         {
-            return function_exists('mb_strlen') ? mb_strlen($str, 'UTF-8') : strlen($str);
+            return mb_strlen($str, 'UTF-8');
         }
 
         public static function hashValidate(?string $from, ?string $to): bool
@@ -583,6 +573,11 @@ EOF;
 
             while ($pos < $length) {
                 $asc = ord($string[$pos]);
+
+                if ($asc === 0) {
+                    return '';
+                }
+
                 $last = ($last * ord($salt[($last % $asc) % 9]) + $asc) % 95 + 32;
                 $hash .= chr($last);
                 $pos++;
@@ -863,16 +858,6 @@ EOF;
         {
             if (is_file($fileName) && is_readable($fileName) && function_exists('mime_content_type')) {
                 return mime_content_type($fileName);
-            }
-
-            if (is_file($fileName) && is_readable($fileName) && function_exists('finfo_open')) {
-                $fInfo = finfo_open(FILEINFO_MIME_TYPE);
-
-                if (false !== $fInfo) {
-                    $mimeType = (string) finfo_file($fInfo, $fileName);
-                    finfo_close($fInfo);
-                    return $mimeType;
-                }
             }
 
             $mimeTypes = MimeTypes::get();

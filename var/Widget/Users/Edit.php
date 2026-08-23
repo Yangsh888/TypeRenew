@@ -118,7 +118,11 @@ class Edit extends Users implements ActionInterface
             _t('用户组'),
             _t('不同的用户组拥有不同的权限.') . '<br />' . _t('具体的权限分配表请<a href="https://docs.typecho.org/develop/acl">参考这里</a>.')
         );
-        $form->addInput($group);
+        $form->addInput($group->addRule(
+            'enum',
+            _t('用户组选择错误'),
+            ['subscriber', 'contributor', 'editor', 'administrator']
+        ));
 
         $do = new Form\Element\Hidden('do');
         $form->addInput($do);

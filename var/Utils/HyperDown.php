@@ -1303,8 +1303,11 @@ class HyperDown
         $schemeProbe = str_ireplace(['&tab;', '&newline;'], '', (string) $schemeProbe);
         $schemeProbe = preg_replace('/[\x00-\x20\x7f]/', '', html_entity_decode((string) $schemeProbe, ENT_QUOTES, 'UTF-8'));
 
-        if (preg_match("/^\w+:/i", $schemeProbe) && !preg_match("/^(https?|mailto):/i", $schemeProbe)) {
-            return '#';
+        if (
+            preg_match('/^[a-z][a-z0-9+.\-]*:/i', $schemeProbe)
+            && !preg_match('/^(https?|mailto):/i', $schemeProbe)
+        ) {
+            return $parseTitle ? ['#', $title] : '#';
         }
 
         return $parseTitle ? [$url, $title] : $url;

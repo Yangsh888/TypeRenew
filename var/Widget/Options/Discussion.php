@@ -77,7 +77,7 @@ class Discussion extends Options implements ActionInterface
         );
 
         $settings['commentsPostTimeout'] = intval($settings['commentsPostTimeout']) * 24 * 3600;
-        $settings['commentsPostInterval'] = round($settings['commentsPostInterval'], 1) * 60;
+        $settings['commentsPostInterval'] = round((float) ($settings['commentsPostInterval'] ?? 0), 1) * 60;
 
         unset($settings['commentsShow']);
         unset($settings['commentsPost']);

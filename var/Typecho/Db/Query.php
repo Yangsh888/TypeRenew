@@ -133,17 +133,30 @@ class Query
     public function where(...$args): Query
     {
         [$condition] = $args;
-        $condition = str_replace('?', "%s", $this->filterColumn($condition));
+        $condition = $this->filterColumn($condition);
         $operator = empty($this->sqlPreBuild['where']) ? ' WHERE ' : ' AND';
 
         if (count($args) <= 1) {
             $this->sqlPreBuild['where'] .= $operator . ' (' . $condition . ')';
         } else {
             array_shift($args);
-            $this->sqlPreBuild['where'] .= $operator . ' (' . vsprintf($condition, $this->quoteValues($args)) . ')';
+            $this->sqlPreBuild['where'] .= $operator
+                . ' (' . $this->applyValues($condition, $this->quoteValues($args)) . ')';
         }
 
         return $this;
+    }
+
+    private function applyValues(string $condition, array $values): string
+    {
+        $parts = explode('?', $condition);
+        $result = $parts[0];
+
+        for ($i = 1, $count = count($parts); $i < $count; $i++) {
+            $result .= ($values[$i - 1] ?? '?') . $parts[$i];
+        }
+
+        return $result;
     }
 
     protected function quoteValues(array $values): array
@@ -151,7 +164,7 @@ class Query
         foreach ($values as &$value) {
             if (is_array($value)) {
                 $value = empty($value)
-                    ? '(SELECT NULL WHERE 0)'
+                    ? '(SELECT NULL FROM (SELECT 1) AS __empty WHERE 1 = 0)'
                     : '(' . implode(',', array_map([$this, 'quoteValue'], $value)) . ')';
             } else {
                 $value = $this->quoteValue($value);
@@ -170,14 +183,15 @@ class Query
     public function orWhere(...$args): Query
     {
         [$condition] = $args;
-        $condition = str_replace('?', "%s", $this->filterColumn($condition));
+        $condition = $this->filterColumn($condition);
         $operator = empty($this->sqlPreBuild['where']) ? ' WHERE ' : ' OR';
 
         if (func_num_args() <= 1) {
             $this->sqlPreBuild['where'] .= $operator . ' (' . $condition . ')';
         } else {
             array_shift($args);
-            $this->sqlPreBuild['where'] .= $operator . ' (' . vsprintf($condition, $this->quoteValues($args)) . ')';
+            $this->sqlPreBuild['where'] .= $operator
+                . ' (' . $this->applyValues($condition, $this->quoteValues($args)) . ')';
         }
 
         return $this;
@@ -207,8 +221,7 @@ class Query
     public function rows(array $rows): Query
     {
         foreach ($rows as $key => $row) {
-            $this->sqlPreBuild['rows'][$this->filterColumn($key)]
-                = is_null($row) ? 'NULL' : $this->adapter->quoteValue($row);
+            $this->sqlPreBuild['rows'][$this->filterColumn($key)] = $this->quoteValue($row);
         }
         return $this;
     }
@@ -243,13 +256,14 @@ class Query
 
     public function having(string $condition, ...$args): Query
     {
-        $condition = str_replace('?', "%s", $this->filterColumn($condition));
+        $condition = $this->filterColumn($condition);
         $operator = empty($this->sqlPreBuild['having']) ? ' HAVING ' : ' AND';
 
         if (count($args) == 0) {
             $this->sqlPreBuild['having'] .= $operator . ' (' . $condition . ')';
         } else {
-            $this->sqlPreBuild['having'] .= $operator . ' (' . vsprintf($condition, $this->quoteValues($args)) . ')';
+            $this->sqlPreBuild['having'] .= $operator
+                . ' (' . $this->applyValues($condition, $this->quoteValues($args)) . ')';
         }
 
         return $this;
@@ -337,8 +351,7 @@ class Query
                     . $this->sqlPreBuild['table']
                     . '(' . implode(' , ', array_keys($this->sqlPreBuild['rows'])) . ')'
                     . ' VALUES '
-                    . '(' . implode(' , ', array_values($this->sqlPreBuild['rows'])) . ')'
-                    . $this->sqlPreBuild['limit'];
+                    . '(' . implode(' , ', array_values($this->sqlPreBuild['rows'])) . ')';
             case Db::DELETE:
                 return 'DELETE FROM '
                     . $this->sqlPreBuild['table']

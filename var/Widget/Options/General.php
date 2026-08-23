@@ -420,7 +420,7 @@ class General extends Options implements ActionInterface
             $attachmentTypesOptionsValue,
             _t('允许上传的文件类型'),
             _t('用逗号 "," 将后缀名隔开, 例如: %s', '<code>cpp,h,mak</code>') . '<br />'
-            . _t('核心会校验扩展名，并对明显的危险内容类型做基础拦截；如需更严格策略，建议配合 RenewShield 插件')
+            . _t('核心会校验扩展名，并对明显的危险内容类型做基础拦截；如需更严格策略，可通过安全类插件扩展')
         );
         $form->addInput($attachmentTypes->multiMode());
 

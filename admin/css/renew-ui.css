@@ -721,7 +721,7 @@ html.tr-theme-dark {
     color-scheme: dark;
 }
 
-html.tr-theme-dark body.tr-admin {
+html.tr-theme-dark body {
     --tr-accent-rgb: 96 165 250;
     --tr-accent: rgb(var(--tr-accent-rgb));
     --tr-accent-2: #3b82f6;
@@ -759,41 +759,41 @@ html.tr-theme-dark body.tr-admin {
 }
 
 
-html.tr-accent-blue body.tr-admin { --tr-accent-rgb: 37 99 235; --tr-accent-2: #1d4ed8; }
-html.tr-theme-dark.tr-accent-blue body.tr-admin { --tr-accent-rgb: 96 165 250; --tr-accent-2: #3b82f6; }
+html.tr-accent-blue body { --tr-accent-rgb: 37 99 235; --tr-accent-2: #1d4ed8; }
+html.tr-theme-dark.tr-accent-blue body { --tr-accent-rgb: 96 165 250; --tr-accent-2: #3b82f6; }
 
-html.tr-accent-violet body.tr-admin { --tr-accent-rgb: 124 58 237; --tr-accent-2: #6d28d9; }
-html.tr-theme-dark.tr-accent-violet body.tr-admin { --tr-accent-rgb: 167 139 250; --tr-accent-2: #8b5cf6; }
+html.tr-accent-violet body { --tr-accent-rgb: 124 58 237; --tr-accent-2: #6d28d9; }
+html.tr-theme-dark.tr-accent-violet body { --tr-accent-rgb: 167 139 250; --tr-accent-2: #8b5cf6; }
 
-html.tr-accent-emerald body.tr-admin { --tr-accent-rgb: 5 150 105; --tr-accent-2: #047857; }
-html.tr-theme-dark.tr-accent-emerald body.tr-admin { --tr-accent-rgb: 52 211 153; --tr-accent-2: #10b981; }
+html.tr-accent-emerald body { --tr-accent-rgb: 5 150 105; --tr-accent-2: #047857; }
+html.tr-theme-dark.tr-accent-emerald body { --tr-accent-rgb: 52 211 153; --tr-accent-2: #10b981; }
 
-html.tr-accent-rose body.tr-admin { --tr-accent-rgb: 225 29 72; --tr-accent-2: #be123c; }
-html.tr-theme-dark.tr-accent-rose body.tr-admin { --tr-accent-rgb: 251 113 133; --tr-accent-2: #f43f5e; }
+html.tr-accent-rose body { --tr-accent-rgb: 225 29 72; --tr-accent-2: #be123c; }
+html.tr-theme-dark.tr-accent-rose body { --tr-accent-rgb: 251 113 133; --tr-accent-2: #f43f5e; }
 
-html.tr-accent-amber body.tr-admin { --tr-accent-rgb: 217 119 6; --tr-accent-2: #b45309; }
-html.tr-theme-dark.tr-accent-amber body.tr-admin { --tr-accent-rgb: 251 191 36; --tr-accent-2: #f59e0b; }
+html.tr-accent-amber body { --tr-accent-rgb: 217 119 6; --tr-accent-2: #b45309; }
+html.tr-theme-dark.tr-accent-amber body { --tr-accent-rgb: 251 191 36; --tr-accent-2: #f59e0b; }
 
-html.tr-accent-cyan body.tr-admin { --tr-accent-rgb: 8 145 178; --tr-accent-2: #0e7490; }
-html.tr-theme-dark.tr-accent-cyan body.tr-admin { --tr-accent-rgb: 34 211 238; --tr-accent-2: #06b6d4; }
+html.tr-accent-cyan body { --tr-accent-rgb: 8 145 178; --tr-accent-2: #0e7490; }
+html.tr-theme-dark.tr-accent-cyan body { --tr-accent-rgb: 34 211 238; --tr-accent-2: #06b6d4; }
 
-html.tr-accent-slate body.tr-admin { --tr-accent-rgb: 71 85 105; --tr-accent-2: #334155; }
-html.tr-theme-dark.tr-accent-slate body.tr-admin { --tr-accent-rgb: 148 163 184; --tr-accent-2: #64748b; }
+html.tr-accent-slate body { --tr-accent-rgb: 71 85 105; --tr-accent-2: #334155; }
+html.tr-theme-dark.tr-accent-slate body { --tr-accent-rgb: 148 163 184; --tr-accent-2: #64748b; }
 
-html.tr-accent-orange body.tr-admin { --tr-accent-rgb: 234 88 12; --tr-accent-2: #c2410c; }
-html.tr-theme-dark.tr-accent-orange body.tr-admin { --tr-accent-rgb: 251 146 60; --tr-accent-2: #f97316; }
+html.tr-accent-orange body { --tr-accent-rgb: 234 88 12; --tr-accent-2: #c2410c; }
+html.tr-theme-dark.tr-accent-orange body { --tr-accent-rgb: 251 146 60; --tr-accent-2: #f97316; }
 
-html.tr-accent-pink body.tr-admin { --tr-accent-rgb: 219 39 119; --tr-accent-2: #be185d; }
-html.tr-theme-dark.tr-accent-pink body.tr-admin { --tr-accent-rgb: 244 114 182; --tr-accent-2: #ec4899; }
+html.tr-accent-pink body { --tr-accent-rgb: 219 39 119; --tr-accent-2: #be185d; }
+html.tr-theme-dark.tr-accent-pink body { --tr-accent-rgb: 244 114 182; --tr-accent-2: #ec4899; }
 
-html.tr-accent-indigo body.tr-admin { --tr-accent-rgb: 79 70 229; --tr-accent-2: #4338ca; }
-html.tr-theme-dark.tr-accent-indigo body.tr-admin { --tr-accent-rgb: 129 140 248; --tr-accent-2: #6366f1; }
+html.tr-accent-indigo body { --tr-accent-rgb: 79 70 229; --tr-accent-2: #4338ca; }
+html.tr-theme-dark.tr-accent-indigo body { --tr-accent-rgb: 129 140 248; --tr-accent-2: #6366f1; }
 
-html.tr-accent-teal body.tr-admin { --tr-accent-rgb: 15 118 110; --tr-accent-2: #0f766e; }
-html.tr-theme-dark.tr-accent-teal body.tr-admin { --tr-accent-rgb: 45 212 191; --tr-accent-2: #14b8a6; }
+html.tr-accent-teal body { --tr-accent-rgb: 15 118 110; --tr-accent-2: #0f766e; }
+html.tr-theme-dark.tr-accent-teal body { --tr-accent-rgb: 45 212 191; --tr-accent-2: #14b8a6; }
 
-html.tr-accent-red body.tr-admin { --tr-accent-rgb: 220 38 38; --tr-accent-2: #b91c1c; }
-html.tr-theme-dark.tr-accent-red body.tr-admin { --tr-accent-rgb: 248 113 113; --tr-accent-2: #ef4444; }
+html.tr-accent-red body { --tr-accent-rgb: 220 38 38; --tr-accent-2: #b91c1c; }
+html.tr-theme-dark.tr-accent-red body { --tr-accent-rgb: 248 113 113; --tr-accent-2: #ef4444; }
 
 html.tr-theme-dark body.tr-admin,
 html.tr-theme-dark body.tr-admin .tr-topbar,
@@ -2955,7 +2955,7 @@ body.tr-admin .typecho-foot .resource a {
 }
 
 body.tr-admin .typecho-foot .resource a:hover {
-    color: rgba(15, 23, 42, 0.92);
+    color: var(--tr-text-1);
 }
 
 
@@ -3093,7 +3093,7 @@ body.tr-admin.tr-page-write .typecho-post-area > [class*="col-"]::before {
     content: none;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 769px) {
     body.tr-admin.tr-page-write .typecho-post-area {
         flex-wrap: nowrap;
         align-items: flex-start;
@@ -3101,7 +3101,7 @@ body.tr-admin.tr-page-write .typecho-post-area > [class*="col-"]::before {
     }
 }
 
-@media (min-width: 768px) {
+@media (min-width: 769px) {
     body.tr-admin.tr-page-write .typecho-post-area > .col-tb-9 {
         flex: 1 1 0;
         max-width: none;
@@ -3347,7 +3347,7 @@ body.tr-admin.tr-page-write #edit-secondary .tr-write-side-head {
 body.tr-admin.tr-page-write #edit-secondary .tr-write-side-title {
     font-size: 13px;
     font-weight: 750;
-    color: rgba(15, 23, 42, 0.82);
+    color: var(--tr-text-2);
 }
 
 body.tr-admin.tr-page-write #edit-secondary .tr-write-side-close,
@@ -3748,7 +3748,7 @@ body.tr-admin.tr-page-backup #backup-secondary .tr-dropzone-title,
 body.tr-admin.tr-page-upgrade .tr-dropzone-title {
     display: block;
     font-weight: 800;
-    color: rgba(15, 23, 42, 0.90);
+    color: var(--tr-text-1);
 }
 
 body.tr-admin.tr-page-backup #backup-secondary .tr-dropzone-desc,
@@ -3779,7 +3779,7 @@ body.tr-admin.tr-page-backup #typecho-welcome ul li {
     margin: 8px 0;
     padding-left: 18px;
     position: relative;
-    color: rgba(15, 23, 42, 0.76);
+    color: var(--tr-text-2);
     line-height: 1.6;
 }
 
@@ -5427,9 +5427,9 @@ body.body-100 .tr-auth-switch-menu {
     display: none;
     padding: 8px;
     background: var(--tr-surface);
-    border: 1px solid rgba(15, 23, 42, 0.12);
+    border: 1px solid var(--tr-border);
     border-radius: 14px;
-    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.10);
+    box-shadow: var(--tr-shadow);
     backdrop-filter: blur(14px);
     gap: 6px;
     min-width: 208px;
@@ -5443,9 +5443,9 @@ body.body-100 .tr-auth-switch-item {
     min-height: 30px;
     padding: 0 10px;
     border-radius: 10px;
-    border: 1px solid rgba(15, 23, 42, 0.10);
+    border: 1px solid var(--tr-border);
     background: var(--tr-surface-2);
-    color: rgba(15, 23, 42, 0.86);
+    color: var(--tr-text-1);
     font-size: 12px;
     font-weight: 700;
     text-align: center;
@@ -5464,7 +5464,7 @@ body.body-100 .tr-auth-switch-item:hover {
     }
 }
 
-@media (min-width: 768px) {
+@media (min-width: 769px) {
     body.body-100 .tr-auth-hero {
         display: block;
     }

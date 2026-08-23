@@ -34,7 +34,7 @@ $documentLang = str_replace('_', '-', (string) ($options->lang ?? 'zh_CN'));
         <meta charset="<?php $options->charset(); ?>">
         <meta name="renderer" content="webkit">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title><?php _e('%s - %s - Powered by TypeRenew', $menu->title, $options->title); ?></title>
+        <title><?php echo htmlspecialchars(_t('%s - %s - Powered by TypeRenew', $menu->title, $options->title), ENT_QUOTES, 'UTF-8'); ?></title>
         <meta name="robots" content="noindex, nofollow">
         <?php echo $header; ?>
     </head>

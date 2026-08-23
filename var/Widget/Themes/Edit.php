@@ -70,6 +70,11 @@ class Edit extends Options implements ActionInterface
     private function resolveThemePath(string $theme, ?string $file = null): string
     {
         $theme = trim($theme, './');
+
+        if ($theme === '' || preg_match('/^[_0-9a-zA-Z-]+$/', $theme) !== 1) {
+            throw new Exception(_t('您选择的风格不存在'));
+        }
+
         $themeRoot = realpath($this->options->themeFile($theme));
 
         if ($themeRoot === false || !is_dir($themeRoot)) {
@@ -145,6 +150,10 @@ class Edit extends Options implements ActionInterface
 
     public function editThemeFile(string $theme, string $file)
     {
+        if (!in_array(strtolower(pathinfo($file, PATHINFO_EXTENSION)), ['php', 'js', 'css', 'vbs'], true)) {
+            throw new Exception(_t('您编辑的文件不存在'));
+        }
+
         $path = $this->resolveThemePath($theme, $file);
 
         if (

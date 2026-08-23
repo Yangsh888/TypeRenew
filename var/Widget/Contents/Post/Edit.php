@@ -100,6 +100,7 @@ class Edit extends Contents implements ActionInterface
 
     public function markPost()
     {
+        $this->user->pass('editor');
         $status = $this->request->get('status');
         $statusList = [
             'publish' => _t('公开'),

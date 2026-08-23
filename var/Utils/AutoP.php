@@ -2,11 +2,17 @@
 
 namespace Utils;
 
+use Typecho\Common;
+
 class AutoP
 {
     private const BLOCK = 'p|pre|div|blockquote|form|ul|ol|dd|table|ins|h1|h2|h3|h4|h5|h6';
 
+    private const MAX_BLOCKS = 9999;
+
     private int $uniqueId = 0;
+
+    private string $uniqueSalt = '';
 
     private array $blocks = [];
 
@@ -40,12 +46,13 @@ class AutoP
     private function cutByBlock(string $text): string
     {
         $space = "( |　)";
+        $salt = preg_quote($this->uniqueSalt, '/');
         $text = str_replace("\r\n", "\n", trim($text));
         $text = preg_replace("/{$space}*\n{$space}*/is", "\n", $text);
-        $text = preg_replace("/\s*<p:([0-9]{4})\/>\s*/is", "</p><p:\\1/><p>", $text);
+        $text = preg_replace("/\s*<p:{$salt}([0-9]{4})\/>\s*/is", "</p><p:{$this->uniqueSalt}\\1/><p>", $text);
         $text = preg_replace("/\n{2,}/", "</p><p>", $text);
         $text = nl2br($text);
-        $text = preg_replace("/(<p>)?\s*<p:([0-9]{4})\/>\s*(<\/p>)?/is", "<p:\\2/>", $text);
+        $text = preg_replace("/(<p>)?\s*<p:{$salt}([0-9]{4})\/>\s*(<\/p>)?/is", "<p:{$this->uniqueSalt}\\2/>", $text);
         $text = preg_replace("/<p>{$space}*<\/p>/is", '', $text);
         $text = preg_replace("/\s*<p>\s*$/is", '', $text);
         $text = preg_replace("/^\s*<\/p>\s*/is", '', $text);
@@ -70,15 +77,21 @@ class AutoP
     {
         $this->uniqueId = 0;
         $this->blocks = [];
+        $this->uniqueSalt = bin2hex(Common::secureRandomBytes(4));
 
         $text = preg_replace(["/<\/p>\s+<p(\s*)/is", "/\s*<br\s*\/?>\s*/is"], ["</p><p\\1", "<br />"], trim($text));
 
         $foundTagCount = 0;
         $textLength = strlen($text);
+        $markerLength = strlen($this->uniqueSalt) + 5;
         $uniqueIdList = [];
 
-        if (preg_match_all("/<\/\s*([a-z0-9]+)>/is", $text, $matches, PREG_OFFSET_CAPTURE)) {
+        if (preg_match_all("/<\/([a-z0-9]+)>/is", $text, $matches, PREG_OFFSET_CAPTURE)) {
             foreach ($matches[0] as $key => $match) {
+                if ($foundTagCount >= self::MAX_BLOCKS) {
+                    break;
+                }
+
                 $tag = $matches[1][$key][0];
 
                 $leftOffset = $match[1] - $textLength;
@@ -103,7 +116,7 @@ class AutoP
                     $text = substr_replace(
                         $text,
                         $uniqueId,
-                        $match[1] + 7 + $foundTagCount * 10 + $tagLength,
+                        $match[1] + 2 + $tagLength + $markerLength + $foundTagCount * $markerLength * 2,
                         0
                     );
                     $foundTagCount++;
@@ -132,6 +145,6 @@ class AutoP
 
     private function makeUniqueId(): string
     {
-        return ':' . str_pad($this->uniqueId ++, 4, '0', STR_PAD_LEFT);
+        return ':' . $this->uniqueSalt . str_pad($this->uniqueId ++, 4, '0', STR_PAD_LEFT);
     }
 }

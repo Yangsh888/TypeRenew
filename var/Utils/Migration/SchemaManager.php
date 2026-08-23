@@ -4,6 +4,7 @@ namespace Utils\Migration;
 
 use Typecho\Common;
 use Typecho\Db;
+use Typecho\Plugin;
 use Utils\Comment;
 use Utils\Defaults;
 use Utils\Schema;
@@ -16,15 +17,15 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
 
 class SchemaManager
 {
-    public static function syncCurrentRelease(Db $db, array $activatedPlugins = []): array
+    public static function syncCurrentRelease(Db $db): array
     {
         return self::withMigrationLock(
             $db,
-            static fn(): array => self::syncCurrentReleaseUnlocked($db, $activatedPlugins)
+            static fn(): array => self::syncCurrentReleaseUnlocked($db)
         );
     }
 
-    private static function syncCurrentReleaseUnlocked(Db $db, array $activatedPlugins): array
+    private static function syncCurrentReleaseUnlocked(Db $db): array
     {
         $messages = [_t('当前版本所需的数据库结构已同步')];
         self::ensureMailInfrastructure($db);
@@ -38,17 +39,7 @@ class SchemaManager
             $messages[] = _t('已同步 %d 条历史评论的作者昵称', $syncedComments);
         }
 
-        if (in_array('RenewGo', $activatedPlugins, true)) {
-            Schema::ensureRenewGo($db);
-        }
-
-        if (in_array('RenewSEO', $activatedPlugins, true)) {
-            Schema::ensureRenewSeo($db);
-        }
-
-        if (in_array('RenewShield', $activatedPlugins, true)) {
-            Schema::ensureRenewShield($db);
-        }
+        Plugin::factory(self::class)->call('syncSchema', $db);
 
         self::updateGenerator($db, Common::VERSION);
 

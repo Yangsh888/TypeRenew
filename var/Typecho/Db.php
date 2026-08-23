@@ -395,7 +395,7 @@ class Db
             $locked = $cache->tryLock($cacheKey, 6);
             if (!$locked) {
                 $waited = null;
-                if ($cache->waitFor($cacheKey, $waited, 60, 50000) && is_array($waited)) {
+                if ($cache->waitFor($cacheKey, $waited, 6, 50000) && is_array($waited)) {
                     return $filter ? array_map($filter, $waited) : $waited;
                 }
             }
@@ -436,7 +436,7 @@ class Db
             $locked = $cache->tryLock($cacheKey, 6);
             if (!$locked) {
                 $waited = null;
-                if ($cache->waitFor($cacheKey, $waited, 60, 50000)) {
+                if ($cache->waitFor($cacheKey, $waited, 6, 50000)) {
                     if ($waited === null) {
                         return null;
                     }
@@ -486,7 +486,7 @@ class Db
             $locked = $cache->tryLock($cacheKey, 6);
             if (!$locked) {
                 $waited = null;
-                if ($cache->waitFor($cacheKey, $waited, 60, 50000)) {
+                if ($cache->waitFor($cacheKey, $waited, 6, 50000)) {
                     if ($waited === null) {
                         return null;
                     }

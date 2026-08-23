@@ -9,24 +9,25 @@
     </div>
 
     <?php if ($this->allow('comment')) : ?>
-        <div id="respond" class="comment-respond">
-            <span class="respond-title"><?php _e('添加新评论'); ?></span>
+        <div id="<?php $this->respondId(); ?>" class="comment-respond">
+            <div class="respond-head">
+                <span class="respond-title"><?php _e('添加新评论'); ?></span>
+                <a id="cancel-comment-reply-link" class="cancel-comment-reply" rel="nofollow" style="display:none" href="<?php $this->permalink(); ?>#<?php $this->respondId(); ?>"><?php _e('取消回复'); ?></a>
+            </div>
             <form method="post" action="<?php $this->commentUrl(); ?>" id="comment-form" role="form" class="comment-form">
                 <div class="comment-user-info">
                     <div class="form-group">
                         <label for="author" class="sr-only"><?php _e('昵称'); ?></label>
-                        <input type="text" name="author" id="author" class="form-input" value="<?php echo $this->user->hasLogin() ? $this->user->screenName() : $this->remember('author', true); ?>" placeholder="<?php _e('昵称'); ?>" required>
+                        <input type="text" name="author" id="author" class="form-input" value="<?php if ($this->user->hasLogin()) { echo htmlspecialchars((string) $this->user->screenName, ENT_QUOTES, 'UTF-8'); } else { $this->remember('author'); } ?>" placeholder="<?php _e('昵称'); ?>" required>
                     </div>
                     <div class="form-group">
                         <label for="mail" class="sr-only"><?php _e('邮箱'); ?></label>
-                        <input type="email" name="mail" id="mail" class="form-input" value="<?php echo $this->user->hasLogin() ? $this->user->mail() : $this->remember('mail', true); ?>" placeholder="<?php _e('邮箱'); ?>"<?php if ($this->options->commentsRequireMail && !$this->user->hasLogin()) : ?> required<?php endif; ?>>
+                        <input type="email" name="mail" id="mail" class="form-input" value="<?php if ($this->user->hasLogin()) { echo htmlspecialchars((string) $this->user->mail, ENT_QUOTES, 'UTF-8'); } else { $this->remember('mail'); } ?>" placeholder="<?php _e('邮箱'); ?>"<?php if ($this->options->commentsRequireMail && !$this->user->hasLogin()) : ?> required<?php endif; ?>>
                     </div>
-                    <?php if ($this->options->commentsRequireUrl) : ?>
                     <div class="form-group">
                         <label for="url" class="sr-only"><?php _e('网站'); ?></label>
-                        <input type="url" name="url" id="url" class="form-input" value="<?php $this->remember('url', true); ?>" placeholder="<?php _e('网站'); ?>"<?php if (!$this->user->hasLogin()) : ?> required<?php endif; ?>>
+                        <input type="url" name="url" id="url" class="form-input" value="<?php $this->remember('url'); ?>" placeholder="<?php _e('网站'); ?>"<?php if ($this->options->commentsRequireUrl && !$this->user->hasLogin()) : ?> required<?php endif; ?>>
                     </div>
-                    <?php endif; ?>
                 </div>
                 <div class="form-group">
                     <label for="textarea" class="sr-only"><?php _e('内容'); ?></label>

@@ -29,15 +29,17 @@ class Config extends BaseOptions
         $theme = $theme ?? $options->theme;
         $configFile = $options->themeFile($theme, 'functions.php');
 
-        if (!$options->missingTheme && file_exists($configFile)) {
-            require_once $configFile;
-
-            if (function_exists('themeConfig')) {
-                return true;
-            }
+        if ($options->missingTheme || !file_exists($configFile)) {
+            return false;
         }
 
-        return false;
+        if (preg_match('/function\s+themeConfig\s*\(/i', (string) file_get_contents($configFile)) !== 1) {
+            return false;
+        }
+
+        require_once $configFile;
+
+        return function_exists('themeConfig');
     }
 
     public function config(): Form

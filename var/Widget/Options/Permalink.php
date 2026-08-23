@@ -3,7 +3,6 @@
 namespace Widget\Options;
 
 use Typecho\Common;
-use Typecho\Cookie;
 use Typecho\Http\Client;
 use Typecho\Router\Parser;
 use Typecho\Widget\Helper\Form;
@@ -197,7 +196,7 @@ RewriteRule . {$basePath}index.php [L]
             return false;
         } else {
             $htaccess = __TYPECHO_ROOT_DIR__ . '/.htaccess';
-            if (is_file($htaccess) && is_writable($htaccess)) {
+            if (is_file($htaccess) && is_writable($htaccess) && $this->isGeneratedHtaccess($htaccess)) {
                 unlink($htaccess);
             }
         }
@@ -205,10 +204,21 @@ RewriteRule . {$basePath}index.php [L]
         return true;
     }
 
+    private function isGeneratedHtaccess(string $file): bool
+    {
+        $content = trim((string) @file_get_contents($file));
+
+        return $content !== '' && preg_match(
+            '~^<IfModule mod_rewrite\.c>\s+RewriteEngine On\s+RewriteBase \S+\s+'
+            . '(?:RewriteCond %\{REQUEST_FILENAME\} !-[fd]\s+)*RewriteRule \S+ \S+ \[L\]\s*</IfModule>$~',
+            $content
+        ) === 1;
+    }
+
     public function updatePermalinkSettings()
     {
-        $customPattern = $this->request->get('customPattern');
-        $postPattern = $this->request->get('postPattern');
+        $customPattern = (string) $this->request->get('customPattern', '');
+        $postPattern = (string) $this->request->get('postPattern', '');
 
         $before = [
             'rewrite' => (string) ($this->options->rewrite ?? ''),
@@ -216,7 +226,6 @@ RewriteRule . {$basePath}index.php [L]
         ];
 
         if ($this->form()->validate()) {
-            Cookie::set('__typecho_form_item_postPattern', $customPattern);
             $this->response->goBack();
         }
 
@@ -230,8 +239,8 @@ RewriteRule . {$basePath}index.php [L]
         if (isset($postPattern) && $this->request->is('pagePattern')) {
             $routingTable = $this->routingTable();
             $routingTable['post']['url'] = $postPattern;
-            $routingTable['page']['url'] = '/' . ltrim($this->encodeRule($this->request->get('pagePattern')), '/');
-            $routingTable['category']['url'] = '/' . ltrim($this->encodeRule($this->request->get('categoryPattern')), '/');
+            $routingTable['page']['url'] = '/' . ltrim($this->encodeRule((string) $this->request->get('pagePattern', '')), '/');
+            $routingTable['category']['url'] = '/' . ltrim($this->encodeRule((string) $this->request->get('categoryPattern', '')), '/');
             $routingTable['category_page']['url'] = rtrim($routingTable['category']['url'], '/') . '/[page:digital]/';
             $settings['routingTable'] = Common::jsonEncode($routingTable, 0, '{}');
         }
@@ -298,15 +307,10 @@ RewriteRule . {$basePath}index.php [L]
         $routingTable = $this->routingTable();
         $postPatternValue = (string) $routingTable['post']['url'];
 
-        $customPatternValue = null;
-        if ($this->request->is('__typecho_form_item_postPattern')) {
-            $customPatternValue = $this->request->get('__typecho_form_item_postPattern');
-            Cookie::delete('__typecho_form_item_postPattern');
-        } elseif (!isset($patterns[$postPatternValue])) {
-            $customPatternValue = $this->decodeRule($postPatternValue);
-        }
+        $customPatternValue = isset($patterns[$postPatternValue]) ? '' : $this->decodeRule($postPatternValue);
         $patterns['custom'] = _t('个性化定义') .
-            ' <input type="text" class="w-50 text-s mono" name="customPattern" value="' . $customPatternValue . '" />';
+            ' <input type="text" class="w-50 text-s mono" name="customPattern" value="'
+            . htmlspecialchars($customPatternValue, ENT_QUOTES, 'UTF-8') . '" />';
 
         $postPattern = new Form\Element\Radio(
             'postPattern',
@@ -381,7 +385,7 @@ RewriteRule . {$basePath}index.php [L]
         }
 
         $routingTable = $this->routingTable();
-        $currentTable = ['custom' => ['url' => $this->encodeRule($this->request->get('customPattern'))]];
+        $currentTable = ['custom' => ['url' => $this->encodeRule((string) $this->request->get('customPattern', ''))]];
         $parser = new Parser($currentTable);
         $currentTable = $parser->parse();
         $regx = $currentTable['custom']['regx'];

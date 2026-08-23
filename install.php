@@ -31,7 +31,7 @@ function install_default_db_prefix(): string
 
 function install_default_sqlite_file(): string
 {
-    return __TYPECHO_ROOT_DIR__ . '/usr/' . bin2hex(\Typecho\Common::secureRandomBytes(16)) . '.db';
+    return 'usr/' . bin2hex(\Typecho\Common::secureRandomBytes(16)) . '.db';
 }
 
 function install_register_exception_handler(): void
@@ -85,92 +85,15 @@ function install_register_exception_handler(): void
 
 function install_normalize_sqlite_file(string $path): ?string
 {
-    $path = trim($path);
-    if ($path === '' || str_contains($path, "\0")) {
+    $fileName = basename(trim(str_replace('\\', '/', $path)));
+
+    if (preg_match('/^(?!\.)[A-Za-z0-9._-]+\.(db|sqlite|sqlite3)$/i', $fileName) !== 1) {
         return null;
     }
 
-    $normalized = str_replace('\\', '/', $path);
-    if (preg_match('/^[a-zA-Z]:(?!\/)/', $normalized) === 1) {
-        return null;
-    }
+    $candidate = rtrim(str_replace('\\', '/', __TYPECHO_ROOT_DIR__), '/') . '/usr/' . $fileName;
 
-    $usrRoot = rtrim(str_replace('\\', '/', __TYPECHO_ROOT_DIR__), '/') . '/usr';
-    $isAbsolute = preg_match('/^[a-zA-Z]:\//', $normalized) === 1
-        || str_starts_with($normalized, '//')
-        || str_starts_with($normalized, '/');
-
-    if ($isAbsolute) {
-        $absolute = rtrim($normalized, '/');
-        $lowerUsrRoot = strtolower($usrRoot);
-        $lowerAbsolute = strtolower($absolute);
-
-        if ($lowerAbsolute !== $lowerUsrRoot && !str_starts_with($lowerAbsolute, $lowerUsrRoot . '/')) {
-            return null;
-        }
-
-        $relative = ltrim(substr($absolute, strlen($usrRoot)), '/');
-    } else {
-        $relative = ltrim($normalized, '/');
-
-        if ($relative === 'usr' || str_starts_with($relative, 'usr/')) {
-            $relative = ltrim(substr($relative, 3), '/');
-        }
-    }
-
-    $segments = array_values(array_filter(explode('/', $relative), static fn(string $segment): bool => $segment !== ''));
-    if (empty($segments)) {
-        return null;
-    }
-
-    $fileName = array_pop($segments);
-    foreach (array_merge($segments, [$fileName]) as $segment) {
-        if ($segment === '.' || $segment === '..') {
-            return null;
-        }
-    }
-
-    $blocked = ['htaccess', 'htpasswd', 'gitignore', 'env', 'dockerenv', 'editorconfig', 'gitattributes', 'gitmodules'];
-    if (in_array(strtolower(pathinfo($fileName, PATHINFO_FILENAME)), $blocked, true)) {
-        return null;
-    }
-
-    if (preg_match('/\.[^\.\/\\\\]+$/u', $fileName) !== 1) {
-        return null;
-    }
-
-    $candidate = $usrRoot . '/' . implode('/', array_merge($segments, [$fileName]));
-    $realUsrRoot = realpath($usrRoot);
-    $parent = realpath(dirname($candidate));
-    if ($realUsrRoot === false || $parent === false) {
-        return null;
-    }
-
-    $realUsrRoot = rtrim(str_replace('\\', '/', $realUsrRoot), '/');
-    $parent = rtrim(str_replace('\\', '/', $parent), '/');
-    if (strtolower($parent) !== strtolower($realUsrRoot)
-        && !str_starts_with(strtolower($parent), strtolower($realUsrRoot) . '/')) {
-        return null;
-    }
-
-    if (file_exists($candidate)) {
-        $realCandidate = realpath($candidate);
-        if ($realCandidate === false) {
-            return null;
-        }
-
-        $realCandidate = str_replace('\\', '/', $realCandidate);
-        if (strtolower($realCandidate) !== strtolower($realUsrRoot)
-            && !str_starts_with(strtolower($realCandidate), strtolower($realUsrRoot) . '/')) {
-            return null;
-        }
-    }
-
-    if (is_link($candidate)) {
-        return null;
-    }
-
-    return $candidate;
+    return is_link($candidate) ? null : $candidate;
 }
 
 function install_get_default_options(): array
@@ -286,6 +209,19 @@ function install_check(string $type): bool
     switch ($type) {
         case 'config':
             return file_exists(__TYPECHO_ROOT_DIR__ . '/config.inc.php');
+        case 'db_reachable':
+            global $installDb;
+
+            if (empty($installDb)) {
+                return false;
+            }
+
+            try {
+                $installDb->query('SELECT 1');
+                return true;
+            } catch (\Throwable) {
+                return false;
+            }
         case 'db_structure':
         case 'db_data':
             global $installDb;
@@ -311,6 +247,19 @@ function install_check(string $type): bool
         default:
             return false;
     }
+}
+
+function install_unavailable(): void
+{
+    \Typecho\Response::getInstance()
+        ->setStatus(503)
+        ->setContentType('text/html')
+        ->setHeader('Retry-After', '60');
+
+    echo '<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><title>503</title></head><body><div>'
+        . htmlspecialchars(_t('站点已安装，但当前无法连接数据库，请检查数据库服务后重试'), ENT_QUOTES, 'UTF-8')
+        . '</div></body></html>';
+    exit(1);
 }
 
 function install_raise_error($error, $config = null)
@@ -889,6 +838,7 @@ function install_step_2()
 
     if (!empty($installDb)) {
         $config = $installDb->getConfig(\Typecho\Db::WRITE)->toArray();
+        unset($config['password'], $config['sslCa']);
         $config['prefix'] = $installDb->getPrefix();
         $config['adapter'] = $adapter;
     }
@@ -1351,6 +1301,7 @@ function install_step_3()
                     <li>
                         <button type="submit" class="btn primary"><?php _e('继续安装 &raquo;'); ?></button>
                         <input type="hidden" name="step" value="3">
+                        <input type="hidden" name="installNonce" value="<?php echo htmlspecialchars(install_form_nonce(), ENT_QUOTES, 'UTF-8'); ?>">
                     </li>
                 </ul>
             </form>
@@ -1363,6 +1314,7 @@ function install_step_3_perform()
 {
     global $installDb;
 
+    install_assert_form_nonce();
     install_assert_step_token();
 
     $request = \Typecho\Request::getInstance();
@@ -1561,15 +1513,15 @@ function install_dispatch()
         echo 'PHP ' . PHP_VERSION . "\n";
     }
 
-    if (
-        install_check('config')
-        && install_check('db_structure')
-        && install_check('db_data')
-    ) {
-        if (!install_is_cli()) {
+    if (install_check('config') && !install_is_cli()) {
+        if (install_check('db_structure') && install_check('db_data')) {
             install_redirect($options->siteUrl);
         }
 
+        if (!install_check('db_reachable')) {
+            install_unavailable();
+        }
+    } elseif (install_check('config') && install_check('db_structure') && install_check('db_data')) {
         exit(1);
     }
 

@@ -27,12 +27,6 @@ $trIconMap = [
     'extending.php' => 'i-plug',
 ];
 
-$trPanelIconMap = [
-    'RenewGo/Panel.php' => 'i-external',
-    'RenewBoost/Panel.php' => 'i-zap',
-    'RenewSEO/Panel.php' => 'i-search',
-    'RenewShield/Panel.php' => 'i-shield',
-];
 $menuAddLink = '';
 if (!empty($menu->addLink)) {
     $candidate = trim((string) $menu->addLink);
@@ -41,20 +35,10 @@ if (!empty($menu->addLink)) {
     }
 }
 
-$trIconOf = function (string $href) use ($trIconMap, $trPanelIconMap): ?string {
-    $parts = \Typecho\Common::parseUrl($href);
-    $path = $parts['path'] ?? '';
+$trIconOf = function (string $href) use ($trIconMap): ?string {
+    $path = \Typecho\Common::parseUrl($href)['path'] ?? '';
     $base = $path !== '' ? basename($path) : basename($href);
-    if ($base === 'extending.php') {
-        $query = $parts['query'] ?? '';
-        if ($query !== '') {
-            parse_str($query, $params);
-            $panel = isset($params['panel']) ? (string) $params['panel'] : '';
-            if ($panel !== '' && isset($trPanelIconMap[$panel])) {
-                return $trPanelIconMap[$panel];
-            }
-        }
-    }
+
     return $trIconMap[$base] ?? null;
 };
 

@@ -12,6 +12,7 @@ use Typecho\Common;
 use Typecho\Router;
 use Typecho\Widget;
 use Typecho\Widget\Exception as WidgetException;
+use Utils\LoginGuard;
 use Widget\Base\Comments;
 use Widget\Base\Contents;
 use Widget\Contents\Attachment\Unattached;
@@ -182,13 +183,22 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         }
 
         if ($valid == 0) {
+            $ip = $this->request->getIp();
+
+            if (LoginGuard::retryAfter($this->db, LoginGuard::SCOPE_LOGIN, $ip, $auth['userName']) > 0) {
+                throw new Exception(_t('登录尝试过于频繁, 请稍后重试'), 403);
+            }
+
             if ($this->user->login($auth['userName'], $auth['password'], true)) {
+                LoginGuard::clear($this->db, LoginGuard::SCOPE_LOGIN, $ip, $auth['userName']);
+
                 if ($this->user->pass(self::ACCESS_LEVELS[$methodName] ?? 'contributor', true)) {
                     $this->user->execute();
                 } else {
                     throw new Exception(_t('权限不足'), 403);
                 }
             } else {
+                LoginGuard::recordFailure($this->db, LoginGuard::SCOPE_LOGIN, $ip, $auth['userName']);
                 throw new Exception(_t('无法登录, 密码错误'), 403);
             }
         }

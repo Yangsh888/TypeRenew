@@ -44,7 +44,7 @@ class Helper
         $currentLang = I18n::getLang();
         if ($currentLang) {
             $currentLang = basename($currentLang);
-            $fileName = dirname(__FILE__) . '/' . $domain . '/lang/' . $currentLang;
+            $fileName = __TYPECHO_ROOT_DIR__ . __TYPECHO_PLUGIN_DIR__ . '/' . $domain . '/lang/' . $currentLang;
             if (file_exists($fileName)) {
                 I18n::addLang($fileName);
             }

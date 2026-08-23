@@ -360,11 +360,17 @@ xml:base="' . $this->xmlText($this->baseUrl) . '"
 
     private function xmlText(mixed $value): string
     {
-        return htmlspecialchars((string) $value, ENT_QUOTES | ENT_XML1 | ENT_SUBSTITUTE, $this->charset);
+        return htmlspecialchars(self::stripControls($value), ENT_QUOTES | ENT_XML1 | ENT_SUBSTITUTE, $this->charset);
     }
 
     private function xmlCdata(mixed $value): string
     {
-        return str_replace(']]>', ']]]]><![CDATA[>', (string) $value);
+        return str_replace(']]>', ']]]]><![CDATA[>', self::stripControls($value));
+    }
+
+    private static function stripControls(mixed $value): string
+    {
+        return preg_replace('/[^	
+ -\x{10FFFF}]/u', '', (string) $value) ?? (string) $value;
     }
 }

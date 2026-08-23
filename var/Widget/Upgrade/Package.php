@@ -74,7 +74,7 @@ class Package extends BaseOptions implements ActionInterface
             throw new Exception(Common::uploadErrorMessage($error, '升级包上传', '请选择升级包 ZIP 文件'), 400);
         }
 
-        $allowInstall = !empty($this->request->get('allowInstall'));
+        $allowInstall = empty($this->request->get('allowInstall')) ? false : null;
         $state = $runner->saveUpload($file, $allowInstall);
         $manifest = $state['manifest'] ?? [];
         $from = (string) ($manifest['from'] ?? '');

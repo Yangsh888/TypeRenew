@@ -53,10 +53,7 @@ class Upgrade extends BaseOptions implements ActionInterface
     {
         try {
             $this->assertMysqlSchemaActionAllowed(_t('数据库升级'));
-            $activated = is_array($this->options->plugins['activated'] ?? null)
-                ? array_keys($this->options->plugins['activated'])
-                : [];
-            $result = SchemaManager::syncCurrentRelease($this->db, $activated);
+            $result = SchemaManager::syncCurrentRelease($this->db);
         } catch (\Throwable $e) {
             Notice::alloc()->set($e->getMessage(), 'error');
             return;

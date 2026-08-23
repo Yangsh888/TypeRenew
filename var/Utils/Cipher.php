@@ -56,20 +56,6 @@ class Cipher
         return $decrypted === false ? '' : $decrypted;
     }
 
-    public static function mask(string $value, int $visibleChars = 4): string
-    {
-        if ($value === '') {
-            return '';
-        }
-
-        $length = strlen($value);
-        if ($length <= $visibleChars) {
-            return str_repeat('*', $length);
-        }
-
-        return substr($value, 0, $visibleChars) . str_repeat('*', min($length - $visibleChars, 8));
-    }
-
     private static function deriveKey(string $secret): string
     {
         $salt = 'typerenew:v1:' . hash('sha256', $secret);

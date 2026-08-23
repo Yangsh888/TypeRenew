@@ -215,6 +215,11 @@ abstract class Widget
     public function altBy(int $current, ...$args)
     {
         $num = count($args);
+
+        if ($num < 1) {
+            return;
+        }
+
         $split = $current % $num;
         echo $args[(0 == $split ? $num : $split) - 1];
     }

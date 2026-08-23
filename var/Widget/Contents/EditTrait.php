@@ -420,7 +420,7 @@ trait EditTrait
                     !$this->db->fetchRow(
                         $this->db->select('mid')
                             ->from('table.metas')
-                            ->where('mid = ?', $category)
+                            ->where('mid = ? AND type = ?', $category, 'category')
                             ->limit(1)
                     )
                 ) {

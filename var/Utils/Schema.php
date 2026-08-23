@@ -108,21 +108,6 @@ class Schema
         );
     }
 
-    public static function ensureRenewShield(Db $db): void
-    {
-        self::ensureTables($db, ['renew_shield_logs', 'renew_shield_state']);
-    }
-
-    public static function ensureRenewGo(Db $db): void
-    {
-        self::ensureTables($db, ['renew_go_logs']);
-    }
-
-    public static function ensureRenewSeo(Db $db): void
-    {
-        self::ensureTables($db, ['renew_seo_logs', 'renew_seo_404']);
-    }
-
     public static function ensureCoreIndexes(Db $db): void
     {
         $prefix = $db->getPrefix();
@@ -138,6 +123,7 @@ class Schema
         self::ensureIndex($db, $prefix . 'contents', $prefix . 'contents_parent_type', ['parent', 'type']);
 
         self::ensureIndex($db, $prefix . 'metas', $prefix . 'metas_type_slug', ['type', 'slug']);
+        self::ensureIndex($db, $prefix . 'metas', $prefix . 'metas_type_order', ['type', 'order']);
         self::ensureIndex($db, $prefix . 'metas', $prefix . 'metas_type_parent_order', ['type', 'parent', 'order']);
         self::ensureIndex($db, $prefix . 'relationships', $prefix . 'relationships_mid', ['mid']);
     }
@@ -279,66 +265,11 @@ class Schema
     {
         if ($dialect === 'mysql') {
             $definitions = (array) (self::criticalSchema()[$tableKey]['mysql']['definitions'] ?? []);
-            if ($definitions === []) {
-                $definitions = match ($tableKey) {
-                    'renew_go_logs' => [
-                        'id' => '`id` bigint unsigned NOT NULL auto_increment',
-                        'ip' => '`ip` varchar(45) NOT NULL default \'\'',
-                        'action' => '`action` varchar(24) NOT NULL default \'\'',
-                        'result' => '`result` varchar(16) NOT NULL default \'\'',
-                        'target' => '`target` varchar(512) DEFAULT NULL',
-                        'referer' => '`referer` varchar(512) DEFAULT NULL',
-                        'created_at' => '`created_at` int unsigned NOT NULL default 0',
-                    ],
-                    'renew_shield_logs' => [
-                        'id' => '`id` bigint unsigned NOT NULL auto_increment',
-                        'scope' => '`scope` varchar(24) NOT NULL default \'\'',
-                        'action' => '`action` varchar(24) NOT NULL default \'\'',
-                        'decision' => '`decision` varchar(16) NOT NULL default \'\'',
-                        'rule_key' => '`rule_key` varchar(64) NOT NULL default \'\'',
-                        'score' => '`score` int NOT NULL DEFAULT 0',
-                        'method' => '`method` varchar(12) NOT NULL default \'\'',
-                        'ip' => '`ip` varchar(45) DEFAULT NULL',
-                        'path' => '`path` varchar(1024) DEFAULT NULL',
-                        'ua' => '`ua` varchar(512) DEFAULT NULL',
-                        'message' => '`message` varchar(255) NOT NULL default \'\'',
-                        'payload' => '`payload` text DEFAULT NULL',
-                        'created_at' => '`created_at` int unsigned NOT NULL default 0',
-                    ],
-                    'renew_shield_state' => [
-                        'id' => '`id` bigint unsigned NOT NULL auto_increment',
-                        'name_hash' => '`name_hash` char(40) NOT NULL default \'\'',
-                        'value' => '`value` mediumtext DEFAULT NULL',
-                        'expires_at' => '`expires_at` int unsigned NOT NULL DEFAULT 0',
-                    ],
-                    'renew_seo_logs' => [
-                        'id' => '`id` bigint unsigned NOT NULL auto_increment',
-                        'channel' => '`channel` varchar(24) NOT NULL default \'\'',
-                        'action' => '`action` varchar(32) NOT NULL default \'\'',
-                        'level' => '`level` varchar(16) NOT NULL default \'\'',
-                        'target' => '`target` varchar(512) DEFAULT NULL',
-                        'message' => '`message` varchar(255) NOT NULL default \'\'',
-                        'payload' => '`payload` text DEFAULT NULL',
-                        'created_at' => '`created_at` int unsigned NOT NULL default 0',
-                    ],
-                    'renew_seo_404' => [
-                        'id' => '`id` bigint unsigned NOT NULL auto_increment',
-                        'path_hash' => '`path_hash` char(40) NOT NULL default \'\'',
-                        'path' => '`path` varchar(512) NOT NULL default \'\'',
-                        'full_url' => '`full_url` varchar(1024) NOT NULL default \'\'',
-                        'referer' => '`referer` varchar(1024) DEFAULT NULL',
-                        'ip' => '`ip` varchar(45) DEFAULT NULL',
-                        'ua' => '`ua` varchar(512) DEFAULT NULL',
-                        'hits' => '`hits` int unsigned NOT NULL DEFAULT 1',
-                        'first_seen' => '`first_seen` int unsigned NOT NULL default 0',
-                        'last_seen' => '`last_seen` int unsigned NOT NULL default 0',
-                    ],
-                    default => [],
-                };
-            }
+
             if (isset($definitions['id'])) {
                 $definitions['id'] .= ' PRIMARY KEY';
             }
+
             return $definitions;
         }
 
@@ -379,58 +310,6 @@ class Schema
                 'firstAt' => '"firstAt" INT NOT NULL DEFAULT 0',
                 'lastAt' => '"lastAt" INT NOT NULL DEFAULT 0',
                 'lockedUntil' => '"lockedUntil" INT NOT NULL DEFAULT 0',
-            ],
-            'renew_go_logs' => [
-                'id' => $dialect === 'pgsql' ? '"id" BIGSERIAL PRIMARY KEY' : '"id" INTEGER PRIMARY KEY AUTOINCREMENT',
-                'ip' => '"ip" VARCHAR(45) NOT NULL DEFAULT \'\'',
-                'action' => '"action" VARCHAR(24) NOT NULL DEFAULT \'\'',
-                'result' => '"result" VARCHAR(16) NOT NULL DEFAULT \'\'',
-                'target' => '"target" TEXT DEFAULT NULL',
-                'referer' => '"referer" TEXT DEFAULT NULL',
-                'created_at' => '"created_at" INT NOT NULL DEFAULT 0',
-            ],
-            'renew_shield_logs' => [
-                'id' => $dialect === 'pgsql' ? '"id" BIGSERIAL PRIMARY KEY' : '"id" INTEGER PRIMARY KEY AUTOINCREMENT',
-                'scope' => '"scope" VARCHAR(24) NOT NULL DEFAULT \'\'',
-                'action' => '"action" VARCHAR(24) NOT NULL DEFAULT \'\'',
-                'decision' => '"decision" VARCHAR(16) NOT NULL DEFAULT \'\'',
-                'rule_key' => '"rule_key" VARCHAR(64) NOT NULL DEFAULT \'\'',
-                'score' => '"score" INT NOT NULL DEFAULT 0',
-                'method' => '"method" VARCHAR(12) NOT NULL DEFAULT \'\'',
-                'ip' => '"ip" VARCHAR(45) DEFAULT NULL',
-                'path' => '"path" TEXT DEFAULT NULL',
-                'ua' => '"ua" TEXT DEFAULT NULL',
-                'message' => '"message" VARCHAR(255) NOT NULL DEFAULT \'\'',
-                'payload' => '"payload" TEXT DEFAULT NULL',
-                'created_at' => '"created_at" INT NOT NULL DEFAULT 0',
-            ],
-            'renew_shield_state' => [
-                'id' => $dialect === 'pgsql' ? '"id" BIGSERIAL PRIMARY KEY' : '"id" INTEGER PRIMARY KEY AUTOINCREMENT',
-                'name_hash' => '"name_hash" VARCHAR(40) NOT NULL DEFAULT \'\'',
-                'value' => '"value" TEXT DEFAULT NULL',
-                'expires_at' => '"expires_at" INT NOT NULL DEFAULT 0',
-            ],
-            'renew_seo_logs' => [
-                'id' => $dialect === 'pgsql' ? '"id" BIGSERIAL PRIMARY KEY' : '"id" INTEGER PRIMARY KEY AUTOINCREMENT',
-                'channel' => '"channel" VARCHAR(24) NOT NULL DEFAULT \'\'',
-                'action' => '"action" VARCHAR(32) NOT NULL DEFAULT \'\'',
-                'level' => '"level" VARCHAR(16) NOT NULL DEFAULT \'\'',
-                'target' => '"target" TEXT DEFAULT NULL',
-                'message' => '"message" VARCHAR(255) NOT NULL DEFAULT \'\'',
-                'payload' => '"payload" TEXT DEFAULT NULL',
-                'created_at' => '"created_at" INT NOT NULL DEFAULT 0',
-            ],
-            'renew_seo_404' => [
-                'id' => $dialect === 'pgsql' ? '"id" BIGSERIAL PRIMARY KEY' : '"id" INTEGER PRIMARY KEY AUTOINCREMENT',
-                'path_hash' => '"path_hash" VARCHAR(40) NOT NULL DEFAULT \'\'',
-                'path' => '"path" TEXT NOT NULL DEFAULT \'\'',
-                'full_url' => '"full_url" TEXT NOT NULL DEFAULT \'\'',
-                'referer' => '"referer" TEXT DEFAULT NULL',
-                'ip' => '"ip" VARCHAR(45) DEFAULT NULL',
-                'ua' => '"ua" TEXT DEFAULT NULL',
-                'hits' => '"hits" INT NOT NULL DEFAULT 1',
-                'first_seen' => '"first_seen" INT NOT NULL DEFAULT 0',
-                'last_seen' => '"last_seen" INT NOT NULL DEFAULT 0',
             ],
         ];
 
@@ -589,188 +468,6 @@ class Schema
                         . 'UNIQUE KEY `uniq_scope_ip_identity` (`scope`, `ipHash`, `identityHash`)'
                         . ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=' . $mysqlCollation,
                 };
-
-            case 'renew_go_logs':
-                return match ($dialect) {
-                    'sqlite' => 'CREATE TABLE IF NOT EXISTS ' . $name . ' ('
-                        . '"id" INTEGER PRIMARY KEY AUTOINCREMENT,'
-                        . '"ip" TEXT NOT NULL,'
-                        . '"action" TEXT NOT NULL,'
-                        . '"result" TEXT NOT NULL,'
-                        . '"target" TEXT DEFAULT NULL,'
-                        . '"referer" TEXT DEFAULT NULL,'
-                        . '"created_at" INTEGER NOT NULL'
-                        . ')',
-                    'pgsql' => 'CREATE TABLE IF NOT EXISTS ' . $name . ' ('
-                        . '"id" BIGSERIAL PRIMARY KEY,'
-                        . '"ip" VARCHAR(45) NOT NULL,'
-                        . '"action" VARCHAR(24) NOT NULL,'
-                        . '"result" VARCHAR(16) NOT NULL,'
-                        . '"target" TEXT DEFAULT NULL,'
-                        . '"referer" TEXT DEFAULT NULL,'
-                        . '"created_at" INTEGER NOT NULL'
-                        . ')',
-                    default => 'CREATE TABLE IF NOT EXISTS ' . $name . ' ('
-                        . '`id` bigint unsigned NOT NULL auto_increment,'
-                        . '`ip` varchar(45) NOT NULL,'
-                        . '`action` varchar(24) NOT NULL,'
-                        . '`result` varchar(16) NOT NULL,'
-                        . '`target` varchar(512) DEFAULT NULL,'
-                        . '`referer` varchar(512) DEFAULT NULL,'
-                        . '`created_at` int unsigned NOT NULL,'
-                        . 'PRIMARY KEY (`id`)'
-                        . ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=' . $mysqlCollation,
-                };
-
-            case 'renew_shield_logs':
-                return match ($dialect) {
-                    'sqlite' => 'CREATE TABLE IF NOT EXISTS ' . $name . ' ('
-                        . '"id" INTEGER PRIMARY KEY AUTOINCREMENT,'
-                        . '"scope" TEXT NOT NULL,'
-                        . '"action" TEXT NOT NULL,'
-                        . '"decision" TEXT NOT NULL,'
-                        . '"rule_key" TEXT NOT NULL,'
-                        . '"score" INTEGER NOT NULL DEFAULT 0,'
-                        . '"method" TEXT NOT NULL,'
-                        . '"ip" TEXT DEFAULT NULL,'
-                        . '"path" TEXT DEFAULT NULL,'
-                        . '"ua" TEXT DEFAULT NULL,'
-                        . '"message" TEXT NOT NULL,'
-                        . '"payload" TEXT DEFAULT NULL,'
-                        . '"created_at" INTEGER NOT NULL'
-                        . ')',
-                    'pgsql' => 'CREATE TABLE IF NOT EXISTS ' . $name . ' ('
-                        . '"id" BIGSERIAL PRIMARY KEY,'
-                        . '"scope" VARCHAR(24) NOT NULL,'
-                        . '"action" VARCHAR(24) NOT NULL,'
-                        . '"decision" VARCHAR(16) NOT NULL,'
-                        . '"rule_key" VARCHAR(64) NOT NULL,'
-                        . '"score" INT NOT NULL DEFAULT 0,'
-                        . '"method" VARCHAR(12) NOT NULL,'
-                        . '"ip" VARCHAR(45) DEFAULT NULL,'
-                        . '"path" TEXT DEFAULT NULL,'
-                        . '"ua" TEXT DEFAULT NULL,'
-                        . '"message" VARCHAR(255) NOT NULL,'
-                        . '"payload" TEXT DEFAULT NULL,'
-                        . '"created_at" INTEGER NOT NULL'
-                        . ')',
-                    default => 'CREATE TABLE IF NOT EXISTS ' . $name . ' ('
-                        . '`id` bigint unsigned NOT NULL auto_increment,'
-                        . '`scope` varchar(24) NOT NULL,'
-                        . '`action` varchar(24) NOT NULL,'
-                        . '`decision` varchar(16) NOT NULL,'
-                        . '`rule_key` varchar(64) NOT NULL,'
-                        . '`score` int NOT NULL DEFAULT 0,'
-                        . '`method` varchar(12) NOT NULL,'
-                        . '`ip` varchar(45) DEFAULT NULL,'
-                        . '`path` varchar(1024) DEFAULT NULL,'
-                        . '`ua` varchar(512) DEFAULT NULL,'
-                        . '`message` varchar(255) NOT NULL,'
-                        . '`payload` text DEFAULT NULL,'
-                        . '`created_at` int unsigned NOT NULL,'
-                        . 'PRIMARY KEY (`id`)'
-                        . ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=' . $mysqlCollation,
-                };
-
-            case 'renew_shield_state':
-                return match ($dialect) {
-                    'sqlite' => 'CREATE TABLE IF NOT EXISTS ' . $name . ' ('
-                        . '"id" INTEGER PRIMARY KEY AUTOINCREMENT,'
-                        . '"name_hash" TEXT NOT NULL UNIQUE,'
-                        . '"value" TEXT DEFAULT NULL,'
-                        . '"expires_at" INTEGER NOT NULL DEFAULT 0'
-                        . ')',
-                    'pgsql' => 'CREATE TABLE IF NOT EXISTS ' . $name . ' ('
-                        . '"id" BIGSERIAL PRIMARY KEY,'
-                        . '"name_hash" CHAR(40) NOT NULL UNIQUE,'
-                        . '"value" TEXT DEFAULT NULL,'
-                        . '"expires_at" INTEGER NOT NULL DEFAULT 0'
-                        . ')',
-                    default => 'CREATE TABLE IF NOT EXISTS ' . $name . ' ('
-                        . '`id` bigint unsigned NOT NULL auto_increment,'
-                        . '`name_hash` char(40) NOT NULL,'
-                        . '`value` mediumtext DEFAULT NULL,'
-                        . '`expires_at` int unsigned NOT NULL DEFAULT 0,'
-                        . 'PRIMARY KEY (`id`),'
-                        . 'UNIQUE KEY `uniq_name_hash` (`name_hash`)'
-                        . ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=' . $mysqlCollation,
-                };
-
-            case 'renew_seo_logs':
-                return match ($dialect) {
-                    'sqlite' => 'CREATE TABLE IF NOT EXISTS ' . $name . ' ('
-                        . '"id" INTEGER PRIMARY KEY AUTOINCREMENT,'
-                        . '"channel" TEXT NOT NULL,'
-                        . '"action" TEXT NOT NULL,'
-                        . '"level" TEXT NOT NULL,'
-                        . '"target" TEXT DEFAULT NULL,'
-                        . '"message" TEXT NOT NULL,'
-                        . '"payload" TEXT DEFAULT NULL,'
-                        . '"created_at" INTEGER NOT NULL'
-                        . ')',
-                    'pgsql' => 'CREATE TABLE IF NOT EXISTS ' . $name . ' ('
-                        . '"id" BIGSERIAL PRIMARY KEY,'
-                        . '"channel" VARCHAR(24) NOT NULL,'
-                        . '"action" VARCHAR(32) NOT NULL,'
-                        . '"level" VARCHAR(16) NOT NULL,'
-                        . '"target" TEXT DEFAULT NULL,'
-                        . '"message" VARCHAR(255) NOT NULL,'
-                        . '"payload" TEXT DEFAULT NULL,'
-                        . '"created_at" INTEGER NOT NULL'
-                        . ')',
-                    default => 'CREATE TABLE IF NOT EXISTS ' . $name . ' ('
-                        . '`id` bigint unsigned NOT NULL auto_increment,'
-                        . '`channel` varchar(24) NOT NULL,'
-                        . '`action` varchar(32) NOT NULL,'
-                        . '`level` varchar(16) NOT NULL,'
-                        . '`target` varchar(512) DEFAULT NULL,'
-                        . '`message` varchar(255) NOT NULL,'
-                        . '`payload` text DEFAULT NULL,'
-                        . '`created_at` int unsigned NOT NULL,'
-                        . 'PRIMARY KEY (`id`)'
-                        . ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=' . $mysqlCollation,
-                };
-
-            case 'renew_seo_404':
-                return match ($dialect) {
-                    'sqlite' => 'CREATE TABLE IF NOT EXISTS ' . $name . ' ('
-                        . '"id" INTEGER PRIMARY KEY AUTOINCREMENT,'
-                        . '"path_hash" TEXT NOT NULL UNIQUE,'
-                        . '"path" TEXT NOT NULL,'
-                        . '"full_url" TEXT NOT NULL,'
-                        . '"referer" TEXT DEFAULT NULL,'
-                        . '"ip" TEXT DEFAULT NULL,'
-                        . '"ua" TEXT DEFAULT NULL,'
-                        . '"hits" INTEGER NOT NULL DEFAULT 1,'
-                        . '"first_seen" INTEGER NOT NULL,'
-                        . '"last_seen" INTEGER NOT NULL'
-                        . ')',
-                    'pgsql' => 'CREATE TABLE IF NOT EXISTS ' . $name . ' ('
-                        . '"id" BIGSERIAL PRIMARY KEY,'
-                        . '"path_hash" CHAR(40) NOT NULL UNIQUE,'
-                        . '"path" TEXT NOT NULL,'
-                        . '"full_url" TEXT NOT NULL,'
-                        . '"referer" TEXT DEFAULT NULL,'
-                        . '"ip" VARCHAR(45) DEFAULT NULL,'
-                        . '"ua" TEXT DEFAULT NULL,'
-                        . '"hits" INTEGER NOT NULL DEFAULT 1,'
-                        . '"first_seen" INTEGER NOT NULL,'
-                        . '"last_seen" INTEGER NOT NULL'
-                        . ')',
-                    default => 'CREATE TABLE IF NOT EXISTS ' . $name . ' ('
-                        . '`id` bigint unsigned NOT NULL auto_increment,'
-                        . '`path_hash` char(40) NOT NULL UNIQUE,'
-                        . '`path` varchar(512) NOT NULL,'
-                        . '`full_url` varchar(1024) NOT NULL,'
-                        . '`referer` varchar(1024) DEFAULT NULL,'
-                        . '`ip` varchar(45) DEFAULT NULL,'
-                        . '`ua` varchar(512) DEFAULT NULL,'
-                        . '`hits` int unsigned NOT NULL DEFAULT 1,'
-                        . '`first_seen` int unsigned NOT NULL,'
-                        . '`last_seen` int unsigned NOT NULL,'
-                        . 'PRIMARY KEY (`id`)'
-                        . ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=' . $mysqlCollation,
-                };
         }
 
         return '';
@@ -806,34 +503,11 @@ class Schema
                 ['name' => $name('idx_locked', 'locked'), 'columns' => ['lockedUntil']],
                 ['name' => $name('idx_last', 'last'), 'columns' => ['lastAt']],
             ],
-            'renew_go_logs' => [
-                ['name' => $name('idx_ip_action_created', 'ip_action_created'), 'columns' => ['ip', 'action', 'created_at']],
-                ['name' => $name('idx_created', 'created'), 'columns' => ['created_at']],
-            ],
-            'renew_shield_logs' => [
-                ['name' => $name('idx_scope_created', 'scope_created'), 'columns' => ['scope', 'created_at']],
-                ['name' => $name('idx_decision_created', 'decision_created'), 'columns' => ['decision', 'created_at']],
-                ['name' => $name('idx_ip_created', 'ip_created'), 'columns' => ['ip', 'created_at']],
-                ['name' => $name('idx_rule_created', 'rule_created'), 'columns' => ['rule_key', 'created_at']],
-                ['name' => $name('idx_created', 'created'), 'columns' => ['created_at']],
-            ],
-            'renew_shield_state' => [
-                ['name' => $name('uniq_name_hash', 'name_hash'), 'columns' => ['name_hash'], 'unique' => true],
-                ['name' => $name('idx_expires', 'expires'), 'columns' => ['expires_at']],
-            ],
-            'renew_seo_logs' => [
-                ['name' => $name('idx_channel_created', 'channel_created'), 'columns' => ['channel', 'created_at']],
-                ['name' => $name('idx_created', 'created'), 'columns' => ['created_at']],
-            ],
-            'renew_seo_404' => [
-                ['name' => $name('idx_last_seen', 'last_seen'), 'columns' => ['last_seen']],
-                ['name' => $name('idx_hits', 'hits'), 'columns' => ['hits']],
-            ],
             default => [],
         };
     }
 
-    private static function ensureIndex(Db $db, string $table, string $index, array $columns, bool $unique = false): void
+    public static function ensureIndex(Db $db, string $table, string $index, array $columns, bool $unique = false): void
     {
         if (self::indexExists($db, $table, $index)) {
             return;
@@ -941,14 +615,15 @@ class Schema
     private static function sqliteIndexExists(Db $db, string $table, string $index): bool
     {
         try {
-            $rows = $db->fetchAll('PRAGMA index_list(' . self::quote($table, 'sqlite') . ')');
-            foreach ($rows as $row) {
-                if (($row['name'] ?? null) === $index) {
-                    return true;
-                }
-            }
+            $row = $db->fetchRow(
+                'SELECT 1 FROM sqlite_master'
+                . ' WHERE type = \'index\''
+                . ' AND tbl_name = ' . self::sqlString($table)
+                . ' AND name = ' . self::sqlString($index)
+                . ' LIMIT 1'
+            );
 
-            return false;
+            return $row !== null;
         } catch (\Throwable) {
             return false;
         }
@@ -1004,7 +679,7 @@ class Schema
         }
     }
 
-    private static function quote(string $name, string $dialect): string
+    public static function quote(string $name, string $dialect): string
     {
         $escaped = str_replace($dialect === 'mysql' ? '`' : '"', $dialect === 'mysql' ? '``' : '""', $name);
 

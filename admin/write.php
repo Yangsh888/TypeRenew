@@ -16,15 +16,7 @@ if ($user->hasLogin()) {
         $editorSize = min(2000, (int) $personal['value']);
     }
 }
-$vditorForceMarkdown = false;
-if (class_exists('VditorRenew_Plugin')) {
-    $vditorSettings = \VditorRenew_Plugin::getSettings();
-    $vditorEnabled = !empty($vditorSettings['enabled']);
-    $vditorLegacy = ($content->have() && !$content->isMarkdown)
-        ? (string) ($vditorSettings['legacy'] ?? 'convert')
-        : 'raw';
-    $vditorForceMarkdown = $vditorEnabled && (!$content->have() || $content->isMarkdown || $vditorLegacy === 'convert');
-}
+$forceMarkdown = (bool) \Typecho\Plugin::factory('admin/write.php')->filter('forceMarkdown', false, $content);
 ?>
 <div class="col-mb-12 col-tb-9 tr-write-main" role="main">
     <?php if ($content->draft): ?>
@@ -89,7 +81,7 @@ if (class_exists('VditorRenew_Plugin')) {
             <?php if (
                 $content->isMarkdown
                 || ($options->markdown && !$content->have())
-                || $vditorForceMarkdown
+                || $forceMarkdown
             ): ?>
                 <input type="hidden" name="markdown" value="1"/>
             <?php endif; ?>

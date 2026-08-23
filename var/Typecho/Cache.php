@@ -234,6 +234,10 @@ class Cache
             return null;
         }
 
+        if (preg_match('/\b(INSERT|UPDATE|DELETE|REPLACE)\b/i', $trimmed)) {
+            return null;
+        }
+
         $tables = $this->queryTables($query, $trimmed);
         if (!empty($tables)) {
             $versionParts = [];
@@ -361,16 +365,17 @@ class Cache
         }
 
         $name = str_replace('`', '', $name);
+
+        if (str_starts_with($name, 'table.')) {
+            return null;
+        }
+
         $parts = preg_split('/\s+/', $name);
         $name = $parts[0] ?? $name;
         $name = explode(',', $name)[0] ?? $name;
         if (strpos($name, '.') !== false) {
             $dotParts = explode('.', $name);
             $name = end($dotParts) ?: $name;
-        }
-
-        if (strpos($name, 'table.') === 0) {
-            $name = substr($name, 6);
         }
 
         $name = strtolower($name);

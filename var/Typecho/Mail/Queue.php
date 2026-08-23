@@ -736,11 +736,10 @@ class Queue
     private static function isDuplicateInsertError(\Throwable $e): bool
     {
         $msg = strtolower($e->getMessage());
-        return str_contains($msg, 'duplicate')
+
+        return str_contains($msg, 'duplicate entry')
             || str_contains($msg, 'unique constraint')
-            || str_contains($msg, '1062')
-            || str_contains($msg, '23000')
-            || str_contains($msg, '23505');
+            || str_contains($msg, 'duplicate key');
     }
 
     private static function isMissingDedupeColumnError(\Throwable $e): bool

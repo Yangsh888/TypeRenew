@@ -139,7 +139,7 @@ class Plugin
             || str_contains($pluginName, "\0")
             || str_contains($pluginName, '/')
             || str_contains($pluginName, '\\')
-            || !preg_match('/^[A-Za-z0-9._-]+$/', $pluginName)
+            || !preg_match('/^[A-Za-z0-9._-]+$/D', $pluginName)
         ) {
             throw new PluginException('Invalid Plugin ' . $pluginName, 400);
         }
@@ -206,11 +206,11 @@ class Plugin
                         } elseif ($described && !empty($line) && '@' == $line[0]) {
                             $info['description'] = trim($info['description']);
                             $line = trim(substr($line, 1));
-                            $args = explode(' ', $line);
-                            $key = array_shift($args);
+                            $args = preg_split('/\s+/', $line, 2);
+                            $key = (string) $args[0];
 
                             if (isset($map[$key])) {
-                                $info[$map[$key]] = trim(implode(' ', $args));
+                                $info[$map[$key]] = trim((string) ($args[1] ?? ''));
                             }
                         }
                     }
@@ -242,7 +242,7 @@ class Plugin
                             case 'deactivate':
                             case 'config':
                             case 'personalconfig':
-                                if ($isFunction) {
+                                if ($isFunction && !$isDefined) {
                                     $current = ('personalconfig' == $string ? 'personalConfig' : $string);
                                 }
                                 break;
@@ -289,15 +289,9 @@ class Plugin
         }
 
         if (!$info['activate'] && !$info['deactivate'] && !$info['config'] && !$info['personalConfig']) {
-            $fallbackMap = [
-                'activate' => 'activate',
-                'deactivate' => 'deactivate',
-                'config' => 'config',
-                'personalConfig' => 'personalConfig'
-            ];
-
-            foreach ($fallbackMap as $method => $field) {
-                if (preg_match('/function\s+' . preg_quote($method, '/') . '\s*\(/i', $source) === 1) {
+            foreach (['activate', 'deactivate', 'config', 'personalConfig'] as $method) {
+                $field = $method;
+                if (preg_match('/function\s+' . $method . '\s*\(/i', $source) === 1) {
                     $info[$field] = true;
                 }
             }

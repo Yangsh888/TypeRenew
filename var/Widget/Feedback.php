@@ -248,6 +248,20 @@ class Feedback extends Comments implements ActionInterface
             throw new Exception(_t('找不到内容'), 404);
         }
 
+        if ($this->options->commentsPostIntervalEnable) {
+            $latest = $this->db->fetchRow($this->db->select('created')->from('table.comments')
+                ->where('ip = ? AND type <> ?', $this->request->getIp(), 'comment')
+                ->order('created', Db::SORT_DESC)
+                ->limit(1));
+
+            if (
+                $latest && $this->options->time - $latest['created'] >= 0
+                && $this->options->time - $latest['created'] < $this->options->commentsPostInterval
+            ) {
+                throw new Exception(_t('对不起, 您的发言过于频繁, 请稍候再次发布.'), 403);
+            }
+        }
+
         $trackback = [
             'cid' => $this->content->cid,
             'created' => $this->options->time,

@@ -6,7 +6,7 @@
             <div class="tr-cmd-overlay" id="trCmdOverlay" aria-hidden="true"></div>
             <div class="tr-cmd-dialog" id="trCmdDialog" role="dialog" aria-modal="true" aria-labelledby="trCmdTitle">
                 <div class="tr-cmd-head">
-                    <span id="trCmdTitle" class="screen-reader-text"><?php _e('快捷命令'); ?></span>
+                    <span id="trCmdTitle" class="sr-only"><?php _e('快捷命令'); ?></span>
                     <input class="tr-cmd-input" id="trCmdInput" type="text" role="combobox" aria-autocomplete="list" aria-controls="trCmdList" aria-expanded="false" aria-activedescendant="" autocomplete="off" placeholder="<?php _e('输入以搜索或执行命令'); ?>" />
                     <div class="tr-cmd-kbd">
                         <span class="tr-kbd">Esc</span>

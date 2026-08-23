@@ -13,8 +13,17 @@ class Author extends Users
     public function execute()
     {
         if (isset($this->parameter->uid)) {
-            $this->db->fetchRow($this->select()
-                ->where('uid = ?', $this->parameter->uid), [$this, 'push']);
+            $this->db->fetchRow($this->select(
+                'uid',
+                'name',
+                'mail',
+                'url',
+                'screenName',
+                'created',
+                'activated',
+                'logged',
+                'group'
+            )->where('uid = ?', $this->parameter->uid), [$this, 'push']);
         }
     }
 }

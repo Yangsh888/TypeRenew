@@ -67,8 +67,7 @@ class Init extends Widget
             'PasswordHash'                => '\Utils\Password',
             'Markdown'                    => '\Utils\Markdown',
             'HyperDown'                   => '\Utils\HyperDown',
-            'Helper'                      => '\Utils\Helper',
-            'Upgrade'                     => '\Utils\Upgrade'
+            'Helper'                      => '\Utils\Helper'
         ]);
 
         $options = Options::alloc();

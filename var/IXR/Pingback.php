@@ -32,9 +32,6 @@ class Pingback
             if (defined('CURLOPT_FOLLOWLOCATION')) {
                 $client->setOption(CURLOPT_FOLLOWLOCATION, false);
             }
-            if (defined('CURLOPT_MAXREDIRS')) {
-                $client->setOption(CURLOPT_MAXREDIRS, 0);
-            }
             $client->send($url);
         } catch (HttpException $e) {
             throw new Exception('Pingback http error', 50);
@@ -49,20 +46,8 @@ class Pingback
             throw new Exception('Pingback wrong http status', 50);
         }
 
-        $responseUrl = $client->getResponseUrl();
-        if ($responseUrl !== '') {
-            $responseHost = $this->extractHost($responseUrl);
-            if ($responseHost === '' || !Common::checkSafeHost($responseHost)) {
-                throw new Exception('Pingback source host is not safe', 50);
-            }
-
-            if (strcasecmp($sourceHost, $responseHost) !== 0) {
-                throw new Exception('Pingback redirect is not allowed', 50);
-            }
-        }
-
         $response = $client->getResponseBody();
-        $encoding = $this->detectEncoding($client->getResponseHeader('Content-Type'), $response);
+        $encoding = $this->detectEncoding((string) $client->getResponseHeader('Content-Type'), $response);
         $this->html = $this->normalizeHtml($response, $encoding);
 
         if (
