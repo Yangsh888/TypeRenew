@@ -1,6 +1,19 @@
 <?php if (!defined('__TYPECHO_ADMIN__')) exit; ?>
 <script>
     (function () {
+        var text = <?php echo \Typecho\Common::jsonEncode([
+            'selected' => _t('已选择：%s%s'),
+            'size' => _t('大小：%s，'),
+            'replace' => _t('点击可重新选择，支持拖拽替换')
+        ], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT, '{}'); ?>;
+
+        function format(template, values) {
+            var index = 0;
+            return String(template || '').replace(/%s/g, function () {
+                return values[index++] || '';
+            });
+        }
+
         function bindDropzones() {
             function formatSize(bytes) {
                 if (!bytes || bytes <= 0) return '';
@@ -36,8 +49,8 @@
                     var size = formatSize(files[0].size || 0);
                     var extra = files.length > 1 ? ('（+' + (files.length - 1) + '）') : '';
                     dropzone.classList.add('tr-dropzone-picked');
-                    if (title) title.textContent = '已选择：' + name + extra;
-                    if (desc) desc.textContent = (size ? ('大小：' + size + '，') : '') + '点击可重新选择，支持拖拽替换';
+                    if (title) title.textContent = format(text.selected, [name, extra]);
+                    if (desc) desc.textContent = (size ? format(text.size, [size]) : '') + text.replace;
                 }
 
                 input.addEventListener('change', render, {passive: true});

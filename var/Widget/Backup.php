@@ -277,7 +277,7 @@ class Backup extends BaseOptions implements ActionInterface
                 $messages = [
                     _t('当前数据库恢复将以非事务方式执行，为避免清表后中断导致数据损坏，必须先创建恢复前快照')
                 ];
-                $this->stashReport(self::reportFromMessages($messages));
+                $this->stashBlocking($messages);
                 Notice::alloc()->set($messages, 'error');
                 $this->finish();
                 return;
@@ -295,7 +295,7 @@ class Backup extends BaseOptions implements ActionInterface
                         $messages = [
                             _t('恢复前快照创建失败，当前数据库又不支持事务回滚，已中止恢复以避免数据损坏')
                         ];
-                        $this->stashReport(self::reportFromMessages($messages));
+                        $this->stashBlocking($messages);
                         Notice::alloc()->set($messages, 'error');
                         $this->finish();
                         return;
@@ -357,7 +357,7 @@ class Backup extends BaseOptions implements ActionInterface
                     $messages[] = _t('恢复在清表后中断，数据库可能处于部分恢复状态，请使用快照或备份回滚');
                 }
             }
-            $this->stashReport(self::reportFromMessages($messages));
+            $this->stashBlocking($messages);
             Notice::alloc()->set($messages, 'error');
         }
 
@@ -1035,26 +1035,9 @@ class Backup extends BaseOptions implements ActionInterface
         ];
     }
 
-    public static function reportFromMessages(array $messages): array
+    private function stashBlocking(array $messages): void
     {
-        $report = ['blocking' => [], 'warning' => [], 'info' => []];
-
-        foreach ($messages as $line) {
-            $line = trim((string) $line);
-            if ($line === '') {
-                continue;
-            }
-
-            if (strpos($line, '阻断：') === 0) {
-                $report['blocking'][] = trim(substr($line, strlen('阻断：')));
-            } elseif (strpos($line, '预警：') === 0) {
-                $report['warning'][] = trim(substr($line, strlen('预警：')));
-            } else {
-                $report['info'][] = $line;
-            }
-        }
-
-        return $report;
+        $this->stashReport(['blocking' => $messages, 'warning' => [], 'info' => []]);
     }
 
     private function finish(): void
@@ -1065,7 +1048,7 @@ class Backup extends BaseOptions implements ActionInterface
     private function failAndFinish(string $message): ?string
     {
         $messages = [$message];
-        $this->stashReport(self::reportFromMessages($messages));
+        $this->stashBlocking($messages);
         Notice::alloc()->set($messages, 'error');
         $this->finish();
         return null;

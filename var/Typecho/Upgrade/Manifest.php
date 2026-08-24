@@ -10,7 +10,7 @@ class Manifest
     {
         $data = json_decode($raw, true);
         if (!is_array($data)) {
-            throw new RuntimeException('升级包清单无效');
+            throw new RuntimeException(_t('升级包清单无效'));
         }
 
         $product = (string) ($data['product'] ?? '');
@@ -18,21 +18,21 @@ class Manifest
         $to = (string) ($data['to'] ?? '');
 
         if ($product !== 'TypeRenew') {
-            throw new RuntimeException('升级包产品标识不匹配');
+            throw new RuntimeException(_t('升级包产品标识不匹配'));
         }
 
         if (!self::isVersion($from) || !self::isVersion($to)) {
-            throw new RuntimeException('升级包版本格式无效');
+            throw new RuntimeException(_t('升级包版本格式无效'));
         }
 
         if (version_compare($to, $from, '<=')) {
-            throw new RuntimeException('升级包目标版本必须高于来源版本');
+            throw new RuntimeException(_t('升级包目标版本必须高于来源版本'));
         }
 
         $files = [];
         if (isset($data['files'])) {
             if (!is_array($data['files'])) {
-                throw new RuntimeException('升级包文件列表格式无效');
+                throw new RuntimeException(_t('升级包文件列表格式无效'));
             }
 
             foreach ($data['files'] as $file) {

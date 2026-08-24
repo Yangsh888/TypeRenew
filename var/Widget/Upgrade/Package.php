@@ -86,7 +86,7 @@ class Package extends BaseOptions implements ActionInterface
     {
         $package = trim((string) $this->request->get('package'));
         if ($package === '') {
-            throw new \RuntimeException('缺少升级包标识');
+            throw new \RuntimeException(_t('缺少升级包标识'));
         }
 
         $state = $runner->apply($package);

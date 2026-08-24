@@ -81,7 +81,7 @@ class Files extends Base
             }
         }
 
-        throw new Widget\Exception('风格文件不存在', 404);
+        throw new Widget\Exception(_t('风格文件不存在'), 404);
     }
 
     public static function isWriteable(): bool

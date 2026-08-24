@@ -104,7 +104,7 @@ class PasswordReset
             );
 
             if ($updated !== 1) {
-                throw new \RuntimeException('密码对应的用户不存在');
+                throw new \RuntimeException(_t('密码对应的用户不存在'));
             }
 
             $db->query(

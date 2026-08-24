@@ -9,14 +9,14 @@ class Palette
     private static array $commands = [];
 
     private static array $categories = [
-        'nav' => ['id' => 'nav', 'name' => '导航', 'order' => 10, 'icon' => 'i-external'],
-        'create' => ['id' => 'create', 'name' => '创建', 'order' => 20, 'icon' => 'i-plus'],
-        'manage' => ['id' => 'manage', 'name' => '管理', 'order' => 30, 'icon' => 'i-folder'],
-        'settings' => ['id' => 'settings', 'name' => '设置', 'order' => 40, 'icon' => 'i-gear'],
-        'appearance' => ['id' => 'appearance', 'name' => '外观', 'order' => 50, 'icon' => 'i-sliders'],
-        'tools' => ['id' => 'tools', 'name' => '工具', 'order' => 60, 'icon' => 'i-zap'],
-        'interface' => ['id' => 'interface', 'name' => '界面', 'order' => 70, 'icon' => 'i-monitor'],
-        'help' => ['id' => 'help', 'name' => '帮助', 'order' => 80, 'icon' => 'i-info']
+        'nav' => ['id' => 'nav', 'name' => '', 'order' => 10, 'icon' => 'i-external'],
+        'create' => ['id' => 'create', 'name' => '', 'order' => 20, 'icon' => 'i-plus'],
+        'manage' => ['id' => 'manage', 'name' => '', 'order' => 30, 'icon' => 'i-folder'],
+        'settings' => ['id' => 'settings', 'name' => '', 'order' => 40, 'icon' => 'i-gear'],
+        'appearance' => ['id' => 'appearance', 'name' => '', 'order' => 50, 'icon' => 'i-sliders'],
+        'tools' => ['id' => 'tools', 'name' => '', 'order' => 60, 'icon' => 'i-zap'],
+        'interface' => ['id' => 'interface', 'name' => '', 'order' => 70, 'icon' => 'i-monitor'],
+        'help' => ['id' => 'help', 'name' => '', 'order' => 80, 'icon' => 'i-info']
     ];
 
     private static bool $initialized = false;
@@ -59,7 +59,7 @@ class Palette
 
     public static function getCategories(): array
     {
-        return self::$categories;
+        return self::translatedCategories();
     }
 
     public static function checkAccess(string $access): bool
@@ -415,8 +415,18 @@ class Palette
 
         $config = [
             'iconsUrl' => $iconsUrl,
-            'categories' => self::$categories,
-            'commands' => self::getFilteredCommands()
+            'categories' => self::translatedCategories(),
+            'commands' => self::getFilteredCommands(),
+            'messages' => [
+                'cacheClearFailed' => _t('清除缓存失败'),
+                'cacheCleared' => _t('前端缓存已清除'),
+                'recent' => _t('最近访问'),
+                'searchHint' => _t('输入关键词搜索命令'),
+                'noMatch' => _t('未找到匹配的命令'),
+                'empty' => _t('暂无可用命令'),
+                'other' => _t('其他'),
+                'executionFailed' => _t('命令执行失败')
+            ]
         ];
 
         echo '<script>window.__trPaletteConfig = ' . Common::jsonEncode(
@@ -424,5 +434,24 @@ class Palette
             JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT,
             '{}'
         ) . ';</script>';
+    }
+
+    private static function translatedCategories(): array
+    {
+        $names = [
+            'nav' => _t('导航'),
+            'create' => _t('创建'),
+            'manage' => _t('管理'),
+            'settings' => _t('设置'),
+            'appearance' => _t('外观'),
+            'tools' => _t('工具'),
+            'interface' => _t('界面'),
+            'help' => _t('帮助')
+        ];
+        $categories = self::$categories;
+        foreach ($names as $id => $name) {
+            $categories[$id]['name'] = $name;
+        }
+        return $categories;
     }
 }

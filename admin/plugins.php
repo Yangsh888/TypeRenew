@@ -1,7 +1,7 @@
 <?php
 include 'common.php';
 $menu->addLink = 'https://github.com/Yangsh888/TypeRenew-plugins';
-$menu->addText = '插件仓库';
+$menu->addText = _t('插件仓库');
 $menu->addTarget = '_blank';
 include 'header.php';
 include 'menu.php';
@@ -260,7 +260,7 @@ include 'form-js.php';
                 var state = defaultState === 'unofficial' ? 'unofficial' : 'failed';
                 var message = defaultState === 'unofficial'
                     ? defaultTip
-                    : '版本检测地址生成失败，暂时无法发起检测请求。';
+                    : <?php echo \Typecho\Common::jsonEncode(_t('版本检测地址生成失败，暂时无法发起检测请求。'), JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT, '""'); ?>;
 
                 node.textContent = symbols[state] || symbols.failed;
                 node.className = 'tr-plugin-version-badge is-' + state;
@@ -268,7 +268,7 @@ include 'form-js.php';
                 node.setAttribute('aria-label', message);
             });
 
-            setHint('版本检测地址生成失败，已停止自动检测。', 'error');
+            setHint(<?php echo \Typecho\Common::jsonEncode(_t('版本检测地址生成失败，已停止自动检测。'), JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT, '""'); ?>, 'error');
             return;
         }
 

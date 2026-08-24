@@ -4,20 +4,8 @@
     var body = document.body;
     if (!body || !body.classList.contains('body-100')) return;
 
-    var themes = [
-        { id: 'forest', name: '森林' },
-        { id: 'slate', name: '石板' },
-        { id: 'ember', name: '余烬' },
-        { id: 'moss', name: '苔绿' },
-        { id: 'sand', name: '砂岩' },
-        { id: 'rose', name: '蔷薇' },
-        { id: 'ocean', name: '海雾' },
-        { id: 'ink', name: '墨影' },
-        { id: 'gold', name: '鎏金' },
-        { id: 'coral', name: '珊瑚' },
-        { id: 'cypress', name: '柏影' },
-        { id: 'lilac', name: '丁香' }
-    ];
+    var themes = Array.isArray(window.__trAuthThemes) ? window.__trAuthThemes : [];
+    if (!themes.length) return;
 
     var key = 'trAuthTheme';
     var btn = document.getElementById('trAuthThemeBtn');
@@ -71,7 +59,11 @@
         open = typeof next === 'boolean' ? next : !open;
         btn.setAttribute('aria-expanded', open ? 'true' : 'false');
         menu.style.display = open ? 'grid' : 'none';
-        if (open) renderMenu();
+        if (open) {
+            renderMenu();
+            var items = menu.querySelectorAll('[role="menuitem"]');
+            if (items.length) items[0].focus();
+        }
     }
 
     btn.addEventListener('click', function () { toggle(); });
@@ -81,6 +73,23 @@
         toggle(false);
     });
     document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape') toggle(false);
+        if (!open) return;
+        var items = Array.prototype.slice.call(menu.querySelectorAll('[role="menuitem"]'));
+        var index = items.indexOf(document.activeElement);
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            toggle(false);
+            btn.focus();
+        } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+            e.preventDefault();
+            var step = e.key === 'ArrowDown' ? 1 : -1;
+            items[(index + step + items.length) % items.length].focus();
+        } else if (e.key === 'Home' && items.length) {
+            e.preventDefault();
+            items[0].focus();
+        } else if (e.key === 'End' && items.length) {
+            e.preventDefault();
+            items[items.length - 1].focus();
+        }
     });
 })();

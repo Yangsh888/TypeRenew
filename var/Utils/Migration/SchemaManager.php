@@ -153,20 +153,20 @@ class SchemaManager
 
         $items[] = [
             'key' => 'mysql_version',
-            'label' => '数据库版本',
+            'label' => _t('数据库版本'),
             'status' => $version !== '' ? 'ok' : 'warning',
-            'detail' => $rawVersion !== '' ? $rawVersion : '无法识别当前版本',
+            'detail' => $rawVersion !== '' ? $rawVersion : _t('无法识别当前版本'),
             'repairRelated' => false,
         ];
 
         $legacyIndexLimit = $version !== '' && version_compare($version, $minimum, '<');
         $items[] = [
             'key' => 'legacy_index_limit',
-            'label' => '数据库版本不满足结构修复要求',
+            'label' => _t('数据库版本不满足结构修复要求'),
             'status' => $legacyIndexLimit ? 'warning' : 'ok',
             'detail' => $legacyIndexLimit
-                ? '当前 ' . $label . ' 版本为 ' . $rawVersion . '，低于结构修复建议的最低版本 ' . $minimum
-                : '当前版本满足结构修复的最低要求',
+                ? _t('当前 %s 版本为 %s，低于结构修复建议的最低版本 %s', $label, $rawVersion, $minimum)
+                : _t('当前版本满足结构修复的最低要求'),
             'repairRelated' => true,
         ];
 
@@ -176,28 +176,28 @@ class SchemaManager
         $mailUnsubMismatch = $mailUnsubExists && $mailUnsubCollation !== '' && strtolower($mailUnsubCollation) !== strtolower($collation);
         $items[] = [
             'key' => 'mail_unsub_collation',
-            'label' => 'mail_unsub 排序规则',
+            'label' => _t('mail_unsub 排序规则'),
             'status' => !$mailUnsubExists || !$mailUnsubMismatch ? 'ok' : 'warning',
             'detail' => !$mailUnsubExists
-                ? '表不存在，升级时会按当前版本创建'
+                ? _t('表不存在，升级时会按当前版本创建')
                 : ($mailUnsubMismatch
-                    ? '当前为 ' . $mailUnsubCollation . '，目标推荐为 ' . $collation
-                    : '当前已与目标排序规则一致'),
+                    ? _t('当前为 %s，目标推荐为 %s', $mailUnsubCollation, $collation)
+                    : _t('当前已与目标排序规则一致')),
             'repairRelated' => true,
         ];
 
         $mailUnsubDuplicates = self::mailUnsubDuplicateGroups($db, $collation);
         $items[] = [
             'key' => 'mail_unsub_duplicates',
-            'label' => 'mail_unsub 唯一值冲突',
+            'label' => _t('mail_unsub 唯一值冲突'),
             'status' => $mailUnsubDuplicates['error'] !== null
                 ? 'warning'
                 : ($mailUnsubDuplicates['rows'] === [] ? 'ok' : 'warning'),
             'detail' => $mailUnsubDuplicates['error'] !== null
-                ? '重复值检查失败：' . $mailUnsubDuplicates['error']
+                ? _t('重复值检查失败：%s', $mailUnsubDuplicates['error'])
                 : ($mailUnsubDuplicates['rows'] === []
-                ? '未发现按目标排序规则归一后的 email + scope 冲突'
-                : '发现 ' . count($mailUnsubDuplicates['rows']) . ' 组按目标排序规则归一后的 email + scope 重复，修复索引前需先清理'),
+                ? _t('未发现按目标排序规则归一后的 email + scope 冲突')
+                : _t('发现 %d 组按目标排序规则归一后的 email + scope 重复，修复索引前需先清理', count($mailUnsubDuplicates['rows']))),
             'samples' => $mailUnsubDuplicates['rows'],
             'repairRelated' => true,
         ];
@@ -205,15 +205,15 @@ class SchemaManager
         $userDuplicates = self::usersMailDuplicateGroups($db, $collation);
         $items[] = [
             'key' => 'users_mail_duplicates',
-            'label' => 'users 邮箱唯一值冲突',
+            'label' => _t('users 邮箱唯一值冲突'),
             'status' => $userDuplicates['error'] !== null
                 ? 'warning'
                 : ($userDuplicates['rows'] === [] ? 'ok' : 'warning'),
             'detail' => $userDuplicates['error'] !== null
-                ? '重复值检查失败：' . $userDuplicates['error']
+                ? _t('重复值检查失败：%s', $userDuplicates['error'])
                 : ($userDuplicates['rows'] === []
-                ? '未发现按目标排序规则归一后的 users.mail 重复'
-                : '发现 ' . count($userDuplicates['rows']) . ' 组按目标排序规则归一后的重复邮箱，排序规则升级后可能触发唯一键冲突'),
+                ? _t('未发现按目标排序规则归一后的 users.mail 重复')
+                : _t('发现 %d 组按目标排序规则归一后的重复邮箱，排序规则升级后可能触发唯一键冲突', count($userDuplicates['rows']))),
             'samples' => $userDuplicates['rows'],
             'repairRelated' => false,
         ];
@@ -221,15 +221,15 @@ class SchemaManager
         $slugDuplicates = self::contentsSlugDuplicateGroups($db, $collation);
         $items[] = [
             'key' => 'contents_slug_duplicates',
-            'label' => 'contents 缩略名唯一值冲突',
+            'label' => _t('contents 缩略名唯一值冲突'),
             'status' => $slugDuplicates['error'] !== null
                 ? 'warning'
                 : ($slugDuplicates['rows'] === [] ? 'ok' : 'warning'),
             'detail' => $slugDuplicates['error'] !== null
-                ? '重复值检查失败：' . $slugDuplicates['error']
+                ? _t('重复值检查失败：%s', $slugDuplicates['error'])
                 : ($slugDuplicates['rows'] === []
-                ? '未发现按目标排序规则归一后的 contents.slug 重复'
-                : '发现 ' . count($slugDuplicates['rows']) . ' 组按目标排序规则归一后的重复缩略名，升级后可能触发唯一键冲突'),
+                ? _t('未发现按目标排序规则归一后的 contents.slug 重复')
+                : _t('发现 %d 组按目标排序规则归一后的重复缩略名，升级后可能触发唯一键冲突', count($slugDuplicates['rows']))),
             'samples' => $slugDuplicates['rows'],
             'repairRelated' => false,
         ];
@@ -237,15 +237,15 @@ class SchemaManager
         $userNameDuplicates = self::usersNameDuplicateGroups($db, $collation);
         $items[] = [
             'key' => 'users_name_duplicates',
-            'label' => 'users 用户名唯一值冲突',
+            'label' => _t('users 用户名唯一值冲突'),
             'status' => $userNameDuplicates['error'] !== null
                 ? 'warning'
                 : ($userNameDuplicates['rows'] === [] ? 'ok' : 'warning'),
             'detail' => $userNameDuplicates['error'] !== null
-                ? '重复值检查失败：' . $userNameDuplicates['error']
+                ? _t('重复值检查失败：%s', $userNameDuplicates['error'])
                 : ($userNameDuplicates['rows'] === []
-                ? '未发现按目标排序规则归一后的 users.name 重复'
-                : '发现 ' . count($userNameDuplicates['rows']) . ' 组按目标排序规则归一后的重复用户名，升级后可能触发唯一键冲突'),
+                ? _t('未发现按目标排序规则归一后的 users.name 重复')
+                : _t('发现 %d 组按目标排序规则归一后的重复用户名，升级后可能触发唯一键冲突', count($userNameDuplicates['rows']))),
             'samples' => $userNameDuplicates['rows'],
             'repairRelated' => false,
         ];
@@ -591,7 +591,7 @@ class SchemaManager
         $separator = strpos($current, ':');
         $expires = $separator === false ? 0 : (int) substr($current, 0, $separator);
         if ($expires >= $now) {
-            throw new \RuntimeException('已有数据库迁移正在执行，请稍后重试');
+            throw new \RuntimeException(_t('已有数据库迁移正在执行，请稍后重试'));
         }
 
         $updated = $db->query(
@@ -600,7 +600,7 @@ class SchemaManager
                 ->where('name = ? AND user = ? AND value = ?', $name, 0, $current)
         );
         if ($updated !== 1) {
-            throw new \RuntimeException('已有数据库迁移正在执行，请稍后重试');
+            throw new \RuntimeException(_t('已有数据库迁移正在执行，请稍后重试'));
         }
 
         return $value;

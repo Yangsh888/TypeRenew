@@ -30,6 +30,7 @@
     let initialized = false;
     let restoreFocus = null;
     let inertNodes = [];
+    let messages = {};
 
     const isMac = /Mac|iPhone|iPad|iPod/i.test(
         (navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || navigator.userAgent || ''
@@ -136,6 +137,7 @@
                 registerCommand(cmd);
             });
         }
+        messages = config.messages || {};
 
         buildNavCommands();
         initialized = true;
@@ -143,14 +145,14 @@
 
     function initFallback() {
         const fallbackCategories = {
-            nav: { id: 'nav', name: '导航', order: 10, icon: 'i-external' },
-            create: { id: 'create', name: '创建', order: 20, icon: 'i-plus' },
-            manage: { id: 'manage', name: '管理', order: 30, icon: 'i-folder' },
-            settings: { id: 'settings', name: '设置', order: 40, icon: 'i-gear' },
-            appearance: { id: 'appearance', name: '外观', order: 50, icon: 'i-sliders' },
-            tools: { id: 'tools', name: '工具', order: 60, icon: 'i-zap' },
-            interface: { id: 'interface', name: '界面', order: 70, icon: 'i-monitor' },
-            help: { id: 'help', name: '帮助', order: 80, icon: 'i-info' }
+            nav: { id: 'nav', name: 'Navigation', order: 10, icon: 'i-external' },
+            create: { id: 'create', name: 'Create', order: 20, icon: 'i-plus' },
+            manage: { id: 'manage', name: 'Manage', order: 30, icon: 'i-folder' },
+            settings: { id: 'settings', name: 'Settings', order: 40, icon: 'i-gear' },
+            appearance: { id: 'appearance', name: 'Appearance', order: 50, icon: 'i-sliders' },
+            tools: { id: 'tools', name: 'Tools', order: 60, icon: 'i-zap' },
+            interface: { id: 'interface', name: 'Interface', order: 70, icon: 'i-monitor' },
+            help: { id: 'help', name: 'Help', order: 80, icon: 'i-info' }
         };
 
         Object.values(fallbackCategories).forEach(cat => {
@@ -207,14 +209,14 @@
 
     function clearCache() {
         if (!store) {
-            showNotice('error', '清除缓存失败');
+            showNotice('error', messages.cacheClearFailed || 'Failed to clear cache');
             return;
         }
 
         ['trTheme', 'trAccent', 'trAuthTheme', 'trSidebarCollapsed', 'trCmdRecent', 'trCmdHistory'].forEach(k => {
             store.remove(k);
         });
-        showNotice('success', '前端缓存已清除');
+        showNotice('success', messages.cacheCleared || 'Frontend cache cleared');
     }
 
     function showNotice(type, message) {
@@ -424,7 +426,7 @@
                 .slice(0, MAX_RESULTS - results.length));
 
             activeIndex = results.length > 0 ? 0 : -1;
-            hint.textContent = recent.length > 0 ? '最近访问' : '输入关键词搜索命令';
+            hint.textContent = recent.length > 0 ? (messages.recent || 'Recent') : (messages.searchHint || 'Type to search commands');
             render(q);
             return;
         }
@@ -444,7 +446,7 @@
         });
 
         activeIndex = results.length > 0 ? 0 : -1;
-        hint.textContent = results.length > 0 ? '' : '未找到匹配的命令';
+        hint.textContent = results.length > 0 ? '' : (messages.noMatch || 'No matching commands');
         render(q);
     }
 
@@ -454,7 +456,7 @@
         if (results.length === 0) {
             const empty = document.createElement('div');
             empty.className = 'tr-cmd-empty';
-            empty.textContent = query ? '未找到匹配的命令' : '暂无可用命令';
+            empty.textContent = query ? (messages.noMatch || 'No matching commands') : (messages.empty || 'No commands available');
             list.appendChild(empty);
             return;
         }
@@ -462,7 +464,7 @@
         let currentCategory = null;
 
         results.forEach((cmd, i) => {
-            const cat = categories.get(cmd.category) || { name: cmd.category || '其他' };
+            const cat = categories.get(cmd.category) || { name: cmd.category || messages.other || 'Other' };
 
             if (currentCategory !== cmd.category && !query) {
                 const groupHeader = document.createElement('div');
@@ -586,7 +588,7 @@
                 }
             }
         } catch (e) {
-            showNotice('error', '命令执行失败');
+            showNotice('error', messages.executionFailed || 'Command failed');
         }
     }
 

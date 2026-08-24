@@ -144,11 +144,11 @@ $(document).ready(function() {
             .data('image', attachment.isImage)
             .empty()
             .append($('<input>').attr({type: 'hidden', name: 'attachment[]', value: attachment.cid}))
-            .append($('<a>').addClass('insert').attr({target: '_blank', href: '###', title: '<?php _e('点击插入文件'); ?>'}).text(attachment.title))
+            .append($('<button>').addClass('insert').attr({type: 'button', title: '<?php _e('点击插入文件'); ?>'}).text(attachment.title))
             .append($('<div>').addClass('info').append(document.createTextNode(attachment.bytes + ' '))
                 .append($('<a>').addClass('file').attr({target: '_blank', href: '<?php $options->adminUrl('media.php'); ?>?cid=' + encodeURIComponent(attachment.cid), title: '<?php _e('编辑'); ?>'}).append($('<i>').addClass('i-edit')))
                 .append(document.createTextNode(' '))
-                .append($('<a>').addClass('delete').attr({href: '###', title: '<?php _e('删除'); ?>'}).append($('<i>').addClass('i-delete'))))
+                .append($('<button>').addClass('delete').attr({type: 'button', title: '<?php _e('删除'); ?>'}).append($('<i>').addClass('i-delete'))))
             .effect('highlight', 1000);
 
         attachInsertEvent(target);
@@ -286,7 +286,7 @@ $(document).ready(function() {
     }
 
     function attachDeleteEvent (el) {
-        var file = $('a.insert', el).text();
+        var file = $('.insert', el).text();
         $('.delete', el).click(function () {
             if (confirm('<?php _e('确认要删除文件 %s 吗?'); ?>'.replace('%s', file))) {
                 var cid = $(this).parents('li').data('cid');

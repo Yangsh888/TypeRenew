@@ -5,6 +5,7 @@
     if (!body || !body.classList.contains('tr-admin')) {
         return;
     }
+    const uiText = window.__trUiText || {};
 
     const notices = (() => {
         let host = null;
@@ -90,14 +91,14 @@
             const close = document.createElement('button');
             close.type = 'button';
             close.className = 'tr-notice-close';
-            close.setAttribute('aria-label', '关闭');
+            close.setAttribute('aria-label', uiText.close || 'Close');
             close.textContent = '×';
 
             const badge = document.createElement('div');
             badge.className = 'tr-notice-badge';
             badge.textContent = opts.title
                 ? String(opts.title)
-                : (type === 'success' ? '成功' : (type === 'error' ? '错误' : '提示'));
+                : (type === 'success' ? (uiText.success || 'Success') : (type === 'error' ? (uiText.error || 'Error') : (uiText.notice || 'Notice')));
 
             const text = document.createElement('div');
             text.className = 'tr-notice-text';
@@ -195,13 +196,20 @@
         if (btnNav) {
             btnNav.setAttribute('aria-expanded', 'true');
         }
+        const first = sidebar && sidebar.querySelector('a[href], button:not([disabled])');
+        if (first) {
+            first.focus();
+        }
     };
 
-    const closeMobile = () => {
+    const closeMobile = (restoreFocus = false) => {
         body.classList.remove('tr-sidebar-open');
         body.classList.remove('tr-scroll-lock');
         if (btnNav) {
             btnNav.setAttribute('aria-expanded', 'false');
+            if (restoreFocus) {
+                btnNav.focus();
+            }
         }
     };
 
@@ -233,8 +241,22 @@
     }
 
     document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-            closeMobile();
+        if (e.key === 'Escape' && body.classList.contains('tr-sidebar-open')) {
+            closeMobile(true);
+            return;
+        }
+        if (e.key === 'Tab' && mq.matches && body.classList.contains('tr-sidebar-open') && sidebar) {
+            const focusable = Array.from(sidebar.querySelectorAll('a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+            if (!focusable.length) return;
+            const first = focusable[0];
+            const last = focusable[focusable.length - 1];
+            if (e.shiftKey && document.activeElement === first) {
+                e.preventDefault();
+                last.focus();
+            } else if (!e.shiftKey && document.activeElement === last) {
+                e.preventDefault();
+                first.focus();
+            }
         }
     });
 
@@ -276,7 +298,7 @@
                 btn.setAttribute('data-tr-submit', '1');
                 btn.className = submit.className && String(submit.className).trim() ? submit.className : 'btn primary';
                 const label = submit.tagName.toLowerCase() === 'input' ? submit.value : submit.textContent;
-                btn.textContent = label && String(label).trim() ? String(label).trim() : '保存';
+                btn.textContent = label && String(label).trim() ? String(label).trim() : (uiText.save || 'Save');
                 actions.appendChild(btn);
             }
             const wrap = submit.closest('ul.typecho-option-submit, p.typecho-option-submit');

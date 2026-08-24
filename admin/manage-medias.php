@@ -33,7 +33,8 @@ $mediaToken = htmlspecialchars($security->getToken($request->getRequestUrl()), E
                         <?php if ('' != $request->keywords): ?>
                             <a href="<?php $options->adminUrl('manage-medias.php'); ?>"><?php _e('&laquo; 取消筛选'); ?></a>
                         <?php endif; ?>
-                        <input type="text" class="text-s" placeholder="<?php _e('请输入关键字'); ?>"
+                        <label for="medias-keywords" class="sr-only"><?php _e('请输入关键字'); ?></label>
+                        <input id="medias-keywords" type="text" class="text-s" placeholder="<?php _e('请输入关键字'); ?>"
                                value="<?php echo $request->filter('html')->keywords; ?>"<?php if ('' == $request->keywords): ?> onclick="value='';name='keywords';" <?php else: ?> name="keywords"<?php endif; ?>/>
                         <button type="submit" class="btn btn-s"><?php _e('筛选'); ?></button>
                     </div>

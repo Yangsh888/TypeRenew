@@ -2,7 +2,6 @@
 
 namespace Widget;
 
-use Typecho\Common;
 use Typecho\Cookie;
 use Typecho\Validate;
 use Utils\LoginGuard;
@@ -146,8 +145,13 @@ class Login extends Users implements ActionInterface
                 continue;
             }
 
-            return Common::url($candidatePath . (!empty($candidate['query']) ? '?' . $candidate['query'] : '')
-                . (!empty($candidate['fragment']) ? '#' . $candidate['fragment'] : ''), $baseUrl) === $target;
+            $rebuilt = $candidateScheme . '://' . $candidateHost
+                . (isset($candidate['port']) ? ':' . (int) $candidate['port'] : '')
+                . $candidatePath
+                . (!empty($candidate['query']) ? '?' . $candidate['query'] : '')
+                . (!empty($candidate['fragment']) ? '#' . $candidate['fragment'] : '');
+
+            return $rebuilt === $target;
         }
 
         return false;

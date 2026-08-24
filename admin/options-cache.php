@@ -64,7 +64,7 @@ $cacheError = (string) ($cachePanel['error'] ?? '');
                         <div class="tr-card-b">
                             <div class="tr-kpi">
                                 <div>
-                                    <div class="tr-kpi-label"><?php _e('缓存条目'); ?></div>
+                                    <div class="tr-kpi-label"><?php _e('当前命名空间条目'); ?></div>
                                     <div class="tr-kpi-value"><?php echo (int) $cachePanel['count']; ?></div>
                                 </div>
                                 <div class="tr-kpi-icon tr-tone-blue" aria-hidden="true">

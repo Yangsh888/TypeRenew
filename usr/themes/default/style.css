@@ -134,12 +134,37 @@ svg {
     justify-content: space-between;
     align-items: center;
     height: var(--header-height);
+    gap: var(--sp-3);
+}
+
+.site-branding {
+    min-width: 0;
+    flex: 1 1 auto;
 }
 
 .site-branding a {
     color: var(--text-primary);
     font-size: 1.1rem;
     font-weight: 700;
+}
+
+.site-title {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.site-logo {
+    display: flex;
+    align-items: center;
+}
+
+.site-logo img {
+    display: block;
+    max-width: 220px;
+    max-height: calc(var(--header-height) - var(--sp-3));
+    object-fit: contain;
 }
 
 .site-branding a:hover {
@@ -150,6 +175,7 @@ svg {
     display: flex;
     align-items: center;
     gap: var(--sp-4);
+    flex: 0 0 auto;
 }
 
 .nav-toggle-label {
@@ -643,7 +669,8 @@ svg {
     margin-bottom: var(--sp-3);
 }
 
-.form-input {
+.form-input,
+.form-textarea {
     width: 100%;
     background: var(--bg-primary);
     border: 1px solid var(--border-color);
@@ -656,14 +683,15 @@ svg {
     box-shadow: var(--control-shadow);
 }
 
-.form-input:focus {
+.form-input:focus,
+.form-textarea:focus {
     outline: none;
     border-color: var(--border-focus);
     box-shadow: 0 0 0 3px var(--focus-ring);
 }
 
-textarea.form-input,
 .form-textarea {
+    display: block;
     resize: vertical;
     min-height: 100px;
 }
@@ -804,11 +832,19 @@ textarea.form-input,
 .error-page .search-form {
     justify-content: center;
     gap: var(--sp-2);
+    margin: 0 auto;
+    max-width: 320px;
 }
 
 .error-page .search-input {
-    width: 200px;
+    width: auto;
+    min-width: 0;
+    flex: 1 1 auto;
     text-align: center;
+}
+
+.error-page .search-input:focus {
+    width: auto;
 }
 
 .comment-user-info {

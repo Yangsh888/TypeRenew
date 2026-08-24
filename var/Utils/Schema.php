@@ -36,7 +36,7 @@ class Schema
     {
         return [
             'mail_queue' => [
-                'label' => '邮件队列表',
+                'label' => _t('邮件队列表'),
                 'mysql' => [
                     'definitions' => [
                         'id' => '`id` bigint unsigned NOT NULL auto_increment',
@@ -54,7 +54,7 @@ class Schema
                 ],
             ],
             'mail_unsub' => [
-                'label' => '邮件退订表',
+                'label' => _t('邮件退订表'),
                 'mysql' => [
                     'definitions' => [
                         'id' => '`id` bigint unsigned NOT NULL auto_increment',
@@ -65,7 +65,7 @@ class Schema
                 ],
             ],
             'password_resets' => [
-                'label' => '密码重置表',
+                'label' => _t('密码重置表'),
                 'mysql' => [
                     'definitions' => [
                         'id' => '`id` bigint unsigned NOT NULL auto_increment',
@@ -78,7 +78,7 @@ class Schema
                 ],
             ],
             'login_attempts' => [
-                'label' => '登录限流表',
+                'label' => _t('登录限流表'),
                 'mysql' => [
                     'definitions' => [
                         'id' => '`id` bigint unsigned NOT NULL auto_increment',
@@ -214,7 +214,7 @@ class Schema
             }
 
             if ($dialect === 'sqlite' && $column === 'id') {
-                throw new \RuntimeException($table . ' 缺少主键列 id，SQLite 需要重建该表');
+                throw new \RuntimeException(_t('%s 缺少主键列 id，SQLite 需要重建该表', $table));
             }
 
             $db->query(

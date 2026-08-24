@@ -35,11 +35,11 @@ class Store
         $warning = [];
 
         foreach ([
-            '升级目录' => $root,
-            '升级包目录' => $root . '/Packages',
-            '临时目录' => $root . '/Staging',
-            '回滚目录' => $root . '/Backup',
-            '状态目录' => $root . '/State'
+            _t('升级目录') => $root,
+            _t('升级包目录') => $root . '/Packages',
+            _t('临时目录') => $root . '/Staging',
+            _t('回滚目录') => $root . '/Backup',
+            _t('状态目录') => $root . '/State'
         ] as $label => $path) {
             $info = self::inspectDir($path);
             $items[] = [
@@ -51,7 +51,7 @@ class Store
             ];
 
             if (!$info['ready']) {
-                $blocking[] = $label . '不可用：' . $path . '（' . $info['detail'] . '）';
+                $blocking[] = _t('%s不可用：%s（%s）', $label, $path, $info['detail']);
             }
         }
 
@@ -61,17 +61,17 @@ class Store
 
         if (is_file($stateFile)) {
             if (!is_readable($stateFile)) {
-                $blocking[] = '升级状态文件不可读：' . $stateFile;
+                $blocking[] = _t('升级状态文件不可读：%s', $stateFile);
             } else {
                 $content = file_get_contents($stateFile);
                 if ($content === false) {
-                    $blocking[] = '升级状态文件不可读：' . $stateFile;
+                    $blocking[] = _t('升级状态文件不可读：%s', $stateFile);
                 } elseif ($content !== '') {
                     $decoded = json_decode($content, true);
                     if (is_array($decoded)) {
                         $state = $decoded;
                     } else {
-                        $warning[] = '升级状态文件格式异常，建议先清理升级包';
+                        $warning[] = _t('升级状态文件格式异常，建议先清理升级包');
                     }
                 }
             }
@@ -79,14 +79,14 @@ class Store
 
         $lockBusy = self::isLockBusy($lockFile);
         if ($lockBusy) {
-            $blocking[] = '已有升级任务正在执行，请稍后重试';
+            $blocking[] = _t('已有升级任务正在执行，请稍后重试');
         } elseif (is_file($lockFile)) {
-            $warning[] = '检测到历史升级锁文件，系统会在下次升级时复用该文件';
+            $warning[] = _t('检测到历史升级锁文件，系统会在下次升级时复用该文件');
         }
 
         $artifacts = self::countArtifacts($root);
         if ($artifacts > 0 && !is_array($state)) {
-            $warning[] = '检测到未清理的升级临时文件，建议先清理升级包后再继续';
+            $warning[] = _t('检测到未清理的升级临时文件，建议先清理升级包后再继续');
         }
 
         return [
@@ -110,11 +110,11 @@ class Store
 
             $parent = self::findExistingParent(dirname($dir));
             if ($parent === null || !is_dir($parent) || !is_writable($parent)) {
-                throw new RuntimeException('升级目录不可写: ' . $dir);
+                throw new RuntimeException(_t('升级目录不可写: %s', $dir));
             }
 
             if (!mkdir($dir, 0755, true) && !is_dir($dir)) {
-                throw new RuntimeException('升级目录不可写: ' . $dir);
+                throw new RuntimeException(_t('升级目录不可写: %s', $dir));
             }
         }
 
@@ -145,16 +145,16 @@ class Store
     {
         $json = json_encode($state, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
         if ($json === false) {
-            throw new RuntimeException('升级状态写入失败');
+            throw new RuntimeException(_t('升级状态写入失败'));
         }
 
         $dir = dirname($this->stateFile);
         if (!is_dir($dir) || !is_writable($dir)) {
-            throw new RuntimeException('升级状态写入失败');
+            throw new RuntimeException(_t('升级状态写入失败'));
         }
 
         if (file_put_contents($this->stateFile, $json, LOCK_EX) === false) {
-            throw new RuntimeException('升级状态写入失败');
+            throw new RuntimeException(_t('升级状态写入失败'));
         }
     }
 
@@ -169,17 +169,17 @@ class Store
     {
         $lockDir = dirname($this->lockFile);
         if (!is_dir($lockDir) || !is_writable($lockDir)) {
-            throw new RuntimeException('升级锁文件创建失败');
+            throw new RuntimeException(_t('升级锁文件创建失败'));
         }
 
         $fp = fopen($this->lockFile, 'c+');
         if ($fp === false) {
-            throw new RuntimeException('升级锁文件创建失败');
+            throw new RuntimeException(_t('升级锁文件创建失败'));
         }
 
         if (!flock($fp, LOCK_EX | LOCK_NB)) {
             fclose($fp);
-            throw new RuntimeException('已有升级任务正在执行');
+            throw new RuntimeException(_t('已有升级任务正在执行'));
         }
 
         return $fp;
@@ -235,23 +235,23 @@ class Store
             if (is_writable($path)) {
                 return [
                     'ready' => true,
-                    'status' => '可写',
-                    'detail' => '目录可直接使用'
+                    'status' => _t('可写'),
+                    'detail' => _t('目录可直接使用')
                 ];
             }
 
             return [
                 'ready' => false,
-                'status' => '不可写',
-                'detail' => '请开放目录写权限'
+                'status' => _t('不可写'),
+                'detail' => _t('请开放目录写权限')
             ];
         }
 
         if (file_exists($path)) {
             return [
                 'ready' => false,
-                'status' => '路径冲突',
-                'detail' => '存在同名文件，无法创建目录'
+                'status' => _t('路径冲突'),
+                'detail' => _t('存在同名文件，无法创建目录')
             ];
         }
 
@@ -259,23 +259,23 @@ class Store
         if ($parent === null || !is_dir($parent)) {
             return [
                 'ready' => false,
-                'status' => '不可创建',
-                'detail' => '上级目录不存在'
+                'status' => _t('不可创建'),
+                'detail' => _t('上级目录不存在')
             ];
         }
 
         if (!is_writable($parent)) {
             return [
                 'ready' => false,
-                'status' => '不可创建',
-                'detail' => '上级目录不可写'
+                'status' => _t('不可创建'),
+                'detail' => _t('上级目录不可写')
             ];
         }
 
         return [
             'ready' => true,
-            'status' => '可创建',
-            'detail' => '首次使用时会自动创建'
+            'status' => _t('可创建'),
+            'detail' => _t('首次使用时会自动创建')
         ];
     }
 

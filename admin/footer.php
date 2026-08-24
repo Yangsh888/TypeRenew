@@ -18,6 +18,16 @@
                 </div>
             </div>
         </div>
+        <script>window.__trUiText = <?php echo \Typecho\Common::jsonEncode([
+            'close' => _t('关闭'),
+            'success' => _t('成功'),
+            'error' => _t('错误'),
+            'notice' => _t('提示'),
+            'save' => _t('保存'),
+            'lightTheme' => _t('浅色主题'),
+            'darkTheme' => _t('深色主题'),
+            'systemTheme' => _t('跟随系统')
+        ], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT, '{}'); ?>;</script>
         <?php \Typecho\Palette::outputConfig(); ?>
         <?php \Typecho\Plugin::factory('admin/footer.php')->call('palette'); ?>
         <script src="<?php $options->adminStaticUrl('js', 'renew-ui.js'); ?>"></script>

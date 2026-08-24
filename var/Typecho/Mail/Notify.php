@@ -172,9 +172,9 @@ class Notify
         $title = (string) ($comment->title ?? '');
 
         $raw = match ($type) {
-            'guest' => (string) ($settings['subjectGuest'] ?: '您在「{title}」的评论有了回复'),
-            'notice' => (string) ($settings['subjectPending'] ?: '文章「{title}」有一条待审评论'),
-            default => (string) ($settings['subjectOwner'] ?: '你的文章「{title}」有了新评论')
+            'guest' => (string) ($settings['subjectGuest'] ?: _t('您在「{title}」的评论有了回复')),
+            'notice' => (string) ($settings['subjectPending'] ?: _t('文章「{title}」有一条待审评论')),
+            default => (string) ($settings['subjectOwner'] ?: _t('你的文章「{title}」有了新评论'))
         };
 
         return str_replace('{title}', $title, $raw);
@@ -290,9 +290,9 @@ class Notify
     private static function statusLabel(string $status): string
     {
         return match ($status) {
-            'approved' => '通过',
-            'waiting' => '待审',
-            'spam' => '垃圾',
+            'approved' => _t('通过'),
+            'waiting' => _t('待审'),
+            'spam' => _t('垃圾'),
             default => $status
         };
     }

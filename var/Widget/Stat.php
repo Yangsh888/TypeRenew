@@ -26,7 +26,7 @@ class Stat extends Base
     {
         return $this->db->fetchObject($this->db->select(['COUNT(cid)' => 'num'])
             ->from('table.contents')
-            ->where('table.contents.type = ? OR table.contents.type = ?', 'post', 'post_draft')
+            ->where('(table.contents.type = ? OR table.contents.type = ?)', 'post', 'post_draft')
             ->where('table.contents.status = ?', 'waiting'))->num;
     }
 
@@ -51,7 +51,7 @@ class Stat extends Base
     {
         return $this->db->fetchObject($this->db->select(['COUNT(cid)' => 'num'])
             ->from('table.contents')
-            ->where('table.contents.type = ? OR table.contents.type = ?', 'post', 'post_draft')
+            ->where('(table.contents.type = ? OR table.contents.type = ?)', 'post', 'post_draft')
             ->where('table.contents.status = ?', 'waiting')
             ->where('table.contents.authorId = ?', $this->user->uid))->num;
     }
@@ -78,7 +78,7 @@ class Stat extends Base
     {
         return $this->db->fetchObject($this->db->select(['COUNT(cid)' => 'num'])
             ->from('table.contents')
-            ->where('table.contents.type = ? OR table.contents.type = ?', 'post', 'post_draft')
+            ->where('(table.contents.type = ? OR table.contents.type = ?)', 'post', 'post_draft')
             ->where('table.contents.status = ?', 'waiting')
             ->where('table.contents.authorId = ?', $this->request->filter('int')->get('uid')))->num;
     }

@@ -74,7 +74,8 @@ $cancelFilterUrl = 'manage-comments.php' . ($filterBase ? '?' . implode('&', $fi
                         <?php if ('' != $request->keywords || '' != $request->category): ?>
                         <a href="<?php $options->adminUrl($cancelFilterUrl); ?>"><?php _e('&laquo; 取消筛选'); ?></a>
                         <?php endif; ?>
-                        <input type="text" class="text-s" placeholder="<?php _e('请输入关键字'); ?>" value="<?php echo $request->filter('html')->keywords; ?>"<?php if ('' == $request->keywords): ?> onclick="value='';name='keywords';" <?php else: ?> name="keywords"<?php endif; ?>/>
+                        <label for="comments-keywords" class="sr-only"><?php _e('请输入关键字'); ?></label>
+                        <input id="comments-keywords" type="text" class="text-s" placeholder="<?php _e('请输入关键字'); ?>" value="<?php echo $request->filter('html')->keywords; ?>"<?php if ('' == $request->keywords): ?> onclick="value='';name='keywords';" <?php else: ?> name="keywords"<?php endif; ?>/>
                         <?php if(isset($request->status)): ?>
                             <input type="hidden" value="<?php echo $request->filter('html')->status; ?>" name="status" />
                         <?php endif; ?>
@@ -143,7 +144,7 @@ $cancelFilterUrl = 'manage-comments.php' . ($filterBase ? '?' . implode('&', $fi
                                 </div>
                             </td>
                             <td valign="top" class="comment-body">
-                                <div class="comment-date"><?php $comments->dateWord(); ?> 于 <a href="<?php $comments->permalink(); ?>"><?php $comments->title(); ?></a></div>
+                                <div class="comment-date"><?php $comments->dateWord(); ?> <?php _e('于'); ?> <a href="<?php $comments->permalink(); ?>"><?php $comments->title(); ?></a></div>
                                 <div class="comment-content">
                                     <?php $comments->content(); ?>
                                 </div> 

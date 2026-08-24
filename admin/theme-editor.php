@@ -32,7 +32,7 @@ include 'menu.php';
                 </form>
             </div>
             <ul class="col-mb-12 col-tb-4 col-3">
-                <li><strong>模板文件</strong></li>
+                <li><strong><?php _e('模板文件'); ?></strong></li>
                 <?php while ($files->next()): ?>
                     <?php
                     $file = (string) $files->file;

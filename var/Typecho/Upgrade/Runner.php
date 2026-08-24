@@ -32,15 +32,15 @@ class Runner
         $zipReady = class_exists(ZipArchive::class);
 
         $items[] = [
-            'label' => 'ZipArchive 扩展',
+            'label' => _t('ZipArchive 扩展'),
             'path' => 'ZipArchive',
             'ready' => $zipReady,
-            'status' => $zipReady ? '已启用' : '缺失',
-            'detail' => $zipReady ? '可解压 zip 升级包' : '请在 PHP 环境中启用 ZipArchive 扩展'
+            'status' => $zipReady ? _t('已启用') : _t('缺失'),
+            'detail' => $zipReady ? _t('可解压 zip 升级包') : _t('请在 PHP 环境中启用 ZipArchive 扩展')
         ];
 
         if (!$zipReady) {
-            $blocking[] = '当前环境缺少 ZipArchive 扩展，无法执行在线升级';
+            $blocking[] = _t('当前环境缺少 ZipArchive 扩展，无法执行在线升级');
         }
 
         return [
@@ -58,7 +58,7 @@ class Runner
     public function saveUpload(array $file, ?bool $allowInstallOverride = null): array
     {
         if (!class_exists(ZipArchive::class)) {
-            throw new RuntimeException('当前环境缺少 ZipArchive 扩展');
+            throw new RuntimeException(_t('当前环境缺少 ZipArchive 扩展'));
         }
 
         $nameValue = $file['name'] ?? null;
@@ -71,15 +71,15 @@ class Runner
         $size = is_scalar($sizeValue) ? (int) $sizeValue : 0;
 
         if ($error !== UPLOAD_ERR_OK || $tmp === '' || !is_uploaded_file($tmp)) {
-            throw new RuntimeException('升级包上传失败');
+            throw new RuntimeException(_t('升级包上传失败'));
         }
 
         if ($size <= 0 || $size > 524288000) {
-            throw new RuntimeException('升级包大小超出限制');
+            throw new RuntimeException(_t('升级包大小超出限制'));
         }
 
         if (strtolower((string) pathinfo($name, PATHINFO_EXTENSION)) !== 'zip') {
-            throw new RuntimeException('仅支持 zip 格式升级包');
+            throw new RuntimeException(_t('仅支持 zip 格式升级包'));
         }
 
         $id = date('YmdHis') . '-' . bin2hex(random_bytes(4));
@@ -88,7 +88,7 @@ class Runner
 
         try {
             if (!move_uploaded_file($tmp, $packagePath)) {
-                throw new RuntimeException('升级包保存失败');
+                throw new RuntimeException(_t('升级包保存失败'));
             }
 
             return $this->prepareUnlocked($id, $packagePath, $allowInstallOverride);
@@ -118,12 +118,12 @@ class Runner
 
         $zip = new ZipArchive();
         if ($zip->open($packagePath) !== true) {
-            throw new RuntimeException('升级包无法打开');
+            throw new RuntimeException(_t('升级包无法打开'));
         }
 
         if ($zip->numFiles > self::MAX_ZIP_FILES) {
             $zip->close();
-            throw new RuntimeException('升级包文件数量超出限制');
+            throw new RuntimeException(_t('升级包文件数量超出限制'));
         }
 
         $total = 0;
@@ -133,7 +133,7 @@ class Runner
                 $total += (int) $stat['size'];
                 if ($total > self::MAX_ZIP_UNPACKED_BYTES) {
                     $zip->close();
-                    throw new RuntimeException('升级包解压后体积超出限制');
+                    throw new RuntimeException(_t('升级包解压后体积超出限制'));
                 }
             }
         }
@@ -152,7 +152,7 @@ class Runner
 
             if (!Manifest::validatePath($entry)) {
                 $zip->close();
-                throw new RuntimeException('升级包包含非法路径: ' . $entry);
+                throw new RuntimeException(_t('升级包包含非法路径: %s', $entry));
             }
 
             $target = $payloadDir . '/' . $entry;
@@ -162,20 +162,20 @@ class Runner
             $stream = $zip->getStream($raw);
             if (!is_resource($stream)) {
                 $zip->close();
-                throw new RuntimeException('升级包读取失败: ' . $entry);
+                throw new RuntimeException(_t('升级包读取失败: %s', $entry));
             }
 
             if (!is_dir($targetDir) || !is_writable($targetDir)) {
                 fclose($stream);
                 $zip->close();
-                throw new RuntimeException('升级包解压失败: ' . $entry);
+                throw new RuntimeException(_t('升级包解压失败: %s', $entry));
             }
 
             $fp = fopen($target, 'wb');
             if ($fp === false) {
                 fclose($stream);
                 $zip->close();
-                throw new RuntimeException('升级包解压失败: ' . $entry);
+                throw new RuntimeException(_t('升级包解压失败: %s', $entry));
             }
 
             stream_copy_to_stream($stream, $fp);
@@ -207,7 +207,7 @@ class Runner
                 $manifestPath = $manifestList[0];
                 $packageRoot = dirname($manifestPath);
             } else {
-                throw new RuntimeException('升级包缺少 typerenew-upgrade.json');
+                throw new RuntimeException(_t('升级包缺少 typerenew-upgrade.json'));
             }
         }
 
@@ -248,11 +248,11 @@ class Runner
         try {
             $state = $this->store->readState();
             if (!is_array($state) || ($state['id'] ?? '') !== $id) {
-                throw new RuntimeException('未找到可执行的升级包');
+                throw new RuntimeException(_t('未找到可执行的升级包'));
             }
 
             if (($state['status'] ?? '') !== 'ready') {
-                throw new RuntimeException('升级包状态不可执行');
+                throw new RuntimeException(_t('升级包状态不可执行'));
             }
 
             $manifest = $state['manifest'] ?? [];
@@ -261,7 +261,7 @@ class Runner
             $allowInstall = (bool) ($state['allowInstall'] ?? false);
 
             if (!is_array($manifest) || !is_array($files) || !is_dir($payloadDir)) {
-                throw new RuntimeException('升级包状态损坏');
+                throw new RuntimeException(_t('升级包状态损坏'));
             }
 
             $currentVersion = Common::VERSION;
@@ -269,11 +269,11 @@ class Runner
             $toVersion = (string) ($manifest['to'] ?? '');
 
             if ($fromVersion !== $currentVersion) {
-                throw new RuntimeException('升级包来源版本不匹配，当前版本为 ' . $currentVersion);
+                throw new RuntimeException(_t('升级包来源版本不匹配，当前版本为 %s', $currentVersion));
             }
 
             if (version_compare($toVersion, $currentVersion, '<=')) {
-                throw new RuntimeException('升级包目标版本无效');
+                throw new RuntimeException(_t('升级包目标版本无效'));
             }
 
             $this->validateTargets($files, $allowInstall);
@@ -293,7 +293,7 @@ class Runner
                 $target = $this->targetPath($relative);
 
                 if (!is_file($source)) {
-                    throw new RuntimeException('升级文件缺失: ' . $relative);
+                    throw new RuntimeException(_t('升级文件缺失: %s', $relative));
                 }
 
                 $targetDir = dirname($target);
@@ -303,7 +303,7 @@ class Runner
                     $backup = $backupRoot . '/' . $relative;
                     $this->ensureDir(dirname($backup));
                     if (!is_readable($target) || !copy($target, $backup)) {
-                        throw new RuntimeException('升级前备份失败: ' . $relative);
+                        throw new RuntimeException(_t('升级前备份失败: %s', $relative));
                     }
                     $rollback[] = ['type' => 'replace', 'target' => $target, 'backup' => $backup];
                 } else {
@@ -350,11 +350,11 @@ class Runner
             if (is_file($tmp) && is_writable($dir)) {
                 unlink($tmp);
             }
-            throw new RuntimeException('文件写入失败: ' . $base);
+            throw new RuntimeException(_t('文件写入失败: %s', $base));
         }
 
         if (!is_file($tmp)) {
-            throw new RuntimeException('文件写入失败: ' . $base);
+            throw new RuntimeException(_t('文件写入失败: %s', $base));
         }
 
         if (is_file($target)) {
@@ -362,7 +362,7 @@ class Runner
                 if (is_file($tmp) && is_writable($dir)) {
                     unlink($tmp);
                 }
-                throw new RuntimeException('文件替换失败: ' . $base);
+                throw new RuntimeException(_t('文件替换失败: %s', $base));
             }
 
             if (!rename($tmp, $target)) {
@@ -372,7 +372,7 @@ class Runner
                 if (is_file($tmp) && is_writable($dir)) {
                     unlink($tmp);
                 }
-                throw new RuntimeException('文件替换失败: ' . $base);
+                throw new RuntimeException(_t('文件替换失败: %s', $base));
             }
 
             if (is_file($old) && is_writable($dir)) {
@@ -385,7 +385,7 @@ class Runner
             if (is_file($tmp) && is_writable($dir)) {
                 unlink($tmp);
             }
-            throw new RuntimeException('文件写入失败: ' . $base);
+            throw new RuntimeException(_t('文件写入失败: %s', $base));
         }
     }
 
@@ -451,13 +451,13 @@ class Runner
                     continue;
                 }
                 if (!Manifest::validatePath($relative)) {
-                    throw new RuntimeException('升级文件路径无效: ' . $relative);
+                    throw new RuntimeException(_t('升级文件路径无效: %s', $relative));
                 }
                 if (!$this->isAllowed($relative, $allowInstall)) {
-                    throw new RuntimeException('升级包包含受保护路径: ' . $relative);
+                    throw new RuntimeException(_t('升级包包含受保护路径: %s', $relative));
                 }
                 if (!is_file($payloadDir . '/' . $relative)) {
-                    throw new RuntimeException('升级文件不存在: ' . $relative);
+                    throw new RuntimeException(_t('升级文件不存在: %s', $relative));
                 }
                 $files[$relative] = $relative;
             }
@@ -480,11 +480,11 @@ class Runner
                 }
 
                 if (!Manifest::validatePath($relative)) {
-                    throw new RuntimeException('升级文件路径无效: ' . $relative);
+                    throw new RuntimeException(_t('升级文件路径无效: %s', $relative));
                 }
 
                 if (!$this->isAllowed($relative, $allowInstall)) {
-                    throw new RuntimeException('升级包包含受保护路径: ' . $relative);
+                    throw new RuntimeException(_t('升级包包含受保护路径: %s', $relative));
                 }
 
                 $files[$relative] = $relative;
@@ -492,7 +492,7 @@ class Runner
         }
 
         if (empty($files)) {
-            throw new RuntimeException('升级包没有可用文件');
+            throw new RuntimeException(_t('升级包没有可用文件'));
         }
 
         ksort($files);
@@ -608,7 +608,7 @@ class Runner
         foreach ($files as $relative) {
             $relative = Manifest::normalize((string) $relative);
             if (!$this->isAllowed($relative, $allowInstall)) {
-                throw new RuntimeException('升级包包含受保护路径: ' . $relative);
+                throw new RuntimeException(_t('升级包包含受保护路径: %s', $relative));
             }
             $this->targetPath($relative);
         }
@@ -621,11 +621,11 @@ class Runner
 
             if (is_file($target)) {
                 if (!is_readable($target)) {
-                    throw new RuntimeException('文件不可读: ' . $relative);
+                    throw new RuntimeException(_t('文件不可读: %s', $relative));
                 }
 
                 if (!is_writable(dirname($target))) {
-                    throw new RuntimeException('目录不可写: ' . $relative);
+                    throw new RuntimeException(_t('目录不可写: %s', $relative));
                 }
 
                 continue;
@@ -633,7 +633,7 @@ class Runner
 
             $parent = $this->findExistingParent(dirname($target));
             if ($parent === null || !is_writable($parent)) {
-                throw new RuntimeException('目录不可写: ' . $relative);
+                throw new RuntimeException(_t('目录不可写: %s', $relative));
             }
         }
     }
@@ -644,7 +644,7 @@ class Runner
         $target = $this->rootDir . '/' . $relative;
         $normalized = str_replace('\\', '/', $target);
         if (!str_starts_with($normalized, $this->rootDir . '/')) {
-            throw new RuntimeException('升级目标路径非法: ' . $relative);
+            throw new RuntimeException(_t('升级目标路径非法: %s', $relative));
         }
         return $target;
     }
@@ -698,25 +698,25 @@ class Runner
     {
         $target = 'var/Typecho/Common.php';
         if (!in_array($target, $files, true) || !is_file($payloadDir . '/' . $target)) {
-            throw new RuntimeException('升级包缺少版本文件: ' . $target);
+            throw new RuntimeException(_t('升级包缺少版本文件: %s', $target));
         }
 
         if ($toVersion !== '') {
             $versionFile = $payloadDir . '/' . $target;
             if (!is_readable($versionFile)) {
-                throw new RuntimeException('升级包版本文件无法读取');
+                throw new RuntimeException(_t('升级包版本文件无法读取'));
             }
 
             $content = (string) file_get_contents($versionFile);
             if ($content === '') {
-                throw new RuntimeException('升级包版本文件无法读取');
+                throw new RuntimeException(_t('升级包版本文件无法读取'));
             }
 
             $pattern = "/public\\s+const\\s+VERSION\\s*=\\s*'([^']+)'/";
             if (preg_match($pattern, $content, $m) && isset($m[1])) {
                 $found = (string) $m[1];
                 if ($found !== $toVersion) {
-                    throw new RuntimeException('升级包版本文件与目标版本不一致');
+                    throw new RuntimeException(_t('升级包版本文件与目标版本不一致'));
                 }
             }
         }
@@ -737,19 +737,19 @@ class Runner
         }
 
         if ($algorithm !== 'sha256' || !preg_match('/^[a-f0-9]{64}$/i', $hash)) {
-            throw new RuntimeException('升级包完整性校验配置无效');
+            throw new RuntimeException(_t('升级包完整性校验配置无效'));
         }
 
         $ctx = hash_init('sha256');
         foreach ($files as $relative) {
             $path = $payloadDir . '/' . $relative;
             if (!is_file($path)) {
-                throw new RuntimeException('升级文件缺失: ' . $relative);
+                throw new RuntimeException(_t('升级文件缺失: %s', $relative));
             }
 
             $fileHash = hash_file('sha256', $path);
             if (!is_string($fileHash) || $fileHash === '') {
-                throw new RuntimeException('升级包完整性校验失败: ' . $relative);
+                throw new RuntimeException(_t('升级包完整性校验失败: %s', $relative));
             }
 
             hash_update($ctx, $relative . "\0" . $fileHash . "\n");
@@ -757,7 +757,7 @@ class Runner
 
         $actual = hash_final($ctx);
         if (!hash_equals(strtolower($hash), strtolower($actual))) {
-            throw new RuntimeException('升级包完整性校验失败，请重新下载后再试');
+            throw new RuntimeException(_t('升级包完整性校验失败，请重新下载后再试'));
         }
     }
 
@@ -769,11 +769,11 @@ class Runner
 
         $parent = $this->findExistingParent(dirname($dir));
         if ($parent === null || !is_writable($parent)) {
-            throw new RuntimeException('目录不可写: ' . $dir);
+            throw new RuntimeException(_t('目录不可写: %s', $dir));
         }
 
         if (!mkdir($dir, 0755, true) && !is_dir($dir)) {
-            throw new RuntimeException('目录不可写: ' . $dir);
+            throw new RuntimeException(_t('目录不可写: %s', $dir));
         }
     }
 

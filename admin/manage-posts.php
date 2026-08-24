@@ -95,9 +95,11 @@ $cancelFilterUrl = 'manage-posts.php' . ($filterBase ? '?' . implode('&', $filte
                         <?php if ('' != $request->keywords || '' != $request->category): ?>
                             <a href="<?php $options->adminUrl($cancelFilterUrl); ?>"><?php _e('&laquo; 取消筛选'); ?></a>
                         <?php endif; ?>
-                        <input type="text" class="text-s" placeholder="<?php _e('请输入关键字'); ?>"
+                        <label for="posts-keywords" class="sr-only"><?php _e('请输入关键字'); ?></label>
+                        <input id="posts-keywords" type="text" class="text-s" placeholder="<?php _e('请输入关键字'); ?>"
                                value="<?php echo $request->filter('html')->keywords; ?>" name="keywords"/>
-                        <select name="category">
+                        <label for="posts-category" class="sr-only"><?php _e('所有分类'); ?></label>
+                        <select id="posts-category" name="category">
                             <option value=""><?php _e('所有分类'); ?></option>
                             <?php \Widget\Metas\Category\Rows::alloc()->to($category); ?>
                             <?php while ($category->next()): ?>

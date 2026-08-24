@@ -1,4 +1,4 @@
-﻿:root {
+:root {
     --tr-accent-rgb: 37 99 235;
     --tr-accent: rgb(var(--tr-accent-rgb));
     --tr-accent-2: #1d4ed8;
@@ -378,6 +378,7 @@ body.tr-admin a:hover {
     align-items: center;
     gap: 10px;
     min-width: 0;
+    flex: 1 1 auto;
 }
 
 .tr-topbar-heading {
@@ -411,6 +412,11 @@ body.tr-admin a:hover {
     display: flex;
     align-items: center;
     gap: 8px;
+}
+
+.tr-topbar-right {
+    min-width: 0;
+    flex: 0 1 auto;
 }
 
 .tr-topbar-ext:empty {
@@ -1639,15 +1645,15 @@ html.tr-theme-dark body.tr-admin #upload-panel:has(#file-list:empty) .upload-are
     background: rgba(2, 6, 23, 0.30);
 }
 
-html.tr-theme-dark body.tr-admin #upload-panel .upload-area a {
+html.tr-theme-dark body.tr-admin #upload-panel .upload-area .upload-file {
     color: rgba(147, 197, 253, 0.92);
 }
 
-html.tr-theme-dark body.tr-admin #upload-panel .upload-area a:hover {
+html.tr-theme-dark body.tr-admin #upload-panel .upload-area .upload-file:hover {
     color: rgba(191, 219, 254, 0.96);
 }
 
-html.tr-theme-dark body.tr-admin #upload-panel .upload-area a.upload-file:hover {
+html.tr-theme-dark body.tr-admin #upload-panel .upload-area .upload-file:hover {
     background: rgba(148, 163, 184, 0.10);
     border-color: rgba(148, 163, 184, 0.22);
 }
@@ -2253,6 +2259,11 @@ body.tr-admin.tr-sidebar-collapsed .tr-user-actions {
 @media (max-width: 480px) {
     
     .tr-topbar-right > .tr-profile-pill {
+        display: none;
+    }
+
+    .tr-topbar-right > .tr-pill-accent,
+    .tr-topbar-ext {
         display: none;
     }
 }
@@ -4763,7 +4774,7 @@ body.tr-admin #upload-panel:has(#file-list:empty) .upload-area {
     background: var(--tr-surface-2);
 }
 
-body.tr-admin #upload-panel .upload-area a.upload-file {
+body.tr-admin #upload-panel .upload-area .upload-file {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -4776,9 +4787,11 @@ body.tr-admin #upload-panel .upload-area a.upload-file {
     text-decoration: none;
     margin: 0 4px;
     font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
 }
 
-body.tr-admin #upload-panel .upload-area a.upload-file:hover {
+body.tr-admin #upload-panel .upload-area .upload-file:hover {
     background: var(--tr-hover-bg);
     border-color: var(--tr-hover-border);
 }
@@ -4812,6 +4825,12 @@ body.tr-admin #file-list li .insert {
     overflow: hidden;
     text-overflow: ellipsis;
     font-weight: 700;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
 }
 
 body.tr-admin #file-list li .insert:hover {

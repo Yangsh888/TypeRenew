@@ -652,7 +652,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         foreach ($options as $option) {
             if (isset($this->wpOptions[$option])) {
                 $struct[$option] = $this->wpOptions[$option];
-                $optionName = $struct[$option]['option'] ?? null;
                 if (isset($struct[$option]['option'])) {
                     $struct[$option]['value'] = $this->options->{$struct[$option]['option']};
                     unset($struct[$option]['option']);
@@ -669,12 +668,13 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         foreach ($options as $option => $value) {
             if (isset($this->wpOptions[$option])) {
                 $struct[$option] = $this->wpOptions[$option];
+                $optionName = $struct[$option]['option'] ?? null;
                 if (isset($struct[$option]['option'])) {
                     $struct[$option]['value'] = $this->options->{$struct[$option]['option']};
                     unset($struct[$option]['option']);
                 }
 
-                if (!$this->wpOptions[$option]['readonly'] && $optionName !== null) {
+                if (empty($this->wpOptions[$option]['readonly']) && $optionName !== null) {
                     if ('time_zone' === $option) {
                         if (!is_scalar($value)) {
                             continue;

@@ -102,21 +102,21 @@ $reportLines = \Widget\Backup::consumeReport();
                                 </div>
                             </div>
                             
-                            <ul class="typecho-option-tabs" role="tablist">
-                                <li class="active"><a href="#from-upload" data-tab-target="from-upload" role="tab" aria-selected="true"><?php _e('上传文件'); ?></a></li>
-                                <li><a href="#from-server" data-tab-target="from-server" role="tab" aria-selected="false"><?php _e('从服务器'); ?></a></li>
+                            <ul class="typecho-option-tabs" role="tablist" aria-label="<?php _e('恢复来源'); ?>">
+                                <li class="active"><a id="backup-tab-upload" href="#from-upload" data-tab-target="from-upload" role="tab" aria-controls="from-upload" aria-selected="true" tabindex="0"><?php _e('上传文件'); ?></a></li>
+                                <li><a id="backup-tab-server" href="#from-server" data-tab-target="from-server" role="tab" aria-controls="from-server" aria-selected="false" tabindex="-1"><?php _e('从服务器'); ?></a></li>
                             </ul>
                             
-                            <div id="from-upload" class="tab-content" role="tabpanel">
+                            <div id="from-upload" class="tab-content" role="tabpanel" aria-labelledby="backup-tab-upload" tabindex="0">
                                 <form action="<?php echo $actionUrl; ?>" method="post" enctype="multipart/form-data">
                                     <input type="hidden" name="do" value="import">
-                                    <div class="tr-dropzone">
+                                    <label class="tr-dropzone" for="backup-upload-file">
                                         <input id="backup-upload-file" name="file" type="file" class="file tr-dropzone-input">
                                         <div class="tr-dropzone-inner">
                                             <strong class="tr-dropzone-title"><?php _e('点击选择备份文件'); ?></strong>
                                             <p class="tr-dropzone-desc"><?php _e('支持拖拽到此区域'); ?></p>
                                         </div>
-                                    </div>
+                                    </label>
                                     <div class="tr-stack tr-gap-8 tr-mt-12">
                                         <div class="tr-grid cols-2">
                                             <div class="tr-stack tr-gap-4">
@@ -143,7 +143,7 @@ $reportLines = \Widget\Backup::consumeReport();
                                 </form>
                             </div>
                             
-                            <div id="from-server" class="tab-content" role="tabpanel" hidden>
+                            <div id="from-server" class="tab-content" role="tabpanel" aria-labelledby="backup-tab-server" tabindex="0" hidden>
                                 <form action="<?php echo $actionUrl; ?>" method="post">
                                     <input type="hidden" name="do" value="import">
                                     <?php if (empty($backupFiles)): ?>
@@ -204,32 +204,47 @@ include 'form-js.php';
         const tabs = document.querySelectorAll('#backup-secondary .typecho-option-tabs a[data-tab-target]');
         const tabPanels = document.querySelectorAll('#backup-secondary .tab-content');
 
-        tabs.forEach((tab) => {
+        function activateTab(tab, focus) {
+            const targetId = tab.getAttribute('data-tab-target');
+
+            tabs.forEach((item) => {
+                const active = item === tab;
+                item.setAttribute('aria-selected', active ? 'true' : 'false');
+                item.setAttribute('tabindex', active ? '0' : '-1');
+                const li = item.closest('li');
+                if (li) {
+                    li.classList.toggle('active', active);
+                }
+            });
+
+            tabPanels.forEach((panel) => {
+                panel.hidden = panel.id !== targetId;
+            });
+
+            if (focus) {
+                tab.focus();
+            }
+        }
+
+        tabs.forEach((tab, index) => {
             tab.addEventListener('click', function (e) {
                 e.preventDefault();
-                const targetId = this.getAttribute('data-tab-target');
-
-                tabs.forEach((t) => {
-                    t.setAttribute('aria-selected', 'false');
-                    const li = t.closest('li');
-                    if (li) {
-                        li.classList.remove('active');
-                    }
-                });
-
-                tabPanels.forEach((panel) => {
-                    panel.setAttribute('hidden', '');
-                });
-
-                this.setAttribute('aria-selected', 'true');
-                const currentLi = this.closest('li');
-                if (currentLi) {
-                    currentLi.classList.add('active');
+                activateTab(this, false);
+            });
+            tab.addEventListener('keydown', function (e) {
+                let next = null;
+                if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                    next = (index + 1) % tabs.length;
+                } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                    next = (index - 1 + tabs.length) % tabs.length;
+                } else if (e.key === 'Home') {
+                    next = 0;
+                } else if (e.key === 'End') {
+                    next = tabs.length - 1;
                 }
-
-                const targetPanel = targetId ? document.getElementById(targetId) : null;
-                if (targetPanel) {
-                    targetPanel.removeAttribute('hidden');
+                if (next !== null) {
+                    e.preventDefault();
+                    activateTab(tabs[next], true);
                 }
             });
         });

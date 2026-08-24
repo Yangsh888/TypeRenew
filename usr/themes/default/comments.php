@@ -2,7 +2,7 @@
 <div id="comments" class="comments-section">
     <?php $this->comments()->to($comments); ?>
     <div class="comments-header">
-        <span class="comments-title"><?php $comments->commentsNum(_t('暂无评论'), _t('1 条评论'), _t('%d 条评论')); ?></span>
+        <span class="comments-title"><?php $comments->num(_t('暂无评论'), _t('1 条评论'), _t('%d 条评论')); ?></span>
         <?php if ($this->user->hasLogin()) : ?>
             <a class="comments-edit-link" href="<?php $this->options->adminUrl('manage-comments.php'); ?>"><?php _e('管理'); ?></a>
         <?php endif; ?>
@@ -10,10 +10,7 @@
 
     <?php if ($this->allow('comment')) : ?>
         <div id="<?php $this->respondId(); ?>" class="comment-respond">
-            <div class="respond-head">
-                <span class="respond-title"><?php _e('添加新评论'); ?></span>
-                <a id="cancel-comment-reply-link" class="cancel-comment-reply" rel="nofollow" style="display:none" href="<?php $this->permalink(); ?>#<?php $this->respondId(); ?>"><?php _e('取消回复'); ?></a>
-            </div>
+            <span class="respond-title"><?php _e('添加新评论'); ?><a id="cancel-comment-reply-link" class="cancel-comment-reply" rel="nofollow" style="display:none" href="<?php $this->permalink(); ?>#<?php $this->respondId(); ?>"><?php _e('取消回复'); ?></a></span>
             <form method="post" action="<?php $this->commentUrl(); ?>" id="comment-form" role="form" class="comment-form">
                 <div class="comment-user-info">
                     <div class="form-group">

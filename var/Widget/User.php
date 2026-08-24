@@ -81,8 +81,16 @@ class User extends Users
             return;
         }
 
+        if (isset($this->currentUser['uid'])) {
+            $this->db->query($this->db
+                ->update('table.users')
+                ->rows(['authCode' => bin2hex(Common::secureRandomBytes(16))])
+                ->where('uid = ?', (int) $this->currentUser['uid']));
+        }
+
         Cookie::delete('__typecho_uid');
         Cookie::delete('__typecho_authCode');
+        $this->hasLogin = false;
     }
 
     public function login(string $name, string $password, bool $temporarily = false, int $expire = 0): bool

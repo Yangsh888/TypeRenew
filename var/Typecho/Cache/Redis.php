@@ -275,7 +275,7 @@ LUA;
         $this->usable = false;
 
         if (!extension_loaded('redis') || !class_exists('\Redis')) {
-            $this->lastError = 'PHP redis 扩展未安装';
+            $this->lastError = _t('PHP redis 扩展未安装');
             return null;
         }
 

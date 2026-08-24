@@ -67,7 +67,12 @@ class Rows extends Contents
         self::pluginHandle()->trigger($plugged)->call('listPages', $pageOptions, $this);
 
         if (!$plugged) {
-            $this->listRows($pageOptions, 'treeViewPagesCallback', intval($this->parameter->current));
+            $this->listRows(
+                $pageOptions,
+                'page',
+                'treeViewPagesCallback',
+                intval($this->parameter->current)
+            );
         }
     }
 }

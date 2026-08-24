@@ -113,19 +113,19 @@ class Menu extends Base
             parse_str($currentUrlParts['query'], $currentUrlParams);
         }
 
-        $currentPath = (string) ($currentUrlParts['path'] ?? '');
-        if ($currentPath !== '' && substr($currentPath, -1) === '/') {
-            $currentUrlParts['path'] .= 'index.php';
-        }
+        $currentScript = $this->currentScript();
+        $scriptAccess = [];
+        $matchedAccess = false;
 
         foreach ($extendingParentMenu as $key => $val) {
             $parentNodes[10 + $key] = $val;
         }
 
         foreach ($extendingChildMenu as $key => $val) {
-            $targetKey = isset($parentNodes[(int) $key]) ? (int) $key : 5;
-
             foreach ($val as $child) {
+                $menuUrl = (string) ($child[2] ?? '');
+                $path = parse_url($menuUrl, PHP_URL_PATH);
+                $targetKey = basename((string) $path) === 'extending.php' ? 5 : (int) $key;
                 $childNodes[$targetKey] = array_merge($childNodes[$targetKey] ?? [], [$child]);
             }
         }
@@ -154,10 +154,15 @@ class Menu extends Base
                     parse_str($urlParts['query'], $urlParams);
                 }
 
-                $validate = true;
-                if (($urlParts['path'] ?? null) != ($currentUrlParts['path'] ?? null)) {
-                    $validate = false;
-                } else {
+                $sameScript = $currentScript !== ''
+                    && basename((string) ($urlParts['path'] ?? '')) === $currentScript;
+
+                if ($sameScript) {
+                    $scriptAccess[$access] = true;
+                }
+
+                $validate = $sameScript;
+                if ($validate) {
                     foreach ($urlParams as $paramName => $paramValue) {
                         if (!isset($currentUrlParams[$paramName])) {
                             $validate = false;
@@ -211,6 +216,7 @@ class Menu extends Base
                         $this->user->pass($access);
                     }
 
+                    $matchedAccess = true;
                     $this->currentParent = $key;
                     $this->currentChild = $inKey;
                     $this->title = (string) ($title ?? '');
@@ -233,8 +239,42 @@ class Menu extends Base
             $menu[$key] = [$parentNode, $showedChildrenCount > 0, $firstUrl, $children];
         }
 
+        if (!$matchedAccess && !empty($scriptAccess)) {
+            $this->passAny(array_keys($scriptAccess));
+        }
+
         $this->menu = $menu;
         $this->currentUrl = Common::safeUrl($currentUrl);
+    }
+
+    private function passAny(array $groups): void
+    {
+        foreach ($groups as $group) {
+            if ('visitor' == $group || $this->user->pass($group, true)) {
+                return;
+            }
+        }
+
+        $this->user->pass(reset($groups));
+    }
+
+    private function currentScript(): string
+    {
+        $included = get_included_files();
+        $entry = str_replace('\\', '/', (string) ($included[0] ?? ''));
+        if ($entry === '') {
+            return '';
+        }
+
+        $adminDir = realpath(__TYPECHO_ROOT_DIR__ . (defined('__TYPECHO_ADMIN_DIR__')
+            ? __TYPECHO_ADMIN_DIR__ : '/admin/'));
+        $entryDir = realpath(dirname($entry));
+
+        if ($adminDir === false || $entryDir === false || $entryDir !== $adminDir) {
+            return '';
+        }
+
+        return basename($entry);
     }
 
     public function getCurrentMenu(): ?array

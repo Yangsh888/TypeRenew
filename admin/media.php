@@ -29,7 +29,7 @@ include 'menu.php';
 
                 <div id="upload-panel" class="p">
                     <div class="upload-area" data-url="<?php $security->index('/action/upload?do=modify'); ?>">
-                        <?php _e('拖放文件到这里<br>或者 %s选择文件上传%s', '<a href="###" class="upload-file">', '</a>'); ?>
+                        <?php _e('拖放文件到这里<br>或者 %s选择文件上传%s', '<button type="button" class="upload-file">', '</button>'); ?>
                     </div>
                     <ul id="file-list"></ul>
                 </div>

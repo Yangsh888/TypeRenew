@@ -74,6 +74,7 @@ $postCreatedRows = $db->fetchAll($db->select('created')
 
 $commentCreatedRows = $db->fetchAll($db->select('created')
     ->from('table.comments')
+    ->where('status = ? OR status = ? OR status = ?', 'approved', 'waiting', 'spam')
     ->where('created >= ?', $rangeStart)
     ->where('created < ?', $rangeEnd));
 
@@ -246,7 +247,7 @@ $donut = function (int $posts, int $pages, int $comments, int $total): string {
                             <div class="tr-kpi-label"><?php _e('内容分布'); ?></div>
                             <div class="tr-subtitle"><?php _e('文章 / 页面 / 评论'); ?></div>
                         </div>
-                        <div class="tr-chip"><?php _e('已发布'); ?></div>
+                        <div class="tr-chip"><?php _e('总量'); ?></div>
                     </div>
                     <div class="tr-dist">
                         <div class="tr-donut tr-relative">

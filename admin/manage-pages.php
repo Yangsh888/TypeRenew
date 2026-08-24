@@ -38,7 +38,8 @@ $pageToken = htmlspecialchars($security->getToken($request->getRequestUrl()), EN
                         <?php if ('' != $request->keywords): ?>
                             <a href="<?php $options->adminUrl('manage-pages.php'); ?>"><?php _e('&laquo; 取消筛选'); ?></a>
                         <?php endif; ?>
-                        <input type="text" class="text-s" placeholder="<?php _e('请输入关键字'); ?>"
+                        <label for="pages-keywords" class="sr-only"><?php _e('请输入关键字'); ?></label>
+                        <input id="pages-keywords" type="text" class="text-s" placeholder="<?php _e('请输入关键字'); ?>"
                                value="<?php echo $request->filter('html')->keywords; ?>" name="keywords"/>
                         <button type="submit" class="btn btn-s"><?php _e('筛选'); ?></button>
                     </div>

@@ -13,6 +13,7 @@
     const root = document.documentElement;
     const STORAGE_KEY = 'trTheme';
     const store = window.TypechoStore || null;
+    const uiText = window.__trUiText || {};
 
     let pref = 'system';
 
@@ -95,9 +96,9 @@
     };
 
     const getLabel = (p) => {
-        if (p === 'light') return '浅色主题';
-        if (p === 'dark') return '深色主题';
-        return '跟随系统';
+        if (p === 'light') return uiText.lightTheme || 'Light theme';
+        if (p === 'dark') return uiText.darkTheme || 'Dark theme';
+        return uiText.systemTheme || 'System theme';
     };
 
     const updateUi = () => {
@@ -125,6 +126,8 @@
 
         if (isOpen) {
             updateUi();
+            const selected = themeItems.find((item) => item.getAttribute('aria-checked') === 'true');
+            (selected || themeItems[0] || themeBtn).focus();
         }
     };
 
@@ -185,8 +188,23 @@
         });
 
         document.addEventListener('keydown', (e) => {
+            if (!isOpen) return;
+            const items = Array.from(themePop.querySelectorAll('[role="menuitemradio"]'));
+            const index = items.indexOf(document.activeElement);
             if (e.key === 'Escape') {
+                e.preventDefault();
                 togglePop(false);
+                themeBtn.focus();
+            } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                e.preventDefault();
+                const step = e.key === 'ArrowDown' ? 1 : -1;
+                items[(index + step + items.length) % items.length].focus();
+            } else if (e.key === 'Home' && items.length) {
+                e.preventDefault();
+                items[0].focus();
+            } else if (e.key === 'End' && items.length) {
+                e.preventDefault();
+                items[items.length - 1].focus();
             }
         });
     }

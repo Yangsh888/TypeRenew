@@ -108,9 +108,9 @@ $post = \Widget\Contents\Post\Edit::alloc()->prepare();
                                     </select>
                                 </p>
                                 <p id="post-password"<?php if (strlen($post->password ?? '') == 0): ?> class="hidden"<?php endif; ?>>
-                                    <label for="protect-pwd" class="sr-only">内容密码</label>
+                                    <label for="protect-pwd" class="sr-only"><?php _e('内容密码'); ?></label>
                                     <input type="text" name="password" id="protect-pwd" class="text-s"
-                                           value="<?php $post->password(); ?>" size="16"
+                                           value="<?php echo htmlspecialchars((string) $post->password, ENT_QUOTES, 'UTF-8'); ?>" size="16"
                                            placeholder="<?php _e('内容密码'); ?>" autocomplete="off"/>
                                 </p>
                             </section>

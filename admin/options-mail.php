@@ -123,7 +123,8 @@ $tplContent = \Typecho\Mail\Template::load($tplName, $options);
                             <form action="<?php echo htmlspecialchars($security->getIndex('/action/options-mail'), ENT_QUOTES, 'UTF-8'); ?>" method="post" class="tr-mail-row">
                                 <input type="hidden" name="do" value="test">
                                 <input type="hidden" name="tpl" value="<?php echo htmlspecialchars($tplName, ENT_QUOTES, 'UTF-8'); ?>">
-                                <input class="text w-100 mono" type="email" name="testTo" placeholder="<?php _e('收件邮箱'); ?>">
+                                <label for="mail-test-to" class="sr-only"><?php _e('收件邮箱'); ?></label>
+                                <input id="mail-test-to" class="text w-100 mono" type="email" name="testTo" placeholder="<?php _e('收件邮箱'); ?>">
                                 <button class="tr-btn primary tr-mail-btn" type="submit"><?php _e('发送模板测试'); ?></button>
                             </form>
                         </div>
@@ -145,15 +146,15 @@ $tplContent = \Typecho\Mail\Template::load($tplName, $options);
                         <div class="tr-mail-sub">
                             <div class="tr-mail-code">
                                 <div class="tr-mail-code-label"><?php _e('投递地址'); ?></div>
-                                <input class="text w-100 mono tr-mail-code-input" readonly value="<?php echo htmlspecialchars($cronEndpoint, ENT_QUOTES, 'UTF-8'); ?>">
+                                <input class="text w-100 mono tr-mail-code-input" aria-label="<?php _e('投递地址'); ?>" readonly value="<?php echo htmlspecialchars($cronEndpoint, ENT_QUOTES, 'UTF-8'); ?>">
                             </div>
                             <div class="tr-mail-code tr-mt-8">
                                 <div class="tr-mail-code-label"><?php _e('签名规则'); ?></div>
-                                <input class="text w-100 mono tr-mail-code-input" readonly value='sign = sha256_hmac("{ts}|deliver", 投递密钥)'>
+                                <input class="text w-100 mono tr-mail-code-input" aria-label="<?php _e('签名规则'); ?>" readonly value='<?php _e('sign = sha256_hmac("{ts}|deliver", 投递密钥)'); ?>'>
                             </div>
                             <div class="tr-mail-code tr-mt-8">
                                 <div class="tr-mail-code-label"><?php _e('请求头'); ?></div>
-                                <input class="text w-100 mono tr-mail-code-input" readonly value="X-Typecho-Mail-Ts={ts}, X-Typecho-Mail-Sign={sign}">
+                                <input class="text w-100 mono tr-mail-code-input" aria-label="<?php _e('请求头'); ?>" readonly value="X-Typecho-Mail-Ts={ts}, X-Typecho-Mail-Sign={sign}">
                             </div>
                             <div class="tr-help tr-mt-8"><?php _e('建议仅使用签名头方式调用，避免密钥明文透出'); ?></div>
                         </div>
@@ -230,7 +231,8 @@ $tplContent = \Typecho\Mail\Template::load($tplName, $options);
                             <form id="tpl-save-form" action="<?php echo htmlspecialchars($security->getIndex('/action/options-mail'), ENT_QUOTES, 'UTF-8'); ?>" method="post" class="tr-mt-12">
                                 <input type="hidden" name="do" value="tpl_save">
                                 <input type="hidden" name="tpl" value="<?php echo htmlspecialchars($tplName, ENT_QUOTES, 'UTF-8'); ?>">
-                                <textarea class="text w-100 mono" name="content" rows="14"><?php echo htmlspecialchars($tplContent, ENT_QUOTES, 'UTF-8'); ?></textarea>
+                                <label for="mail-template-content" class="sr-only"><?php _e('邮件模板'); ?></label>
+                                <textarea id="mail-template-content" class="text w-100 mono" name="content" rows="14"><?php echo htmlspecialchars($tplContent, ENT_QUOTES, 'UTF-8'); ?></textarea>
                             </form>
                             <div class="tr-tpl-btns tr-mt-12">
                                 <button class="tr-btn primary" type="submit" form="tpl-save-form"><?php _e('保存模板'); ?></button>

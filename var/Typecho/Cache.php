@@ -24,6 +24,7 @@ class Cache
     private array $tableSyncAt = [];
     private string $lastError = '';
     private const MAX_TABLE_TRACK = 32;
+    private const VOLATILE_WINDOW = 300;
 
     public static function getInstance(): self
     {
@@ -222,8 +223,9 @@ class Cache
         $this->rotateNamespace();
     }
 
-    public function queryKey($query): ?string
+    public function queryKey($query, ?int &$ttl = null): ?string
     {
+        $ttl = null;
         $sql = $this->querySql($query);
         if ($sql === null) {
             return null;
@@ -238,6 +240,12 @@ class Cache
             return null;
         }
 
+        if ($this->hasVolatileTimestamp($trimmed)) {
+            return null;
+        }
+
+        $signature = $trimmed;
+
         $tables = $this->queryTables($query, $trimmed);
         if (!empty($tables)) {
             $versionParts = [];
@@ -245,10 +253,10 @@ class Cache
                 $versionParts[] = $table . '.' . $this->loadTableVersion($table, false);
             }
             sort($versionParts, SORT_STRING);
-            return 'sql:' . implode(',', $versionParts) . ':' . sha1($trimmed);
+            return 'sql:' . implode(',', $versionParts) . ':' . sha1($signature);
         }
 
-        return 'sql:' . sha1($trimmed);
+        return 'sql:' . sha1($signature);
     }
 
     public function panel(): array
@@ -489,6 +497,22 @@ class Cache
 
         $prefix = preg_replace('/[^a-zA-Z0-9:_-]/', '', $prefix) ?? 'typerenew:cache:';
         return rtrim($prefix, ':') . ':';
+    }
+
+    private function hasVolatileTimestamp(string $sql): bool
+    {
+        $now = Date::time();
+        if (!preg_match_all('/(?<![0-9])([1-9][0-9]{9,10})(?![0-9])/', $sql, $matches)) {
+            return false;
+        }
+
+        foreach ($matches[1] as $timestamp) {
+            if (abs((int) $timestamp - $now) <= self::VOLATILE_WINDOW) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function track(float $started): void

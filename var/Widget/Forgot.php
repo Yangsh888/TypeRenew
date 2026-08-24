@@ -59,7 +59,7 @@ class Forgot extends Users implements ActionInterface
             $this->db->select('created')
                 ->from('table.password_resets')
                 ->where('email = ?', $mail)
-                ->where('created > ?', time() - 60)
+                ->where('created > ?', $this->options->time - 60)
                 ->limit(1)
         );
 
@@ -108,7 +108,7 @@ class Forgot extends Users implements ActionInterface
             );
 
             if (!$this->sendResetMail($user, $resetUrl, $expires)) {
-                throw new \RuntimeException('密码重置邮件入队失败');
+                throw new \RuntimeException(_t('密码重置邮件入队失败'));
             }
 
             $this->db->query('COMMIT');

@@ -334,14 +334,21 @@ class Request
             return '';
         }
 
+        $candidates = [];
         foreach (explode(',', $value) as $candidate) {
             $ip = $this->filterIp(trim($candidate));
             if ($ip !== '') {
-                return $ip;
+                $candidates[] = $ip;
             }
         }
 
-        return '';
+        for ($i = count($candidates) - 1; $i >= 0; $i--) {
+            if (!$this->isTrustedProxy($candidates[$i])) {
+                return $candidates[$i];
+            }
+        }
+
+        return $candidates[0] ?? '';
     }
 
     private function filterIp(?string $ip): string

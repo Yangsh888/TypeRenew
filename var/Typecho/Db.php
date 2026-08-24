@@ -370,20 +370,22 @@ class Db
         $this->invalidateAllOnCommit = false;
     }
 
-    private function cacheKey($query): ?string
+    private function cacheKey($query, ?int &$ttl = null): ?string
     {
+        $ttl = null;
         $cache = Cache::getInstance();
         if (!$cache->enabled() || $this->transactionActive) {
             return null;
         }
 
-        return $cache->queryKey($query);
+        return $cache->queryKey($query, $ttl);
     }
 
     public function fetchAll($query, ?callable $filter = null): array
     {
         $cache = Cache::getInstance();
-        $cacheKey = $this->cacheKey($query);
+        $cacheTtl = null;
+        $cacheKey = $this->cacheKey($query, $cacheTtl);
         $locked = false;
         if ($cacheKey) {
             $hit = false;
@@ -405,7 +407,7 @@ class Db
             $resource = $this->query($query);
             $result = $this->adapter->fetchAll($resource);
             if ($cacheKey) {
-                $cache->set($cacheKey, $result);
+                $cache->set($cacheKey, $result, $cacheTtl);
             }
         } finally {
             if ($cacheKey && $locked) {
@@ -419,7 +421,8 @@ class Db
     public function fetchRow($query, ?callable $filter = null): ?array
     {
         $cache = Cache::getInstance();
-        $cacheKey = $this->cacheKey($query);
+        $cacheTtl = null;
+        $cacheKey = $this->cacheKey($query, $cacheTtl);
         $locked = false;
         if ($cacheKey) {
             $hit = false;
@@ -451,7 +454,7 @@ class Db
             $resource = $this->query($query);
             $rows = $this->adapter->fetch($resource);
             if ($cacheKey) {
-                $cache->set($cacheKey, $rows);
+                $cache->set($cacheKey, $rows, $cacheTtl);
             }
         } finally {
             if ($cacheKey && $locked) {
@@ -469,7 +472,8 @@ class Db
     public function fetchObject($query, ?callable $filter = null): ?\stdClass
     {
         $cache = Cache::getInstance();
-        $cacheKey = $this->cacheKey($query);
+        $cacheTtl = null;
+        $cacheKey = $this->cacheKey($query, $cacheTtl);
         $locked = false;
         if ($cacheKey) {
             $hit = false;
@@ -501,7 +505,7 @@ class Db
             $resource = $this->query($query);
             $rows = $this->adapter->fetchObject($resource);
             if ($cacheKey) {
-                $cache->set($cacheKey, $rows);
+                $cache->set($cacheKey, $rows, $cacheTtl);
             }
         } finally {
             if ($cacheKey && $locked) {
