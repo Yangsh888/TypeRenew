@@ -20,8 +20,8 @@ $loginGuard = \Utils\LoginGuard::panel(\Typecho\Db::get());
         <div class="row typecho-page-main tr-mt-16">
             <div class="col-mb-12 col-tb-8 col-tb-offset-2">
                 <div class="tr-card">
-                    <div class="tr-card-b tr-cache-actions">
-                        <div>
+                    <div class="tr-card-b tr-between tr-gap-12">
+                        <div class="tr-minw-0">
                             <div class="tr-section-title"><?php _e('登录保护'); ?></div>
                             <?php if (!$loginGuard['available']): ?>
                                 <div class="tr-help"><?php _e('登录尝试记录表不可用，限流已自动放行，请在升级页执行结构修复'); ?></div>
@@ -37,7 +37,7 @@ $loginGuard = \Utils\LoginGuard::panel(\Typecho\Db::get());
                                 <div class="tr-help"><?php _e('登录与密码找回按 IP 以及 IP + 账号两个维度限流，IP 和账号只保存摘要，不保存明文'); ?></div>
                             <?php endif; ?>
                         </div>
-                        <form action="<?php echo htmlspecialchars($security->getIndex('/action/options-general'), ENT_QUOTES, 'UTF-8'); ?>" method="post">
+                        <form class="inline-operate-form" action="<?php echo htmlspecialchars($security->getIndex('/action/options-general'), ENT_QUOTES, 'UTF-8'); ?>" method="post">
                             <input type="hidden" name="do" value="releaseLoginLocks">
                             <button class="tr-btn tr-btn-warn" type="submit"><?php _e('解除全部锁定'); ?></button>
                         </form>

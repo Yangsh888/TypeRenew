@@ -2375,6 +2375,13 @@ body.tr-admin.tr-sidebar-collapsed .tr-user-actions {
     justify-content: space-between;
 }
 
+.inline-operate-form {
+    display: inline-flex;
+    align-items: center;
+    flex: none;
+    margin: 0;
+}
+
 .tr-gap-4 {
     gap: 4px;
 }
