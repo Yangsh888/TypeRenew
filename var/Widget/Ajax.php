@@ -275,17 +275,12 @@ class Ajax extends BaseOptions implements ActionInterface
     private function getPluginVersionSource(): string
     {
         $host = $this->getPluginVersionHost();
-        if ($host === 'mirrors.tuna.tsinghua.edu.cn') {
-            return 'https://' . $host . '/github-raw/' . self::OFFICIAL_PLUGIN_VERSION_REPOSITORY . '/main/README.md';
-        }
         if (str_ends_with($host, 'jsdelivr.net')) {
             return 'https://' . $host . '/gh/' . self::OFFICIAL_PLUGIN_VERSION_REPOSITORY . '@main/README.md';
         }
-        if ($host === 'raw.staticaly.net') {
-            return 'https://' . $host . '/gh/' . self::OFFICIAL_PLUGIN_VERSION_REPOSITORY . '/main/README.md';
-        }
-        if ($host === 'mirror.ghproxy.com') {
-            return 'https://' . $host . '/raw.githubusercontent.com' . self::OFFICIAL_PLUGIN_VERSION_PATH;
+        if ($host === 'gh-proxy.com' || str_ends_with($host, '.gh-proxy.com')) {
+            return 'https://' . $host . '/https://' . self::OFFICIAL_PLUGIN_VERSION_DEFAULT_HOST
+                . self::OFFICIAL_PLUGIN_VERSION_PATH;
         }
 
         return 'https://' . $host . self::OFFICIAL_PLUGIN_VERSION_PATH;

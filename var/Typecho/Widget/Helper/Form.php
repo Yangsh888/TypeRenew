@@ -136,7 +136,7 @@ class Form extends Layout
                 $input->value($record[$name] ?? $input->value);
 
                 if (isset($message[$name])) {
-                    $input->message(htmlspecialchars((string) $message[$name], ENT_QUOTES, 'UTF-8'));
+                    $input->message(self::filterMessage($input, (string) $message[$name]));
                 }
             }
 
@@ -145,5 +145,16 @@ class Form extends Layout
 
         parent::render();
         Cookie::delete('__typecho_form_message_' . $id);
+    }
+
+    private static function filterMessage(Element $input, string $message): string
+    {
+        foreach ($input->rules as $rule) {
+            if (isset($rule[1]) && is_string($rule[1]) && $rule[1] === $message) {
+                return $message;
+            }
+        }
+
+        return htmlspecialchars($message, ENT_QUOTES, 'UTF-8');
     }
 }

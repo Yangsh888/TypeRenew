@@ -106,13 +106,12 @@ class General extends Options implements ActionInterface
     public static function githubRawMirrors(): array
     {
         return [
-            ''                => _t('默认（raw.githubusercontent.com）'),
-            'raw.gitmirror.com' => _t('GitMirror 镜像'),
-            'raw.staticaly.net' => _t('Statically 镜像'),
-            'gcore.jsdelivr.net' => _t('jsDelivr 镜像'),
-            'mirror.ghproxy.com' => _t('GHProxy 镜像'),
-            'mirrors.tuna.tsinghua.edu.cn' => _t('清华大学镜像'),
-            '_'               => _t('自定义域名'),
+            ''                       => _t('默认（raw.githubusercontent.com）'),
+            'gcore.jsdelivr.net'     => _t('jsDelivr Gcore 镜像'),
+            'testingcf.jsdelivr.net' => _t('jsDelivr Cloudflare 镜像'),
+            'cdn.jsdelivr.net'       => _t('jsDelivr 官方镜像'),
+            'gh-proxy.com'           => _t('gh-proxy 镜像'),
+            '_'                      => _t('自定义域名'),
         ];
     }
 

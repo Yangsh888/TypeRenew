@@ -8,6 +8,10 @@ msgstr ""
 "Language: \n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
+#: install/SQLite.php:7
+msgid "\"%s\" 是我们为您自动生成的地址"
+msgstr ""
+
 #: usr/themes/default/comments.php:10 usr/themes/default/functions.php:54
 msgid "%d 条评论"
 msgstr ""
@@ -24,10 +28,6 @@ msgstr ""
 msgid "%d年%d月%d日"
 msgstr ""
 
-#: admin/index.php:191
-msgid "%s"
-msgstr ""
-
 #: admin/header.php:37
 msgid "%s - %s - Powered by TypeRenew"
 msgstr ""
@@ -42,6 +42,10 @@ msgstr ""
 
 #: admin/plugins.php:104
 msgid "%s 无法在此版本的typecho下正常工作"
+msgstr ""
+
+#: var/Widget/Feed.php:103
+msgid "%s 的评论"
 msgstr ""
 
 #: var/Utils/Schema.php:227
@@ -115,11 +119,11 @@ msgid "1 条评论"
 msgstr ""
 
 #: var/Widget/Metas/Category/Edit.php:408
-msgid "<a href=\\"%s\\">%s</a> 已经被设为默认分类"
+msgid "<a href=\"%s\">%s</a> 已经被设为默认分类"
 msgstr ""
 
 #: var/Widget/Plugins/Edit.php:139
-msgid "<a href=\\"%s\\">%s</a> 无法在此版本的typecho下正常工作"
+msgid "<a href=\"%s\">%s</a> 无法在此版本的typecho下正常工作"
 msgstr ""
 
 #: var/Widget/Options/Permalink.php:50
@@ -146,20 +150,12 @@ msgstr ""
 msgid "G - 普通"
 msgstr ""
 
-#: var/Widget/Options/General.php:113
-msgid "GHProxy 镜像"
-msgstr ""
-
-#: var/Widget/Options/General.php:134
+#: var/Widget/Options/General.php:133
 msgid "GitHub Raw 镜像域名"
 msgstr ""
 
 #: admin/copyright.php:10
 msgid "GitHub 源码"
-msgstr ""
-
-#: var/Widget/Options/General.php:110
-msgid "GitMirror 镜像"
 msgstr ""
 
 #: admin/options-mail.php:193
@@ -235,7 +231,7 @@ msgstr ""
 msgid "Pingback 接口已关闭"
 msgstr ""
 
-#: install.php:1104
+#: install.php:1106
 msgid "PostgreSQL 字符集仅支持 utf8"
 msgstr ""
 
@@ -299,32 +295,28 @@ msgstr ""
 msgid "SQLite 原生函数适配器"
 msgstr ""
 
-#: install.php:1115 install.php:1146
+#: install.php:1117 install.php:1148
 msgid "SQLite 数据库文件必须位于 usr 目录内"
 msgstr ""
 
-#: install.php:1093
+#: install.php:1095
 msgid "SSL CA 证书路径无效"
 msgstr ""
 
-#: install.php:1094 install.php:1106
+#: install.php:1096 install.php:1108
 msgid "SSL 校验选项无效"
 msgstr ""
 
-#: var/Widget/Options/General.php:111
-msgid "Statically 镜像"
-msgstr ""
-
-#: install.php:1597
+#: install.php:1599
 msgid "TypeRenew 安装程序"
 msgstr ""
 
-#: install.php:658
-msgid "TypeRenew 由开源社区驱动维护，旨在继承 <a href=\\"https://typecho.org/\\">Typecho</a> 的轻量与优雅，并为其注入新的活力。"
+#: install.php:660
+msgid "TypeRenew 由开源社区驱动维护，旨在继承 <a href=\"https://typecho.org/\">Typecho</a> 的轻量与优雅，并为其注入新的活力。"
 msgstr ""
 
-#: install.php:647
-msgid "TypeRenew 脱胎于经典博客程序 <a href=\\"https://typecho.org/\\">Typecho</a>，完整继承其干净、克制、高效的内核基因，并优化对现代主流运行环境的适配，修复遗留的兼容性问题，原生集成更多实用特性，让跨越十余年的经典，在当下重焕新生。"
+#: install.php:649
+msgid "TypeRenew 脱胎于经典博客程序 <a href=\"https://typecho.org/\">Typecho</a>，完整继承其干净、克制、高效的内核基因，并优化对现代主流运行环境的适配，修复遗留的兼容性问题，原生集成更多实用特性，让跨越十余年的经典，在当下重焕新生。"
 msgstr ""
 
 #: var/Widget/Options/Mail.php:119
@@ -347,7 +339,7 @@ msgstr ""
 msgid "XML-RPC 已启用"
 msgstr ""
 
-#: var/Widget/Options/General.php:356
+#: var/Widget/Options/General.php:355
 msgid "XMLRPC 接口"
 msgstr ""
 
@@ -367,11 +359,23 @@ msgstr ""
 msgid "contents 缩略名唯一值冲突"
 msgstr ""
 
-#: var/Widget/Options/General.php:112
-msgid "jsDelivr 镜像"
+#: var/Widget/Options/General.php:113
+msgid "gh-proxy 镜像"
 msgstr ""
 
-#: var/Widget/Options/General.php:365
+#: var/Widget/Options/General.php:111
+msgid "jsDelivr Cloudflare 镜像"
+msgstr ""
+
+#: var/Widget/Options/General.php:110
+msgid "jsDelivr Gcore 镜像"
+msgstr ""
+
+#: var/Widget/Options/General.php:112
+msgid "jsDelivr 官方镜像"
+msgstr ""
+
+#: var/Widget/Options/General.php:364
 msgid "lang"
 msgstr ""
 
@@ -388,7 +392,7 @@ msgid "n月j日"
 msgstr ""
 
 #: admin/options-mail.php:153
-msgid "sign = sha256_hmac(\\"{ts}|deliver\\", 投递密钥)"
+msgid "sign = sha256_hmac(\"{ts}|deliver\", 投递密钥)"
 msgstr ""
 
 #: var/Utils/Migration/SchemaManager.php:240
@@ -407,7 +411,7 @@ msgstr ""
 msgid "zh-CN"
 msgstr ""
 
-#: var/Widget/Options/General.php:358
+#: var/Widget/Options/General.php:357
 msgid "“仅关闭 Pingback 接口”可保留常规 XML-RPC，同时避免站点接收 Pingback"
 msgstr ""
 
@@ -527,7 +531,7 @@ msgstr ""
 msgid "上传目录不可写，请检查上传目录权限"
 msgstr ""
 
-#: install.php:730
+#: install.php:732
 msgid "上传目录暂无写入权限，请先检查您的站点是否存在 %s 目录；若存在，请将该目录权限设置为可写状态，完成后再继续安装操作。"
 msgstr ""
 
@@ -567,7 +571,7 @@ msgstr ""
 msgid "下次自动登录"
 msgstr ""
 
-#: admin/upgrade.php:203 var/Widget/Options/General.php:345
+#: admin/upgrade.php:203 var/Widget/Options/General.php:344
 msgid "不允许"
 msgstr ""
 
@@ -587,6 +591,7 @@ msgstr ""
 msgid "不同的用户组拥有不同的权限."
 msgstr ""
 
+#: install/Mysql.php:78 install/Pgsql.php:48
 #: var/Widget/Options/Permalink.php:268
 msgid "不启用"
 msgstr ""
@@ -634,7 +639,7 @@ msgstr ""
 msgid "个人主页地址格式错误"
 msgstr ""
 
-#: install.php:1377
+#: install.php:1379
 msgid "个人主页地址长度超过限制, 请不要超过 150 个字符"
 msgstr ""
 
@@ -660,6 +665,10 @@ msgstr ""
 
 #: admin/write-page.php:84
 msgid "为你的自定义页面设定一个序列值以后, 能够使得它们按此值从小到大排列"
+msgstr ""
+
+#: install/Mysql.php:15
+msgid "为保障数据库安全，不推荐使用 \"%s\"，建议您为当前项目创建专属的数据库账户并使用"
 msgstr ""
 
 #: var/Widget/Users/Profile.php:291
@@ -729,7 +738,7 @@ msgstr ""
 msgid "仅允许字母、数字、冒号、下划线与短横线"
 msgstr ""
 
-#: var/Widget/Options/General.php:354
+#: var/Widget/Options/General.php:353
 msgid "仅关闭 Pingback 接口"
 msgstr ""
 
@@ -737,12 +746,20 @@ msgstr ""
 msgid "仅导入，不做修复"
 msgstr ""
 
-#: var/Widget/Options/General.php:145
-msgid "仅当上方选择\\"自定义域名\\"时填写，例如 raw.example.com"
+#: var/Widget/Options/General.php:144
+msgid "仅当上方选择\"自定义域名\"时填写，例如 raw.example.com"
 msgstr ""
 
 #: var/Typecho/Upgrade/Runner.php:82
 msgid "仅支持 zip 格式升级包"
+msgstr ""
+
+#: install/Mysql.php:62
+msgid "仅支持使用 InnoDB，以保持事务、索引与 MySQL 8 兼容性的一致性"
+msgstr ""
+
+#: install/Mysql.php:52
+msgid "仅支持使用 utf8mb4，以更好兼容 MySQL 5.7/8.0+ 与现代字符集场景"
 msgstr ""
 
 #: var/Widget/Options/Discussion.php:128
@@ -851,15 +868,19 @@ msgstr ""
 msgid "你确认要禁用插件 %s 吗?"
 msgstr ""
 
+#: var/Widget/Options/Reading.php:136
+msgid "使用 %s 页面作为首页"
+msgstr ""
+
 #: var/Widget/Users/Profile.php:39
-msgid "使用 <a href=\\"https://daringfireball.net/projects/markdown/\\">Markdown</a> 语法能够使您的撰写过程更加简便直观"
+msgid "使用 <a href=\"https://daringfireball.net/projects/markdown/\">Markdown</a> 语法能够使您的撰写过程更加简便直观"
 msgstr ""
 
 #: var/Widget/Users/Profile.php:38
 msgid "使用 Markdown 语法编辑和解析内容"
 msgstr ""
 
-#: install.php:1279
+#: install.php:1281
 msgid "使用原有数据"
 msgstr ""
 
@@ -900,7 +921,7 @@ msgid "保存草稿"
 msgstr ""
 
 #: var/Widget/Options/Cache.php:200 var/Widget/Options/Discussion.php:217
-#: var/Widget/Options/General.php:429 var/Widget/Options/Mail.php:382
+#: var/Widget/Options/General.php:428 var/Widget/Options/Mail.php:382
 #: var/Widget/Options/Permalink.php:350 var/Widget/Options/Reading.php:214
 #: var/Widget/Plugins/Config.php:72 var/Widget/Themes/Config.php:65
 #: var/Widget/Users/Profile.php:87 var/Widget/Users/Profile.php:143
@@ -909,6 +930,10 @@ msgstr ""
 
 #: admin/upgrade.php:289
 msgid "修复关键数据库结构"
+msgstr ""
+
+#: var/Widget/Backup.php:959
+msgid "修复结果：ownerId %d 条，状态 %d 条，孤儿评论 %d 条，计数回填 %d 篇，作者昵称同步 %d 条"
 msgstr ""
 
 #: admin/write-js.php:457
@@ -923,11 +948,11 @@ msgstr ""
 msgid "修评论失败"
 msgstr ""
 
-#: admin/upgrade.php:203 var/Widget/Options/General.php:345
+#: admin/upgrade.php:203 var/Widget/Options/General.php:344
 msgid "允许"
 msgstr ""
 
-#: var/Widget/Options/General.php:423
+#: var/Widget/Options/General.php:422
 msgid "允许上传的文件类型"
 msgstr ""
 
@@ -951,7 +976,7 @@ msgstr ""
 msgid "允许覆盖 install（谨慎操作）"
 msgstr ""
 
-#: var/Widget/Options/General.php:348
+#: var/Widget/Options/General.php:347
 msgid "允许访问者注册到你的网站，默认的注册用户不享有任何写入权限"
 msgstr ""
 
@@ -1006,7 +1031,7 @@ msgstr ""
 msgid "六月"
 msgstr ""
 
-#: install.php:1456
+#: install.php:1458
 msgid "关于"
 msgstr ""
 
@@ -1026,13 +1051,13 @@ msgstr ""
 msgid "关键结构正常，共检查 %d 项。"
 msgstr ""
 
-#: var/Widget/Options/General.php:338
+#: var/Widget/Options/General.php:337
 msgid "关键词"
 msgstr ""
 
 #: admin/footer.php:22 admin/options-cache.php:29
 #: var/Widget/Options/Cache.php:104 var/Widget/Options/Cache.php:112
-#: var/Widget/Options/General.php:354 var/Widget/Options/Mail.php:208
+#: var/Widget/Options/General.php:353 var/Widget/Options/Mail.php:208
 #: var/Widget/Options/Mail.php:501 var/Widget/Users/Profile.php:36
 #: var/Widget/Users/Profile.php:46 var/Widget/Users/Profile.php:55
 msgid "关闭"
@@ -1050,16 +1075,20 @@ msgstr ""
 msgid "其他"
 msgstr ""
 
+#: var/Widget/Options/General.php:412
+msgid "其他格式 %s"
+msgstr ""
+
 #: var/Widget/Options/Discussion.php:102
-msgid "具体写法请参考 <a href=\\"https://www.php.net/manual/zh/function.date.php\\">PHP 日期格式写法</a>"
+msgid "具体写法请参考 <a href=\"https://www.php.net/manual/zh/function.date.php\">PHP 日期格式写法</a>"
 msgstr ""
 
 #: var/Widget/Options/Reading.php:95
-msgid "具体写法，请参考 <a href=\\"https://www.php.net/manual/zh/function.date.php\\">PHP 日期格式写法</a>"
+msgid "具体写法，请参考 <a href=\"https://www.php.net/manual/zh/function.date.php\">PHP 日期格式写法</a>"
 msgstr ""
 
 #: var/Widget/Users/Edit.php:119
-msgid "具体的权限分配表请<a href=\\"https://docs.typecho.org/develop/acl\\">参考这里</a>."
+msgid "具体的权限分配表请<a href=\"https://docs.typecho.org/develop/acl\">参考这里</a>."
 msgstr ""
 
 #: admin/manage-comments.php:103 admin/manage-comments.php:276
@@ -1131,11 +1160,11 @@ msgid "分类 %s 下的文章"
 msgstr ""
 
 #: var/Widget/Metas/Category/Edit.php:115
-msgid "分类 <a href=\\"%s\\">%s</a> 已经被增加"
+msgid "分类 <a href=\"%s\">%s</a> 已经被增加"
 msgstr ""
 
 #: var/Widget/Metas/Category/Edit.php:290
-msgid "分类 <a href=\\"%s\\">%s</a> 已经被更新"
+msgid "分类 <a href=\"%s\">%s</a> 已经被更新"
 msgstr ""
 
 #: var/Widget/Archive.php:1346 var/Widget/Metas/Category/Admin.php:59
@@ -1245,11 +1274,11 @@ msgstr ""
 msgid "创建一个新账号"
 msgstr ""
 
-#: install.php:924
+#: install.php:926
 msgid "创建完毕, 继续安装 &raquo;"
 msgstr ""
 
-#: install.php:1299
+#: install.php:1301
 msgid "创建您的管理员帐号"
 msgstr ""
 
@@ -1283,7 +1312,7 @@ msgstr ""
 msgid "删除全局配置"
 msgstr ""
 
-#: install.php:1278
+#: install.php:1280
 msgid "删除原有数据"
 msgstr ""
 
@@ -1680,7 +1709,7 @@ msgstr ""
 msgid "另有 %d 项环境提醒。"
 msgstr ""
 
-#: install.php:1430
+#: install.php:1432
 msgid "只是一个默认分类"
 msgstr ""
 
@@ -1744,6 +1773,10 @@ msgstr ""
 msgid "同一 IP 发布评论的时间间隔限制为 %s 分钟"
 msgstr ""
 
+#: var/Widget/Options/Reading.php:112
+msgid "同时将文章列表页路径更改为 %s"
+msgstr ""
+
 #: var/Widget/Options/Mail.php:314
 msgid "同步投递"
 msgstr ""
@@ -1757,17 +1790,21 @@ msgstr ""
 msgid "否"
 msgstr ""
 
-#: admin/plugins.php:192 admin/themes.php:69
-#: var/Widget/Options/Permalink.php:268
+#: admin/plugins.php:192 admin/themes.php:69 install/Mysql.php:79
+#: install/Pgsql.php:49 var/Widget/Options/Permalink.php:268
 msgid "启用"
 msgstr ""
 
 #: var/Widget/Options/Discussion.php:132
-msgid "启用 <a href=\\"https://gravatar.com\\">Gravatar</a> 头像服务, 最高显示评级为 %s 的头像"
+msgid "启用 <a href=\"https://gravatar.com\">Gravatar</a> 头像服务, 最高显示评级为 %s 的头像"
 msgstr ""
 
 #: var/Widget/Options/Discussion.php:139
 msgid "启用分页, 并且每页显示 %s 篇评论, 在列出时将 %s 作为默认显示"
+msgstr ""
+
+#: install/Mysql.php:76 install/Pgsql.php:46
+msgid "启用数据库 SSL 服务端证书验证"
 msgstr ""
 
 #: admin/themes.php:41
@@ -1861,7 +1898,7 @@ msgstr ""
 msgid "图片"
 msgstr ""
 
-#: var/Widget/Options/General.php:409
+#: var/Widget/Options/General.php:408
 msgid "图片文件"
 msgstr ""
 
@@ -1908,7 +1945,7 @@ msgid "垃圾"
 msgstr ""
 
 #: admin/copyright.php:6
-msgid "基于 <a href=\\"https://typecho.org/\\">Typecho</a> 开发，由 <a href=\\"https://www.typerenew.com\\">%s</a> 焕新呈现，版本 %s"
+msgid "基于 <a href=\"https://typecho.org/\">Typecho</a> 开发，由 <a href=\"https://www.typerenew.com\">%s</a> 焕新呈现，版本 %s"
 msgstr ""
 
 #: var/Typecho/Palette.php:276 var/Widget/Menu.php:89
@@ -2003,7 +2040,7 @@ msgstr ""
 msgid "外观风格"
 msgstr ""
 
-#: var/Widget/Options/General.php:410
+#: var/Widget/Options/General.php:409
 msgid "多媒体文件"
 msgstr ""
 
@@ -2019,7 +2056,7 @@ msgstr ""
 msgid "失败任务列表"
 msgstr ""
 
-#: var/Widget/Options/General.php:357
+#: var/Widget/Options/General.php:356
 msgid "如无远程写作、离线客户端或第三方同步需求，建议保持关闭"
 msgstr ""
 
@@ -2033,6 +2070,10 @@ msgstr ""
 
 #: admin/write-page.php:112
 msgid "如果你设定了父级页面, 此页面将作为子页面呈现"
+msgstr ""
+
+#: install/Mysql.php:70
+msgid "如果您的数据库启用了 SSL，请填写 CA 证书路径，否则请留空"
 msgstr ""
 
 #: admin/backup.php:77
@@ -2087,19 +2128,19 @@ msgstr ""
 msgid "安全与兼容提醒"
 msgstr ""
 
-#: install.php:435
+#: install.php:437
 msgid "安装会话已失效, 请刷新页面后重新提交"
 msgstr ""
 
-#: install.php:377
+#: install.php:379
 msgid "安装会话已失效, 请返回上一步重新执行数据库配置"
 msgstr ""
 
-#: install.php:483 install.php:520
+#: install.php:485 install.php:522
 msgid "安装成功"
 msgstr ""
 
-#: install.php:1063 install.php:1064
+#: install.php:1065 install.php:1066
 msgid "安装流程状态无效"
 msgstr ""
 
@@ -2107,35 +2148,35 @@ msgstr ""
 msgid "安装程序发生未处理错误，请检查配置后重试"
 msgstr ""
 
-#: install.php:1510
+#: install.php:1512
 msgid "安装程序无法创建管理员帐号，请检查数据库权限和配置信息"
 msgstr ""
 
-#: install.php:1285
+#: install.php:1287
 msgid "安装程序无法初始化数据库，请检查数据库权限和配置信息"
 msgstr ""
 
-#: install.php:1227
+#: install.php:1229
 msgid "安装程序无法删除原有数据表，请检查数据库权限和配置信息。"
 msgstr ""
 
-#: install.php:1169
+#: install.php:1171
 msgid "安装程序无法完成数据库连接，请检查您的配置信息"
 msgstr ""
 
-#: install.php:1176
+#: install.php:1178
 msgid "安装程序无法自动创建 <strong>config.inc.php</strong> 文件"
 msgstr ""
 
-#: install.php:1234
+#: install.php:1236
 msgid "安装程序无法读取数据库初始化脚本，请检查 install/%s.sql 文件是否存在且可读。"
 msgstr ""
 
-#: install.php:1277
+#: install.php:1279
 msgid "安装程序检查到原有数据表已经存在."
 msgstr ""
 
-#: install.php:649
+#: install.php:651
 msgid "安装说明"
 msgstr ""
 
@@ -2151,19 +2192,19 @@ msgstr ""
 msgid "官方动态"
 msgstr ""
 
-#: var/Widget/Ajax.php:367
+#: var/Widget/Ajax.php:362
 msgid "官方插件仓库文档格式已变化，暂时无法解析版本信息。"
 msgstr ""
 
-#: var/Widget/Ajax.php:447
+#: var/Widget/Ajax.php:442
 msgid "官方插件仓库暂未收录该插件的版本信息。"
 msgstr ""
 
-#: var/Widget/Ajax.php:336
+#: var/Widget/Ajax.php:331
 msgid "官方插件仓库返回异常状态，暂时无法检测版本。"
 msgstr ""
 
-#: var/Widget/Ajax.php:353
+#: var/Widget/Ajax.php:348
 msgid "官方版本源校验失败，暂时无法检测版本。"
 msgstr ""
 
@@ -2175,7 +2216,7 @@ msgstr ""
 msgid "定时投递"
 msgstr ""
 
-#: var/Widget/Options/General.php:203
+#: var/Widget/Options/General.php:202
 msgid "客户端 IP 获取来源"
 msgstr ""
 
@@ -2203,7 +2244,7 @@ msgstr ""
 msgid "密码已重置，请使用新密码登录"
 msgstr ""
 
-#: install.php:1387 var/Widget/Register.php:47 var/Widget/Reset.php:54
+#: install.php:1389 var/Widget/Register.php:47 var/Widget/Reset.php:54
 #: var/Widget/Users/Edit.php:169 var/Widget/Users/Profile.php:310
 msgid "密码至少需要 %d 个字符，且不能超过 %d 字节"
 msgstr ""
@@ -2232,7 +2273,7 @@ msgstr ""
 msgid "对不起, 您的发言过于频繁, 请稍候再次发布."
 msgstr ""
 
-#: install.php:1166
+#: install.php:1168
 msgid "对不起, 无法连接数据库, 请先检查数据库配置再继续进行安装"
 msgstr ""
 
@@ -2249,11 +2290,19 @@ msgid "对不起,此内容的引用被禁止."
 msgstr ""
 
 #: var/Widget/Users/Profile.php:49
-msgid "对于完全支持 <a href=\\"https://daringfireball.net/projects/markdown/\\">Markdown</a> 语法写作的离线编辑器，打开此选项后将避免内容被转换为 HTML"
+msgid "对于完全支持 <a href=\"https://daringfireball.net/projects/markdown/\">Markdown</a> 语法写作的离线编辑器，打开此选项后将避免内容被转换为 HTML"
+msgstr ""
+
+#: install/Mysql.php:7
+msgid "对于本地环境，通常使用 \"%s\"，本质是指向本地服务器的域名，MySQL 连接时采用 Socket 方式，性能更佳；而 “127.0.0.1” 则是本地回环 IP 地址，通过 TCP/IP 方式连接"
+msgstr ""
+
+#: install/Pgsql.php:6
+msgid "对于本地环境，通常使用 \"%s\"，本质是指向本地服务器的域名，PgSQL 连接时采用 Socket 方式，性能更佳；而 “127.0.0.1” 则是本地回环 IP 地址，通过 TCP/IP 方式连接"
 msgstr ""
 
 #: var/Widget/Options/Discussion.php:131
-msgid "对评论者个人主页链接使用 <a href=\\"https://en.wikipedia.org/wiki/Nofollow\\">nofollow 属性</a>"
+msgid "对评论者个人主页链接使用 <a href=\"https://en.wikipedia.org/wiki/Nofollow\">nofollow 属性</a>"
 msgstr ""
 
 #: var/Typecho/Palette.php:357
@@ -2378,7 +2427,7 @@ msgstr ""
 msgid "已生成恢复前快照：%s"
 msgstr ""
 
-#: var/Widget/Options/General.php:442
+#: var/Widget/Options/General.php:441
 msgid "已解除 %d 条登录锁定"
 msgstr ""
 
@@ -2402,7 +2451,7 @@ msgstr ""
 msgid "已重试 %d 条任务（失败 %d，已放弃 %d）"
 msgstr ""
 
-#: install.php:534
+#: install.php:536
 msgid "希望您能尽情享用 TypeRenew 带来的乐趣!"
 msgstr ""
 
@@ -2410,7 +2459,7 @@ msgstr ""
 msgid "帮助"
 msgstr ""
 
-#: var/Widget/Options/General.php:411
+#: var/Widget/Options/General.php:410
 msgid "常用档案文件"
 msgstr ""
 
@@ -2481,7 +2530,7 @@ msgstr ""
 msgid "引用通告"
 msgstr ""
 
-#: var/Widget/Ajax.php:508
+#: var/Widget/Ajax.php:503
 msgid "强制刷新必须使用 POST 请求。"
 msgstr ""
 
@@ -2493,11 +2542,11 @@ msgstr ""
 msgid "当前 %s 版本为 %s，低于结构修复建议的最低版本 %s"
 msgstr ""
 
-#: install.php:753
+#: install.php:755
 msgid "当前 %s 版本为 %s，安装器最低要求 %s %s，请升级后继续安装。"
 msgstr ""
 
-#: install.php:688
+#: install.php:690
 msgid "当前 PHP 版本为 %s，TypeRenew 最低要求 PHP 8.0，请升级后继续安装。"
 msgstr ""
 
@@ -2505,7 +2554,7 @@ msgstr ""
 msgid "当前为 %s，目标推荐为 %s"
 msgstr ""
 
-#: install.php:1306
+#: install.php:1308
 msgid "当前为程序自动匹配的网站根目录路径，若与实际不符，请手动调整"
 msgstr ""
 
@@ -2537,11 +2586,7 @@ msgstr ""
 msgid "当前同时开放 XML-RPC 与 Pingback；如无明确业务需求，建议至少关闭 Pingback，或直接关闭 XML-RPC。"
 msgstr ""
 
-#: admin/options-cache.php:67
-msgid "当前命名空间条目"
-msgstr ""
-
-#: var/Widget/Options/General.php:318
+#: var/Widget/Options/General.php:317
 msgid "当前地址 <strong>%s</strong> 与上述设定值不一致"
 msgstr ""
 
@@ -2557,7 +2602,11 @@ msgstr ""
 msgid "当前数据库恢复将以非事务方式执行，为避免清表后中断导致数据损坏，必须先创建恢复前快照"
 msgstr ""
 
-#: var/Widget/Ajax.php:390
+#: var/Widget/Upgrade.php:45
+msgid "当前数据库环境仍有未处理风险，暂不能执行%s：%s。请先在升级页查看数据库诊断并处理后重试。"
+msgstr ""
+
+#: var/Widget/Ajax.php:385
 msgid "当前服务器可能无法访问版本源地址，或网络 / SSL 临时异常。"
 msgstr ""
 
@@ -2573,7 +2622,7 @@ msgstr ""
 msgid "当前没有可清理的升级包或临时目录"
 msgstr ""
 
-#: var/Widget/Options/General.php:442
+#: var/Widget/Options/General.php:441
 msgid "当前没有生效中的登录锁定"
 msgstr ""
 
@@ -2581,7 +2630,7 @@ msgstr ""
 msgid "当前版本 %s"
 msgstr ""
 
-#: var/Widget/Ajax.php:467
+#: var/Widget/Ajax.php:462
 msgid "当前版本 %s，不低于官方仓库标注的最新版本 %s。"
 msgstr ""
 
@@ -2609,7 +2658,7 @@ msgstr ""
 msgid "当前环境缺少 ZipArchive 扩展，无法执行在线升级"
 msgstr ""
 
-#: var/Widget/Ajax.php:317
+#: var/Widget/Ajax.php:312
 msgid "当前环境缺少 curl 扩展，无法访问版本源地址。"
 msgstr ""
 
@@ -2637,11 +2686,11 @@ msgstr ""
 msgid "当投递模式选择“定时投递”时，请使用 POST 请求并携带签名"
 msgstr ""
 
-#: var/Widget/Options/General.php:204
+#: var/Widget/Options/General.php:203
 msgid "当站点位于 CDN 或反向代理之后时，请选择对应的来源头以获取访客真实 IP。"
 msgstr ""
 
-#: var/Widget/Options/General.php:214
+#: var/Widget/Options/General.php:213
 msgid "当选择“自定义请求头”时填写，例如 HTTP_TRUE_CLIENT_IP、HTTP_ALI_CDN_REAL_IP。可省略 HTTP_ 前缀。"
 msgstr ""
 
@@ -2700,12 +2749,12 @@ msgstr ""
 msgid "必须填写用户名"
 msgstr ""
 
-#: install.php:1378 var/Widget/Register.php:33
+#: install.php:1380 var/Widget/Register.php:33
 #: var/Widget/Users/Edit.php:175
 msgid "必须填写用户名称"
 msgstr ""
 
-#: install.php:1381 var/Widget/Register.php:38
+#: install.php:1383 var/Widget/Register.php:38
 #: var/Widget/Users/Edit.php:163 var/Widget/Users/Profile.php:235
 msgid "必须填写电子邮箱"
 msgstr ""
@@ -2774,6 +2823,10 @@ msgstr ""
 msgid "恢复完成，但未能自动恢复当前登录态，请使用恢复后的账号重新登录"
 msgstr ""
 
+#: var/Widget/Backup.php:328
+msgid "恢复完成，但自动恢复当前登录态失败：%s"
+msgstr ""
+
 #: var/Widget/Backup.php:946
 msgid "恢复已完成：核心数据已导入"
 msgstr ""
@@ -2806,7 +2859,7 @@ msgstr ""
 msgid "恢复过程中遇到如下错误: %s"
 msgstr ""
 
-#: install.php:524
+#: install.php:526
 msgid "恭喜！您的 TypeRenew 安装已完成"
 msgstr ""
 
@@ -2814,8 +2867,12 @@ msgstr ""
 msgid "您也可以使用附件功能插入上传的本地图片"
 msgstr ""
 
-#: install.php:1177
+#: install.php:1179
 msgid "您可以在网站根目录下手动创建 <strong>config.inc.php</strong> 文件, 并复制如下代码至其中"
+msgstr ""
+
+#: install/Pgsql.php:13
+msgid "您可能会使用 \"%s\""
 msgstr ""
 
 #: var/Typecho/Mail/Notify.php:175
@@ -2826,7 +2883,7 @@ msgstr ""
 msgid "您所使用的用户名已经被注册,请登录后再次提交"
 msgstr ""
 
-#: install.php:485 install.php:528
+#: install.php:487 install.php:530
 msgid "您的密码是"
 msgstr ""
 
@@ -2834,7 +2891,7 @@ msgstr ""
 msgid "您的档案已经更新"
 msgstr ""
 
-#: install.php:484 install.php:527
+#: install.php:486 install.php:529
 msgid "您的用户名是"
 msgstr ""
 
@@ -2855,7 +2912,7 @@ msgstr ""
 msgid "您编辑的文件不存在"
 msgstr ""
 
-#: var/Widget/Options/General.php:305
+#: var/Widget/Options/General.php:304
 msgid "您设置的站点名称，会展示在网页的标题位置"
 msgstr ""
 
@@ -2867,7 +2924,7 @@ msgstr ""
 msgid "想起密码了？"
 msgstr ""
 
-#: install.php:1481
+#: install.php:1483
 msgid "感恩相遇，为你而来."
 msgstr ""
 
@@ -2883,7 +2940,7 @@ msgstr ""
 msgid "我们检测到你使用了 Apache 服务器, 但是程序无法在根目录创建.htaccess文件, 这可能是产生这个错误的原因"
 msgstr ""
 
-#: install.php:664
+#: install.php:666
 msgid "我已阅读并同意上述协议内容，开始下一步 &raquo;"
 msgstr ""
 
@@ -2919,7 +2976,7 @@ msgstr ""
 msgid "所有评论必须经过审核"
 msgstr ""
 
-#: var/Widget/Options/General.php:371
+#: var/Widget/Options/General.php:370
 msgid "所选择的语言包不存在"
 msgstr ""
 
@@ -2927,7 +2984,7 @@ msgstr ""
 msgid "手动投递、清理与重试队列任务"
 msgstr ""
 
-#: var/Widget/Options/General.php:354 var/Widget/Users/Profile.php:36
+#: var/Widget/Options/General.php:353 var/Widget/Users/Profile.php:36
 #: var/Widget/Users/Profile.php:46 var/Widget/Users/Profile.php:55
 msgid "打开"
 msgstr ""
@@ -3179,31 +3236,35 @@ msgstr ""
 msgid "数据备份与恢复"
 msgstr ""
 
-#: install.php:1164
-msgid "数据库: \\"%s\\"不存在，请手动创建后重试"
+#: install/Mysql.php:68
+msgid "数据库 SSL 证书"
+msgstr ""
+
+#: install.php:1166
+msgid "数据库: \"%s\"不存在，请手动创建后重试"
 msgstr ""
 
 #: var/Widget/Upgrade.php:84
 msgid "数据库关键结构已同步"
 msgstr ""
 
-#: install.php:898
+#: install.php:900
 msgid "数据库前缀"
 msgstr ""
 
-#: install.php:1057
+#: install.php:1059
 msgid "数据库前缀不能为空"
 msgstr ""
 
-#: install.php:1059
+#: install.php:1061
 msgid "数据库前缀不能超过 16 个字符"
 msgstr ""
 
-#: install.php:1060
+#: install.php:1062
 msgid "数据库前缀仅允许字母、数字和下划线"
 msgstr ""
 
-#: install.php:1058
+#: install.php:1060
 msgid "数据库前缀至少 1 个字符"
 msgstr ""
 
@@ -3215,23 +3276,43 @@ msgstr ""
 msgid "数据库升级会执行结构迁移，建议在低峰期操作并保持页面不刷新，直到完成。"
 msgstr ""
 
-#: install.php:1088 install.php:1105
+#: install/Mysql.php:27 install/Pgsql.php:24
+msgid "数据库名"
+msgstr ""
+
+#: install.php:1090 install.php:1107
 msgid "数据库名不能为空"
 msgstr ""
 
-#: install.php:1082 install.php:1099
+#: install/Mysql.php:5 install/Pgsql.php:4
+msgid "数据库地址"
+msgstr ""
+
+#: install.php:1084 install.php:1101
 msgid "数据库地址不能为空"
 msgstr ""
 
-#: install.php:1086 install.php:1103
+#: install.php:1088 install.php:1105
 msgid "数据库字符集不能为空"
 msgstr ""
 
-#: install.php:1087
+#: install.php:1089
 msgid "数据库字符集仅支持 utf8mb4"
 msgstr ""
 
-#: install.php:1111
+#: install/Mysql.php:21 install/Pgsql.php:18
+msgid "数据库密码"
+msgstr ""
+
+#: install/Mysql.php:58
+msgid "数据库引擎"
+msgstr ""
+
+#: install/SQLite.php:5
+msgid "数据库文件路径"
+msgstr ""
+
+#: install.php:1113
 msgid "数据库文件路径不能为空"
 msgstr ""
 
@@ -3243,15 +3324,23 @@ msgstr ""
 msgid "数据库版本不满足结构修复要求"
 msgstr ""
 
-#: install.php:1085 install.php:1102
+#: install/Mysql.php:13 install/Pgsql.php:11
+msgid "数据库用户名"
+msgstr ""
+
+#: install.php:1087 install.php:1104
 msgid "数据库用户名不能为空"
 msgstr ""
 
-#: install.php:1083 install.php:1100
+#: install/Mysql.php:40 install/Pgsql.php:36
+msgid "数据库端口"
+msgstr ""
+
+#: install.php:1085 install.php:1102
 msgid "数据库端口不能为空"
 msgstr ""
 
-#: install.php:1084 install.php:1101
+#: install.php:1086 install.php:1103
 msgid "数据库端口必须是整数"
 msgstr ""
 
@@ -3259,23 +3348,27 @@ msgstr ""
 msgid "数据库结构已是最新状态"
 msgstr ""
 
-#: install.php:884
+#: install/Mysql.php:48
+msgid "数据库编码"
+msgstr ""
+
+#: install.php:886
 msgid "数据库适配器"
 msgstr ""
 
-#: install.php:1062
+#: install.php:1064
 msgid "数据库适配器无效"
 msgstr ""
 
-#: install.php:1119
+#: install.php:1121
 msgid "数据库配置无效"
 msgstr ""
 
-#: install.php:1089
+#: install.php:1091
 msgid "数据表引擎不能为空"
 msgstr ""
 
-#: install.php:1090
+#: install.php:1092
 msgid "数据表引擎仅支持 InnoDB"
 msgstr ""
 
@@ -3308,7 +3401,7 @@ msgid "文件 %s 的更改已经保存"
 msgstr ""
 
 #: var/Widget/Contents/Attachment/Edit.php:85
-msgid "文件 <a href=\\"%s\\">%s</a> 已经被更新"
+msgid "文件 <a href=\"%s\">%s</a> 已经被更新"
 msgstr ""
 
 #: var/Typecho/Upgrade/Runner.php:624
@@ -3368,12 +3461,16 @@ msgstr ""
 msgid "文章"
 msgstr ""
 
+#: var/Widget/Contents/Post/Edit.php:63
+msgid "文章 \"%s\" 已计划于 %s 发布，当前可先<a href=\"%s\">预览</a>"
+msgstr ""
+
 #: var/Widget/Contents/Post/Edit.php:70
-msgid "文章 \\"%s\\" 等待审核"
+msgid "文章 \"%s\" 等待审核"
 msgstr ""
 
 #: var/Widget/Contents/Post/Edit.php:68
-msgid "文章 \\"<a href=\\"%s\\">%s</a>\\" 已经发布"
+msgid "文章 \"<a href=\"%s\">%s</a>\" 已经发布"
 msgstr ""
 
 #: admin/profile.php:23
@@ -3511,7 +3608,7 @@ msgstr ""
 msgid "无法禁用插件"
 msgstr ""
 
-#: install.php:746
+#: install.php:748
 msgid "无法识别当前 MySQL 服务端版本：%s"
 msgstr ""
 
@@ -3557,7 +3654,7 @@ msgstr ""
 msgid "时"
 msgstr ""
 
-#: var/Widget/Options/General.php:378 var/Widget/XmlRpc.php:104
+#: var/Widget/Options/General.php:377 var/Widget/XmlRpc.php:104
 msgid "时区"
 msgstr ""
 
@@ -3609,7 +3706,7 @@ msgstr ""
 msgid "是否使用地址重写功能"
 msgstr ""
 
-#: var/Widget/Options/General.php:347 var/Widget/XmlRpc.php:129
+#: var/Widget/Options/General.php:346 var/Widget/XmlRpc.php:129
 msgid "是否允许注册"
 msgstr ""
 
@@ -3642,7 +3739,7 @@ msgstr ""
 msgid "暂无"
 msgstr ""
 
-#: admin/index.php:452 var/Widget/Ajax.php:588
+#: admin/index.php:452 var/Widget/Ajax.php:583
 msgid "暂无动态"
 msgstr ""
 
@@ -3654,7 +3751,7 @@ msgstr ""
 msgid "暂无评论"
 msgstr ""
 
-#: admin/index.php:453 var/Widget/Ajax.php:525 var/Widget/Ajax.php:588
+#: admin/index.php:453 var/Widget/Ajax.php:520 var/Widget/Ajax.php:583
 msgid "暂时无法获取官方动态，请检查网络后重试。"
 msgstr ""
 
@@ -3786,7 +3883,7 @@ msgstr ""
 msgid "本功能 <strong>不包含程序设置、主题文件与插件自建数据</strong>。"
 msgstr ""
 
-#: var/Widget/Ajax.php:437
+#: var/Widget/Ajax.php:432
 msgid "本地插件未声明有效版本号，无法完成版本比较。"
 msgstr ""
 
@@ -3794,7 +3891,7 @@ msgstr ""
 msgid "本备份功能 <strong>仅处理核心内容数据</strong>，包括文章、评论、分类标签、关系、用户与字段数据。"
 msgstr ""
 
-#: install.php:651
+#: install.php:653
 msgid "本安装程序将自动检测您的服务器环境是否符合 TypeRenew 最低运行配置要求。"
 msgstr ""
 
@@ -3803,26 +3900,26 @@ msgid "本恢复仅迁移内容数据，不包含设置项、主题文件和插�
 msgstr ""
 
 #: admin/write-post.php:148
-msgid "本文由 <a href=\\"%s\\">%s</a> 撰写"
+msgid "本文由 <a href=\"%s\">%s</a> 撰写"
 msgstr ""
 
 #: var/Widget/Backup.php:967
 msgid "本次恢复未执行迁移后修复"
 msgstr ""
 
-#: install.php:657
-msgid "本程序 TypeRenew 基于原项目 <a href=\\"https://typecho.org/\\">Typecho</a> 进行二次开发，完整继承并严格遵守 GPL v2 开源许可协议。您可以在 <a href=\\"https://www.gnu.org/copyleft/gpl.html\\">GPL</a> 协议允许的范围内，自由使用、拷贝、修改和分发本程序，无论是用于商业还是非商业目的。"
+#: install.php:659
+msgid "本程序 TypeRenew 基于原项目 <a href=\"https://typecho.org/\">Typecho</a> 进行二次开发，完整继承并严格遵守 GPL v2 开源许可协议。您可以在 <a href=\"https://www.gnu.org/copyleft/gpl.html\">GPL</a> 协议允许的范围内，自由使用、拷贝、修改和分发本程序，无论是用于商业还是非商业目的。"
 msgstr ""
 
-#: install.php:1442
+#: install.php:1444
 msgid "本程序由 TypeRenew 焕新呈现，基于 Typecho 开发，为现代化而生"
 msgstr ""
 
 #: admin/write-page.php:156
-msgid "本页面由 <a href=\\"%s\\">%s</a> 创建"
+msgid "本页面由 <a href=\"%s\">%s</a> 创建"
 msgstr ""
 
-#: install.php:1460
+#: install.php:1462
 msgid "本页面由 TypeRenew 创建, 这只是个测试页面."
 msgstr ""
 
@@ -3850,7 +3947,7 @@ msgstr ""
 msgid "查看完整环境检查详情"
 msgstr ""
 
-#: install.php:532
+#: install.php:534
 msgid "查看您的 Blog"
 msgstr ""
 
@@ -3880,11 +3977,11 @@ msgid "标签 %s 下的文章"
 msgstr ""
 
 #: var/Widget/Metas/Tag/Edit.php:96
-msgid "标签 <a href=\\"%s\\">%s</a> 已经被增加"
+msgid "标签 <a href=\"%s\">%s</a> 已经被增加"
 msgstr ""
 
 #: var/Widget/Metas/Tag/Edit.php:196
-msgid "标签 <a href=\\"%s\\">%s</a> 已经被更新"
+msgid "标签 <a href=\"%s\">%s</a> 已经被更新"
 msgstr ""
 
 #: var/Widget/Archive.php:1399 var/Widget/Metas/Tag/Admin.php:30
@@ -3948,7 +4045,7 @@ msgstr ""
 msgid "标题文字"
 msgstr ""
 
-#: var/Widget/Options/General.php:425
+#: var/Widget/Options/General.php:424
 msgid "核心会校验扩展名，并对明显的危险内容类型做基础拦截；如需更严格策略，可通过安全类插件扩展"
 msgstr ""
 
@@ -3973,14 +4070,14 @@ msgid "检测到历史升级锁文件，系统会在下次升级时复用该文�
 msgstr ""
 
 #: admin/themes.php:38
-msgid "检测到您之前使用的 \\"%s\\" 外观文件不存在，您可以重新上传此外观或者启用其他外观。"
+msgid "检测到您之前使用的 \"%s\" 外观文件不存在，您可以重新上传此外观或者启用其他外观。"
 msgstr ""
 
-#: install.php:1556
+#: install.php:1558
 msgid "检测到数据库中已存在站点数据，但安装状态不完整。为防止被他人接管，安装程序已停止。请恢复数据库或删除 config.inc.php 后重试"
 msgstr ""
 
-#: var/Widget/Ajax.php:458
+#: var/Widget/Ajax.php:453
 msgid "检测到新版本：当前 %s，官方最新 %s。请前往官方插件仓库手动更新。"
 msgstr ""
 
@@ -4036,7 +4133,7 @@ msgstr ""
 msgid "次数"
 msgstr ""
 
-#: install.php:642 install.php:1439
+#: install.php:644 install.php:1441
 msgid "欢迎使用 TypeRenew"
 msgstr ""
 
@@ -4044,7 +4141,7 @@ msgstr ""
 msgid "欢迎回来"
 msgstr ""
 
-#: install.php:660
+#: install.php:662
 msgid "欢迎所有开发者、设计师和用户的反馈、建议与贡献，每一份力量都将帮助 TypeRenew 更好地成长。"
 msgstr ""
 
@@ -4229,7 +4326,7 @@ msgstr ""
 msgid "没有标签被删除"
 msgstr ""
 
-#: install.php:1152
+#: install.php:1154
 msgid "没有检测到您手动创建的配置文件, 请检查后再次创建"
 msgstr ""
 
@@ -4345,10 +4442,6 @@ msgstr ""
 
 #: admin/footer.php:28
 msgid "深色主题"
-msgstr ""
-
-#: var/Widget/Options/General.php:114
-msgid "清华大学镜像"
 msgstr ""
 
 #: admin/index.php:343
@@ -4469,7 +4562,7 @@ msgstr ""
 msgid "版本检测失败，请稍后重试。"
 msgstr ""
 
-#: var/Widget/Ajax.php:427
+#: var/Widget/Ajax.php:422
 msgid "版本检测失败：%s"
 msgstr ""
 
@@ -4549,7 +4642,7 @@ msgstr ""
 msgid "用于接收待审评论通知，留空则回退到文章作者邮箱"
 msgstr ""
 
-#: var/Widget/Options/General.php:135
+#: var/Widget/Options/General.php:134
 msgid "用于检测官方插件版本信息。国内服务器可切换镜像以解决 GitHub Raw 访问不稳定的问题。"
 msgstr ""
 
@@ -4580,7 +4673,7 @@ msgid "用户主键不存在"
 msgstr ""
 
 #: admin/manage-comments.php:332 admin/manage-users.php:52
-#: admin/register.php:22 install.php:1311 var/Widget/Users/Edit.php:87
+#: admin/register.php:22 install.php:1313 var/Widget/Users/Edit.php:87
 msgid "用户名"
 msgstr ""
 
@@ -4609,7 +4702,7 @@ msgstr ""
 msgid "用户名至少包含2个字符"
 msgstr ""
 
-#: install.php:1380
+#: install.php:1382
 msgid "用户名长度超过限制, 请不要超过 32 个字符"
 msgstr ""
 
@@ -4639,8 +4732,8 @@ msgstr ""
 msgid "用户组选择错误"
 msgstr ""
 
-#: var/Widget/Options/General.php:424
-msgid "用逗号 \\",\\" 将后缀名隔开, 例如: %s"
+#: var/Widget/Options/General.php:423
+msgid "用逗号 \",\" 将后缀名隔开, 例如: %s"
 msgstr ""
 
 #: admin/manage-users.php:54
@@ -4665,7 +4758,7 @@ msgstr ""
 msgid "电子邮箱最多包含150个字符"
 msgstr ""
 
-#: install.php:1382 var/Widget/Register.php:40
+#: install.php:1384 var/Widget/Register.php:40
 #: var/Widget/Users/Edit.php:165 var/Widget/Users/Profile.php:237
 msgid "电子邮箱格式错误"
 msgstr ""
@@ -4702,11 +4795,11 @@ msgstr ""
 msgid "登录地址"
 msgstr ""
 
-#: install.php:1318
+#: install.php:1320
 msgid "登录密码"
 msgstr ""
 
-#: install.php:1320
+#: install.php:1322
 msgid "登录密码至少需要 %d 个字符，且不能超过 %d 字节。若留空，系统将自动生成随机密码（不推荐）"
 msgstr ""
 
@@ -4751,6 +4844,10 @@ msgstr ""
 msgid "目标数据库缺少 %s 表或无法读取其结构"
 msgstr ""
 
+#: var/Widget/Options/Reading.php:164
+msgid "直接调用 %s 模板文件"
+msgstr ""
+
 #: admin/auth.php:18
 msgid "石板"
 msgstr ""
@@ -4783,7 +4880,7 @@ msgstr ""
 msgid "确认退订"
 msgstr ""
 
-#: install.php:907
+#: install.php:909
 msgid "确认配置并开始安装 &raquo;"
 msgstr ""
 
@@ -4845,31 +4942,31 @@ msgstr ""
 msgid "站点 LOGO 地址"
 msgstr ""
 
-#: var/Widget/Options/General.php:305
+#: var/Widget/Options/General.php:304
 msgid "站点名称"
 msgstr ""
 
-#: var/Widget/Options/General.php:315
+#: var/Widget/Options/General.php:314
 msgid "站点地址"
 msgstr ""
 
-#: var/Widget/Options/General.php:316
+#: var/Widget/Options/General.php:315
 msgid "站点地址主要用于生成内容的永久链接"
 msgstr ""
 
-#: install.php:284
+#: install.php:286
 msgid "站点已安装，但当前无法连接数据库，请检查数据库服务后重试"
 msgstr ""
 
-#: var/Widget/Options/General.php:329
+#: var/Widget/Options/General.php:328
 msgid "站点描述"
 msgstr ""
 
-#: var/Widget/Options/General.php:330
+#: var/Widget/Options/General.php:329
 msgid "站点描述将显示在网页代码的头部区域"
 msgstr ""
 
-#: install.php:879
+#: install.php:881
 msgid "站点配置初始化"
 msgstr ""
 
@@ -4997,7 +5094,7 @@ msgstr ""
 msgid "统计"
 msgstr ""
 
-#: install.php:1332
+#: install.php:1334
 msgid "继续安装 &raquo;"
 msgstr ""
 
@@ -5024,6 +5121,10 @@ msgstr ""
 
 #: admin/options-cache.php:81
 msgid "缓存未能启用"
+msgstr ""
+
+#: admin/options-cache.php:67
+msgid "缓存条目"
 msgstr ""
 
 #: admin/options-cache.php:28 var/Widget/Options/Cache.php:106
@@ -5068,7 +5169,7 @@ msgstr ""
 msgid "编辑器"
 msgstr ""
 
-#: var/Widget/Ajax.php:601
+#: var/Widget/Ajax.php:596
 msgid "编辑器尺寸只能通过 POST 保存。"
 msgstr ""
 
@@ -5122,7 +5223,7 @@ msgstr ""
 msgid "缺字段"
 msgstr ""
 
-#: install.php:630
+#: install.php:632
 msgid "缺少PHP扩展"
 msgid_plural "请在服务器上安装以下PHP扩展中的至少一个"
 msgstr[0] ""
@@ -5148,7 +5249,7 @@ msgstr ""
 msgid "网站"
 msgstr ""
 
-#: install.php:1304
+#: install.php:1306
 msgid "网站地址"
 msgstr ""
 
@@ -5204,7 +5305,7 @@ msgstr ""
 msgid "自动异步为默认推荐方案；定时投递适合用 Cron 批量处理"
 msgstr ""
 
-#: var/Widget/Options/General.php:115
+#: var/Widget/Options/General.php:114
 msgid "自定义域名"
 msgstr ""
 
@@ -5213,7 +5314,7 @@ msgid "自定义字段"
 msgstr ""
 
 #: admin/custom-fields.php:71
-msgid "自定义字段可以扩展你的模板功能, 使用方法参见 <a href=\\"https://docs.typecho.org/help/custom-fields\\">帮助文档</a>"
+msgid "自定义字段可以扩展你的模板功能, 使用方法参见 <a href=\"https://docs.typecho.org/help/custom-fields\">帮助文档</a>"
 msgstr ""
 
 #: var/Widget/Options/Permalink.php:319
@@ -5224,11 +5325,11 @@ msgstr ""
 msgid "自定义模板"
 msgstr ""
 
-#: var/Widget/Options/General.php:197
+#: var/Widget/Options/General.php:196
 msgid "自定义请求头"
 msgstr ""
 
-#: var/Widget/Options/General.php:213
+#: var/Widget/Options/General.php:212
 msgid "自定义请求头名称"
 msgstr ""
 
@@ -5236,7 +5337,7 @@ msgstr ""
 msgid "自定义链接与现有规则存在冲突! 它可能影响解析效率, 建议你重新分配一个规则."
 msgstr ""
 
-#: var/Widget/Options/General.php:144
+#: var/Widget/Options/General.php:143
 msgid "自定义镜像域名"
 msgstr ""
 
@@ -5252,15 +5353,19 @@ msgstr ""
 msgid "若不希望在内容聚合页展示文章全文，可选择「仅输出摘要」选项"
 msgstr ""
 
-#: install.php:659
-msgid "若在使用中遇到问题或是有新功能建议，欢迎在 <a href=\\"https://github.com/Yangsh888/TypeRenew\\">GitHub</a> 中交流反馈，也可直接向项目提交代码贡献。"
+#: install/Mysql.php:42 install/Pgsql.php:38
+msgid "若不确定，请保持默认选项"
 msgstr ""
 
-#: install.php:652
+#: install.php:661
+msgid "若在使用中遇到问题或是有新功能建议，欢迎在 <a href=\"https://github.com/Yangsh888/TypeRenew\">GitHub</a> 中交流反馈，也可直接向项目提交代码贡献。"
+msgstr ""
+
+#: install.php:654
 msgid "若环境不满足运行标准，页面顶部将出现明确提示，请您参照提示检查并调整主机配置。"
 msgstr ""
 
-#: install.php:653
+#: install.php:655
 msgid "若环境符合全部要求，页面下方将出现「开始下一步」按钮，点击即可快速完成程序安装。"
 msgstr ""
 
@@ -5271,7 +5376,7 @@ msgid "草稿"
 msgstr ""
 
 #: var/Widget/Contents/EditTrait.php:783
-msgid "草稿 \\"%s\\" 已经被保存"
+msgid "草稿 \"%s\" 已经被保存"
 msgstr ""
 
 #: var/Widget/Contents/Page/Edit.php:216
@@ -5331,7 +5436,11 @@ msgstr ""
 msgid "记录保留天数"
 msgstr ""
 
-#: install.php:655
+#: var/Widget/Backup.php:928
+msgid "记录统计：文章 %d、评论 %d、分类与标签 %d、关系 %d、用户 %d、字段 %d"
+msgstr ""
+
+#: install.php:657
 msgid "许可及协议"
 msgstr ""
 
@@ -5383,7 +5492,7 @@ msgstr ""
 msgid "访客邮件标题"
 msgstr ""
 
-#: install.php:531
+#: install.php:533
 msgid "访问后台控制面板"
 msgstr ""
 
@@ -5505,7 +5614,7 @@ msgstr ""
 msgid "详情"
 msgstr ""
 
-#: var/Widget/Options/General.php:370
+#: var/Widget/Options/General.php:369
 msgid "语言"
 msgstr ""
 
@@ -5517,7 +5626,7 @@ msgstr ""
 msgid "请不要与系统中现有的电子邮箱地址重复."
 msgstr ""
 
-#: var/Widget/Options/General.php:341
+#: var/Widget/Options/General.php:340
 msgid "请不要在关键词中使用特殊字符"
 msgstr ""
 
@@ -5533,16 +5642,16 @@ msgstr ""
 msgid "请不要在昵称中使用特殊字符"
 msgstr ""
 
-#: install.php:1379 var/Widget/Feedback.php:141 var/Widget/Register.php:36
+#: install.php:1381 var/Widget/Feedback.php:141 var/Widget/Register.php:36
 #: var/Widget/Users/Edit.php:176
 msgid "请不要在用户名中使用特殊字符"
 msgstr ""
 
-#: var/Widget/Options/General.php:308
+#: var/Widget/Options/General.php:307
 msgid "请不要在站点名称中使用特殊字符"
 msgstr ""
 
-#: var/Widget/Options/General.php:332
+#: var/Widget/Options/General.php:331
 msgid "请不要在站点描述中使用特殊字符"
 msgstr ""
 
@@ -5562,8 +5671,8 @@ msgstr ""
 msgid "请为上述目录开放写权限；若不便调整当前路径，也可在 config.inc.php 中定义 __TYPECHO_UPGRADE_DIR__ 指向一个可写目录。"
 msgstr ""
 
-#: var/Widget/Options/General.php:339
-msgid "请以半角逗号 \\",\\" 分割多个关键字"
+#: var/Widget/Options/General.php:338
+msgid "请以半角逗号 \",\" 分割多个关键字"
 msgstr ""
 
 #: admin/upgrade.php:269
@@ -5608,8 +5717,8 @@ msgstr ""
 msgid "请填写 Redis 主机"
 msgstr ""
 
-#: install.php:1376 usr/themes/default/functions.php:13
-#: var/Widget/Options/General.php:322
+#: install.php:1378 usr/themes/default/functions.php:13
+#: var/Widget/Options/General.php:321
 msgid "请填写一个合法的URL地址"
 msgstr ""
 
@@ -5617,15 +5726,15 @@ msgstr ""
 msgid "请填写个人主页地址，需以 <code>https://</code> 开头"
 msgstr ""
 
-#: install.php:1313
+#: install.php:1315
 msgid "请填写您的用户名"
 msgstr ""
 
-#: install.php:1327
+#: install.php:1329
 msgid "请填写您的邮箱地址"
 msgstr ""
 
-#: var/Widget/Options/General.php:382
+#: var/Widget/Options/General.php:381
 msgid "请填写时区"
 msgstr ""
 
@@ -5633,11 +5742,11 @@ msgstr ""
 msgid "请填写正确的测试收件邮箱"
 msgstr ""
 
-#: var/Widget/Options/General.php:307
+#: var/Widget/Options/General.php:306
 msgid "请填写站点名称"
 msgstr ""
 
-#: install.php:1375 var/Widget/Options/General.php:321
+#: install.php:1377 var/Widget/Options/General.php:320
 msgid "请填写站点地址"
 msgstr ""
 
@@ -5653,7 +5762,11 @@ msgstr ""
 msgid "请开放目录写权限"
 msgstr ""
 
-#: install.php:892
+#: install/Mysql.php:29 install/Pgsql.php:26
+msgid "请您指定数据库名称"
+msgstr ""
+
+#: install.php:894
 msgid "请根据您使用的数据库类型选择对应的适配器；若不确定，请保持默认选项"
 msgstr ""
 
@@ -5696,7 +5809,7 @@ msgstr ""
 msgid "请调整你的目录权限, 或者手动创建一个.htaccess文件"
 msgstr ""
 
-#: var/Widget/Options/General.php:379
+#: var/Widget/Options/General.php:378
 msgid "请输入 IANA 时区标识符，例如 Asia/Shanghai、America/New_York、Europe/Berlin。系统会自动兼容旧版配置"
 msgstr ""
 
@@ -5712,7 +5825,7 @@ msgstr ""
 msgid "请输入关键字"
 msgstr ""
 
-#: var/Widget/Options/General.php:148
+#: var/Widget/Options/General.php:147
 msgid "请输入可访问的公网镜像域名"
 msgstr ""
 
@@ -5728,7 +5841,7 @@ msgstr ""
 msgid "请输入密码访问"
 msgstr ""
 
-#: var/Widget/Options/General.php:383
+#: var/Widget/Options/General.php:382
 msgid "请输入有效的 IANA 时区标识符"
 msgstr ""
 
@@ -5764,7 +5877,7 @@ msgstr ""
 msgid "请选择升级包 ZIP 文件"
 msgstr ""
 
-#: install.php:1061
+#: install.php:1063
 msgid "请选择数据库适配器"
 msgstr ""
 
@@ -5877,7 +5990,7 @@ msgstr ""
 msgid "这个目标地址不存在"
 msgstr ""
 
-#: admin/plugins.php:42 var/Widget/Ajax.php:417
+#: admin/plugins.php:42 var/Widget/Ajax.php:412
 msgid "这并非 TypeRenew 官方插件，无法在官方插件仓库中检测版本状态。"
 msgstr ""
 
@@ -5936,8 +6049,8 @@ msgstr ""
 msgid "选中项"
 msgstr ""
 
-#: var/Widget/Options/General.php:136
-msgid "选择\\"自定义域名\\"后，在下方填写自定义镜像域名（仅域名，不含 https:// 前缀和路径）。"
+#: var/Widget/Options/General.php:135
+msgid "选择\"自定义域名\"后，在下方填写自定义镜像域名（仅域名，不含 https:// 前缀和路径）。"
 msgstr ""
 
 #: admin/backup.php:155
@@ -5977,7 +6090,7 @@ msgstr ""
 msgid "邮件"
 msgstr ""
 
-#: install.php:1325 var/Widget/Users/Edit.php:91
+#: install.php:1327 var/Widget/Users/Edit.php:91
 #: var/Widget/Users/Profile.php:216
 msgid "邮件地址"
 msgstr ""
@@ -6023,11 +6136,11 @@ msgstr ""
 msgid "邮箱地址不合法"
 msgstr ""
 
-#: install.php:1383
+#: install.php:1385
 msgid "邮箱长度超过限制, 请不要超过 150 个字符"
 msgstr ""
 
-#: var/Widget/Ajax.php:585
+#: var/Widget/Ajax.php:580
 msgid "部分官方动态读取失败。"
 msgstr ""
 
@@ -6205,8 +6318,12 @@ msgstr ""
 msgid "页面"
 msgstr ""
 
+#: var/Widget/Contents/Page/Edit.php:60
+msgid "页面 \"%s\" 已计划于 %s 发布，当前可先<a href=\"%s\">预览</a>"
+msgstr ""
+
 #: var/Widget/Contents/Page/Edit.php:65
-msgid "页面 \\"<a href=\\"%s\\">%s</a>\\" 已经发布"
+msgid "页面 \"<a href=\"%s\">%s</a>\" 已经发布"
 msgstr ""
 
 #: admin/extending.php:9 admin/extending.php:14 admin/extending.php:20
@@ -6309,7 +6426,8 @@ msgstr ""
 msgid "驱动不可用"
 msgstr ""
 
-#: admin/write-page.php:118 admin/write-post.php:91
+#: admin/write-page.php:118 admin/write-post.php:91 install/Mysql.php:36
+#: install/Pgsql.php:32
 msgid "高级选项"
 msgstr ""
 
@@ -6317,7 +6435,7 @@ msgstr ""
 msgid "默认"
 msgstr ""
 
-#: var/Widget/Options/General.php:205
+#: var/Widget/Options/General.php:204
 msgid "默认 REMOTE_ADDR 最安全；其余来源头可被伪造，请仅在确认前端代理会覆盖该头时选用。"
 msgstr ""
 
@@ -6329,12 +6447,12 @@ msgstr ""
 msgid "默认允许"
 msgstr ""
 
-#: install.php:1427
+#: install.php:1429
 msgid "默认分类"
 msgstr ""
 
-#: install.php:900
-msgid "默认前缀是 \\"%s\\"，您也可以根据自己的博客名称自定义设置"
+#: install.php:902
+msgid "默认前缀是 \"%s\"，您也可以根据自己的博客名称自定义设置"
 msgstr ""
 
 #: var/Widget/Options/Discussion.php:211
@@ -6352,4 +6470,3 @@ msgstr ""
 #: var/Widget/Options/General.php:109
 msgid "默认（raw.githubusercontent.com）"
 msgstr ""
-
