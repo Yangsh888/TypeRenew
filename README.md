@@ -6,7 +6,7 @@
 [![Based on](https://img.shields.io/badge/Based%20on-Typecho%201.3.0-orange?style=flat-square)](https://github.com/typecho/typecho)
 [![zread](https://img.shields.io/badge/Ask_Zread-_.svg?style=flat-square&color=00b0aa&labelColor=000000&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTQuOTYxNTYgMS42MDAxSDIuMjQxNTZDMS44ODgxIDEuNjAwMSAxLjYwMTU2IDEuODg2NjQgMS42MDE1NiAyLjI0MDFWNC45NjAxQzEuNjAxNTYgNS4zMTM1NiAxLjg4ODEgNS42MDAxIDIuMjQxNTYgNS42MDAxSDQuOTYxNTZDNS4zMTUwMiA1LjYwMDEgNS42MDE1NiA1LjMxMzU2IDUuNjAxNTYgNC45NjAxVjIuMjQwMUM1LjYwMTU2IDEuODg2NjQgNS4zMTUwMiAxLjYwMDEgNC45NjE1NiAxLjYwMDFaIiBmaWxsPSIjZmZmIi8%2BCjxwYXRoIGQ9Ik00Ljk2MTU2IDEwLjM5OTlIMi4yNDE1NkMxLjg4ODEgMTAuMzk5OSAxLjYwMTU2IDEwLjY4NjQgMS42MDE1NiAxMS4wMzk5VjEzLjc1OTlDMS42MDE1NiAxNC4xMTM0IDEuODg4MSAxNC4zOTk5IDIuMjQxNTYgMTQuMzk5OUg0Ljk2MTU2QzUuMzE1MDIgMTQuMzk5OSA1LjYwMTU2IDE0LjExMzQgNS42MDE1NiAxMy43NTk5VjExLjAzOTlDNS42MDE1NiAxMC42ODY0IDUuMzE1MDIgMTAuMzk5OSA0Ljk2MTU2IDEwLjM5OTlaIiBmaWxsPSIjZmZmIi8%2BCjxwYXRoIGQ9Ik0xMy43NTg0IDEuNjAwMUgxMS4wMzg0QzEwLjY4NSAxLjYwMDEgMTAuMzk4NCAxLjg4NjY0IDEwLjM5ODQgMi4yNDAxVjQuOTYwMUMxMC4zOTg0IDUuMzEzNTYgMTAuNjg1IDUuNjAwMSAxMS4wMzg0IDUuNjAwMUgxMy43NTg0QzE0LjExMTkgNS42MDAxIDE0LjM5ODQgNS4zMTM1NiAxNC4zOTg0IDQuOTYwMVYyLjI0MDFDMTQuMzk4NCAxLjg4NjY0IDE0LjExMTkgMS42MDAxIDEzLjc1ODQgMS42MDAxWiIgZmlsbD0iI2ZmZiIvPgo8cGF0aCBkPSJNNCAxMkwxMiA0TDQgMTJaIiBmaWxsPSIjZmZmIi8%2BCjxwYXRoIGQ9Ik00IDEyTDEyIDQiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8L3N2Zz4K&logoColor=ffffff)](https://zread.ai/Yangsh888/TypeRenew)
 
-TypeRenew 基于开源博客系统 Typecho，并在完整兼容 Typecho 的前提下进行二次开发与焕新，全面继承其轻量、简洁、高效的内核基因，同时针对现代运行环境进行优化，修复兼容问题并原生集成缓存、邮件、多语言、在线升级等实用功能，同时提供安全中心、SEO、优化加速、外链控制与 Vditor 编辑器增强等官方拓展能力，非常适合个人博客或轻量内容站点的搭建，欢迎加入 QQ 交流群：1073739854
+TypeRenew 基于开源博客系统 Typecho，并在完整兼容 Typecho 的前提下进行二次开发与焕新，全面继承其轻量、简洁、高效的内核基因，同时针对现代运行环境进行优化，修复兼容问题并原生集成多项实用功能，同时提供安全中心、SEO、优化加速、外链控制与 Vditor 编辑器增强等官方拓展能力，非常适合个人博客或轻量内容站点的搭建，QQ 交流群：1073739854
 
 ## 开发背景
 
@@ -31,7 +31,7 @@ Typecho 作为知名的轻量级博客程序，以代码简洁、运行高效著
 - MySQL / MariaDB 安装流程默认使用 `utf8mb4` + `InnoDB`，并根据版本自动选择合适的排序规则
 - 内置缓存层，原生集成 Redis 或 APCu 缓存，显著降低数据库查询压力
 - 内置邮件队列、密码重置、数据库结构升级与在线升级入口，减少依赖额外插件的基础能力补齐成本
-- 内置多语言支持，随发行包提供 `usr/langs/typerenew.pot` 提取模板，放入 `.mo` 语言包后可在基本设置中切换界面语言
+- 内置多语言支持，仓库内提供 `usr/langs/typerenew.pot` 提取模板，放入 `.mo` 语言包后可在基本设置中切换界面语言
 
 ### 内置插件
 
@@ -43,7 +43,7 @@ Typecho 作为知名的轻量级博客程序，以代码简洁、运行高效著
 
 `TypeRenew Add-ons`是由社区开发者 @abdulhalim 贡献的第三方拓展，为 TypeRenew 补充多语言本地化与界面适配能力，提供完整的英文（en_US）、波斯语（fa_IR）语言包与全自动从右到左（RTL）布局支持，覆盖前台默认主题、后台管理面板与安装引导页全场景。
 
-【注意】该拓展面向 v1.5.1 编写，目前 v1.6.0 已内置可用的多语言链路，如需在新版上使用，请留意其核心补丁与当前代码的差异。
+【注意】该拓展面向 v1.5.1 编写，如需在高于此版本的新版上使用，请留意其核心补丁与当前代码的差异。
 
 项目仓库：https://github.com/abdulhalim/TypeRenew-Add-ons
 
@@ -59,8 +59,6 @@ Typecho 作为知名的轻量级博客程序，以代码简洁、运行高效著
 | PostgreSQL | 10 | 12+ |
 | SQLite | 3.x | 3.x |
 | Redis（可选） | 5.0 | 6.0+ |
-
-【提示】生产环境推荐使用 MySQL 8.0+ 或 MariaDB 10.6+
 
 ### PHP 扩展要求
 
