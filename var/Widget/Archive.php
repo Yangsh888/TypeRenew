@@ -193,6 +193,40 @@ class Archive extends Contents
         $this->archiveFeedUrl = $archiveFeedUrl;
     }
 
+    public function getDescription(): ?string
+    {
+        return $this->getArchiveDescription();
+    }
+
+    public function getKeywords(): ?string
+    {
+        return $this->getArchiveKeywords();
+    }
+
+    public function getFeedAtomUrl(): string
+    {
+        return $this->getArchiveFeedAtomUrl();
+    }
+
+    public function getFeedRssUrl(): string
+    {
+        return $this->getArchiveFeedRssUrl();
+    }
+
+    public function getFeedUrl(): string
+    {
+        return $this->getArchiveFeedUrl();
+    }
+
+    public function getFeed()
+    {
+        return null;
+    }
+
+    public function setFeed($feed)
+    {
+    }
+
     public function getCountSql(): ?Query
     {
         return $this->countSql;
@@ -1430,6 +1464,12 @@ EOF;
             [$from, $to] = $this->options->getRange($year);
             $this->archiveSlug = 'year';
             $this->archiveTitle = _t('%d年', $year);
+        } else {
+            throw new WidgetException(_t('请求的地址不存在'), 404);
+        }
+
+        if ($from >= $to) {
+            throw new WidgetException(_t('请求的地址不存在'), 404);
         }
 
         $select->where('table.contents.created >= ?', $from)

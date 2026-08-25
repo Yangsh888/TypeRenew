@@ -18,7 +18,7 @@ abstract class PageNavigator
         protected int $pageSize,
         protected string $pageTemplate
     ) {
-        $this->totalPage = ceil($total / $pageSize);
+        $this->totalPage = (int) ceil($total / max(1, $pageSize));
 
         if (($currentPage > $this->totalPage || $currentPage < 1) && $total > 0) {
             throw new Exception('Page Not Exists', 404);
@@ -27,8 +27,7 @@ abstract class PageNavigator
 
     public function setPageHolder(string $holder)
     {
-        $this->pageHolder = ['{' . $holder . '}',
-            str_replace(['{', '}'], ['%7B', '%7D'], $holder)];
+        $this->pageHolder = ['{' . $holder . '}', '%7B' . $holder . '%7D'];
     }
 
     public function setAnchor(string $anchor)

@@ -10,7 +10,7 @@ include 'menu.php';
     <div class="body container">
         <div class="row typecho-page-main manage-metas">
 
-            <div class="col-mb-12 col-tb-8" role="main">
+            <div class="col-mb-12 col-tb-8">
 
                 <form method="post" name="manage_tags" class="operate-form">
                     <div class="typecho-list-operate">

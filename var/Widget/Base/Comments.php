@@ -226,7 +226,7 @@ class Comments extends Base implements QueryInterface, RowFilterInterface, Prima
     {
         $html = Comments::pluginHandle()->trigger($parsed)->filter('markdown', $text);
 
-        if (!$parsed) {
+        if (!$parsed && $text) {
             $html = Markdown::convert($text);
         }
 
@@ -237,7 +237,7 @@ class Comments extends Base implements QueryInterface, RowFilterInterface, Prima
     {
         $html = Comments::pluginHandle()->trigger($parsed)->filter('autoP', $text);
 
-        if (!$parsed) {
+        if (!$parsed && $text) {
             static $parser;
 
             if (empty($parser)) {

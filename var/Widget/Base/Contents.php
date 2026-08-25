@@ -693,6 +693,11 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
         return Common::fixHtml(Contents::pluginHandle()->filter('excerptEx', $excerpt, $this));
     }
 
+    protected function ___description(): ?string
+    {
+        return $this->plainExcerpt;
+    }
+
     protected function ___plainExcerpt(): ?string
     {
         $plainText = str_replace("\n", '', trim(strip_tags($this->excerpt)));
@@ -747,7 +752,7 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
     protected function ___summary(): ?string
     {
         $content = $this->content;
-        $parts = preg_split("/(<\/\s*(?:p|blockquote|q|pre|table)\s*>)/i", $content, 2, PREG_SPLIT_DELIM_CAPTURE);
+        $parts = preg_split("/(<\/\s*(?:p|blockquote|q|pre|table)\s*>)/i", (string) $content, 2, PREG_SPLIT_DELIM_CAPTURE);
         if (is_array($parts) && isset($parts[0], $parts[1])) {
             $content = $parts[0] . $parts[1];
         }

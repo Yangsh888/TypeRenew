@@ -94,6 +94,10 @@ class Zone
         ?string $timezoneId = null,
         int $fallbackOffset = 0
     ): ?int {
+        if (!self::validParts($year, $month, $day, $hour, $minute, $second)) {
+            return null;
+        }
+
         $local = sprintf('%04d-%02d-%02d %02d:%02d:%02d', $year, $month, $day, $hour, $minute, $second);
         $dateTime = new DateTimeImmutable($local, self::zone($timezoneId, $fallbackOffset));
 
@@ -136,6 +140,10 @@ class Zone
         ?string $timezoneId = null,
         int $fallbackOffset = 0
     ): array {
+        if (!self::validParts($year, $month ?? 1, $day ?? 1, 0, 0, 0)) {
+            return [0, 0];
+        }
+
         $zone = self::zone($timezoneId, $fallbackOffset);
 
         if ($month !== null && $day !== null) {
@@ -150,6 +158,16 @@ class Zone
         }
 
         return [$start->getTimestamp(), $end->getTimestamp()];
+    }
+
+    private static function validParts(int $year, int $month, int $day, int $hour, int $minute, int $second): bool
+    {
+        return $year >= 1 && $year <= 9999
+            && $month >= 1 && $month <= 12
+            && $day >= 1 && $day <= 31
+            && $hour >= 0 && $hour <= 23
+            && $minute >= 0 && $minute <= 59
+            && $second >= 0 && $second <= 59;
     }
 
     public static function offsetString(int $offset): string

@@ -21,7 +21,7 @@ $cancelFilterUrl = 'manage-posts.php' . ($filterBase ? '?' . implode('&', $filte
 ?>
 <main class="main">
     <div class="body container">
-        <div class="row typecho-page-main" role="main">
+        <div class="row typecho-page-main">
             <div class="col-mb-12 typecho-list">
                 <div class="typecho-list-operate">
                     <ul class="typecho-option-tabs">
@@ -152,7 +152,7 @@ $cancelFilterUrl = 'manage-posts.php' . ($filterBase ? '?' . implode('&', $filte
                                             title="<?php $posts->commentsNum(); ?> <?php _e('评论'); ?>"><?php $posts->commentsNum(); ?></a>
                                     </td>
                                     <td>
-                                        <a href="<?php $options->adminUrl('write-post.php?cid=' . $posts->cid); ?>"><?php $posts->title(); ?></a>
+                                        <a href="<?php $options->adminUrl('write-post.php?cid=' . $posts->cid); ?>"><?php echo htmlspecialchars((string) $posts->title, ENT_QUOTES, 'UTF-8'); ?></a>
                                         <?php
                                         if ('post_draft' == $posts->type) {
                                             echo '<em class="status">' . _t('草稿') . '</em>';

@@ -63,17 +63,15 @@ class HyperDown
         $this->_uniqid = md5(uniqid());
         $this->_id = 0;
 
-        usort($this->blockParsers, function ($a, $b) {
-            return $a[1] < $b[1] ? -1 : 1;
-        });
+        if ($this->_parsers === []) {
+            foreach ($this->blockParsers as $parser) {
+                [$name] = $parser;
 
-        foreach ($this->blockParsers as $parser) {
-            [$name] = $parser;
-
-            if (isset($parser[2])) {
-                $this->_parsers[$name] = $parser[2];
-            } else {
-                $this->_parsers[$name] = [$this, 'parseBlock' . ucfirst($name)];
+                if (isset($parser[2])) {
+                    $this->_parsers[$name] = $parser[2];
+                } else {
+                    $this->_parsers[$name] = [$this, 'parseBlock' . ucfirst($name)];
+                }
             }
         }
 
@@ -111,7 +109,7 @@ class HyperDown
 
     private function initText(string $text): string
     {
-        if (function_exists('mb_check_encoding') && !mb_check_encoding($text, 'UTF-8') && function_exists('mb_convert_encoding')) {
+        if (!mb_check_encoding($text, 'UTF-8')) {
             $text = mb_convert_encoding($text, 'UTF-8', 'UTF-8');
         }
 
@@ -161,7 +159,7 @@ class HyperDown
             $html .= '<div class="footnotes"><hr><ol>';
             $index = 1;
 
-            while ($val = array_shift($this->_footnotes)) {
+            while (null !== ($val = array_shift($this->_footnotes))) {
                 if (is_string($val)) {
                     $val .= " <a href=\"#fnref-{$index}\" class=\"footnote-backref\">&#8617;</a>";
                 } else {
@@ -207,7 +205,7 @@ class HyperDown
     {
         $deep = 0;
         while (strpos($text, "\r") !== false && $deep < 10) {
-            $text = str_replace(array_keys($this->_holders), array_values($this->_holders), $text);
+            $text = strtr($text, $this->_holders);
             $deep++;
         }
 
@@ -439,7 +437,7 @@ class HyperDown
 
         if ($enableAutoLink) {
             $text = preg_replace_callback(
-                "/(^|[^\"])(https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\b([-a-zA-Z0-9@:%_\+.~#?&\/=]*)|(?:mailto:)?[_a-z0-9-\.\+]+@[_\w-]+(?:\.[a-z]{2,})+)($|[^\"])/",
+                "/(^|[^\"])(https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\b([-a-zA-Z0-9@:%_\+.~#?&\/=]*)|(?<![_a-z0-9.+-])(?:mailto:)?[_a-z0-9-\.\+]++@[_\w-]+(?:\.[a-z]{2,})+)($|[^\"])/",
                 function ($matches) {
                     $url = $this->cleanUrl($matches[2]);
                     $link = $this->call('parseLink', $matches[2]);
@@ -1032,6 +1030,11 @@ class HyperDown
         }
 
         $isEmpty = true;
+        $fence = preg_match("/^\s*(~{3,}|`{3,})/", $lines[0] ?? '', $open) ? $open[1] : '';
+        $last = $lines[count($lines) - 1] ?? '';
+        $closed = count($lines) > 1 && $fence !== ''
+            && preg_match("/^\s*(~{3,}|`{3,})([^`~]*)$/", $last, $close)
+            && $close[1] === $fence;
 
         $lines = array_map(function ($line) use ($count, &$isEmpty) {
             $line = preg_replace("/^[ ]{{$count}}/", '', $line);
@@ -1040,7 +1043,7 @@ class HyperDown
             }
 
             return htmlspecialchars($line);
-        }, array_slice($lines, 1, -1));
+        }, $closed ? array_slice($lines, 1, -1) : array_slice($lines, 1));
         $str = implode("\n", $this->markLines($lines, $start + 1));
 
         return $isEmpty ? '' :

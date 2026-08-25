@@ -8,7 +8,7 @@ $mediaToken = htmlspecialchars($security->getToken($request->getRequestUrl()), E
 ?>
 <main class="main">
     <div class="body container">
-        <div class="row typecho-page-main" role="main">
+        <div class="row typecho-page-main">
             <div class="col-mb-12 typecho-list">
 
                 <form method="get" class="typecho-list-operate">
@@ -35,7 +35,7 @@ $mediaToken = htmlspecialchars($security->getToken($request->getRequestUrl()), E
                         <?php endif; ?>
                         <label for="medias-keywords" class="sr-only"><?php _e('请输入关键字'); ?></label>
                         <input id="medias-keywords" type="text" class="text-s" placeholder="<?php _e('请输入关键字'); ?>"
-                               value="<?php echo $request->filter('html')->keywords; ?>"<?php if ('' == $request->keywords): ?> onclick="value='';name='keywords';" <?php else: ?> name="keywords"<?php endif; ?>/>
+                               value="<?php echo $request->filter('html')->keywords; ?>" name="keywords"/>
                         <button type="submit" class="btn btn-s"><?php _e('筛选'); ?></button>
                     </div>
                 </form>
@@ -75,9 +75,9 @@ $mediaToken = htmlspecialchars($security->getToken($request->getRequestUrl()), E
                                     </td>
                                     <td>
                                         <i class="mime-<?php echo $mime; ?>"></i>
-                                        <a href="<?php $options->adminUrl('media.php?cid=' . $attachments->cid); ?>"><?php $attachments->title(); ?></a>
+                                        <a href="<?php $options->adminUrl('media.php?cid=' . $attachments->cid); ?>"><?php echo htmlspecialchars((string) $attachments->title, ENT_QUOTES, 'UTF-8'); ?></a>
                                         <a href="<?php $attachments->permalink(); ?>"
-                                           title="<?php _e('浏览 %s', $attachments->title); ?>"><i
+                                           title="<?php _e('浏览 %s', htmlspecialchars((string) $attachments->title, ENT_QUOTES, 'UTF-8')); ?>"><i
                                                 class="i-exlink"></i></a>
                                     </td>
                                     <td class="kit-hidden-mb"><?php $attachments->author(); ?></td>

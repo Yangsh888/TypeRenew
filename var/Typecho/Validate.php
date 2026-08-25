@@ -58,6 +58,11 @@ class Validate
         return !preg_match('/(\(|\)|\\\|"|<|>|[\x00-\x08]|[\x0b-\x0c]|[\x0e-\x19]|' . "\r|\n|\t" . ')/', $str);
     }
 
+    public static function isFloat($str): bool
+    {
+        return filter_var($str, FILTER_VALIDATE_FLOAT) !== false;
+    }
+
     public static function isInteger($str): bool
     {
         return filter_var($str, FILTER_VALIDATE_INT) !== false;

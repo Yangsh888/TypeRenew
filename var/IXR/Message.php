@@ -57,7 +57,7 @@ class Message
         xml_parser_set_option($parser, XML_OPTION_CASE_FOLDING, false);
         xml_set_element_handler($parser, [$this, 'tagOpen'], [$this, 'tagClose']);
         xml_set_character_data_handler($parser, [$this, 'cdata']);
-        if (!xml_parse($parser, $this->message)) {
+        if (!xml_parse($parser, $this->message, true)) {
             return false;
         }
 

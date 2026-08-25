@@ -34,7 +34,7 @@ if (isset($post) || isset($page)) {
     <ul id="file-list">
     <?php if ($attachment): while ($attachment->next()): ?>
         <li data-cid="<?php $attachment->cid(); ?>" data-url="<?php echo htmlspecialchars($attachment->attachment->url, ENT_QUOTES, 'UTF-8'); ?>" data-image="<?php echo $attachment->attachment->isImage ? 1 : 0; ?>"><input type="hidden" name="attachment[]" value="<?php $attachment->cid(); ?>" />
-            <button type="button" class="insert" title="<?php _e('点击插入文件'); ?>"><?php $attachment->title(); ?></button>
+            <button type="button" class="insert" title="<?php _e('点击插入文件'); ?>"><?php echo htmlspecialchars((string) $attachment->title, ENT_QUOTES, 'UTF-8'); ?></button>
             <div class="info">
                 <?php echo number_format(ceil($attachment->attachment->size / 1024)); ?> Kb
                 <a class="file" target="_blank" href="<?php $options->adminUrl('media.php?cid=' . $attachment->cid); ?>" title="<?php _e('编辑'); ?>"><i class="i-edit"></i></a>

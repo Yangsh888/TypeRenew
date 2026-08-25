@@ -655,11 +655,7 @@ class Backup extends BaseOptions implements ActionInterface
             return true;
         }
 
-        if (function_exists('mb_check_encoding')) {
-            return mb_check_encoding($value, 'UTF-8');
-        }
-
-        return (bool) preg_match('//u', $value);
+        return mb_check_encoding($value, 'UTF-8');
     }
 
     private function makeSnapshot(): ?string

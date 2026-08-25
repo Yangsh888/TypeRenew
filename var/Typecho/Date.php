@@ -54,4 +54,9 @@ class Date
     {
         return self::$serverTimeStamp ?: (self::$serverTimeStamp = time());
     }
+
+    public static function gmtTime(): int
+    {
+        return self::time();
+    }
 }

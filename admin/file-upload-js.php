@@ -179,8 +179,8 @@ $(document).ready(function() {
     }
 
     Typecho.uploadFile = (function () {
-        const types = <?php echo json_encode(array_values($options->allowedAttachmentTypes), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
-        const maxSize = <?php echo $phpMaxFilesize ?>;
+        const types = <?php echo \Typecho\Common::jsonEncode(array_values($options->allowedAttachmentTypes), JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT, '[]'); ?>;
+        const maxSize = <?php echo max(0, (int) $phpMaxFilesize); ?>;
         const queue = [];
         let index = 0;
         let pending = 0;

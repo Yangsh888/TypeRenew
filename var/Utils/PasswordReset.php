@@ -50,24 +50,7 @@ class PasswordReset
                 ->limit(1)
         );
 
-        if ($record) {
-            return $record;
-        }
-
-        $legacyRecords = $db->fetchAll(
-            $db->select()->from('table.password_resets')
-                ->where('token LIKE ?', '$2%')
-                ->where('used = ?', 0)
-                ->where('expires > ?', $now)
-        );
-
-        foreach ($legacyRecords as $legacyRecord) {
-            if (password_verify($rawToken, (string) ($legacyRecord['token'] ?? ''))) {
-                return $legacyRecord;
-            }
-        }
-
-        return null;
+        return $record ?: null;
     }
 
     public static function apply(Db $db, string $rawToken, string $passwordHash, string $authCode): bool

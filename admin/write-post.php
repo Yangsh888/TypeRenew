@@ -49,7 +49,7 @@ $post = \Widget\Contents\Post\Edit::alloc()->prepare();
                 </ul>
 
                 <div id="tab-advance" class="tab-content">
-                    <section class="typecho-post-option" role="application">
+                    <section class="typecho-post-option">
                         <label for="date" class="typecho-label"><?php _e('发布日期'); ?></label>
                         <p><input class="typecho-date w-100" type="text" name="date" id="date" autocomplete="off"
                                   value="<?php echo htmlspecialchars(

@@ -157,6 +157,16 @@ class Schema
         }
 
         if ($dialect === 'pgsql') {
+            $row = $db->fetchRow(
+                $db->select('character_maximum_length')->from('information_schema.columns')
+                    ->where('table_name = ? AND column_name = ?', $table, 'password')
+                    ->limit(1)
+            );
+
+            if ((int) ($row['character_maximum_length'] ?? 0) === 255) {
+                return;
+            }
+
             $db->query(
                 'ALTER TABLE ' . self::quote($table, $dialect)
                 . ' ALTER COLUMN "password" TYPE VARCHAR(255)',
@@ -570,7 +580,7 @@ class Schema
         $columnMap = self::mysqlColumns($db, $table);
 
         foreach ($definitions as $column => $definition) {
-            $actual = strtolower((string) ($columnMap[$column]['Type'] ?? ''));
+            $actual = self::normalizeMysqlType((string) ($columnMap[$column]['Type'] ?? ''));
             $expectedType = self::mysqlDefinitionType((string) $definition);
             if ($actual === '') {
                 continue;
@@ -725,7 +735,7 @@ class Schema
         $definitions = (array) ($mysqlMeta['definitions'] ?? []);
 
         foreach ($definitions as $column => $definition) {
-            $actualType = strtolower((string) ($columnMap[$column]['Type'] ?? ''));
+            $actualType = self::normalizeMysqlType((string) ($columnMap[$column]['Type'] ?? ''));
             $expectedType = self::mysqlDefinitionType((string) $definition);
             if ($actualType === '') {
                 continue;
@@ -749,7 +759,13 @@ class Schema
             return '';
         }
 
-        return strtolower(trim((string) ($matches[1] ?? '')));
+        return self::normalizeMysqlType((string) ($matches[1] ?? ''));
+    }
+
+    private static function normalizeMysqlType(string $type): string
+    {
+        $type = strtolower(trim($type));
+        return (string) preg_replace('/^(tinyint|smallint|mediumint|int|integer|bigint)\(\d+\)/', '$1', $type);
     }
 
     public static function mysqlTableCollation(Db $db, string $table): string

@@ -97,7 +97,7 @@ class Pingback
 
     private function normalizeHtml(string $response, string $encoding): string
     {
-        if ($encoding === 'UTF-8' || !function_exists('mb_convert_encoding')) {
+        if ($encoding === 'UTF-8') {
             return $response;
         }
 

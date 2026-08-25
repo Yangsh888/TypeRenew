@@ -32,6 +32,7 @@ class Discussion extends Options implements ActionInterface
             'commentsRequireMail',
             'commentsAvatarRating',
             'commentsPostInterval',
+            'commentsMaxLength',
             'commentsRequireModeration',
             'commentsRequireUrl',
             'commentsHTMLTagAllowed'
@@ -78,6 +79,7 @@ class Discussion extends Options implements ActionInterface
 
         $settings['commentsPostTimeout'] = intval($settings['commentsPostTimeout']) * 24 * 3600;
         $settings['commentsPostInterval'] = round((float) ($settings['commentsPostInterval'] ?? 0), 1) * 60;
+        $settings['commentsMaxLength'] = min(16000, max(1, (int) ($settings['commentsMaxLength'] ?? 8000)));
 
         unset($settings['commentsShow']);
         unset($settings['commentsPost']);
@@ -111,6 +113,16 @@ class Discussion extends Options implements ActionInterface
         );
         $commentsListSize->input->setAttribute('class', 'w-20');
         $form->addInput($commentsListSize->addRule('isInteger', _t('请填入一个数字')));
+
+        $commentsMaxLength = new Form\Element\Number(
+            'commentsMaxLength',
+            null,
+            (int) ($this->options->commentsMaxLength ?? 8000),
+            _t('单条评论最大长度'),
+            _t('超出此字符数的评论将被拒绝，上限 16000。评论正文字段为 TEXT，16000 个字符在 utf8mb4 下不会超出 65535 字节')
+        );
+        $commentsMaxLength->input->setAttribute('class', 'w-20');
+        $form->addInput($commentsMaxLength->addRule('isInteger', _t('请填入一个数字')));
 
         $commentsShowOptions = [
             'commentsShowCommentOnly' => _t('仅显示评论, 不显示 Pingback 和 Trackback'),

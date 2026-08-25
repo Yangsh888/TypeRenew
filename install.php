@@ -188,8 +188,16 @@ require_once __TYPECHO_ROOT_DIR__ . '/var/Typecho/Common.php';
 
     if (!$return) {
         $configPath = __TYPECHO_ROOT_DIR__ . '/config.inc.php';
-        $configWritten = is_writable(__TYPECHO_ROOT_DIR__)
-            && file_put_contents($configPath, $code) !== false;
+        $tmpPath = $configPath . '.' . bin2hex(random_bytes(4)) . '.tmp';
+
+        if (is_writable(__TYPECHO_ROOT_DIR__) && file_put_contents($tmpPath, $code) !== false) {
+            @chmod($tmpPath, 0600);
+            $configWritten = rename($tmpPath, $configPath);
+        }
+
+        if (!$configWritten && is_file($tmpPath)) {
+            @unlink($tmpPath);
+        }
     }
 
     return $code;
@@ -222,6 +230,24 @@ function install_check(string $type): bool
             } catch (\Throwable) {
                 return false;
             }
+        case 'db_occupied':
+            global $installDb;
+
+            if (empty($installDb)) {
+                return false;
+            }
+
+            foreach (['users', 'contents'] as $table) {
+                try {
+                    $row = $installDb->fetchRow($installDb->select()->from('table.' . $table)->limit(1));
+                    if (!empty($row)) {
+                        return true;
+                    }
+                } catch (\Throwable) {
+                }
+            }
+
+            return false;
         case 'db_structure':
         case 'db_data':
             global $installDb;
@@ -249,15 +275,19 @@ function install_check(string $type): bool
     }
 }
 
-function install_unavailable(): void
+function install_unavailable(?string $message = null): void
 {
     \Typecho\Response::getInstance()
         ->setStatus(503)
         ->setContentType('text/html')
         ->setHeader('Retry-After', '60');
 
-    echo '<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><title>503</title></head><body><div>'
-        . htmlspecialchars(_t('站点已安装，但当前无法连接数据库，请检查数据库服务后重试'), ENT_QUOTES, 'UTF-8')
+    $lang = str_replace('_', '-', install_get_lang());
+    $text = $message ?? _t('站点已安装，但当前无法连接数据库，请检查数据库服务后重试');
+
+    echo '<!DOCTYPE html><html lang="' . htmlspecialchars($lang, ENT_QUOTES, 'UTF-8')
+        . '"><head><meta charset="UTF-8"><title>503</title></head><body><div>'
+        . htmlspecialchars($text, ENT_QUOTES, 'UTF-8')
         . '</div></body></html>';
     exit(1);
 }
@@ -415,12 +445,15 @@ function install_protect_sqlite_dir(): void
         return;
     }
 
+    $rules = "Options -Indexes\n"
+        . "<FilesMatch \"\\.(db|sqlite|sqlite3|czdb|dat|sql|log|bak)$\">\nRequire all denied\n"
+        . "<IfModule !mod_authz_core.c>\n    Order allow,deny\n    Deny from all\n</IfModule>\n</FilesMatch>\n";
+
     $htaccess = $usrDir . '/.htaccess';
-    if (!file_exists($htaccess)) {
-        file_put_contents(
-            $htaccess,
-            "<FilesMatch \"\\.(db|sqlite|sqlite3)$\">\nRequire all denied\n<IfModule !mod_authz_core.c>\n    Order allow,deny\n    Deny from all\n</IfModule>\n</FilesMatch>\n"
-        );
+    $current = is_file($htaccess) ? (string) file_get_contents($htaccess) : '';
+
+    if (!str_contains($current, 'sqlite3|czdb')) {
+        file_put_contents($htaccess, $current === '' ? $rules : rtrim($current, "\n") . "\n\n" . $rules);
     }
 
     $index = $usrDir . '/index.html';
@@ -658,8 +691,7 @@ function install_step_1_perform()
     }
     $checks = [
         'mbstring',
-        'json',
-        'Reflection',
+        'openssl',
         ['mysqli', 'sqlite3', 'pgsql', 'pdo_mysql', 'pdo_sqlite', 'pdo_pgsql']
     ];
 
@@ -1214,6 +1246,10 @@ function install_step_2_perform()
             $scripts = str_replace('%engine%', $dbConfig['engine'], $scripts);
         }
 
+        if ($type === 'SQLite') {
+            install_protect_sqlite_dir();
+        }
+
         foreach (install_split_sql_statements($scripts) as $script) {
             $script = trim($script);
             if ($script) {
@@ -1223,10 +1259,6 @@ function install_step_2_perform()
 
         \Utils\Schema::ensureCoreIndexes($installDb);
         \Utils\Schema::ensureMailInfra($installDb);
-
-        if ($type === 'SQLite') {
-            install_protect_sqlite_dir();
-        }
     } catch (\Typecho\Db\Exception $e) {
         $code = $e->getCode();
 
@@ -1520,6 +1552,10 @@ function install_dispatch()
 
         if (!install_check('db_reachable')) {
             install_unavailable();
+        }
+
+        if (install_check('db_occupied')) {
+            install_unavailable(_t('检测到数据库中已存在站点数据，但安装状态不完整。为防止被他人接管，安装程序已停止。请恢复数据库或删除 config.inc.php 后重试'));
         }
     } elseif (install_check('config') && install_check('db_structure') && install_check('db_data')) {
         exit(1);

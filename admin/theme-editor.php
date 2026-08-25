@@ -9,7 +9,7 @@ include 'menu.php';
 <main class="main">
     <div class="body container">
         <?php include 'theme-tabs.php'; ?>
-        <div class="row typecho-page-main typecho-edit-theme" role="main">
+        <div class="row typecho-page-main typecho-edit-theme">
             <div class="col-mb-12 col-tb-8 col-9 content">
                 <?php
                 $currentTheme = htmlspecialchars((string) $files->currentTheme(), ENT_QUOTES, 'UTF-8');

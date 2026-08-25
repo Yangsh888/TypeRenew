@@ -36,7 +36,7 @@ include 'menu.php';
 
 <main class="main">
     <div class="body container">
-        <div class="row typecho-page-main" role="main">
+        <div class="row typecho-page-main">
             <div class="col-mb-12 tr-panel">
                 <?php echo $panelOutput; ?>
             </div>

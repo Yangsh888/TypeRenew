@@ -21,7 +21,7 @@ $cancelFilterUrl = 'manage-comments.php' . ($filterBase ? '?' . implode('&', $fi
 ?>
 <main class="main">
     <div class="body container">
-        <div class="row typecho-page-main" role="main">
+        <div class="row typecho-page-main">
             <div class="col-mb-12 typecho-list">
                 <div class="typecho-list-operate">
                     <ul class="typecho-option-tabs">
@@ -75,7 +75,7 @@ $cancelFilterUrl = 'manage-comments.php' . ($filterBase ? '?' . implode('&', $fi
                         <a href="<?php $options->adminUrl($cancelFilterUrl); ?>"><?php _e('&laquo; 取消筛选'); ?></a>
                         <?php endif; ?>
                         <label for="comments-keywords" class="sr-only"><?php _e('请输入关键字'); ?></label>
-                        <input id="comments-keywords" type="text" class="text-s" placeholder="<?php _e('请输入关键字'); ?>" value="<?php echo $request->filter('html')->keywords; ?>"<?php if ('' == $request->keywords): ?> onclick="value='';name='keywords';" <?php else: ?> name="keywords"<?php endif; ?>/>
+                        <input id="comments-keywords" type="text" class="text-s" placeholder="<?php _e('请输入关键字'); ?>" value="<?php echo $request->filter('html')->keywords; ?>" name="keywords"/>
                         <?php if(isset($request->status)): ?>
                             <input type="hidden" value="<?php echo $request->filter('html')->status; ?>" name="status" />
                         <?php endif; ?>
@@ -144,7 +144,7 @@ $cancelFilterUrl = 'manage-comments.php' . ($filterBase ? '?' . implode('&', $fi
                                 </div>
                             </td>
                             <td valign="top" class="comment-body">
-                                <div class="comment-date"><?php $comments->dateWord(); ?> <?php _e('于'); ?> <a href="<?php $comments->permalink(); ?>"><?php $comments->title(); ?></a></div>
+                                <div class="comment-date"><?php $comments->dateWord(); ?> <?php _e('于'); ?> <a href="<?php $comments->permalink(); ?>"><?php echo htmlspecialchars((string) $comments->title, ENT_QUOTES, 'UTF-8'); ?></a></div>
                                 <div class="comment-content">
                                     <?php $comments->content(); ?>
                                 </div> 
@@ -372,7 +372,7 @@ $(document).ready(function () {
             }, function (o) {
                 if (!o || o.success !== 1 || !o.comment) {
                     submitButton.prop('disabled', false);
-                    alert(o && o.message ? o.message : '<?php _e('评论保存失败'); ?>');
+                    alert(o && o.message ? o.message : <?php echo \Typecho\Common::jsonEncode(_t('评论保存失败'), JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT, '""'); ?>);
                     return;
                 }
 

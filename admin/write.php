@@ -40,7 +40,7 @@ $forceMarkdown = (bool) \Typecho\Plugin::factory('admin/write.php')->filter('for
     <div class="tr-editor-card">
         <p class="title">
             <label for="title" class="sr-only"><?php _e('标题'); ?></label>
-            <input type="text" id="title" name="title" autocomplete="off" value="<?php $content->title(); ?>"
+            <input type="text" id="title" name="title" autocomplete="off" value="<?php echo htmlspecialchars((string) $content->title, ENT_QUOTES, 'UTF-8'); ?>"
                    placeholder="<?php _e('标题'); ?>" class="w-100 text title"/>
         </p>
         <p class="mono url-slug">

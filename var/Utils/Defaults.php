@@ -195,6 +195,7 @@ class Defaults
             'commentsAutoClose' => 0,
             'commentsPostIntervalEnable' => 1,
             'commentsPostInterval' => 60,
+            'commentsMaxLength' => 8000,
             'commentsShowCommentOnly' => 0,
             'commentsAvatar' => 1,
             'commentsAvatarRating' => 'G',

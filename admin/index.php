@@ -108,11 +108,11 @@ $trSpark = function (array $values, int $w = 240, int $h = 44): string {
 
     return '<svg class="tr-spark" viewBox="0 0 ' . $w . ' ' . $h . '" preserveAspectRatio="none" aria-hidden="true">'
         . '<defs><linearGradient id="' . $gid . '" x1="0" y1="0" x2="0" y2="1">'
-        . '<stop offset="0%" stop-color="rgba(37, 99, 235, 0.26)"/>'
-        . '<stop offset="100%" stop-color="rgba(37, 99, 235, 0)"/>'
+        . '<stop offset="0%" class="tr-spark-stop-a"/>'
+        . '<stop offset="100%" class="tr-spark-stop-b"/>'
         . '</linearGradient></defs>'
         . '<polygon points="' . $area . '" fill="url(#' . $gid . ')"/>'
-        . '<polyline points="' . $poly . '" fill="none" stroke="rgba(37, 99, 235, 0.95)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'
+        . '<polyline points="' . $poly . '" class="tr-spark-line" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'
         . '</svg>';
 };
 
@@ -154,10 +154,10 @@ $donut = function (int $posts, int $pages, int $comments, int $total): string {
     $o3 = -($circ * ($f1 + $f2));
 
     $d = '<svg viewBox="0 0 160 160" aria-hidden="true">'
-        . '<circle cx="80" cy="80" r="' . $r . '" fill="none" stroke="rgba(15, 23, 42, 0.08)" stroke-width="14"/>'
-        . '<circle cx="80" cy="80" r="' . $r . '" fill="none" stroke="rgba(37, 99, 235, 0.92)" stroke-width="14" stroke-linecap="round" stroke-dasharray="' . $l1 . ' ' . ($circ - $l1) . '" stroke-dashoffset="' . $o1 . '" transform="rotate(-90 80 80)"/>'
-        . '<circle cx="80" cy="80" r="' . $r . '" fill="none" stroke="rgba(59, 130, 246, 0.52)" stroke-width="14" stroke-linecap="round" stroke-dasharray="' . $l2 . ' ' . ($circ - $l2) . '" stroke-dashoffset="' . $o2 . '" transform="rotate(-90 80 80)"/>'
-        . '<circle cx="80" cy="80" r="' . $r . '" fill="none" stroke="rgba(15, 23, 42, 0.30)" stroke-width="14" stroke-linecap="round" stroke-dasharray="' . $l3 . ' ' . ($circ - $l3) . '" stroke-dashoffset="' . $o3 . '" transform="rotate(-90 80 80)"/>'
+        . '<circle cx="80" cy="80" r="' . $r . '" class="tr-donut-track" fill="none" stroke-width="14"/>'
+        . '<circle cx="80" cy="80" r="' . $r . '" class="tr-donut-seg-1" fill="none" stroke-width="14" stroke-linecap="round" stroke-dasharray="' . $l1 . ' ' . ($circ - $l1) . '" stroke-dashoffset="' . $o1 . '" transform="rotate(-90 80 80)"/>'
+        . '<circle cx="80" cy="80" r="' . $r . '" class="tr-donut-seg-2" fill="none" stroke-width="14" stroke-linecap="round" stroke-dasharray="' . $l2 . ' ' . ($circ - $l2) . '" stroke-dashoffset="' . $o2 . '" transform="rotate(-90 80 80)"/>'
+        . '<circle cx="80" cy="80" r="' . $r . '" class="tr-donut-seg-3" fill="none" stroke-width="14" stroke-linecap="round" stroke-dasharray="' . $l3 . ' ' . ($circ - $l3) . '" stroke-dashoffset="' . $o3 . '" transform="rotate(-90 80 80)"/>'
         . '</svg>';
     return $d;
 };
@@ -188,7 +188,7 @@ $donut = function (int $posts, int $pages, int $comments, int $total): string {
                         <div class="tr-minw-0">
                             <div class="tr-kpi-label"><?php _e('欢迎回来'); ?></div>
                             <div class="tr-welcome-name">
-                                <?php _e('%s', $user->screenName); ?>
+                                <?php echo htmlspecialchars((string) $user->screenName, ENT_QUOTES, 'UTF-8'); ?>
                             </div>
                             <div class="tr-welcome-desc">
                                 <?php _e('目前有 %s 篇文章，%s 条评论，%s 个分类', $stat->publishedPostsNum, $commentsTotal, $stat->categoriesNum); ?>
@@ -363,7 +363,7 @@ $donut = function (int $posts, int $pages, int $comments, int $total): string {
                                     <?php while ($posts->next()): ?>
                                         <tr>
                                             <td class="tr-td">
-                                                <a class="tr-link-strong" href="<?php $posts->permalink(); ?>" target="_blank" rel="noopener noreferrer"><?php $posts->title(); ?></a>
+                                                <a class="tr-link-strong" href="<?php $posts->permalink(); ?>" target="_blank" rel="noopener noreferrer"><?php echo htmlspecialchars((string) $posts->title, ENT_QUOTES, 'UTF-8'); ?></a>
                                                 <div class="tr-subtext"><?php $posts->date('Y-m-d'); ?></div>
                                             </td>
                                             <td class="tr-td tr-td-right">

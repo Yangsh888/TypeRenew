@@ -70,7 +70,7 @@ class Session
             'domain' => $params['domain'] ?? '',
             'secure' => (bool) ($params['secure'] ?? false),
             'httponly' => (bool) ($params['httponly'] ?? true),
-            'samesite' => $params['samesite'] ?? 'Lax'
+            'samesite' => ($params['samesite'] ?? '') ?: 'Lax'
         ]);
     }
 }

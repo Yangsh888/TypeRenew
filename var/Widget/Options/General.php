@@ -5,9 +5,11 @@ namespace Widget\Options;
 use Typecho\I18n\GetText;
 use Typecho\Common;
 use Typecho\Widget\Helper\Form;
+use Utils\LoginGuard;
 use Utils\Zone;
 use Widget\ActionInterface;
 use Widget\Base\Options;
+use Widget\Notice;
 
 if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
@@ -431,10 +433,29 @@ class General extends Options implements ActionInterface
         return $form;
     }
 
+    public function releaseLoginLocks(): void
+    {
+        $released = LoginGuard::release($this->db);
+        LoginGuard::cleanup($this->db);
+
+        Notice::alloc()->set(
+            $released > 0 ? _t('已解除 %d 条登录锁定', $released) : _t('当前没有生效中的登录锁定'),
+            $released > 0 ? 'success' : 'notice'
+        );
+
+        $this->response->redirect(Common::url('options-general.php', $this->options->adminUrl));
+    }
+
     public function action()
     {
         $this->user->pass('administrator');
         $this->security->protect();
+
+        if ($this->request->isPost() && $this->request->get('do') === 'releaseLoginLocks') {
+            $this->releaseLoginLocks();
+            return;
+        }
+
         $this->on($this->request->isPost())->updateGeneralSettings();
         $this->response->redirect($this->options->adminUrl);
     }

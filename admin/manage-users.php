@@ -7,7 +7,7 @@ $users = \Widget\Users\Admin::alloc();
 ?>
 <main class="main">
     <div class="body container">
-        <div class="row typecho-page-main" role="main">
+        <div class="row typecho-page-main">
             <div class="col-mb-12 typecho-list">
                 <form method="get" class="typecho-list-operate">
                     <div class="operate">

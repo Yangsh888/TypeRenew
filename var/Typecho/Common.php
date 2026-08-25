@@ -105,7 +105,7 @@ namespace Typecho {
     class Common
     {
         public const SOFTWARE = 'TypeRenew';
-        public const VERSION = '1.5.3';
+        public const VERSION = '1.6.0';
 
         public static function generator(?string $version = null): string
         {
@@ -130,7 +130,7 @@ namespace Typecho {
         {
             switch ($error) {
                 case UPLOAD_ERR_NO_FILE:
-                    return $noFile === null ? _t('%s失败', $prefix) : _t($noFile);
+                    return $noFile ?? _t('%s失败', $prefix);
                 case UPLOAD_ERR_INI_SIZE:
                 case UPLOAD_ERR_FORM_SIZE:
                     return _t('%s失败：文件体积超过服务器限制', $prefix);
@@ -156,13 +156,15 @@ namespace Typecho {
                 return $content;
             });
 
-            set_exception_handler(function (\Throwable $exception) {
-                echo '<pre><code>';
-                echo '<h1>' . htmlspecialchars($exception->getMessage()) . '</h1>';
-                echo htmlspecialchars($exception->__toString());
-                echo '</code></pre>';
-                exit;
-            });
+            if (defined('__TYPECHO_DEBUG__') && __TYPECHO_DEBUG__) {
+                set_exception_handler(function (\Throwable $exception) {
+                    echo '<pre><code>';
+                    echo '<h1>' . htmlspecialchars($exception->getMessage()) . '</h1>';
+                    echo htmlspecialchars($exception->__toString());
+                    echo '</code></pre>';
+                    exit;
+                });
+            }
         }
 
         public static function error(\Throwable $exception)

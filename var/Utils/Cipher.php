@@ -58,7 +58,13 @@ class Cipher
 
     private static function deriveKey(string $secret): string
     {
-        $salt = 'typerenew:v1:' . hash('sha256', $secret);
-        return hash_pbkdf2('sha256', $secret, $salt, 10000, 32, true);
+        static $keys = [];
+
+        if (!isset($keys[$secret])) {
+            $salt = 'typerenew:v1:' . hash('sha256', $secret);
+            $keys[$secret] = hash_pbkdf2('sha256', $secret, $salt, 10000, 32, true);
+        }
+
+        return $keys[$secret];
     }
 }

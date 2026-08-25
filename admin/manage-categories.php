@@ -10,7 +10,7 @@ include 'menu.php';
     <div class="body container">
         <div class="row typecho-page-main manage-metas">
 
-            <div class="col-mb-12" role="main">
+            <div class="col-mb-12">
 
                 <form id="category-default-form" method="post"
                       action="<?php echo htmlspecialchars($security->getIndex('/action/metas-category-edit'), ENT_QUOTES, 'UTF-8'); ?>">
@@ -84,7 +84,7 @@ include 'menu.php';
                                         <?php if (count($categories->children) > 0): ?>
                                             <a href="<?php $options->adminUrl('manage-categories.php?parent=' . $categories->mid); ?>"><?php echo _n('一个分类', '%d个分类', count($categories->children)); ?></a>
                                         <?php else: ?>
-                                            <a href="<?php $options->adminUrl('category.php?parent=' . $categories->mid); ?>"><?php echo _e('新增'); ?></a>
+                                            <a href="<?php $options->adminUrl('category.php?parent=' . $categories->mid); ?>"><?php _e('新增'); ?></a>
                                         <?php endif; ?>
                                     </td>
                                     <td class="kit-hidden-mb"><?php $categories->slug(); ?></td>

@@ -18,7 +18,7 @@ $themeHomepage = static function ($value): string {
 <main class="main">
     <div class="body container">
         <?php include 'theme-tabs.php'; ?>
-        <div class="row typecho-page-main" role="main">
+        <div class="row typecho-page-main">
             <div class="col-mb-12">
                 <table class="typecho-list-table typecho-theme-list">
                     <colgroup>
@@ -33,7 +33,7 @@ $themeHomepage = static function ($value): string {
 
                     <tbody>
                     <?php if ($options->missingTheme): ?>
-                        <tr id="theme-<?php $options->missingTheme; ?>" class="current">
+                        <tr id="theme-<?php echo htmlspecialchars((string) $options->missingTheme, ENT_QUOTES, 'UTF-8'); ?>" class="current">
                             <td colspan="2" class="warning">
                                 <p><strong><?php _e('检测到您之前使用的 "%s" 外观文件不存在，您可以重新上传此外观或者启用其他外观。', $options->missingTheme); ?></strong></p>
                                 <ul>
@@ -45,12 +45,12 @@ $themeHomepage = static function ($value): string {
                     <?php endif; ?>
                     <?php \Widget\Themes\Rows::alloc()->to($themes); ?>
                     <?php while ($themes->next()): ?>
-                        <tr id="theme-<?php $themes->name(); ?>"
+                        <tr id="theme-<?php echo htmlspecialchars((string) $themes->name, ENT_QUOTES, "UTF-8"); ?>"
                             class="<?php if ($themes->activated && !$options->missingTheme): ?>current<?php endif; ?>">
                             <td valign="top"><img src="<?php $themes->screen(); ?>"
-                                                  alt="<?php $themes->name(); ?>"/></td>
+                                                  alt="<?php echo htmlspecialchars((string) $themes->name, ENT_QUOTES, "UTF-8"); ?>"/></td>
                             <td valign="top">
-                                <h3><?php '' != $themes->title ? $themes->title() : $themes->name(); ?></h3>
+                                <h3><?php echo htmlspecialchars((string) ('' != $themes->title ? $themes->title : $themes->name), ENT_QUOTES, 'UTF-8'); ?></h3>
                                 <?php $homepage = $themeHomepage($themes->homepage); ?>
                                 <cite>
                                     <?php if ($themes->author): ?><?php _e('作者'); ?>: <?php if ($homepage !== ''): ?><a href="<?php echo $homepage; ?>" target="_blank" rel="noopener noreferrer"><?php endif; ?><?php echo htmlspecialchars($themes->author, ENT_QUOTES, 'UTF-8'); ?><?php if ($homepage !== ''): ?></a><?php endif; ?> &nbsp;&nbsp;<?php endif; ?>

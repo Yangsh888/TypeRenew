@@ -3,7 +3,6 @@ include 'common.php';
 include 'header.php';
 include 'menu.php';
 
-$request = \Typecho\Request::getInstance();
 $dbUpgradeUrl = $security->getTokenUrl(
     \Typecho\Router::url('do', ['action' => 'upgrade', 'widget' => 'Upgrade'], \Typecho\Common::url('index.php', $options->rootUrl))
 );

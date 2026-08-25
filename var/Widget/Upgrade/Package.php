@@ -26,19 +26,16 @@ class Package extends BaseOptions implements ActionInterface
             if ($do === 'upload' || $do === 'apply') {
                 $report = Runner::inspect();
                 if (!$report['available']) {
-                    $message = '在线升级环境未就绪';
+                    $message = _t('在线升级环境未就绪');
                     if (!empty($report['blocking'])) {
                         $message .= '：' . implode('；', $report['blocking']);
                     }
 
-                    $message .= '。请开放升级目录写权限';
-                    if (defined('__TYPECHO_UPGRADE_DIR__')) {
-                        $message .= '，或调整当前升级目录配置';
-                    } else {
-                        $message .= '，或在 config.inc.php 中定义 __TYPECHO_UPGRADE_DIR__ 指向可写目录';
-                    }
+                    $message .= defined('__TYPECHO_UPGRADE_DIR__')
+                        ? _t('。请开放升级目录写权限，或调整当前升级目录配置')
+                        : _t('。请开放升级目录写权限，或在 config.inc.php 中定义 __TYPECHO_UPGRADE_DIR__ 指向可写目录');
 
-                    throw new Exception(_t($message), 500);
+                    throw new Exception($message, 500);
                 }
 
                 if ($do === 'upload') {
@@ -71,7 +68,10 @@ class Package extends BaseOptions implements ActionInterface
 
         $error = (int) ($file['error'] ?? UPLOAD_ERR_NO_FILE);
         if ($error !== UPLOAD_ERR_OK) {
-            throw new Exception(Common::uploadErrorMessage($error, '升级包上传', '请选择升级包 ZIP 文件'), 400);
+            throw new Exception(
+                Common::uploadErrorMessage($error, _t('升级包上传'), _t('请选择升级包 ZIP 文件')),
+                400
+            );
         }
 
         $allowInstall = empty($this->request->get('allowInstall')) ? false : null;
@@ -96,5 +96,4 @@ class Package extends BaseOptions implements ActionInterface
         $runner->clear(true);
         Notice::alloc()->set(_t('在线升级已完成：目标版本 %s，已覆盖 %d 个文件', $to, $applied), 'success');
     }
-
 }

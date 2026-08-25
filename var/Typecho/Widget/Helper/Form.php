@@ -20,6 +20,10 @@ class Form extends Layout
 
     public const STANDARD_ENCODE = 'application/x-www-form-urlencoded';
 
+    public const MULTIPART_ENCODE = 'multipart/form-data';
+
+    public const TEXT_ENCODE = 'text/plain';
+
     private array $inputs = [];
 
     public function __construct($action = null, $method = self::GET_METHOD, $enctype = self::STANDARD_ENCODE)

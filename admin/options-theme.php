@@ -7,7 +7,7 @@ include 'menu.php';
 <main class="main">
     <div class="body container">
         <?php include 'theme-tabs.php'; ?>
-        <div class="row typecho-page-main" role="main">
+        <div class="row typecho-page-main">
             <div class="col-mb-12 col-tb-8 col-tb-offset-2 tr-panel" role="form">
                 <?php \Widget\Themes\Config::alloc()->config()->render(); ?>
             </div>

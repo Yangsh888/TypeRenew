@@ -66,7 +66,7 @@ $pluginVersionToolbarRendered = false;
 ?>
 <main class="main">
     <div class="body container">
-        <div class="row typecho-page-main" role="main">
+        <div class="row typecho-page-main">
             <div class="col-mb-12 typecho-list">
                 <?php \Widget\Plugins\Rows::allocWithAlias('activated', 'activated=1')->to($activatedPlugins); ?>
                 <?php if ($activatedPlugins->have() || !empty($activatedPlugins->activatedPlugins)): ?>
@@ -96,12 +96,12 @@ $pluginVersionToolbarRendered = false;
                         </thead>
                         <tbody>
                         <?php while ($activatedPlugins->next()): ?>
-                            <tr id="plugin-<?php $activatedPlugins->name(); ?>">
-                                <td><?php $activatedPlugins->title(); ?>
+                            <tr id="plugin-<?php echo htmlspecialchars((string) $activatedPlugins->name, ENT_QUOTES, 'UTF-8'); ?>">
+                                <td><?php echo htmlspecialchars((string) $activatedPlugins->title, ENT_QUOTES, 'UTF-8'); ?>
                                     <?php echo $pluginVersionMeta($activatedPlugins->name, $activatedPlugins->version, $activatedPlugins->author, $activatedPlugins->homepage, true); ?>
                                     <?php if (!$activatedPlugins->dependence): ?>
                                         <i class="i-delete"
-                                           title="<?php _e('%s 无法在此版本的typecho下正常工作', $activatedPlugins->title); ?>"></i>
+                                           title="<?php _e('%s 无法在此版本的typecho下正常工作', htmlspecialchars((string) $activatedPlugins->title, ENT_QUOTES, 'UTF-8')); ?>"></i>
                                     <?php endif; ?>
                                 </td>
                                 <td><?php $activatedPlugins->description(); ?></td>
@@ -117,7 +117,7 @@ $pluginVersionToolbarRendered = false;
                                             <form action="<?php echo $pluginAction; ?>" method="post" class="inline-operate-form">
                                                 <input type="hidden" name="_" value="<?php echo $pluginToken; ?>">
                                                 <input type="hidden" name="deactivate" value="<?php echo htmlspecialchars($activatedPlugins->name, ENT_QUOTES, 'UTF-8'); ?>">
-                                                <button type="submit" class="btn btn-link" lang="<?php _e('你确认要禁用插件 %s 吗?', $activatedPlugins->name); ?>"><?php _e('禁用'); ?></button>
+                                                <button type="submit" class="btn btn-link" lang="<?php _e('你确认要禁用插件 %s 吗?', htmlspecialchars((string) $activatedPlugins->name, ENT_QUOTES, 'UTF-8')); ?>"><?php _e('禁用'); ?></button>
                                             </form>
                                         </div>
                                     <?php else: ?>
@@ -176,8 +176,8 @@ $pluginVersionToolbarRendered = false;
                         <tbody>
                         <?php if ($deactivatedPlugins->have()): ?>
                             <?php while ($deactivatedPlugins->next()): ?>
-                                <tr id="plugin-<?php $deactivatedPlugins->name(); ?>">
-                                    <td><?php $deactivatedPlugins->title(); ?>
+                                <tr id="plugin-<?php echo htmlspecialchars((string) $deactivatedPlugins->name, ENT_QUOTES, 'UTF-8'); ?>">
+                                    <td><?php echo htmlspecialchars((string) $deactivatedPlugins->title, ENT_QUOTES, 'UTF-8'); ?>
                                         <?php echo $pluginVersionMeta($deactivatedPlugins->name, $deactivatedPlugins->version, $deactivatedPlugins->author, $deactivatedPlugins->homepage, true); ?>
                                     </td>
                                     <td><?php $deactivatedPlugins->description(); ?></td>

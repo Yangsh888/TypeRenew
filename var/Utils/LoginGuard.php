@@ -120,6 +120,45 @@ class LoginGuard
         }
     }
 
+    public static function panel(Db $db): array
+    {
+        $now = time();
+        $panel = ['locked' => 0, 'tracked' => 0, 'until' => 0, 'available' => true];
+
+        try {
+            $rows = $db->fetchAll(
+                $db->select('scope', 'identityHash', 'failures', 'lastAt', 'lockedUntil')
+                    ->from('table.login_attempts')
+                    ->order('lockedUntil', Db::SORT_DESC)
+                    ->limit(500)
+            );
+        } catch (\Throwable $throwable) {
+            self::report('panel', $throwable);
+            return ['locked' => 0, 'tracked' => 0, 'until' => 0, 'available' => false];
+        }
+
+        foreach ($rows as $row) {
+            $panel['tracked']++;
+            $lockedUntil = (int) ($row['lockedUntil'] ?? 0);
+            if ($lockedUntil > $now) {
+                $panel['locked']++;
+                $panel['until'] = max($panel['until'], $lockedUntil);
+            }
+        }
+
+        return $panel;
+    }
+
+    public static function release(Db $db): int
+    {
+        try {
+            return (int) $db->query($db->delete('table.login_attempts')->where('lockedUntil > ?', 0));
+        } catch (\Throwable $throwable) {
+            self::report('release', $throwable);
+            return 0;
+        }
+    }
+
     public static function cleanup(Db $db): void
     {
         $ttl = 0;

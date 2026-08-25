@@ -20,6 +20,10 @@ class Db
 
     public const LEFT_JOIN = 'LEFT';
 
+    public const RIGHT_JOIN = 'RIGHT';
+
+    public const OUTER_JOIN = 'OUTER';
+
     public const SELECT = 'SELECT';
 
     public const UPDATE = 'UPDATE';
@@ -283,7 +287,8 @@ class Db
             '/^\s*TRUNCATE(?:\s+TABLE)?\s+`?([a-zA-Z0-9_]+)`?/i',
             '/^\s*ALTER\s+TABLE\s+`?([a-zA-Z0-9_]+)`?/i',
             '/^\s*DROP\s+TABLE(?:\s+IF\s+EXISTS)?\s+`?([a-zA-Z0-9_]+)`?/i',
-            '/^\s*CREATE\s+TABLE(?:\s+IF\s+NOT\s+EXISTS)?\s+`?([a-zA-Z0-9_]+)`?/i'
+            '/^\s*CREATE\s+TABLE(?:\s+IF\s+NOT\s+EXISTS)?\s+`?([a-zA-Z0-9_]+)`?/i',
+            '/^\s*CREATE\s+(?:UNIQUE\s+)?INDEX\s+(?:IF\s+NOT\s+EXISTS\s+)?(?:[`"]?[a-zA-Z0-9_]+[`"]?\s+)?ON\s+[`"]?([a-zA-Z0-9_]+)[`"]?/i'
         ];
 
         foreach ($patterns as $pattern) {
@@ -370,7 +375,7 @@ class Db
         $this->invalidateAllOnCommit = false;
     }
 
-    private function cacheKey($query, ?int &$ttl = null): ?string
+    private function cacheKey($query, ?int &$ttl = null, string $shape = 'all'): ?string
     {
         $ttl = null;
         $cache = Cache::getInstance();
@@ -378,14 +383,15 @@ class Db
             return null;
         }
 
-        return $cache->queryKey($query, $ttl);
+        $key = $cache->queryKey($query, $ttl);
+        return $key === null ? null : $shape . ':' . $key;
     }
 
     public function fetchAll($query, ?callable $filter = null): array
     {
         $cache = Cache::getInstance();
         $cacheTtl = null;
-        $cacheKey = $this->cacheKey($query, $cacheTtl);
+        $cacheKey = $this->cacheKey($query, $cacheTtl, 'all');
         $locked = false;
         if ($cacheKey) {
             $hit = false;
@@ -422,7 +428,7 @@ class Db
     {
         $cache = Cache::getInstance();
         $cacheTtl = null;
-        $cacheKey = $this->cacheKey($query, $cacheTtl);
+        $cacheKey = $this->cacheKey($query, $cacheTtl, 'row');
         $locked = false;
         if ($cacheKey) {
             $hit = false;
@@ -473,7 +479,7 @@ class Db
     {
         $cache = Cache::getInstance();
         $cacheTtl = null;
-        $cacheKey = $this->cacheKey($query, $cacheTtl);
+        $cacheKey = $this->cacheKey($query, $cacheTtl, 'obj');
         $locked = false;
         if ($cacheKey) {
             $hit = false;

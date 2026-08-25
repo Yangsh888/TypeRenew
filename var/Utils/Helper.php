@@ -5,10 +5,13 @@ namespace Utils;
 use Typecho\Common;
 use Typecho\Db;
 use Typecho\I18n;
+use Typecho\Plugin;
 use Typecho\Widget;
 use Widget\Base\Options as BaseOptions;
 use Widget\Options;
 use Widget\Plugins\Edit;
+use Widget\Security;
+use Widget\Service;
 
 class Helper
 {
@@ -54,6 +57,49 @@ class Helper
     public static function options(): Options
     {
         return Options::alloc();
+    }
+
+    public static function security(): Security
+    {
+        return Security::alloc();
+    }
+
+    public static function requestService($method, ...$params)
+    {
+        Service::alloc()->requestService($method, ...$params);
+    }
+
+    public static function removePlugin(string $pluginName)
+    {
+        try {
+            [$pluginFileName, $className] = Plugin::portal(
+                $pluginName,
+                __TYPECHO_ROOT_DIR__ . '/' . __TYPECHO_PLUGIN_DIR__
+            );
+
+            $activatedPlugins = Plugin::export()['activated'];
+            require_once $pluginFileName;
+
+            if (
+                !isset($activatedPlugins[$pluginName]) || !class_exists($className)
+                || !method_exists($className, 'deactivate')
+            ) {
+                throw new Widget\Exception(_t('无法禁用插件'), 500);
+            }
+
+            call_user_func([$className, 'deactivate']);
+        } catch (\Throwable $e) {
+        }
+
+        $db = Db::get();
+
+        try {
+            Plugin::deactivate($pluginName);
+            self::setOption('plugins', Plugin::export());
+        } catch (Plugin\Exception $e) {
+        }
+
+        $db->query($db->delete('table.options')->where('name = ?', 'plugin:' . $pluginName));
     }
 
     public static function setOption(string $name, $value): int

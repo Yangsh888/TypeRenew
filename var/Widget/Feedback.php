@@ -132,7 +132,7 @@ class Feedback extends Comments implements ActionInterface
             ) {
                 $comment['parent'] = $parentId;
             } else {
-                throw new Exception(_t('父级评论不存在'));
+                throw new Exception(_t('父级评论不存在'), 400);
             }
         }
 
@@ -156,6 +156,10 @@ class Feedback extends Comments implements ActionInterface
         $validator->addRule('url', 'maxLength', _t('个人主页地址最多包含255个字符'), 255);
 
         $validator->addRule('text', 'required', _t('必须填写评论内容'));
+
+        $maxLength = (int) ($this->options->commentsMaxLength ?? 8000);
+        $maxLength = $maxLength > 0 ? min($maxLength, 16000) : 8000;
+        $validator->addRule('text', 'maxLength', _t('评论内容最多包含 %d 个字符', $maxLength), $maxLength);
 
         $comment['text'] = $this->request->get('text');
 
@@ -202,7 +206,7 @@ class Feedback extends Comments implements ActionInterface
 
         if ($error = $validator->run($comment)) {
             Cookie::set('__typecho_remember_text', $comment['text']);
-            throw new Exception(implode("\n", $error));
+            throw new Exception(implode("\n", $error), 400);
         }
 
         try {

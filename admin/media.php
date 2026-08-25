@@ -9,7 +9,7 @@ include 'menu.php';
 <main class="main">
     <div class="body container">
         <div class="row typecho-page-main">
-            <div class="col-mb-12 col-tb-8" role="main">
+            <div class="col-mb-12 col-tb-8">
                 <?php if ($attachment->attachment->isImage): ?>
                     <p><img src="<?php $attachment->attachment->url(); ?>"
                             alt="<?php $attachment->attachment->name(); ?>" class="typecho-attachment-photo"/></p>

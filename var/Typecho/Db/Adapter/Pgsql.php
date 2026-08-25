@@ -21,15 +21,18 @@ class Pgsql implements Adapter
 
     public function connect(Config $config)
     {
-        $dsn = "host={$config->host} port={$config->port}"
-            . " dbname={$config->database} user={$config->user} password={$config->password}";
+        $quote = static fn($value): string => "'" . str_replace(['\\', "'"], ['\\\\', "\\'"], (string) $value) . "'";
+
+        $dsn = 'host=' . $quote($config->host) . ' port=' . $quote($config->port)
+            . ' dbname=' . $quote($config->database) . ' user=' . $quote($config->user)
+            . ' password=' . $quote($config->password);
 
         if ($config->sslVerify) {
-            $dsn .= ' sslmode=require';
+            $dsn .= ' sslmode=verify-full';
         }
 
         if ($config->charset) {
-            $dsn .= " options='--client_encoding={$config->charset}'";
+            $dsn .= " options='--client_encoding=" . preg_replace('/[^A-Za-z0-9_-]/', '', (string) $config->charset) . "'";
         }
 
         $dbLink = pg_connect($dsn);
@@ -53,13 +56,7 @@ class Pgsql implements Adapter
             return $resource;
         }
 
-        $lastError = pg_last_error($handle);
-        $sqlState = @pg_result_error_field(pg_get_result($handle), PGSQL_DIAG_SQLSTATE);
-
-        throw new SQLException(
-            $lastError !== false ? $lastError : '',
-            $sqlState !== false ? $sqlState : null
-        );
+        throw new SQLException((string) pg_last_error($handle), 0);
     }
 
     public function fetch($resource): ?array

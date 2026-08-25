@@ -9,7 +9,7 @@ $pageToken = htmlspecialchars($security->getToken($request->getRequestUrl()), EN
 ?>
 <main class="main">
     <div class="body container">
-        <div class="row typecho-page-main" role="main">
+        <div class="row typecho-page-main">
             <div class="col-mb-12 typecho-list">
                 <form method="get" class="typecho-list-operate">
                     <div class="operate">
@@ -78,7 +78,7 @@ $pageToken = htmlspecialchars($security->getToken($request->getRequestUrl()), EN
                                             title="<?php $pages->commentsNum(); ?> <?php _e('评论'); ?>"><?php $pages->commentsNum(); ?></a>
                                     </td>
                                     <td>
-                                        <a href="<?php $options->adminUrl('write-page.php?cid=' . $pages->cid); ?>"><?php $pages->title(); ?></a>
+                                        <a href="<?php $options->adminUrl('write-page.php?cid=' . $pages->cid); ?>"><?php echo htmlspecialchars((string) $pages->title, ENT_QUOTES, 'UTF-8'); ?></a>
                                         <?php
                                         if ('page_draft' == $pages->type) {
                                             echo '<em class="status">' . _t('草稿') . '</em>';
@@ -104,7 +104,7 @@ $pageToken = htmlspecialchars($security->getToken($request->getRequestUrl()), EN
                                         <?php if (count($pages->children) > 0): ?>
                                             <a href="<?php $options->adminUrl('manage-pages.php?parent=' . $pages->cid); ?>"><?php echo _n('一个页面', '%d个页面', count($pages->children)); ?></a>
                                         <?php else: ?>
-                                            <a href="<?php $options->adminUrl('write-page.php?parent=' . $pages->cid); ?>"><?php echo _e('新增'); ?></a>
+                                            <a href="<?php $options->adminUrl('write-page.php?parent=' . $pages->cid); ?>"><?php _e('新增'); ?></a>
                                         <?php endif; ?>
                                     </td>
                                     <td class="kit-hidden-mb"><?php $pages->author(); ?></td>

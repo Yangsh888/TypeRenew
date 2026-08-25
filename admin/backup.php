@@ -252,7 +252,7 @@ include 'form-js.php';
         const forms = document.querySelectorAll('#backup-secondary form');
         forms.forEach(form => {
             form.addEventListener('submit', function(e) {
-                if (!confirm('<?php _e('恢复操作将清除所有现有数据, 是否继续?'); ?>')) {
+                if (!confirm(<?php echo \Typecho\Common::jsonEncode(_t('恢复操作将清除所有现有数据, 是否继续?'), JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT, '""'); ?>)) {
                     e.preventDefault();
                     return false;
                 }

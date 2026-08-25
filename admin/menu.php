@@ -109,7 +109,7 @@ $userAvatarUrl = \Typecho\Common::gravatarUrl($user->mail, 38);
             <div class="tr-user-card">
                 <img class="tr-user-avatar" src="<?php echo htmlspecialchars($userAvatarUrl, ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars($user->screenName, ENT_QUOTES, 'UTF-8'); ?>">
                 <div class="tr-user-meta">
-                    <div class="tr-user-name"><a href="<?php $options->adminUrl('profile.php'); ?>"><?php $user->screenName(); ?></a></div>
+                    <div class="tr-user-name"><a href="<?php $options->adminUrl('profile.php'); ?>"><?php echo htmlspecialchars((string) $user->screenName, ENT_QUOTES, 'UTF-8'); ?></a></div>
                     <div class="tr-user-role"><?php echo htmlspecialchars((string) $user->group, ENT_QUOTES, 'UTF-8'); ?></div>
                 </div>
                 <div class="tr-user-actions">
@@ -205,7 +205,7 @@ $userAvatarUrl = \Typecho\Common::gravatarUrl($user->mail, 38);
         </div>
         <a class="tr-pill tr-profile-pill" href="<?php $options->adminUrl('profile.php'); ?>" title="<?php _e('个人资料'); ?>">
             <svg class="tr-ico" aria-hidden="true"><use href="<?php echo htmlspecialchars($iconsUrl, ENT_QUOTES, 'UTF-8'); ?>#i-user"></use></svg>
-            <span><?php $user->screenName(); ?></span>
+            <span><?php echo htmlspecialchars((string) $user->screenName, ENT_QUOTES, 'UTF-8'); ?></span>
         </a>
     </div>
 </header>

@@ -158,8 +158,12 @@
                 continue;
             }
 
-            var heading = controls[c].closest('.renewseo-list-item, .renewseo-block-item, .shield-list-item, .shield-block-item, .renewseo-field, .shield-field');
-            var headingNode = heading && heading.querySelector('.renewseo-list-item-title, .shield-list-item-title, .renewseo-field > span, .shield-field > span');
+            if (!opts.labelGroupSelector || !opts.labelTextSelector) {
+                continue;
+            }
+
+            var heading = controls[c].closest(opts.labelGroupSelector);
+            var headingNode = heading && heading.querySelector(opts.labelTextSelector);
             if (headingNode) {
                 if (!headingNode.id) {
                     headingNode.id = idPrefix + '-label-' + c;

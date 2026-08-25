@@ -1,0 +1,6355 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: TypeRenew 1.6.0\n"
+"Report-Msgid-Bugs-To: https://github.com/Yangsh888/TypeRenew/issues\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: \n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: usr/themes/default/comments.php:10 usr/themes/default/functions.php:54
+msgid "%d 条评论"
+msgstr ""
+
+#: var/Widget/Archive.php:1466
+msgid "%d年"
+msgstr ""
+
+#: var/Widget/Archive.php:1462
+msgid "%d年%d月"
+msgstr ""
+
+#: var/Widget/Archive.php:1458
+msgid "%d年%d月%d日"
+msgstr ""
+
+#: admin/index.php:191
+msgid "%s"
+msgstr ""
+
+#: admin/header.php:37
+msgid "%s - %s - Powered by TypeRenew"
+msgstr ""
+
+#: admin/file-upload-js.php:116
+msgid "%s 上传失败"
+msgstr ""
+
+#: usr/themes/default/header.php:11 usr/themes/default/index.php:20
+msgid "%s 发布的文章"
+msgstr ""
+
+#: admin/plugins.php:104
+msgid "%s 无法在此版本的typecho下正常工作"
+msgstr ""
+
+#: var/Utils/Schema.php:227
+msgid "%s 缺少主键列 id，SQLite 需要重建该表"
+msgstr ""
+
+#: var/Widget/Users/Profile.php:361
+msgid "%s 设置已经保存"
+msgstr ""
+
+#: var/Typecho/Upgrade/Store.php:54
+msgid "%s不可用：%s（%s）"
+msgstr ""
+
+#: var/Typecho/Common.php:133 var/Typecho/Common.php:146
+msgid "%s失败"
+msgstr ""
+
+#: var/Widget/Plugins/Edit.php:246
+msgid "%s失败: %s"
+msgstr ""
+
+#: var/Typecho/Common.php:144
+msgid "%s失败：上传被扩展中止"
+msgstr ""
+
+#: var/Typecho/Common.php:138
+msgid "%s失败：文件仅部分上传"
+msgstr ""
+
+#: var/Typecho/Common.php:136
+msgid "%s失败：文件体积超过服务器限制"
+msgstr ""
+
+#: var/Typecho/Common.php:142
+msgid "%s失败：无法写入服务器磁盘"
+msgstr ""
+
+#: var/Typecho/Common.php:140
+msgid "%s失败：服务器缺少临时目录"
+msgstr ""
+
+#: var/Widget/Contents/Post/Admin.php:22
+msgid "%s的文章"
+msgstr ""
+
+#: var/Widget/Comments/Admin.php:31
+msgid "%s的评论"
+msgstr ""
+
+#: var/Widget/Comments/Admin.php:95
+msgid "&laquo;"
+msgstr ""
+
+#: admin/manage-comments.php:75 admin/manage-medias.php:34
+#: admin/manage-pages.php:39 admin/manage-posts.php:96
+#: admin/manage-users.php:29
+msgid "&laquo; 取消筛选"
+msgstr ""
+
+#: var/Widget/Comments/Admin.php:95
+msgid "&raquo;"
+msgstr ""
+
+#: admin/custom-fields.php:69
+msgid "+添加字段"
+msgstr ""
+
+#: usr/themes/default/comments.php:10 usr/themes/default/functions.php:54
+msgid "1 条评论"
+msgstr ""
+
+#: var/Widget/Metas/Category/Edit.php:408
+msgid "<a href=\\"%s\\">%s</a> 已经被设为默认分类"
+msgstr ""
+
+#: var/Widget/Plugins/Edit.php:139
+msgid "<a href=\\"%s\\">%s</a> 无法在此版本的typecho下正常工作"
+msgstr ""
+
+#: var/Widget/Options/Permalink.php:50
+msgid "Apache 兼容回退规则"
+msgstr ""
+
+#: var/Widget/Options/Permalink.php:39
+msgid "Apache 标准规则"
+msgstr ""
+
+#: var/Widget/Options/General.php:65
+msgid "CF-Connecting-IP（Cloudflare）"
+msgstr ""
+
+#: var/Widget/Options/General.php:66
+msgid "Client-IP（通用代理）"
+msgstr ""
+
+#: usr/themes/default/comments.php:45
+msgid "Email"
+msgstr ""
+
+#: var/Widget/Options/Discussion.php:134
+msgid "G - 普通"
+msgstr ""
+
+#: var/Widget/Options/General.php:113
+msgid "GHProxy 镜像"
+msgstr ""
+
+#: var/Widget/Options/General.php:134
+msgid "GitHub Raw 镜像域名"
+msgstr ""
+
+#: admin/copyright.php:10
+msgid "GitHub 源码"
+msgstr ""
+
+#: var/Widget/Options/General.php:110
+msgid "GitMirror 镜像"
+msgstr ""
+
+#: admin/options-mail.php:193
+msgid "ID"
+msgstr ""
+
+#: admin/custom-fields-js.php:29 admin/custom-fields.php:33
+#: admin/custom-fields.php:56
+msgid "JSON 结构"
+msgstr ""
+
+#: admin/index.php:30
+msgid "MD5 密码兼容已开启"
+msgstr ""
+
+#: admin/editor-js.php:85
+msgid "Markdown语法帮助"
+msgstr ""
+
+#: var/Widget/Backup.php:124 var/Widget/Feedback.php:40
+#: var/Widget/Forgot.php:22 var/Widget/Login.php:20 var/Widget/Mail.php:83
+#: var/Widget/Metas/Category/Edit.php:446 var/Widget/Metas/Tag/Edit.php:276
+#: var/Widget/Register.php:22 var/Widget/Reset.php:21
+#: var/Widget/Service.php:301
+msgid "Method Not Allowed"
+msgstr ""
+
+#: admin/upgrade.php:360
+msgid "MySQL 升级预检查"
+msgstr ""
+
+#: install.php:136
+msgid "Mysql 原生函数适配器"
+msgstr ""
+
+#: var/Widget/Options/Permalink.php:61
+msgid "Nginx 标准规则"
+msgstr ""
+
+#: var/Widget/Options/Discussion.php:135
+msgid "PG - 13岁以上"
+msgstr ""
+
+#: var/Typecho/Cache/Apcu.php:24
+msgid "PHP apcu 扩展未安装"
+msgstr ""
+
+#: var/Typecho/Cache/Redis.php:278
+msgid "PHP redis 扩展未安装"
+msgstr ""
+
+#: install.php:124
+msgid "Pdo 驱动 Mysql 适配器"
+msgstr ""
+
+#: install.php:132
+msgid "Pdo 驱动 PostgreSql 适配器"
+msgstr ""
+
+#: install.php:128
+msgid "Pdo 驱动 SQLite 适配器"
+msgstr ""
+
+#: install.php:144
+msgid "Pgsql 原生函数适配器"
+msgstr ""
+
+#: var/Widget/XmlRpc.php:1285
+msgid "PingBack已经存在"
+msgstr ""
+
+#: var/Widget/XmlRpc.php:1252
+msgid "Pingback 接口已关闭"
+msgstr ""
+
+#: install.php:1104
+msgid "PostgreSQL 字符集仅支持 utf8"
+msgstr ""
+
+#: var/Widget/Options/Discussion.php:136
+msgid "R - 17岁以上成人"
+msgstr ""
+
+#: var/Widget/Options/General.php:62
+msgid "REMOTE_ADDR（默认，直连）"
+msgstr ""
+
+#: var/Widget/Options/Cache.php:151
+msgid "Redis 主机"
+msgstr ""
+
+#: var/Widget/Options/Cache.php:170
+msgid "Redis 密码"
+msgstr ""
+
+#: var/Widget/Options/Cache.php:195
+msgid "Redis 数据库"
+msgstr ""
+
+#: var/Widget/Options/Cache.php:171
+msgid "Redis 未设置密码时留空"
+msgstr ""
+
+#: var/Widget/Options/Cache.php:186
+msgid "Redis 端取消了密码认证时勾选此项，否则程序会继续用旧密码连接而导致缓存无法启用"
+msgstr ""
+
+#: var/Widget/Options/Cache.php:160
+msgid "Redis 端口"
+msgstr ""
+
+#: var/Widget/Options/Mail.php:255
+msgid "SMTP 主机"
+msgstr ""
+
+#: var/Widget/Options/Mail.php:308
+msgid "SMTP 加密"
+msgstr ""
+
+#: var/Widget/Options/Mail.php:283
+msgid "SMTP 密码"
+msgstr ""
+
+#: var/Widget/Options/Mail.php:237
+msgid "SMTP 模式下建议与账号一致，留空则使用 SMTP 用户名"
+msgstr ""
+
+#: var/Widget/Options/Mail.php:273
+msgid "SMTP 用户名"
+msgstr ""
+
+#: var/Widget/Options/Mail.php:264
+msgid "SMTP 端口"
+msgstr ""
+
+#: install.php:140
+msgid "SQLite 原生函数适配器"
+msgstr ""
+
+#: install.php:1115 install.php:1146
+msgid "SQLite 数据库文件必须位于 usr 目录内"
+msgstr ""
+
+#: install.php:1093
+msgid "SSL CA 证书路径无效"
+msgstr ""
+
+#: install.php:1094 install.php:1106
+msgid "SSL 校验选项无效"
+msgstr ""
+
+#: var/Widget/Options/General.php:111
+msgid "Statically 镜像"
+msgstr ""
+
+#: install.php:1597
+msgid "TypeRenew 安装程序"
+msgstr ""
+
+#: install.php:658
+msgid "TypeRenew 由开源社区驱动维护，旨在继承 <a href=\\"https://typecho.org/\\">Typecho</a> 的轻量与优雅，并为其注入新的活力。"
+msgstr ""
+
+#: install.php:647
+msgid "TypeRenew 脱胎于经典博客程序 <a href=\\"https://typecho.org/\\">Typecho</a>，完整继承其干净、克制、高效的内核基因，并优化对现代主流运行环境的适配，修复遗留的兼容性问题，原生集成更多实用特性，让跨越十余年的经典，在当下重焕新生。"
+msgstr ""
+
+#: var/Widget/Options/Mail.php:119
+msgid "TypeRenew 邮件测试"
+msgstr ""
+
+#: var/Widget/Options/Discussion.php:137
+msgid "X - 限制级"
+msgstr ""
+
+#: var/Widget/Options/General.php:63
+msgid "X-Forwarded-For（腾讯云、阿里云、七牛等）"
+msgstr ""
+
+#: var/Widget/Options/General.php:64
+msgid "X-Real-IP（又拍云、百度云加速等）"
+msgstr ""
+
+#: admin/index.php:14
+msgid "XML-RPC 已启用"
+msgstr ""
+
+#: var/Widget/Options/General.php:356
+msgid "XMLRPC 接口"
+msgstr ""
+
+#: var/Utils/Zone.php:220
+msgid "Y年m月d日"
+msgstr ""
+
+#: var/Typecho/Upgrade/Runner.php:35
+msgid "ZipArchive 扩展"
+msgstr ""
+
+#: var/Typecho/Cache/Apcu.php:27
+msgid "apcu 扩展已安装但未启用"
+msgstr ""
+
+#: var/Utils/Migration/SchemaManager.php:224
+msgid "contents 缩略名唯一值冲突"
+msgstr ""
+
+#: var/Widget/Options/General.php:112
+msgid "jsDelivr 镜像"
+msgstr ""
+
+#: var/Widget/Options/General.php:365
+msgid "lang"
+msgstr ""
+
+#: var/Utils/Migration/SchemaManager.php:192
+msgid "mail_unsub 唯一值冲突"
+msgstr ""
+
+#: var/Utils/Migration/SchemaManager.php:179
+msgid "mail_unsub 排序规则"
+msgstr ""
+
+#: var/Utils/Zone.php:217
+msgid "n月j日"
+msgstr ""
+
+#: admin/options-mail.php:153
+msgid "sign = sha256_hmac(\\"{ts}|deliver\\", 投递密钥)"
+msgstr ""
+
+#: var/Utils/Migration/SchemaManager.php:240
+msgid "users 用户名唯一值冲突"
+msgstr ""
+
+#: var/Utils/Migration/SchemaManager.php:208
+msgid "users 邮箱唯一值冲突"
+msgstr ""
+
+#: var/Widget/Options/Permalink.php:299
+msgid "wordpress风格"
+msgstr ""
+
+#: var/Widget/Feed.php:58
+msgid "zh-CN"
+msgstr ""
+
+#: var/Widget/Options/General.php:358
+msgid "“仅关闭 Pingback 接口”可保留常规 XML-RPC，同时避免站点接收 Pingback"
+msgstr ""
+
+#: var/Widget/Upgrade/Package.php:36
+msgid "。请开放升级目录写权限，或在 config.inc.php 中定义 __TYPECHO_UPGRADE_DIR__ 指向可写目录"
+msgstr ""
+
+#: var/Widget/Upgrade/Package.php:35
+msgid "。请开放升级目录写权限，或调整当前升级目录配置"
+msgstr ""
+
+#: admin/write-js.php:20
+msgid "一"
+msgstr ""
+
+#: admin/manage-categories.php:85
+msgid "一个分类"
+msgid_plural "%d个分类"
+msgstr[0] ""
+msgstr[1] ""
+
+#: admin/manage-pages.php:105
+msgid "一个页面"
+msgid_plural "%d个页面"
+msgstr[0] ""
+msgstr[1] ""
+
+#: var/Utils/Zone.php:200
+msgid "一分钟前"
+msgid_plural "%d分钟前"
+msgstr[0] ""
+msgstr[1] ""
+
+#: var/Utils/Zone.php:213
+msgid "一天前"
+msgid_plural "%d天前"
+msgstr[0] ""
+msgstr[1] ""
+
+#: var/Utils/Zone.php:204
+msgid "一小时前"
+msgid_plural "%d小时前"
+msgstr[0] ""
+msgstr[1] ""
+
+#: admin/write-js.php:13
+msgid "一月"
+msgstr ""
+
+#: var/Utils/Zone.php:196
+msgid "一秒前"
+msgid_plural "%d秒前"
+msgstr[0] ""
+msgstr[1] ""
+
+#: admin/auth.php:28
+msgid "丁香"
+msgstr ""
+
+#: admin/write-js.php:14
+msgid "七月"
+msgstr ""
+
+#: admin/write-js.php:20
+msgid "三"
+msgstr ""
+
+#: admin/write-js.php:13
+msgid "三月"
+msgstr ""
+
+#: admin/write-js.php:11
+msgid "上一月"
+msgstr ""
+
+#: usr/themes/default/post.php:8
+msgid "上一篇"
+msgstr ""
+
+#: admin/upgrade.php:417 var/Typecho/Palette.php:195
+msgid "上传"
+msgstr ""
+
+#: admin/file-upload-js.php:97
+msgid "上传出现错误"
+msgstr ""
+
+#: admin/upgrade.php:179
+msgid "上传升级包"
+msgstr ""
+
+#: admin/upgrade.php:156
+msgid "上传升级包并自动覆盖程序文件"
+msgstr ""
+
+#: var/Typecho/Palette.php:192
+msgid "上传媒体文件"
+msgstr ""
+
+#: admin/upgrade.php:418
+msgid "上传官方 zip 格式升级包，非官方包可能导致升级失败或数据风险"
+msgstr ""
+
+#: admin/backup.php:106
+msgid "上传文件"
+msgstr ""
+
+#: var/Widget/Upload.php:514
+msgid "上传文件内容与扩展名不一致"
+msgstr ""
+
+#: var/Widget/Upload.php:221
+msgid "上传文件类型与原附件不一致"
+msgstr ""
+
+#: var/Widget/Upload.php:455
+msgid "上传目录不可写，请检查上传目录权限"
+msgstr ""
+
+#: install.php:730
+msgid "上传目录暂无写入权限，请先检查您的站点是否存在 %s 目录；若存在，请将该目录权限设置为可写状态，完成后再继续安装操作。"
+msgstr ""
+
+#: admin/manage-medias.php:59
+msgid "上传者"
+msgstr ""
+
+#: admin/write-js.php:26
+msgid "上午"
+msgstr ""
+
+#: admin/write-js.php:353
+msgid "上次保存时间"
+msgstr ""
+
+#: var/Typecho/Upgrade/Store.php:271
+msgid "上级目录不可写"
+msgstr ""
+
+#: var/Typecho/Upgrade/Store.php:263
+msgid "上级目录不存在"
+msgstr ""
+
+#: admin/write-js.php:12
+msgid "下一月"
+msgstr ""
+
+#: usr/themes/default/post.php:9
+msgid "下一篇"
+msgstr ""
+
+#: admin/write-js.php:27
+msgid "下午"
+msgstr ""
+
+#: admin/login.php:33
+msgid "下次自动登录"
+msgstr ""
+
+#: admin/upgrade.php:203 var/Widget/Options/General.php:345
+msgid "不允许"
+msgstr ""
+
+#: admin/backup.php:133 admin/backup.php:175
+msgid "不创建快照"
+msgstr ""
+
+#: var/Typecho/Upgrade/Store.php:245
+msgid "不可写"
+msgstr ""
+
+#: var/Typecho/Upgrade/Store.php:262 var/Typecho/Upgrade/Store.php:270
+msgid "不可创建"
+msgstr ""
+
+#: var/Widget/Users/Edit.php:119
+msgid "不同的用户组拥有不同的权限."
+msgstr ""
+
+#: var/Widget/Options/Permalink.php:268
+msgid "不启用"
+msgstr ""
+
+#: var/Widget/Metas/Category/Edit.php:263
+msgid "不能将分类移动到它的子分类下"
+msgstr ""
+
+#: var/Widget/Metas/Category/Edit.php:251
+msgid "不能将分类自身设置为父分类"
+msgstr ""
+
+#: admin/write-page.php:10 admin/write-page.php:91
+#: var/Widget/Metas/Category/Edit.php:139
+msgid "不选择"
+msgstr ""
+
+#: var/Widget/Register.php:49 var/Widget/Reset.php:61
+#: var/Widget/Users/Edit.php:171 var/Widget/Users/Profile.php:312
+msgid "两次输入的密码不一致"
+msgstr ""
+
+#: var/Typecho/Palette.php:366
+msgid "个人"
+msgstr ""
+
+#: admin/manage-comments.php:336
+msgid "个人主页"
+msgstr ""
+
+#: var/Widget/Users/Edit.php:108 var/Widget/Users/Profile.php:213
+msgid "个人主页地址"
+msgstr ""
+
+#: var/Widget/Users/Edit.php:162 var/Widget/Users/Profile.php:234
+msgid "个人主页地址最多包含150个字符"
+msgstr ""
+
+#: var/Widget/Feedback.php:156
+msgid "个人主页地址最多包含255个字符"
+msgstr ""
+
+#: var/Widget/Feedback.php:155 var/Widget/Users/Edit.php:161
+#: var/Widget/Users/Profile.php:233
+msgid "个人主页地址格式错误"
+msgstr ""
+
+#: install.php:1377
+msgid "个人主页地址长度超过限制, 请不要超过 150 个字符"
+msgstr ""
+
+#: var/Widget/Menu.php:54
+msgid "个人设置"
+msgstr ""
+
+#: admin/menu.php:206 admin/profile.php:55
+msgid "个人资料"
+msgstr ""
+
+#: var/Typecho/Palette.php:363
+msgid "个人资料设置"
+msgstr ""
+
+#: var/Widget/Options/Permalink.php:311
+msgid "个性化定义"
+msgstr ""
+
+#: var/Typecho/Upgrade/Store.php:40
+msgid "临时目录"
+msgstr ""
+
+#: admin/write-page.php:84
+msgid "为你的自定义页面设定一个序列值以后, 能够使得它们按此值从小到大排列"
+msgstr ""
+
+#: var/Widget/Users/Profile.php:291
+msgid "为此用户分配一个密码"
+msgstr ""
+
+#: var/Widget/Users/Edit.php:99
+msgid "为此用户分配一个密码."
+msgstr ""
+
+#: admin/auth.php:35 admin/menu.php:158 admin/menu.php:161
+#: var/Typecho/Palette.php:103 var/Typecho/Palette.php:111
+#: var/Typecho/Palette.php:119 var/Typecho/Palette.php:339
+#: var/Typecho/Palette.php:348
+msgid "主题"
+msgstr ""
+
+#: admin/auth.php:33
+msgid "主题切换"
+msgstr ""
+
+#: var/Typecho/Palette.php:336
+msgid "主题管理"
+msgstr ""
+
+#: var/Typecho/Palette.php:345
+msgid "主题编辑器"
+msgstr ""
+
+#: admin/menu.php:175 admin/menu.php:176
+msgid "主题色"
+msgstr ""
+
+#: admin/write-js.php:15
+msgid "九月"
+msgstr ""
+
+#: admin/write-js.php:20
+msgid "二"
+msgstr ""
+
+#: admin/write-js.php:13
+msgid "二月"
+msgstr ""
+
+#: admin/manage-comments.php:147
+msgid "于"
+msgstr ""
+
+#: admin/write-js.php:21
+msgid "五"
+msgstr ""
+
+#: admin/write-js.php:14
+msgid "五月"
+msgstr ""
+
+#: admin/copyright.php:11
+msgid "交流社区"
+msgstr ""
+
+#: var/Typecho/Palette.php:103
+msgid "亮色"
+msgstr ""
+
+#: var/Widget/Options/Cache.php:142
+msgid "仅允许字母、数字、冒号、下划线与短横线"
+msgstr ""
+
+#: var/Widget/Options/General.php:354
+msgid "仅关闭 Pingback 接口"
+msgstr ""
+
+#: admin/backup.php:126 admin/backup.php:168
+msgid "仅导入，不做修复"
+msgstr ""
+
+#: var/Widget/Options/General.php:145
+msgid "仅当上方选择\\"自定义域名\\"时填写，例如 raw.example.com"
+msgstr ""
+
+#: var/Typecho/Upgrade/Runner.php:82
+msgid "仅支持 zip 格式升级包"
+msgstr ""
+
+#: var/Widget/Options/Discussion.php:128
+msgid "仅显示评论, 不显示 Pingback 和 Trackback"
+msgstr ""
+
+#: var/Widget/Options/Reading.php:206
+msgid "仅输出摘要"
+msgstr ""
+
+#: var/Widget/Users/Edit.php:283
+msgid "仍拥有文章或页面的用户无法删除"
+msgstr ""
+
+#: var/Widget/Upgrade.php:97
+msgid "仍有关键结构异常：%s"
+msgstr ""
+
+#: admin/backup.php:107
+msgid "从服务器"
+msgstr ""
+
+#: admin/editor-js.php:55
+msgid "代码"
+msgstr ""
+
+#: admin/index.php:174
+msgid "以下项目不会阻断站点运行，但建议尽快确认是否仍有保留必要。"
+msgstr ""
+
+#: var/Typecho/Palette.php:374
+msgid "仪表盘"
+msgstr ""
+
+#: admin/options-permalink.php:19
+msgid "伪静态规则示例"
+msgstr ""
+
+#: admin/auth.php:19
+msgid "余烬"
+msgstr ""
+
+#: admin/manage-comments.php:102 admin/manage-pages.php:65
+#: admin/manage-posts.php:138 admin/options-mail.php:225
+#: admin/plugins.php:93 admin/plugins.php:172 admin/themes.php:56
+msgid "作者"
+msgstr ""
+
+#: var/Widget/Archive.php:1429
+msgid "作者不存在"
+msgstr ""
+
+#: var/Widget/Options/Mail.php:378
+msgid "作者邮件标题"
+msgstr ""
+
+#: var/Widget/Users/Edit.php:95 var/Widget/Users/Profile.php:209
+msgid "你可以设置独立的用户昵称（与用户名不同），仅用于前台显示"
+msgstr ""
+
+#: admin/write.php:27
+msgid "你正在编辑的是保存于 %s 的修订版，你也可以删除它"
+msgstr ""
+
+#: var/Typecho/Mail/Notify.php:177
+msgid "你的文章「{title}」有了新评论"
+msgstr ""
+
+#: var/Widget/Contents/Attachment/Edit.php:131
+msgid "你确认删除文件 %s 吗?"
+msgstr ""
+
+#: admin/manage-comments.php:176
+msgid "你确认要删除%s的评论吗?"
+msgstr ""
+
+#: admin/manage-comments.php:69
+msgid "你确认要删除所有垃圾评论吗?"
+msgstr ""
+
+#: admin/manage-medias.php:23
+msgid "你确认要删除这些文件吗?"
+msgstr ""
+
+#: admin/manage-posts.php:74
+msgid "你确认要删除这些文章吗?"
+msgstr ""
+
+#: admin/manage-tags.php:25
+msgid "你确认要删除这些标签吗?"
+msgstr ""
+
+#: admin/manage-users.php:21
+msgid "你确认要删除这些用户吗?"
+msgstr ""
+
+#: admin/manage-comments.php:66
+msgid "你确认要删除这些评论吗?"
+msgstr ""
+
+#: admin/manage-pages.php:23
+msgid "你确认要删除这些页面吗?"
+msgstr ""
+
+#: admin/plugins.php:120 admin/plugins.php:139
+msgid "你确认要禁用插件 %s 吗?"
+msgstr ""
+
+#: var/Widget/Users/Profile.php:39
+msgid "使用 <a href=\\"https://daringfireball.net/projects/markdown/\\">Markdown</a> 语法能够使您的撰写过程更加简便直观"
+msgstr ""
+
+#: var/Widget/Users/Profile.php:38
+msgid "使用 Markdown 语法编辑和解析内容"
+msgstr ""
+
+#: install.php:1279
+msgid "使用原有数据"
+msgstr ""
+
+#: admin/options-mail.php:120
+msgid "使用当前模板与变量渲染后发送测试邮件"
+msgstr ""
+
+#: admin/menu.php:95 var/Typecho/Palette.php:127
+msgid "侧边栏"
+msgstr ""
+
+#: admin/footer.php:26
+msgid "保存"
+msgstr ""
+
+#: admin/manage-pages.php:115 admin/manage-posts.php:198
+msgid "保存于 %s"
+msgstr ""
+
+#: admin/options-mail.php:219
+msgid "保存后会写入当前主题 mail 目录，优先级高于系统默认模板"
+msgstr ""
+
+#: admin/write-js.php:314
+msgid "保存失败, 请重试"
+msgstr ""
+
+#: admin/theme-editor.php:27
+msgid "保存文件"
+msgstr ""
+
+#: admin/options-mail.php:238
+msgid "保存模板"
+msgstr ""
+
+#: admin/write.php:79
+msgid "保存草稿"
+msgstr ""
+
+#: var/Widget/Options/Cache.php:200 var/Widget/Options/Discussion.php:217
+#: var/Widget/Options/General.php:429 var/Widget/Options/Mail.php:382
+#: var/Widget/Options/Permalink.php:350 var/Widget/Options/Reading.php:214
+#: var/Widget/Plugins/Config.php:72 var/Widget/Themes/Config.php:65
+#: var/Widget/Users/Profile.php:87 var/Widget/Users/Profile.php:143
+msgid "保存设置"
+msgstr ""
+
+#: admin/upgrade.php:289
+msgid "修复关键数据库结构"
+msgstr ""
+
+#: admin/write-js.php:457
+msgid "修改后的内容需要保存后才能预览, 是否保存?"
+msgstr ""
+
+#: admin/write.php:26
+msgid "修订版"
+msgstr ""
+
+#: var/Widget/Comments/Edit.php:216
+msgid "修评论失败"
+msgstr ""
+
+#: admin/upgrade.php:203 var/Widget/Options/General.php:345
+msgid "允许"
+msgstr ""
+
+#: var/Widget/Options/General.php:423
+msgid "允许上传的文件类型"
+msgstr ""
+
+#: var/Widget/Options/Discussion.php:210
+msgid "允许使用的HTML标签和属性"
+msgstr ""
+
+#: admin/write-page.php:143 admin/write-post.php:130
+msgid "允许在聚合中出现"
+msgstr ""
+
+#: var/Widget/Options/Mail.php:373
+msgid "允许自回复通知"
+msgstr ""
+
+#: admin/write-page.php:140 admin/write-post.php:127
+msgid "允许被引用"
+msgstr ""
+
+#: admin/upgrade.php:175
+msgid "允许覆盖 install（谨慎操作）"
+msgstr ""
+
+#: var/Widget/Options/General.php:348
+msgid "允许访问者注册到你的网站，默认的注册用户不享有任何写入权限"
+msgstr ""
+
+#: admin/write-page.php:137 admin/write-post.php:124
+msgid "允许评论"
+msgstr ""
+
+#: usr/themes/default/header.php:60
+msgid "全局导航"
+msgstr ""
+
+#: admin/editor-js.php:75 admin/editor-js.php:167 admin/editor-js.php:199
+#: var/Typecho/Palette.php:135
+msgid "全屏"
+msgstr ""
+
+#: var/Widget/Options/Reading.php:206
+msgid "全文输出"
+msgstr ""
+
+#: admin/manage-categories.php:23 admin/manage-comments.php:59
+#: admin/manage-medias.php:16 admin/manage-pages.php:16
+#: admin/manage-posts.php:67 admin/manage-tags.php:18
+#: admin/manage-users.php:14
+msgid "全选"
+msgstr ""
+
+#: admin/index.php:311
+msgid "全部评论总数（含待审核与垃圾）"
+msgstr ""
+
+#: admin/write-js.php:14
+msgid "八月"
+msgstr ""
+
+#: admin/manage-pages.php:27 admin/manage-posts.php:79
+#: admin/write-page.php:125 admin/write-post.php:99
+#: var/Widget/Contents/Page/Edit.php:90
+#: var/Widget/Contents/Post/Edit.php:106
+msgid "公开"
+msgstr ""
+
+#: admin/write-page.php:121 admin/write-post.php:95
+msgid "公开度"
+msgstr ""
+
+#: admin/write-js.php:21
+msgid "六"
+msgstr ""
+
+#: admin/write-js.php:14
+msgid "六月"
+msgstr ""
+
+#: install.php:1456
+msgid "关于"
+msgstr ""
+
+#: admin/manage-users.php:88 var/Widget/Users/Edit.php:114
+msgid "关注者"
+msgstr ""
+
+#: var/Widget/Upgrade.php:76
+msgid "关键数据库结构修复"
+msgstr ""
+
+#: admin/upgrade.php:320
+msgid "关键结构检查"
+msgstr ""
+
+#: admin/upgrade.php:322
+msgid "关键结构正常，共检查 %d 项。"
+msgstr ""
+
+#: var/Widget/Options/General.php:338
+msgid "关键词"
+msgstr ""
+
+#: admin/footer.php:22 admin/options-cache.php:29
+#: var/Widget/Options/Cache.php:104 var/Widget/Options/Cache.php:112
+#: var/Widget/Options/General.php:354 var/Widget/Options/Mail.php:208
+#: var/Widget/Options/Mail.php:501 var/Widget/Users/Profile.php:36
+#: var/Widget/Users/Profile.php:46 var/Widget/Users/Profile.php:55
+msgid "关闭"
+msgstr ""
+
+#: admin/preview.php:33 admin/preview.php:34
+msgid "关闭预览"
+msgstr ""
+
+#: admin/upgrade.php:284
+msgid "其中 %d 项会阻断当前结构修复。"
+msgstr ""
+
+#: var/Typecho/Palette.php:427
+msgid "其他"
+msgstr ""
+
+#: var/Widget/Options/Discussion.php:102
+msgid "具体写法请参考 <a href=\\"https://www.php.net/manual/zh/function.date.php\\">PHP 日期格式写法</a>"
+msgstr ""
+
+#: var/Widget/Options/Reading.php:95
+msgid "具体写法，请参考 <a href=\\"https://www.php.net/manual/zh/function.date.php\\">PHP 日期格式写法</a>"
+msgstr ""
+
+#: var/Widget/Users/Edit.php:119
+msgid "具体的权限分配表请<a href=\\"https://docs.typecho.org/develop/acl\\">参考这里</a>."
+msgstr ""
+
+#: admin/manage-comments.php:103 admin/manage-comments.php:276
+#: admin/manage-comments.php:339
+msgid "内容"
+msgstr ""
+
+#: var/Widget/Comments/Admin.php:34
+msgid "内容不存在"
+msgstr ""
+
+#: admin/index.php:247
+msgid "内容分布"
+msgstr ""
+
+#: admin/write-post.php:111 admin/write-post.php:114
+msgid "内容密码"
+msgstr ""
+
+#: admin/write-js.php:258
+msgid "内容已经改变尚未保存, 您确认要离开此页面吗?"
+msgstr ""
+
+#: var/Widget/Base/Comments.php:331
+msgid "内容被隐藏"
+msgstr ""
+
+#: admin/write-page.php:55 admin/write-page.php:58 admin/write-post.php:40
+#: admin/write-post.php:43
+msgid "写作设置"
+msgstr ""
+
+#: admin/index.php:355
+msgid "写文章"
+msgstr ""
+
+#: admin/index.php:200
+msgid "写新文章"
+msgstr ""
+
+#: usr/themes/default/comments.php:53
+msgid "写点什么吧..."
+msgstr ""
+
+#: admin/upgrade.php:412
+msgid "准备"
+msgstr ""
+
+#: var/Widget/Users/Profile.php:77
+msgid "出现在聚合中"
+msgstr ""
+
+#: admin/write-js.php:28
+msgid "分"
+msgstr ""
+
+#: admin/editor-js.php:68
+msgid "分割线"
+msgstr ""
+
+#: admin/index.php:335 admin/manage-posts.php:139 admin/profile.php:43
+#: admin/write-post.php:66 var/Typecho/Palette.php:177
+#: var/Typecho/Palette.php:240 var/Widget/Menu.php:75
+msgid "分类"
+msgstr ""
+
+#: usr/themes/default/header.php:8 usr/themes/default/index.php:17
+msgid "分类 %s 下的文章"
+msgstr ""
+
+#: var/Widget/Metas/Category/Edit.php:115
+msgid "分类 <a href=\\"%s\\">%s</a> 已经被增加"
+msgstr ""
+
+#: var/Widget/Metas/Category/Edit.php:290
+msgid "分类 <a href=\\"%s\\">%s</a> 已经被更新"
+msgstr ""
+
+#: var/Widget/Archive.php:1346 var/Widget/Metas/Category/Admin.php:59
+#: var/Widget/Metas/Category/Edit.php:215
+#: var/Widget/Metas/Category/Edit.php:235
+#: var/Widget/Metas/Category/Edit.php:392
+#: var/Widget/Metas/Category/Edit.php:426
+#: var/Widget/Metas/Category/Edit.php:437 var/Widget/XmlRpc.php:401
+msgid "分类不存在"
+msgstr ""
+
+#: var/Widget/Metas/Category/Edit.php:214
+#: var/Widget/Metas/Category/Edit.php:335
+#: var/Widget/Metas/Category/Edit.php:391
+msgid "分类主键不存在"
+msgstr ""
+
+#: var/Widget/Metas/Category/Edit.php:380
+msgid "分类刷新已经完成"
+msgstr ""
+
+#: var/Widget/Metas/Category/Edit.php:127
+msgid "分类名称"
+msgstr ""
+
+#: var/Widget/Metas/Category/Edit.php:206
+msgid "分类名称已经存在"
+msgstr ""
+
+#: var/Widget/Metas/Category/Edit.php:207
+msgid "分类名称无法被转换为缩略名"
+msgstr ""
+
+#: var/Widget/Metas/Category/Edit.php:327
+msgid "分类已经删除"
+msgstr ""
+
+#: var/Widget/Metas/Category/Edit.php:350
+msgid "分类已经合并"
+msgstr ""
+
+#: admin/manage-categories.php:150 admin/manage-categories.php:152
+msgid "分类排序失败, 已恢复原顺序"
+msgstr ""
+
+#: var/Widget/Metas/Category/Edit.php:366
+msgid "分类排序已经完成"
+msgstr ""
+
+#: var/Widget/Metas/Category/Edit.php:162
+msgid "分类描述"
+msgstr ""
+
+#: var/Widget/Metas/Category/Edit.php:134
+msgid "分类缩略名"
+msgstr ""
+
+#: var/Widget/Metas/Category/Edit.php:135
+msgid "分类缩略名用于创建友好的链接形式, 建议使用字母, 数字, 下划线和横杠."
+msgstr ""
+
+#: var/Widget/Options/Permalink.php:343
+msgid "分类路径"
+msgstr ""
+
+#: var/Widget/Options/Permalink.php:348
+msgid "分类路径中没有包含 {mid} 或者 {slug} "
+msgstr ""
+
+#: usr/themes/default/index.php:42
+msgid "分页导航"
+msgstr ""
+
+#: usr/themes/default/header.php:81
+msgid "切换主题"
+msgstr ""
+
+#: var/Typecho/Palette.php:124
+msgid "切换侧边栏"
+msgstr ""
+
+#: var/Typecho/Palette.php:132
+msgid "切换全屏模式"
+msgstr ""
+
+#: var/Typecho/Palette.php:100
+msgid "切换浅色主题"
+msgstr ""
+
+#: var/Typecho/Palette.php:108
+msgid "切换深色主题"
+msgstr ""
+
+#: admin/editor-js.php:63
+msgid "列表项目"
+msgstr ""
+
+#: var/Utils/Zone.php:193
+msgid "刚刚"
+msgstr ""
+
+#: var/Typecho/Palette.php:168 var/Typecho/Palette.php:443
+msgid "创建"
+msgstr ""
+
+#: admin/login.php:49
+msgid "创建一个新账号"
+msgstr ""
+
+#: install.php:924
+msgid "创建完毕, 继续安装 &raquo;"
+msgstr ""
+
+#: install.php:1299
+msgid "创建您的管理员帐号"
+msgstr ""
+
+#: var/Widget/Menu.php:64
+msgid "创建新页面"
+msgstr ""
+
+#: var/Typecho/Palette.php:165
+msgid "创建独立页面"
+msgstr ""
+
+#: var/Widget/Menu.php:64
+msgid "创建页面"
+msgstr ""
+
+#: admin/custom-fields-js.php:32 admin/custom-fields.php:40
+#: admin/custom-fields.php:63 admin/file-upload-js.php:151
+#: admin/file-upload.php:41 admin/manage-categories.php:31
+#: admin/manage-comments.php:66 admin/manage-comments.php:176
+#: admin/manage-medias.php:24 admin/manage-pages.php:24
+#: admin/manage-posts.php:75 admin/manage-tags.php:26
+#: admin/manage-users.php:22
+msgid "删除"
+msgstr ""
+
+#: var/Widget/Plugins/Edit.php:91
+msgid "删除个人配置"
+msgstr ""
+
+#: var/Widget/Plugins/Edit.php:84
+msgid "删除全局配置"
+msgstr ""
+
+#: install.php:1278
+msgid "删除原有数据"
+msgstr ""
+
+#: admin/write.php:29
+msgid "删除它"
+msgstr ""
+
+#: admin/manage-comments.php:69
+msgid "删除所有垃圾评论"
+msgstr ""
+
+#: var/Widget/Contents/Attachment/Edit.php:133
+msgid "删除文件"
+msgstr ""
+
+#: var/Widget/Comments/Edit.php:368
+msgid "删除评论失败"
+msgstr ""
+
+#: var/Widget/Comments/Edit.php:368
+msgid "删除评论成功"
+msgstr ""
+
+#: admin/manage-categories.php:34 admin/manage-tags.php:29
+#: var/Typecho/Palette.php:151
+msgid "刷新"
+msgstr ""
+
+#: admin/plugins.php:232
+msgid "刷新中..."
+msgstr ""
+
+#: admin/manage-categories.php:33
+msgid "刷新分类可能需要等待较长时间, 你确认要刷新这些分类吗?"
+msgstr ""
+
+#: var/Typecho/Palette.php:148
+msgid "刷新当前页面"
+msgstr ""
+
+#: admin/manage-tags.php:28
+msgid "刷新标签可能需要等待较长时间, 你确认要刷新这些标签吗?"
+msgstr ""
+
+#: admin/plugins.php:61 admin/plugins.php:231
+msgid "刷新检测"
+msgstr ""
+
+#: admin/index.php:172
+msgid "前往设置"
+msgstr ""
+
+#: var/Typecho/Palette.php:422
+msgid "前端缓存已清除"
+msgstr ""
+
+#: admin/editor-js.php:43
+msgid "加粗"
+msgstr ""
+
+#: admin/editor-js.php:44
+msgid "加粗文字"
+msgstr ""
+
+#: usr/themes/default/header.php:9 usr/themes/default/index.php:18
+msgid "包含关键字 %s 的文章"
+msgstr ""
+
+#: admin/write-js.php:15
+msgid "十一月"
+msgstr ""
+
+#: admin/write-js.php:15
+msgid "十二月"
+msgstr ""
+
+#: admin/write-js.php:15
+msgid "十月"
+msgstr ""
+
+#: var/Widget/Menu.php:58
+msgid "升级"
+msgstr ""
+
+#: var/Typecho/Upgrade/Runner.php:306
+msgid "升级前备份失败: %s"
+msgstr ""
+
+#: admin/upgrade.php:413
+msgid "升级前请完整备份程序数据，避免升级失败导致数据丢失或无法恢复"
+msgstr ""
+
+#: var/Widget/Upgrade/Package.php:72
+msgid "升级包上传"
+msgstr ""
+
+#: var/Typecho/Upgrade/Runner.php:74
+msgid "升级包上传失败"
+msgstr ""
+
+#: var/Widget/Upgrade/Package.php:49
+msgid "升级包与临时目录已清理"
+msgstr ""
+
+#: var/Typecho/Upgrade/Manifest.php:21
+msgid "升级包产品标识不匹配"
+msgstr ""
+
+#: var/Typecho/Upgrade/Runner.php:91
+msgid "升级包保存失败"
+msgstr ""
+
+#: var/Typecho/Upgrade/Runner.php:457 var/Typecho/Upgrade/Runner.php:487
+#: var/Typecho/Upgrade/Runner.php:611
+msgid "升级包包含受保护路径: %s"
+msgstr ""
+
+#: var/Typecho/Upgrade/Runner.php:155
+msgid "升级包包含非法路径: %s"
+msgstr ""
+
+#: var/Typecho/Upgrade/Runner.php:78
+msgid "升级包大小超出限制"
+msgstr ""
+
+#: var/Typecho/Upgrade/Runner.php:752
+msgid "升级包完整性校验失败: %s"
+msgstr ""
+
+#: var/Typecho/Upgrade/Runner.php:760
+msgid "升级包完整性校验失败，请重新下载后再试"
+msgstr ""
+
+#: var/Typecho/Upgrade/Runner.php:740
+msgid "升级包完整性校验配置无效"
+msgstr ""
+
+#: var/Widget/Upgrade/Package.php:82
+msgid "升级包已上传：%s → %s"
+msgstr ""
+
+#: var/Typecho/Upgrade/Manifest.php:35
+msgid "升级包文件列表格式无效"
+msgstr ""
+
+#: var/Typecho/Upgrade/Runner.php:126
+msgid "升级包文件数量超出限制"
+msgstr ""
+
+#: var/Typecho/Upgrade/Runner.php:121
+msgid "升级包无法打开"
+msgstr ""
+
+#: var/Typecho/Upgrade/Runner.php:272
+msgid "升级包来源版本不匹配，当前版本为 %s"
+msgstr ""
+
+#: var/Typecho/Upgrade/Runner.php:495
+msgid "升级包没有可用文件"
+msgstr ""
+
+#: var/Typecho/Upgrade/Manifest.php:13
+msgid "升级包清单无效"
+msgstr ""
+
+#: var/Typecho/Upgrade/Runner.php:719
+msgid "升级包版本文件与目标版本不一致"
+msgstr ""
+
+#: var/Typecho/Upgrade/Runner.php:707 var/Typecho/Upgrade/Runner.php:712
+msgid "升级包版本文件无法读取"
+msgstr ""
+
+#: var/Typecho/Upgrade/Manifest.php:25
+msgid "升级包版本格式无效"
+msgstr ""
+
+#: var/Typecho/Upgrade/Runner.php:255
+msgid "升级包状态不可执行"
+msgstr ""
+
+#: var/Typecho/Upgrade/Runner.php:264
+msgid "升级包状态损坏"
+msgstr ""
+
+#: var/Typecho/Upgrade/Store.php:39
+msgid "升级包目录"
+msgstr ""
+
+#: var/Typecho/Upgrade/Manifest.php:29
+msgid "升级包目标版本必须高于来源版本"
+msgstr ""
+
+#: var/Typecho/Upgrade/Runner.php:276
+msgid "升级包目标版本无效"
+msgstr ""
+
+#: var/Typecho/Upgrade/Runner.php:210
+msgid "升级包缺少 typerenew-upgrade.json"
+msgstr ""
+
+#: var/Typecho/Upgrade/Runner.php:701
+msgid "升级包缺少版本文件: %s"
+msgstr ""
+
+#: var/Typecho/Upgrade/Runner.php:136
+msgid "升级包解压后体积超出限制"
+msgstr ""
+
+#: var/Typecho/Upgrade/Runner.php:171 var/Typecho/Upgrade/Runner.php:178
+msgid "升级包解压失败: %s"
+msgstr ""
+
+#: var/Typecho/Upgrade/Runner.php:165
+msgid "升级包读取失败: %s"
+msgstr ""
+
+#: admin/upgrade.php:133
+msgid "升级工作目录：%s"
+msgstr ""
+
+#: admin/upgrade.php:433
+msgid "升级成功后请刷新页面确认版本；如提示仍有版本差异，再执行数据库升级"
+msgstr ""
+
+#: var/Typecho/Upgrade/Runner.php:460
+msgid "升级文件不存在: %s"
+msgstr ""
+
+#: var/Typecho/Upgrade/Runner.php:296 var/Typecho/Upgrade/Runner.php:747
+msgid "升级文件缺失: %s"
+msgstr ""
+
+#: var/Typecho/Upgrade/Runner.php:454 var/Typecho/Upgrade/Runner.php:483
+msgid "升级文件路径无效: %s"
+msgstr ""
+
+#: admin/upgrade.php:408 admin/upgrade.php:409
+msgid "升级流程"
+msgstr ""
+
+#: admin/upgrade.php:193
+msgid "升级状态"
+msgstr ""
+
+#: var/Typecho/Upgrade/Store.php:148 var/Typecho/Upgrade/Store.php:153
+#: var/Typecho/Upgrade/Store.php:157
+msgid "升级状态写入失败"
+msgstr ""
+
+#: var/Typecho/Upgrade/Store.php:64 var/Typecho/Upgrade/Store.php:68
+msgid "升级状态文件不可读：%s"
+msgstr ""
+
+#: var/Typecho/Upgrade/Store.php:74
+msgid "升级状态文件格式异常，建议先清理升级包"
+msgstr ""
+
+#: var/Typecho/Upgrade/Store.php:38
+msgid "升级目录"
+msgstr ""
+
+#: var/Typecho/Upgrade/Store.php:113 var/Typecho/Upgrade/Store.php:117
+msgid "升级目录不可写: %s"
+msgstr ""
+
+#: var/Typecho/Upgrade/Runner.php:647
+msgid "升级目标路径非法: %s"
+msgstr ""
+
+#: admin/upgrade.php:84 var/Widget/Menu.php:58
+msgid "升级程序"
+msgstr ""
+
+#: var/Typecho/Upgrade/Store.php:172 var/Typecho/Upgrade/Store.php:177
+msgid "升级锁文件创建失败"
+msgstr ""
+
+#: var/Widget/Options/Cache.php:132
+msgid "单位为秒，最小 1 秒"
+msgstr ""
+
+#: var/Widget/Options/Discussion.php:121
+msgid "单条评论最大长度"
+msgstr ""
+
+#: var/Widget/XmlRpc.php:114
+msgid "博客关键字"
+msgstr ""
+
+#: var/Widget/XmlRpc.php:77
+msgid "博客地址"
+msgstr ""
+
+#: var/Widget/XmlRpc.php:109
+msgid "博客标题"
+msgstr ""
+
+#: var/Widget/XmlRpc.php:82
+msgid "博客首页地址"
+msgstr ""
+
+#: admin/plugins.php:124
+msgid "即插即用"
+msgstr ""
+
+#: var/Widget/Options/Mail.php:246
+msgid "发件人名称"
+msgstr ""
+
+#: var/Widget/Options/Mail.php:236
+msgid "发件邮箱"
+msgstr ""
+
+#: admin/write-post.php:34
+msgid "发布文章"
+msgstr ""
+
+#: admin/manage-medias.php:61 admin/write-page.php:68
+#: admin/write-post.php:53
+msgid "发布日期"
+msgstr ""
+
+#: admin/write-page.php:48
+msgid "发布页面"
+msgstr ""
+
+#: var/Utils/Migration/SchemaManager.php:200
+msgid "发现 %d 组按目标排序规则归一后的 email + scope 重复，修复索引前需先清理"
+msgstr ""
+
+#: var/Utils/Migration/SchemaManager.php:248
+msgid "发现 %d 组按目标排序规则归一后的重复用户名，升级后可能触发唯一键冲突"
+msgstr ""
+
+#: var/Utils/Migration/SchemaManager.php:232
+msgid "发现 %d 组按目标排序规则归一后的重复缩略名，升级后可能触发唯一键冲突"
+msgstr ""
+
+#: var/Utils/Migration/SchemaManager.php:216
+msgid "发现 %d 组按目标排序规则归一后的重复邮箱，排序规则升级后可能触发唯一键冲突"
+msgstr ""
+
+#: var/Widget/Backup.php:583
+msgid "发现孤儿评论关联内容 %d 个，导入后将自动迁移到占位内容"
+msgstr ""
+
+#: var/Widget/Backup.php:575
+msgid "发现异常评论状态值 %d 条，导入后将自动修复为 waiting"
+msgstr ""
+
+#: var/Widget/Backup.php:579
+msgid "发现疑似编码异常评论 %d 条，可能影响编辑回填"
+msgstr ""
+
+#: var/Widget/Options/Mail.php:218
+msgid "发送方式"
+msgstr ""
+
+#: admin/options-mail.php:128
+msgid "发送模板测试"
+msgstr ""
+
+#: admin/forgot.php:33
+msgid "发送重置链接"
+msgstr ""
+
+#: admin/editor-js.php:83 admin/manage-comments.php:277
+#: admin/manage-comments.php:342
+msgid "取消"
+msgstr ""
+
+#: var/Widget/Comments/Archive.php:359
+msgid "取消回复"
+msgstr ""
+
+#: admin/write.php:71
+msgid "取消预览"
+msgstr ""
+
+#: admin/options-mail.php:220
+msgid "变量示例：{siteTitle}、{title}、{author}、{commentTextPlain}、{commentHtml}、{permalink}、{manageurl}、{unsubUrl}、{resetUrl}、{expiresAt}"
+msgstr ""
+
+#: admin/upgrade.php:281
+msgid "另有 %d 项 MySQL 风险与结构修复直接相关。"
+msgstr ""
+
+#: admin/upgrade.php:258
+msgid "另有 %d 项关键结构异常待处理。"
+msgstr ""
+
+#: admin/upgrade.php:98
+msgid "另有 %d 项环境提醒。"
+msgstr ""
+
+#: install.php:1430
+msgid "只是一个默认分类"
+msgstr ""
+
+#: var/Widget/Options/Permalink.php:74
+msgid "只有在启用“地址重写功能”后，才需要把下列规则写入 Web 服务器配置"
+msgstr ""
+
+#: admin/theme-tabs.php:3
+msgid "可以使用的外观"
+msgstr ""
+
+#: var/Widget/Users/Profile.php:77
+msgid "可以被引用"
+msgstr ""
+
+#: var/Widget/Users/Profile.php:77
+msgid "可以被评论"
+msgstr ""
+
+#: var/Typecho/Upgrade/Store.php:238
+msgid "可写"
+msgstr ""
+
+#: var/Typecho/Upgrade/Store.php:277
+msgid "可创建"
+msgstr ""
+
+#: admin/manage-posts.php:29
+msgid "可用"
+msgstr ""
+
+#: var/Widget/Options/Permalink.php:320
+msgid "可用参数：<code>{cid}</code> 日志 ID  <code>{slug}</code> 日志缩略名  <code>{category}</code> 分类  <code>{directory}</code> 多级分类  <code>{year}</code> 年  <code>{month}</code> 月  <code>{day}</code> 日"
+msgstr ""
+
+#: var/Widget/Options/Permalink.php:333
+msgid "可用参数：<code>{cid}</code> 页面 ID，<code>{slug}</code> 页面缩略名，<code>{directory}</code> 多级页面"
+msgstr ""
+
+#: var/Widget/Options/Permalink.php:344
+msgid "可用参数：<code>{mid}</code> 分类 ID，<code>{slug}</code> 分类缩略名，<code>{directory}</code> 多级分类"
+msgstr ""
+
+#: var/Typecho/Upgrade/Runner.php:39
+msgid "可解压 zip 升级包"
+msgstr ""
+
+#: var/Widget/Options/Mail.php:326
+msgid "可选，填写允许触发异步回调的服务器 IP，多个用逗号或空格分隔；留空则不限制"
+msgstr ""
+
+#: admin/manage-categories.php:38 admin/manage-tags.php:33
+msgid "合并到"
+msgstr ""
+
+#: var/Widget/Metas/Tag/Edit.php:238
+msgid "合并到的标签名不合法"
+msgstr ""
+
+#: var/Widget/Options/Discussion.php:182
+msgid "同一 IP 发布评论的时间间隔限制为 %s 分钟"
+msgstr ""
+
+#: var/Widget/Options/Mail.php:314
+msgid "同步投递"
+msgstr ""
+
+#: admin/manage-categories.php:63 admin/plugins.php:90
+#: admin/plugins.php:169
+msgid "名称"
+msgstr ""
+
+#: admin/editor-js.php:355
+msgid "否"
+msgstr ""
+
+#: admin/plugins.php:192 admin/themes.php:69
+#: var/Widget/Options/Permalink.php:268
+msgid "启用"
+msgstr ""
+
+#: var/Widget/Options/Discussion.php:132
+msgid "启用 <a href=\\"https://gravatar.com\\">Gravatar</a> 头像服务, 最高显示评级为 %s 的头像"
+msgstr ""
+
+#: var/Widget/Options/Discussion.php:139
+msgid "启用分页, 并且每页显示 %s 篇评论, 在列出时将 %s 作为默认显示"
+msgstr ""
+
+#: admin/themes.php:41
+msgid "启用新外观后，当前外观的设置数据将被删除。"
+msgstr ""
+
+#: admin/plugins.php:74
+msgid "启用的插件"
+msgstr ""
+
+#: var/Widget/Options/Discussion.php:146
+msgid "启用评论回复, 以 %s 层作为每个评论最多的回复层数"
+msgstr ""
+
+#: admin/write-js.php:18
+msgid "周一"
+msgstr ""
+
+#: admin/write-js.php:18
+msgid "周三"
+msgstr ""
+
+#: admin/write-js.php:18
+msgid "周二"
+msgstr ""
+
+#: admin/write-js.php:19
+msgid "周五"
+msgstr ""
+
+#: admin/write-js.php:19
+msgid "周六"
+msgstr ""
+
+#: admin/write-js.php:19
+msgid "周四"
+msgstr ""
+
+#: admin/write-js.php:18
+msgid "周日"
+msgstr ""
+
+#: var/Typecho/Palette.php:428
+msgid "命令执行失败"
+msgstr ""
+
+#: admin/write-js.php:21
+msgid "四"
+msgstr ""
+
+#: admin/write-js.php:13
+msgid "四月"
+msgstr ""
+
+#: var/Typecho/Palette.php:140
+msgid "回到页面顶部"
+msgstr ""
+
+#: admin/manage-comments.php:173 admin/manage-comments.php:277
+#: usr/themes/default/functions.php:116 var/Widget/Comments/Archive.php:221
+#: var/Widget/Comments/Archive.php:324
+msgid "回复"
+msgstr ""
+
+#: admin/manage-comments.php:291 var/Widget/Comments/Edit.php:268
+msgid "回复内容不能为空"
+msgstr ""
+
+#: admin/manage-comments.php:303 admin/manage-comments.php:316
+#: var/Widget/Comments/Edit.php:313
+msgid "回复评论失败"
+msgstr ""
+
+#: var/Widget/Plugins/Edit.php:98
+msgid "回滚临时插件句柄"
+msgstr ""
+
+#: var/Widget/Plugins/Edit.php:117
+msgid "回滚插件激活状态"
+msgstr ""
+
+#: var/Typecho/Upgrade/Store.php:41
+msgid "回滚目录"
+msgstr ""
+
+#: var/Widget/Plugins/Edit.php:131
+msgid "回滚阶段附加错误：%s"
+msgstr ""
+
+#: admin/editor-js.php:58
+msgid "图片"
+msgstr ""
+
+#: var/Widget/Options/General.php:409
+msgid "图片文件"
+msgstr ""
+
+#: admin/profile.php:17
+msgid "在 Gravatar 上修改头像"
+msgstr ""
+
+#: var/Widget/Users/Profile.php:48
+msgid "在 XMLRPC 接口中使用 Markdown 语法"
+msgstr ""
+
+#: var/Widget/Options/Discussion.php:179
+msgid "在文章发布 %s 天以后自动关闭评论"
+msgstr ""
+
+#: admin/upgrade.php:155
+msgid "在线升级"
+msgstr ""
+
+#: var/Widget/Upgrade/Package.php:97
+msgid "在线升级已完成：目标版本 %s，已覆盖 %d 个文件"
+msgstr ""
+
+#: var/Widget/Upgrade/Package.php:29
+msgid "在线升级环境未就绪"
+msgstr ""
+
+#: var/Widget/Options/Discussion.php:129
+msgid "在评论中使用 Markdown 语法"
+msgstr ""
+
+#: usr/themes/default/functions.php:11
+msgid "在这里填入一个图片 URL 地址, 以在网站标题前加上一个 LOGO"
+msgstr ""
+
+#: var/Widget/Options/Permalink.php:271
+msgid "地址重写（rewrite）是部分服务器软件提供的内部链接优化功能"
+msgstr ""
+
+#: admin/manage-comments.php:38 admin/manage-comments.php:165
+#: admin/manage-comments.php:167 var/Typecho/Mail/Notify.php:295
+#: var/Widget/XmlRpc.php:633
+msgid "垃圾"
+msgstr ""
+
+#: admin/copyright.php:6
+msgid "基于 <a href=\\"https://typecho.org/\\">Typecho</a> 开发，由 <a href=\\"https://www.typerenew.com\\">%s</a> 焕新呈现，版本 %s"
+msgstr ""
+
+#: var/Typecho/Palette.php:276 var/Widget/Menu.php:89
+msgid "基本"
+msgstr ""
+
+#: admin/options-tabs.php:5 var/Typecho/Palette.php:273
+#: var/Widget/Menu.php:89
+msgid "基本设置"
+msgstr ""
+
+#: var/Widget/Metas/Category/Edit.php:196
+msgid "增加分类"
+msgstr ""
+
+#: var/Widget/Metas/Tag/Edit.php:152
+msgid "增加标签"
+msgstr ""
+
+#: var/Widget/Users/Edit.php:148
+msgid "增加用户"
+msgstr ""
+
+#: admin/auth.php:24
+msgid "墨影"
+msgstr ""
+
+#: admin/menu.php:183
+msgid "墨绿"
+msgstr ""
+
+#: admin/backup.php:42
+msgid "处理摘要"
+msgstr ""
+
+#: var/Typecho/Palette.php:357 var/Widget/Menu.php:59
+msgid "备份"
+msgstr ""
+
+#: admin/backup.php:58
+msgid "备份您的数据"
+msgstr ""
+
+#: var/Widget/Backup.php:412
+msgid "备份文件不存在"
+msgstr ""
+
+#: var/Widget/Backup.php:399
+msgid "备份文件名不合法"
+msgstr ""
+
+#: var/Widget/Backup.php:454
+msgid "备份文件头尾版本不一致"
+msgstr ""
+
+#: var/Widget/Backup.php:567
+msgid "备份文件未包含用户数据，无法安全恢复"
+msgstr ""
+
+#: var/Widget/Backup.php:571
+msgid "备份文件未检测到管理员账户，恢复后无法登录后台"
+msgstr ""
+
+#: var/Widget/Backup.php:433 var/Widget/Backup.php:442
+#: var/Widget/Backup.php:449 var/Widget/Backup.php:490
+msgid "备份文件格式错误"
+msgstr ""
+
+#: admin/backup.php:68
+msgid "备份说明"
+msgstr ""
+
+#: var/Typecho/Palette.php:103 var/Typecho/Palette.php:111
+#: var/Typecho/Palette.php:119 var/Typecho/Palette.php:339
+#: var/Typecho/Palette.php:446 var/Widget/Menu.php:55
+msgid "外观"
+msgstr ""
+
+#: var/Widget/Themes/Edit.php:132
+msgid "外观已经改变"
+msgstr ""
+
+#: var/Widget/Themes/Edit.php:208
+msgid "外观设置已经保存"
+msgstr ""
+
+#: var/Widget/Themes/Config.php:22
+msgid "外观配置功能不存在"
+msgstr ""
+
+#: usr/themes/default/functions.php:23
+msgid "外观风格"
+msgstr ""
+
+#: var/Widget/Options/General.php:410
+msgid "多媒体文件"
+msgstr ""
+
+#: admin/dropzone-js.php:6
+msgid "大小：%s，"
+msgstr ""
+
+#: admin/options-mail.php:53 admin/upgrade.php:52
+msgid "失败"
+msgstr ""
+
+#: admin/options-mail.php:188
+msgid "失败任务列表"
+msgstr ""
+
+#: var/Widget/Options/General.php:357
+msgid "如无远程写作、离线客户端或第三方同步需求，建议保持关闭"
+msgstr ""
+
+#: admin/write-page.php:99
+msgid "如果你为此页面选择了一个自定义模板, 系统将按照你选择的模板文件展现它"
+msgstr ""
+
+#: var/Widget/Options/Permalink.php:289
+msgid "如果你仍然想启用此功能, 请勾选这里"
+msgstr ""
+
+#: admin/write-page.php:112
+msgid "如果你设定了父级页面, 此页面将作为子页面呈现"
+msgstr ""
+
+#: admin/backup.php:77
+msgid "如果数据量较大，直接通过面板备份可能因执行时间过长而导致 <strong>操作超时</strong>。"
+msgstr ""
+
+#: var/Widget/Forgot.php:79 var/Widget/Forgot.php:127
+msgid "如果该邮箱已注册，您将收到重置邮件"
+msgstr ""
+
+#: admin/backup.php:83
+msgid "如需减小备份文件体积并提升备份速度，建议在备份前先清理不再需要的数据。"
+msgstr ""
+
+#: var/Typecho/Palette.php:195 var/Typecho/Palette.php:258
+msgid "媒体"
+msgstr ""
+
+#: admin/manage-categories.php:64
+msgid "子分类"
+msgstr ""
+
+#: admin/manage-pages.php:64
+msgid "子页面"
+msgstr ""
+
+#: admin/custom-fields-js.php:31 admin/custom-fields.php:37
+#: admin/custom-fields.php:60 admin/custom-fields.php:61
+msgid "字段值"
+msgstr ""
+
+#: admin/custom-fields-js.php:24 admin/custom-fields.php:21
+#: admin/custom-fields.php:48 admin/custom-fields.php:49
+msgid "字段名称"
+msgstr ""
+
+#: admin/custom-fields-js.php:25 admin/custom-fields.php:24
+#: admin/custom-fields.php:51
+msgid "字段类型"
+msgstr ""
+
+#: admin/custom-fields-js.php:26 admin/custom-fields.php:27
+#: admin/custom-fields.php:53
+msgid "字符"
+msgstr ""
+
+#: var/Typecho/Upgrade/Store.php:254
+msgid "存在同名文件，无法创建目录"
+msgstr ""
+
+#: admin/index.php:171
+msgid "安全与兼容提醒"
+msgstr ""
+
+#: install.php:435
+msgid "安装会话已失效, 请刷新页面后重新提交"
+msgstr ""
+
+#: install.php:377
+msgid "安装会话已失效, 请返回上一步重新执行数据库配置"
+msgstr ""
+
+#: install.php:483 install.php:520
+msgid "安装成功"
+msgstr ""
+
+#: install.php:1063 install.php:1064
+msgid "安装流程状态无效"
+msgstr ""
+
+#: install.php:45
+msgid "安装程序发生未处理错误，请检查配置后重试"
+msgstr ""
+
+#: install.php:1510
+msgid "安装程序无法创建管理员帐号，请检查数据库权限和配置信息"
+msgstr ""
+
+#: install.php:1285
+msgid "安装程序无法初始化数据库，请检查数据库权限和配置信息"
+msgstr ""
+
+#: install.php:1227
+msgid "安装程序无法删除原有数据表，请检查数据库权限和配置信息。"
+msgstr ""
+
+#: install.php:1169
+msgid "安装程序无法完成数据库连接，请检查您的配置信息"
+msgstr ""
+
+#: install.php:1176
+msgid "安装程序无法自动创建 <strong>config.inc.php</strong> 文件"
+msgstr ""
+
+#: install.php:1234
+msgid "安装程序无法读取数据库初始化脚本，请检查 install/%s.sql 文件是否存在且可读。"
+msgstr ""
+
+#: install.php:1277
+msgid "安装程序检查到原有数据表已经存在."
+msgstr ""
+
+#: install.php:649
+msgid "安装说明"
+msgstr ""
+
+#: admin/write-js.php:22
+msgid "完成"
+msgstr ""
+
+#: admin/upgrade.php:265
+msgid "完成数据库升级"
+msgstr ""
+
+#: admin/index.php:418
+msgid "官方动态"
+msgstr ""
+
+#: var/Widget/Ajax.php:367
+msgid "官方插件仓库文档格式已变化，暂时无法解析版本信息。"
+msgstr ""
+
+#: var/Widget/Ajax.php:447
+msgid "官方插件仓库暂未收录该插件的版本信息。"
+msgstr ""
+
+#: var/Widget/Ajax.php:336
+msgid "官方插件仓库返回异常状态，暂时无法检测版本。"
+msgstr ""
+
+#: var/Widget/Ajax.php:353
+msgid "官方版本源校验失败，暂时无法检测版本。"
+msgstr ""
+
+#: admin/write.php:53
+msgid "定时发布"
+msgstr ""
+
+#: admin/options-mail.php:138 var/Widget/Options/Mail.php:314
+msgid "定时投递"
+msgstr ""
+
+#: var/Widget/Options/General.php:203
+msgid "客户端 IP 获取来源"
+msgstr ""
+
+#: admin/login.php:27 admin/register.php:30
+msgid "密码"
+msgstr ""
+
+#: admin/manage-posts.php:170 admin/write-post.php:103
+msgid "密码保护"
+msgstr ""
+
+#: admin/profile.php:81
+msgid "密码修改"
+msgstr ""
+
+#: var/Utils/PasswordReset.php:90
+msgid "密码对应的用户不存在"
+msgstr ""
+
+#: var/Widget/Users/Profile.php:281
+msgid "密码已经成功修改"
+msgstr ""
+
+#: var/Widget/Reset.php:83
+msgid "密码已重置，请使用新密码登录"
+msgstr ""
+
+#: install.php:1387 var/Widget/Register.php:47 var/Widget/Reset.php:54
+#: var/Widget/Users/Edit.php:169 var/Widget/Users/Profile.php:310
+msgid "密码至少需要 %d 个字符，且不能超过 %d 字节"
+msgstr ""
+
+#: var/Typecho/Cache/Redis.php:297
+msgid "密码认证失败"
+msgstr ""
+
+#: var/Widget/Reset.php:71
+msgid "密码重置暂时失败，请稍后重试"
+msgstr ""
+
+#: var/Utils/Schema.php:68
+msgid "密码重置表"
+msgstr ""
+
+#: var/Widget/Forgot.php:138 var/Widget/Options/Mail.php:446
+msgid "密码重置请求"
+msgstr ""
+
+#: var/Widget/Forgot.php:111
+msgid "密码重置邮件入队失败"
+msgstr ""
+
+#: var/Widget/Feedback.php:95 var/Widget/Feedback.php:265
+msgid "对不起, 您的发言过于频繁, 请稍候再次发布."
+msgstr ""
+
+#: install.php:1166
+msgid "对不起, 无法连接数据库, 请先检查数据库配置再继续进行安装"
+msgstr ""
+
+#: var/Widget/Archive.php:1304
+msgid "对不起,您输入的密码错误"
+msgstr ""
+
+#: var/Widget/Feedback.php:53
+msgid "对不起,此内容的反馈被禁止."
+msgstr ""
+
+#: var/Widget/Feedback.php:101
+msgid "对不起,此内容的引用被禁止."
+msgstr ""
+
+#: var/Widget/Users/Profile.php:49
+msgid "对于完全支持 <a href=\\"https://daringfireball.net/projects/markdown/\\">Markdown</a> 语法写作的离线编辑器，打开此选项后将避免内容被转换为 HTML"
+msgstr ""
+
+#: var/Widget/Options/Discussion.php:131
+msgid "对评论者个人主页链接使用 <a href=\\"https://en.wikipedia.org/wiki/Nofollow\\">nofollow 属性</a>"
+msgstr ""
+
+#: var/Typecho/Palette.php:357
+msgid "导出"
+msgstr ""
+
+#: var/Typecho/Palette.php:442
+msgid "导航"
+msgstr ""
+
+#: var/Widget/Options/Discussion.php:149
+msgid "将 %s 的评论显示在前面"
+msgstr ""
+
+#: admin/backup.php:151
+msgid "将备份文件手动上传至服务器的 %s 目录后, 本页面会自动显示该备份文件选项"
+msgstr ""
+
+#: admin/custom-fields-js.php:28 admin/custom-fields.php:31
+#: admin/custom-fields.php:55
+msgid "小数"
+msgstr ""
+
+#: admin/write-js.php:353
+msgid "尚未保存"
+msgstr ""
+
+#: var/Typecho/Palette.php:127
+msgid "展开"
+msgstr ""
+
+#: usr/themes/default/header.php:61
+msgid "展开导航"
+msgstr ""
+
+#: admin/options-mail.php:189
+msgid "展示最近失败或已放弃的任务"
+msgstr ""
+
+#: var/Typecho/Palette.php:447
+msgid "工具"
+msgstr ""
+
+#: admin/file-upload-js.php:177
+msgid "已上传完成"
+msgstr ""
+
+#: admin/write-js.php:284
+msgid "已保存"
+msgstr ""
+
+#: var/Widget/Options/Mail.php:284
+msgid "已保存密码，留空表示保持不变"
+msgstr ""
+
+#: var/Widget/Users/Edit.php:277
+msgid "已删除 %d 个用户，跳过 %d 个受保护或仍拥有文章/页面的用户"
+msgstr ""
+
+#: admin/plugins.php:236
+msgid "已刷新插件版本状态"
+msgstr ""
+
+#: var/Widget/XmlRpc.php:616 var/Widget/XmlRpc.php:624
+msgid "已发布"
+msgstr ""
+
+#: admin/index.php:295
+msgid "已发布文章总数"
+msgstr ""
+
+#: admin/options-mail.php:79
+msgid "已发送"
+msgstr ""
+
+#: var/Utils/Migration/SchemaManager.php:39 var/Widget/Upgrade.php:87
+msgid "已同步 %d 条历史评论的作者昵称"
+msgstr ""
+
+#: var/Typecho/Upgrade/Runner.php:38
+msgid "已启用"
+msgstr ""
+
+#: admin/upgrade.php:51
+msgid "已完成"
+msgstr ""
+
+#: admin/upgrade.php:49
+msgid "已就绪"
+msgstr ""
+
+#: admin/options-cache.php:85
+msgid "已开启缓存但驱动不可用，请检查驱动配置"
+msgstr ""
+
+#: admin/options-mail.php:66
+msgid "已放弃"
+msgstr ""
+
+#: var/Typecho/Upgrade/Store.php:182
+msgid "已有升级任务正在执行"
+msgstr ""
+
+#: var/Typecho/Upgrade/Store.php:82
+msgid "已有升级任务正在执行，请稍后重试"
+msgstr ""
+
+#: var/Utils/Migration/SchemaManager.php:597
+#: var/Utils/Migration/SchemaManager.php:606
+msgid "已有数据库迁移正在执行，请稍后重试"
+msgstr ""
+
+#: admin/register.php:42
+msgid "已有账号"
+msgstr ""
+
+#: var/Widget/Options/Mail.php:146
+msgid "已清理 %d 条已发送记录"
+msgstr ""
+
+#: var/Widget/Backup.php:951
+msgid "已生成恢复前快照：%s"
+msgstr ""
+
+#: var/Widget/Options/General.php:442
+msgid "已解除 %d 条登录锁定"
+msgstr ""
+
+#: var/Widget/Options/Cache.php:171
+msgid "已设置密码，留空表示保持不变"
+msgstr ""
+
+#: admin/plugins.php:235
+msgid "已读取插件版本缓存"
+msgstr ""
+
+#: admin/dropzone-js.php:5
+msgid "已选择：%s%s"
+msgstr ""
+
+#: admin/manage-comments.php:28
+msgid "已通过"
+msgstr ""
+
+#: var/Widget/Options/Mail.php:157
+msgid "已重试 %d 条任务（失败 %d，已放弃 %d）"
+msgstr ""
+
+#: install.php:534
+msgid "希望您能尽情享用 TypeRenew 带来的乐趣!"
+msgstr ""
+
+#: var/Typecho/Palette.php:449
+msgid "帮助"
+msgstr ""
+
+#: var/Widget/Options/General.php:411
+msgid "常用档案文件"
+msgstr ""
+
+#: admin/options-cache.php:54
+msgid "平均耗时"
+msgstr ""
+
+#: admin/options-mail.php:159
+msgid "建议仅使用签名头方式调用，避免密钥明文透出"
+msgstr ""
+
+#: var/Widget/Users/Edit.php:100
+msgid "建议使用特殊字符与字母、数字的混编样式,以增加系统安全性."
+msgstr ""
+
+#: var/Widget/Users/Profile.php:292
+msgid "建议使用特殊字符与字母、数字的混编样式，以增加系统安全性"
+msgstr ""
+
+#: admin/upgrade.php:395
+msgid "建议先处理上述重复值或排序规则风险，再执行数据库升级或结构修复。"
+msgstr ""
+
+#: admin/index.php:327
+msgid "建议定期处理待审核与垃圾评论"
+msgstr ""
+
+#: admin/options-cache.php:29 var/Widget/Options/Cache.php:104
+#: var/Widget/Options/Cache.php:112 var/Widget/Options/Mail.php:208
+#: var/Widget/Options/Mail.php:501
+msgid "开启"
+msgstr ""
+
+#: var/Widget/Options/Discussion.php:178
+msgid "开启反垃圾保护"
+msgstr ""
+
+#: var/Widget/Options/Mail.php:375
+msgid "开启后允许“自己回复自己的评论”也发邮件"
+msgstr ""
+
+#: var/Widget/Options/Permalink.php:272
+msgid "开启后可将站点链接显示为纯静态地址形式"
+msgstr ""
+
+#: admin/backup.php:89
+msgid "开始备份"
+msgstr ""
+
+#: var/Widget/Mail.php:40
+msgid "异步回调来源未被允许"
+msgstr ""
+
+#: var/Widget/Options/Mail.php:325
+msgid "异步回调白名单"
+msgstr ""
+
+#: admin/editor-js.php:52 admin/manage-comments.php:131
+#: admin/manage-comments.php:382
+msgid "引用"
+msgstr ""
+
+#: admin/editor-js.php:53
+msgid "引用文字"
+msgstr ""
+
+#: admin/write-post.php:135
+msgid "引用通告"
+msgstr ""
+
+#: var/Widget/Ajax.php:508
+msgid "强制刷新必须使用 POST 请求。"
+msgstr ""
+
+#: var/Widget/Options/Permalink.php:51
+msgid "当上面的 PATH_INFO 写法不可用时，可改用这一套回退规则"
+msgstr ""
+
+#: var/Utils/Migration/SchemaManager.php:168
+msgid "当前 %s 版本为 %s，低于结构修复建议的最低版本 %s"
+msgstr ""
+
+#: install.php:753
+msgid "当前 %s 版本为 %s，安装器最低要求 %s %s，请升级后继续安装。"
+msgstr ""
+
+#: install.php:688
+msgid "当前 PHP 版本为 %s，TypeRenew 最低要求 PHP 8.0，请升级后继续安装。"
+msgstr ""
+
+#: var/Utils/Migration/SchemaManager.php:184
+msgid "当前为 %s，目标推荐为 %s"
+msgstr ""
+
+#: install.php:1306
+msgid "当前为程序自动匹配的网站根目录路径，若与实际不符，请手动调整"
+msgstr ""
+
+#: admin/index.php:24
+msgid "当前仍接受旧版 Token 校验，建议仅在兼容老链接或老插件时短期启用，完成过渡后尽快关闭。"
+msgstr ""
+
+#: admin/index.php:17
+msgid "当前保留 XML-RPC，已关闭 Pingback；如无远程写作或客户端同步需求，建议直接关闭。"
+msgstr ""
+
+#: admin/index.php:31
+msgid "当前允许校验旧版 MD5 密码哈希，这会明显降低安全边界。建议仅在迁移过渡期短期启用。"
+msgstr ""
+
+#: admin/write.php:54
+msgid "当前内容将于 %s 定时发布，前台链接届时才可访问。"
+msgstr ""
+
+#: admin/upgrade.php:279
+msgid "当前发现 %d 项关键结构异常。"
+msgstr ""
+
+#: admin/upgrade.php:261
+msgid "当前另有 %d 项 MySQL 风险会阻断结构操作。"
+msgstr ""
+
+#: admin/index.php:16
+msgid "当前同时开放 XML-RPC 与 Pingback；如无明确业务需求，建议至少关闭 Pingback，或直接关闭 XML-RPC。"
+msgstr ""
+
+#: admin/options-cache.php:67
+msgid "当前命名空间条目"
+msgstr ""
+
+#: var/Widget/Options/General.php:318
+msgid "当前地址 <strong>%s</strong> 与上述设定值不一致"
+msgstr ""
+
+#: var/Utils/Migration/SchemaManager.php:185
+msgid "当前已与目标排序规则一致"
+msgstr ""
+
+#: admin/plugins.php:239
+msgid "当前插件状态未返回，暂时无法显示版本检测结果。"
+msgstr ""
+
+#: var/Widget/Backup.php:278
+msgid "当前数据库恢复将以非事务方式执行，为避免清表后中断导致数据损坏，必须先创建恢复前快照"
+msgstr ""
+
+#: var/Widget/Ajax.php:390
+msgid "当前服务器可能无法访问版本源地址，或网络 / SSL 临时异常。"
+msgstr ""
+
+#: admin/upgrade.php:306
+msgid "当前未检测到版本差异。若需确认结构状态或 MySQL 风险，可按需查看数据库诊断。"
+msgstr ""
+
+#: admin/write.php:34
+msgid "当前正在编辑的是未发布的草稿"
+msgstr ""
+
+#: var/Widget/Upgrade/Package.php:49
+msgid "当前没有可清理的升级包或临时目录"
+msgstr ""
+
+#: var/Widget/Options/General.php:442
+msgid "当前没有生效中的登录锁定"
+msgstr ""
+
+#: admin/upgrade.php:183
+msgid "当前版本 %s"
+msgstr ""
+
+#: var/Widget/Ajax.php:467
+msgid "当前版本 %s，不低于官方仓库标注的最新版本 %s。"
+msgstr ""
+
+#: var/Utils/Migration/SchemaManager.php:30
+msgid "当前版本所需的数据库结构已同步"
+msgstr ""
+
+#: var/Utils/Migration/SchemaManager.php:169
+msgid "当前版本满足结构修复的最低要求"
+msgstr ""
+
+#: admin/upgrade.php:256
+msgid "当前版本需要执行数据库迁移。"
+msgstr ""
+
+#: admin/upgrade.php:104
+msgid "当前环境暂时无法执行在线升级"
+msgstr ""
+
+#: var/Typecho/Upgrade/Runner.php:61
+msgid "当前环境缺少 ZipArchive 扩展"
+msgstr ""
+
+#: var/Typecho/Upgrade/Runner.php:43
+msgid "当前环境缺少 ZipArchive 扩展，无法执行在线升级"
+msgstr ""
+
+#: var/Widget/Ajax.php:317
+msgid "当前环境缺少 curl 扩展，无法访问版本源地址。"
+msgstr ""
+
+#: var/Typecho/Common.php:615
+msgid "当前环境缺少安全随机源，无法继续执行敏感操作。"
+msgstr ""
+
+#: var/Widget/Options/Permalink.php:80
+msgid "当前站点子目录前缀为 %s，下列示例已按该前缀生成"
+msgstr ""
+
+#: var/Widget/Options/Permalink.php:78
+msgid "当前站点部署在根目录。若以后迁移到子目录，请同步修改 RewriteBase 和入口脚本路径"
+msgstr ""
+
+#: admin/index.php:454
+msgid "当前网络不可达，已展示上次缓存内容。"
+msgstr ""
+
+#: admin/index.php:38
+msgid "当前运行环境不支持 FastCGI 后台请求，异步邮件依赖的请求结束后台处理在此环境下可能失效。建议在「设置 - 邮件」中将发送模式切换为 Cron 并配置定时任务，邮件队列会更稳定。"
+msgstr ""
+
+#: admin/options-mail.php:139
+msgid "当投递模式选择“定时投递”时，请使用 POST 请求并携带签名"
+msgstr ""
+
+#: var/Widget/Options/General.php:204
+msgid "当站点位于 CDN 或反向代理之后时，请选择对应的来源头以获取访客真实 IP。"
+msgstr ""
+
+#: var/Widget/Options/General.php:214
+msgid "当选择“自定义请求头”时填写，例如 HTTP_TRUE_CLIENT_IP、HTTP_ALI_CDN_REAL_IP。可省略 HTTP_ 前缀。"
+msgstr ""
+
+#: admin/options-mail.php:227 var/Typecho/Mail/Notify.php:294
+msgid "待审"
+msgstr ""
+
+#: var/Widget/Options/Mail.php:369
+msgid "待审提醒"
+msgstr ""
+
+#: admin/index.php:319 admin/manage-comments.php:29
+#: admin/manage-comments.php:64 admin/manage-comments.php:159
+#: admin/manage-comments.php:161 admin/manage-posts.php:32
+#: admin/manage-posts.php:82 admin/manage-posts.php:166
+#: admin/write-post.php:107 var/Typecho/Palette.php:231
+#: var/Widget/Contents/Post/Edit.php:109 var/Widget/XmlRpc.php:615
+#: var/Widget/XmlRpc.php:631
+msgid "待审核"
+msgstr ""
+
+#: var/Typecho/Palette.php:228
+msgid "待审核评论"
+msgstr ""
+
+#: var/Widget/Options/Mail.php:380
+msgid "待审邮件标题"
+msgstr ""
+
+#: admin/options-mail.php:40
+msgid "待投递"
+msgstr ""
+
+#: var/Widget/Feedback.php:153
+msgid "必须填写个人主页"
+msgstr ""
+
+#: var/Widget/Metas/Category/Edit.php:205
+msgid "必须填写分类名称"
+msgstr ""
+
+#: var/Widget/Register.php:43 var/Widget/Users/Edit.php:180
+#: var/Widget/Users/Profile.php:307
+msgid "必须填写密码"
+msgstr ""
+
+#: var/Widget/Contents/Attachment/Edit.php:136
+msgid "必须填写文件标题"
+msgstr ""
+
+#: var/Widget/Metas/Tag/Edit.php:161
+msgid "必须填写标签名称"
+msgstr ""
+
+#: var/Widget/Feedback.php:140
+msgid "必须填写用户名"
+msgstr ""
+
+#: install.php:1378 var/Widget/Register.php:33
+#: var/Widget/Users/Edit.php:175
+msgid "必须填写用户名称"
+msgstr ""
+
+#: install.php:1381 var/Widget/Register.php:38
+#: var/Widget/Users/Edit.php:163 var/Widget/Users/Profile.php:235
+msgid "必须填写电子邮箱"
+msgstr ""
+
+#: var/Widget/Feedback.php:146
+msgid "必须填写电子邮箱地址"
+msgstr ""
+
+#: var/Widget/Options/Discussion.php:176
+msgid "必须填写网址"
+msgstr ""
+
+#: var/Widget/Feedback.php:158
+msgid "必须填写评论内容"
+msgstr ""
+
+#: var/Widget/Options/Discussion.php:175
+msgid "必须填写邮箱"
+msgstr ""
+
+#: admin/login.php:36
+msgid "忘记密码"
+msgstr ""
+
+#: admin/footer.php:9 admin/menu.php:198
+msgid "快捷命令"
+msgstr ""
+
+#: admin/menu.php:157
+msgid "快捷工具"
+msgstr ""
+
+#: admin/index.php:250 admin/index.php:257
+msgid "总量"
+msgstr ""
+
+#: var/Widget/Backup.php:355
+msgid "恢复事务已自动回滚，数据库保持原状态"
+msgstr ""
+
+#: admin/backup.php:130 admin/backup.php:172
+msgid "恢复前快照"
+msgstr ""
+
+#: var/Widget/Backup.php:953
+msgid "恢复前快照创建失败"
+msgstr ""
+
+#: var/Widget/Backup.php:293
+msgid "恢复前快照创建失败，已继续执行恢复"
+msgstr ""
+
+#: var/Widget/Backup.php:296
+msgid "恢复前快照创建失败，当前数据库又不支持事务回滚，已中止恢复以避免数据损坏"
+msgstr ""
+
+#: var/Widget/Backup.php:1123
+msgid "恢复后的用户数据无有效作者，无法创建迁移占位内容"
+msgstr ""
+
+#: var/Widget/Backup.php:357
+msgid "恢复在清表后中断，数据库可能处于部分恢复状态，请使用快照或备份回滚"
+msgstr ""
+
+#: var/Widget/Backup.php:333
+msgid "恢复完成，但未能自动恢复当前登录态，请使用恢复后的账号重新登录"
+msgstr ""
+
+#: var/Widget/Backup.php:946
+msgid "恢复已完成：核心数据已导入"
+msgstr ""
+
+#: admin/backup.php:255
+msgid "恢复操作将清除所有现有数据, 是否继续?"
+msgstr ""
+
+#: admin/backup.php:101
+msgid "恢复数据"
+msgstr ""
+
+#: var/Widget/Backup.php:480
+msgid "恢复数据出现错误"
+msgstr ""
+
+#: var/Widget/Backup.php:266
+msgid "恢复未开始：请先处理下列阻断项"
+msgstr ""
+
+#: admin/backup.php:105
+msgid "恢复来源"
+msgstr ""
+
+#: admin/backup.php:24
+msgid "恢复结果"
+msgstr ""
+
+#: var/Widget/Backup.php:352
+msgid "恢复过程中遇到如下错误: %s"
+msgstr ""
+
+#: install.php:524
+msgid "恭喜！您的 TypeRenew 安装已完成"
+msgstr ""
+
+#: admin/editor-js.php:79
+msgid "您也可以使用附件功能插入上传的本地图片"
+msgstr ""
+
+#: install.php:1177
+msgid "您可以在网站根目录下手动创建 <strong>config.inc.php</strong> 文件, 并复制如下代码至其中"
+msgstr ""
+
+#: var/Typecho/Mail/Notify.php:175
+msgid "您在「{title}」的评论有了回复"
+msgstr ""
+
+#: var/Widget/Feedback.php:142
+msgid "您所使用的用户名已经被注册,请登录后再次提交"
+msgstr ""
+
+#: install.php:485 install.php:528
+msgid "您的密码是"
+msgstr ""
+
+#: var/Widget/Users/Profile.php:199
+msgid "您的档案已经更新"
+msgstr ""
+
+#: install.php:484 install.php:527
+msgid "您的用户名是"
+msgstr ""
+
+#: var/Widget/Comments/Archive.php:222
+msgid "您的评论正等待审核!"
+msgstr ""
+
+#: admin/write.php:29
+msgid "您确认要删除这份草稿吗?"
+msgstr ""
+
+#: admin/manage-medias.php:29
+msgid "您确认要清理未归档的文件吗?"
+msgstr ""
+
+#: var/Widget/Themes/Edit.php:90 var/Widget/Themes/Edit.php:154
+#: var/Widget/Themes/Edit.php:171
+msgid "您编辑的文件不存在"
+msgstr ""
+
+#: var/Widget/Options/General.php:305
+msgid "您设置的站点名称，会展示在网页的标题位置"
+msgstr ""
+
+#: var/Widget/Themes/Edit.php:75 var/Widget/Themes/Edit.php:81
+msgid "您选择的风格不存在"
+msgstr ""
+
+#: admin/forgot.php:38
+msgid "想起密码了？"
+msgstr ""
+
+#: install.php:1481
+msgid "感恩相遇，为你而来."
+msgstr ""
+
+#: admin/footer.php:23
+msgid "成功"
+msgstr ""
+
+#: admin/plugins.php:62
+msgid "成功缓存 2 小时，失败缓存 10 分钟"
+msgstr ""
+
+#: var/Widget/Options/Permalink.php:283
+msgid "我们检测到你使用了 Apache 服务器, 但是程序无法在根目录创建.htaccess文件, 这可能是产生这个错误的原因"
+msgstr ""
+
+#: install.php:664
+msgid "我已阅读并同意上述协议内容，开始下一步 &raquo;"
+msgstr ""
+
+#: admin/manage-comments.php:52 admin/manage-posts.php:59
+msgid "我的"
+msgstr ""
+
+#: admin/login.php:48 admin/reset.php:65
+msgid "或者"
+msgstr ""
+
+#: admin/themes.php:30
+msgid "截图"
+msgstr ""
+
+#: admin/manage-medias.php:60
+msgid "所属文章"
+msgstr ""
+
+#: admin/manage-comments.php:51 admin/manage-posts.php:56
+msgid "所有"
+msgstr ""
+
+#: admin/manage-posts.php:101 admin/manage-posts.php:103
+msgid "所有分类"
+msgstr ""
+
+#: var/Widget/Comments/Edit.php:157
+msgid "所有垃圾评论已经被删除"
+msgstr ""
+
+#: var/Widget/Options/Discussion.php:173
+msgid "所有评论必须经过审核"
+msgstr ""
+
+#: var/Widget/Options/General.php:371
+msgid "所选择的语言包不存在"
+msgstr ""
+
+#: admin/options-mail.php:96
+msgid "手动投递、清理与重试队列任务"
+msgstr ""
+
+#: var/Widget/Options/General.php:354 var/Widget/Users/Profile.php:36
+#: var/Widget/Users/Profile.php:46 var/Widget/Users/Profile.php:55
+msgid "打开"
+msgstr ""
+
+#: admin/upgrade.php:427
+msgid "执行"
+msgstr ""
+
+#: admin/upgrade.php:50
+msgid "执行中"
+msgstr ""
+
+#: admin/upgrade.php:227
+msgid "执行在线升级"
+msgstr ""
+
+#: var/Widget/Plugins/Edit.php:107
+msgid "执行插件停用回滚"
+msgstr ""
+
+#: var/Typecho/Palette.php:330
+msgid "扩展"
+msgstr ""
+
+#: admin/menu.php:203
+msgid "扩展操作"
+msgstr ""
+
+#: var/Widget/Options/Mail.php:345
+msgid "批量大小"
+msgstr ""
+
+#: var/Widget/Feedback.php:106 var/Widget/Feedback.php:252
+msgid "找不到内容"
+msgstr ""
+
+#: admin/forgot.php:10 admin/forgot.php:18
+msgid "找回密码"
+msgstr ""
+
+#: admin/options-mail.php:148 admin/options-mail.php:149
+msgid "投递地址"
+msgstr ""
+
+#: var/Widget/Options/Mail.php:401
+msgid "投递完成：成功 %d，失败 %d"
+msgstr ""
+
+#: var/Widget/Options/Mail.php:335
+msgid "投递密钥"
+msgstr ""
+
+#: var/Widget/Options/Mail.php:166
+msgid "投递密钥已更新"
+msgstr ""
+
+#: var/Widget/Options/Mail.php:316
+msgid "投递模式"
+msgstr ""
+
+#: var/Typecho/Palette.php:127
+msgid "折叠"
+msgstr ""
+
+#: admin/copyright.php:12
+msgid "报告错误"
+msgstr ""
+
+#: admin/file-upload.php:32 admin/media.php:32
+msgid "拖放文件到这里<br>或者 %s选择文件上传%s"
+msgstr ""
+
+#: var/Widget/Options/Permalink.php:303
+msgid "按分类归档"
+msgstr ""
+
+#: var/Widget/Options/Permalink.php:301
+msgid "按日期归档"
+msgstr ""
+
+#: admin/upgrade.php:348
+msgid "排序规则"
+msgstr ""
+
+#: admin/menu.php:135 admin/menu.php:136 var/Widget/Menu.php:45
+msgid "控制台"
+msgstr ""
+
+#: admin/plugins.php:91 admin/plugins.php:170
+#: var/Widget/Contents/Attachment/Edit.php:113
+msgid "描述"
+msgstr ""
+
+#: admin/manage-comments.php:341 var/Widget/Base/Contents.php:384
+msgid "提交"
+msgstr ""
+
+#: var/Widget/Contents/Attachment/Edit.php:124
+msgid "提交修改"
+msgstr ""
+
+#: usr/themes/default/comments.php:56
+msgid "提交评论"
+msgstr ""
+
+#: admin/footer.php:25
+msgid "提示"
+msgstr ""
+
+#: var/Typecho/Palette.php:330 var/Widget/Menu.php:45
+#: var/Widget/Menu.php:97
+msgid "插件"
+msgstr ""
+
+#: var/Widget/Options.php:139 var/Widget/Options.php:156
+msgid "插件%s的配置信息没有找到"
+msgstr ""
+
+#: var/Widget/Plugins/Config.php:28
+msgid "插件不存在"
+msgstr ""
+
+#: admin/plugins.php:4
+msgid "插件仓库"
+msgstr ""
+
+#: var/Widget/Plugins/Edit.php:147
+msgid "插件已经被启用"
+msgstr ""
+
+#: var/Widget/Plugins/Edit.php:317
+msgid "插件已经被禁用"
+msgstr ""
+
+#: var/Widget/Backup.php:787
+msgid "插件扩展导入失败(type=%s): %s"
+msgstr ""
+
+#: var/Widget/Backup.php:780
+msgid "插件扩展导入数据格式无效"
+msgstr ""
+
+#: var/Typecho/Palette.php:327 var/Widget/Menu.php:97
+msgid "插件管理"
+msgstr ""
+
+#: var/Widget/Plugins/Edit.php:339
+msgid "插件设置已经保存"
+msgstr ""
+
+#: admin/editor-js.php:79
+msgid "插入图片"
+msgstr ""
+
+#: admin/editor-js.php:80
+msgid "插入链接"
+msgstr ""
+
+#: usr/themes/default/404.php:8 usr/themes/default/404.php:9
+#: usr/themes/default/header.php:76
+msgid "搜索"
+msgstr ""
+
+#: usr/themes/default/header.php:76
+msgid "搜索..."
+msgstr ""
+
+#: usr/themes/default/404.php:8
+msgid "搜索一下试试？"
+msgstr ""
+
+#: admin/editor-js.php:69
+msgid "摘要分割线"
+msgstr ""
+
+#: var/Widget/Options/Reading.php:210
+msgid "摘要的文字范围由您在文章内添加的分隔符位置决定"
+msgstr ""
+
+#: admin/editor-js.php:71
+msgid "撤销"
+msgstr ""
+
+#: admin/editor-js.php:295 var/Typecho/Palette.php:159
+#: var/Widget/Menu.php:45
+msgid "撰写"
+msgstr ""
+
+#: var/Widget/Menu.php:62
+msgid "撰写文章"
+msgstr ""
+
+#: var/Typecho/Palette.php:156 var/Widget/Menu.php:62
+msgid "撰写新文章"
+msgstr ""
+
+#: admin/profile.php:68
+msgid "撰写设置"
+msgstr ""
+
+#: usr/themes/default/comments.php:30
+msgid "撰写评论"
+msgstr ""
+
+#: admin/manage-categories.php:27 admin/manage-comments.php:61
+#: admin/manage-medias.php:20 admin/manage-pages.php:20
+#: admin/manage-posts.php:71 admin/manage-tags.php:22
+#: admin/manage-users.php:18 admin/plugins.php:94 admin/plugins.php:173
+msgid "操作"
+msgstr ""
+
+#: var/Widget/Options/Mail.php:516
+msgid "支持 {title}"
+msgstr ""
+
+#: admin/backup.php:117 admin/upgrade.php:169
+msgid "支持拖拽到此区域"
+msgstr ""
+
+#: admin/options-mail.php:126 admin/options-mail.php:127
+msgid "收件邮箱"
+msgstr ""
+
+#: admin/upgrade.php:432
+msgid "收尾"
+msgstr ""
+
+#: admin/write-page.php:59 admin/write-post.php:44
+msgid "收起"
+msgstr ""
+
+#: admin/upgrade.php:311
+msgid "收起数据库诊断"
+msgstr ""
+
+#: var/Widget/Options/Mail.php:299
+msgid "改用无需密码的发信方式时勾选此项"
+msgstr ""
+
+#: admin/editor-js.php:61
+msgid "数字列表"
+msgstr ""
+
+#: var/Typecho/Palette.php:354
+msgid "数据备份"
+msgstr ""
+
+#: admin/backup.php:19
+msgid "数据备份与恢复"
+msgstr ""
+
+#: install.php:1164
+msgid "数据库: \\"%s\\"不存在，请手动创建后重试"
+msgstr ""
+
+#: var/Widget/Upgrade.php:84
+msgid "数据库关键结构已同步"
+msgstr ""
+
+#: install.php:898
+msgid "数据库前缀"
+msgstr ""
+
+#: install.php:1057
+msgid "数据库前缀不能为空"
+msgstr ""
+
+#: install.php:1059
+msgid "数据库前缀不能超过 16 个字符"
+msgstr ""
+
+#: install.php:1060
+msgid "数据库前缀仅允许字母、数字和下划线"
+msgstr ""
+
+#: install.php:1058
+msgid "数据库前缀至少 1 个字符"
+msgstr ""
+
+#: admin/upgrade.php:243 var/Widget/Upgrade.php:55
+msgid "数据库升级"
+msgstr ""
+
+#: admin/upgrade.php:271
+msgid "数据库升级会执行结构迁移，建议在低峰期操作并保持页面不刷新，直到完成。"
+msgstr ""
+
+#: install.php:1088 install.php:1105
+msgid "数据库名不能为空"
+msgstr ""
+
+#: install.php:1082 install.php:1099
+msgid "数据库地址不能为空"
+msgstr ""
+
+#: install.php:1086 install.php:1103
+msgid "数据库字符集不能为空"
+msgstr ""
+
+#: install.php:1087
+msgid "数据库字符集仅支持 utf8mb4"
+msgstr ""
+
+#: install.php:1111
+msgid "数据库文件路径不能为空"
+msgstr ""
+
+#: var/Utils/Migration/SchemaManager.php:156
+msgid "数据库版本"
+msgstr ""
+
+#: var/Utils/Migration/SchemaManager.php:165
+msgid "数据库版本不满足结构修复要求"
+msgstr ""
+
+#: install.php:1085 install.php:1102
+msgid "数据库用户名不能为空"
+msgstr ""
+
+#: install.php:1083 install.php:1100
+msgid "数据库端口不能为空"
+msgstr ""
+
+#: install.php:1084 install.php:1101
+msgid "数据库端口必须是整数"
+msgstr ""
+
+#: admin/upgrade.php:299
+msgid "数据库结构已是最新状态"
+msgstr ""
+
+#: install.php:884
+msgid "数据库适配器"
+msgstr ""
+
+#: install.php:1062
+msgid "数据库适配器无效"
+msgstr ""
+
+#: install.php:1119
+msgid "数据库配置无效"
+msgstr ""
+
+#: install.php:1089
+msgid "数据表引擎不能为空"
+msgstr ""
+
+#: install.php:1090
+msgid "数据表引擎仅支持 InnoDB"
+msgstr ""
+
+#: admin/upgrade.php:200
+msgid "整包"
+msgstr ""
+
+#: admin/custom-fields-js.php:27 admin/custom-fields.php:29
+#: admin/custom-fields.php:54
+msgid "整数"
+msgstr ""
+
+#: var/Typecho/Palette.php:195 var/Typecho/Palette.php:258
+#: var/Widget/Menu.php:82
+msgid "文件"
+msgstr ""
+
+#: admin/media.php:60
+msgid "文件 %s 已经替换"
+msgstr ""
+
+#: var/Widget/Themes/Edit.php:35 var/Widget/Themes/Edit.php:41
+#: var/Widget/Themes/Edit.php:50 var/Widget/Themes/Edit.php:54
+#: var/Widget/Themes/Edit.php:167
+msgid "文件 %s 无法被写入"
+msgstr ""
+
+#: var/Widget/Themes/Edit.php:165
+msgid "文件 %s 的更改已经保存"
+msgstr ""
+
+#: var/Widget/Contents/Attachment/Edit.php:85
+msgid "文件 <a href=\\"%s\\">%s</a> 已经被更新"
+msgstr ""
+
+#: var/Typecho/Upgrade/Runner.php:624
+msgid "文件不可读: %s"
+msgstr ""
+
+#: var/Widget/Archive.php:303 var/Widget/Archive.php:996
+#: var/Widget/Contents/Attachment/Edit.php:210
+msgid "文件不存在"
+msgstr ""
+
+#: var/Typecho/Upgrade/Runner.php:353 var/Typecho/Upgrade/Runner.php:357
+#: var/Typecho/Upgrade/Runner.php:388
+msgid "文件写入失败: %s"
+msgstr ""
+
+#: admin/file-upload-js.php:300 admin/file-upload-js.php:316
+msgid "文件删除失败，请检查网络后重试。"
+msgstr ""
+
+#: admin/manage-medias.php:58
+msgid "文件名"
+msgstr ""
+
+#: admin/file-upload-js.php:101
+msgid "文件大小超过限制"
+msgstr ""
+
+#: var/Widget/Contents/Attachment/Edit.php:164
+#: var/Widget/Contents/Attachment/Edit.php:169
+msgid "文件已经被删除"
+msgstr ""
+
+#: admin/file-upload-js.php:104 var/Widget/Upload.php:443
+msgid "文件扩展名不被支持"
+msgstr ""
+
+#: admin/upgrade.php:205
+msgid "文件数量：%s"
+msgstr ""
+
+#: var/Typecho/Upgrade/Runner.php:365 var/Typecho/Upgrade/Runner.php:375
+msgid "文件替换失败: %s"
+msgstr ""
+
+#: var/Widget/Contents/Attachment/Edit.php:137
+msgid "文件标题无法被转换为缩略名"
+msgstr ""
+
+#: var/Widget/Contents/Attachment/Edit.php:105
+msgid "文件缩略名用于创建友好的链接形式,建议使用字母,数字,下划线和横杠."
+msgstr ""
+
+#: admin/index.php:262 admin/index.php:287 admin/profile.php:35
+#: var/Typecho/Palette.php:159 var/Typecho/Palette.php:204
+#: var/Widget/Menu.php:69
+msgid "文章"
+msgstr ""
+
+#: var/Widget/Contents/Post/Edit.php:70
+msgid "文章 \\"%s\\" 等待审核"
+msgstr ""
+
+#: var/Widget/Contents/Post/Edit.php:68
+msgid "文章 \\"<a href=\\"%s\\">%s</a>\\" 已经发布"
+msgstr ""
+
+#: admin/profile.php:23
+msgid "文章 %s · 评论 %s · 分类 %s"
+msgstr ""
+
+#: admin/index.php:248
+msgid "文章 / 页面 / 评论"
+msgstr ""
+
+#: var/Typecho/Mail/Notify.php:176
+msgid "文章「{title}」有一条待审评论"
+msgstr ""
+
+#: var/Widget/Contents/Post/Edit.php:270
+msgid "文章不存在"
+msgstr ""
+
+#: admin/write-post.php:32
+msgid "文章内容"
+msgstr ""
+
+#: var/Widget/Options/Reading.php:188
+msgid "文章列表数目"
+msgstr ""
+
+#: var/Widget/Options/Reading.php:61
+msgid "文章列表页路径与现有规则冲突，请更换一个路径"
+msgstr ""
+
+#: var/Widget/Options/Reading.php:56
+msgid "文章列表页路径格式不正确"
+msgstr ""
+
+#: usr/themes/default/post.php:6
+msgid "文章导航"
+msgstr ""
+
+#: var/Widget/Contents/Post/Edit.php:229
+msgid "文章已经被删除"
+msgstr ""
+
+#: var/Widget/Contents/Post/Edit.php:178
+msgid "文章已经被标记为<strong>%s</strong>"
+msgstr ""
+
+#: admin/manage-categories.php:67
+msgid "文章数"
+msgstr ""
+
+#: var/Widget/Options/Reading.php:92
+msgid "文章日期格式"
+msgstr ""
+
+#: var/Widget/XmlRpc.php:98
+msgid "文章缩略图"
+msgstr ""
+
+#: admin/editor-js.php:46
+msgid "斜体"
+msgstr ""
+
+#: admin/editor-js.php:47
+msgid "斜体文字"
+msgstr ""
+
+#: admin/manage-categories.php:87 admin/manage-pages.php:107
+#: admin/menu.php:154
+msgid "新增"
+msgstr ""
+
+#: var/Widget/Metas/Category/Edit.php:434
+msgid "新增 %s 的子分类"
+msgstr ""
+
+#: var/Widget/Contents/Page/Edit.php:289
+msgid "新增 %s 的子页面"
+msgstr ""
+
+#: var/Widget/Menu.php:76 var/Widget/Metas/Category/Edit.php:440
+msgid "新增分类"
+msgstr ""
+
+#: var/Widget/Menu.php:85
+msgid "新增用户"
+msgstr ""
+
+#: admin/reset.php:51
+msgid "新密码"
+msgstr ""
+
+#: var/Typecho/Palette.php:159 var/Typecho/Palette.php:168
+#: var/Typecho/Palette.php:177 var/Typecho/Palette.php:186
+msgid "新建"
+msgstr ""
+
+#: var/Typecho/Palette.php:174
+msgid "新建分类"
+msgstr ""
+
+#: var/Typecho/Palette.php:183
+msgid "新建用户"
+msgstr ""
+
+#: admin/upgrade.php:54 var/Widget/Options/Mail.php:306
+msgid "无"
+msgstr ""
+
+#: var/Widget/Backup.php:160
+msgid "无法写入临时备份文件"
+msgstr ""
+
+#: var/Widget/Backup.php:154
+msgid "无法创建临时备份文件"
+msgstr ""
+
+#: var/Widget/Plugins/Edit.php:39
+msgid "无法启用插件"
+msgstr ""
+
+#: var/Widget/XmlRpc.php:202
+msgid "无法登录, 密码错误"
+msgstr ""
+
+#: var/Widget/Backup.php:746
+msgid "无法确认表 %s 的事务能力，恢复将按非事务方式执行: %s"
+msgstr ""
+
+#: var/Widget/Backup.php:752
+msgid "无法确认表 %s 的存储引擎，恢复将按非事务方式执行"
+msgstr ""
+
+#: var/Utils/Helper.php:87 var/Widget/Plugins/Edit.php:283
+#: var/Widget/Plugins/Edit.php:294
+msgid "无法禁用插件"
+msgstr ""
+
+#: install.php:746
+msgid "无法识别当前 MySQL 服务端版本：%s"
+msgstr ""
+
+#: var/Utils/Migration/SchemaManager.php:158
+msgid "无法识别当前版本"
+msgstr ""
+
+#: var/Widget/Backup.php:421 var/Widget/Backup.php:426
+msgid "无法读取备份文件"
+msgstr ""
+
+#: var/Typecho/Cache/Redis.php:292
+msgid "无法连接 %s:%d"
+msgstr ""
+
+#: var/Typecho/Cache/Redis.php:302
+msgid "无法选择数据库 %d"
+msgstr ""
+
+#: var/Widget/Plugins/Config.php:48 var/Widget/Plugins/Config.php:53
+#: var/Widget/Users/Profile.php:325 var/Widget/Users/Profile.php:334
+#: var/Widget/Users/Profile.php:341
+msgid "无法配置插件"
+msgstr ""
+
+#: admin/write-js.php:20
+msgid "日"
+msgstr ""
+
+#: admin/manage-pages.php:66 admin/manage-posts.php:140
+msgid "日期"
+msgstr ""
+
+#: var/Widget/XmlRpc.php:119
+msgid "日期格式"
+msgstr ""
+
+#: admin/index.php:23
+msgid "旧版表单令牌兼容已开启"
+msgstr ""
+
+#: admin/write-js.php:25
+msgid "时"
+msgstr ""
+
+#: var/Widget/Options/General.php:378 var/Widget/XmlRpc.php:104
+msgid "时区"
+msgstr ""
+
+#: admin/write-js.php:24
+msgid "时间"
+msgstr ""
+
+#: var/Widget/XmlRpc.php:124
+msgid "时间格式"
+msgstr ""
+
+#: admin/write-js.php:16
+msgid "星期一"
+msgstr ""
+
+#: admin/write-js.php:17
+msgid "星期三"
+msgstr ""
+
+#: admin/write-js.php:16
+msgid "星期二"
+msgstr ""
+
+#: admin/write-js.php:17
+msgid "星期五"
+msgstr ""
+
+#: admin/write-js.php:17
+msgid "星期六"
+msgstr ""
+
+#: admin/write-js.php:17
+msgid "星期四"
+msgstr ""
+
+#: admin/write-js.php:16
+msgid "星期日"
+msgstr ""
+
+#: var/Utils/Zone.php:208
+msgid "昨天 %s"
+msgstr ""
+
+#: admin/editor-js.php:354
+msgid "是"
+msgstr ""
+
+#: var/Widget/Options/Permalink.php:270
+msgid "是否使用地址重写功能"
+msgstr ""
+
+#: var/Widget/Options/General.php:347 var/Widget/XmlRpc.php:129
+msgid "是否允许注册"
+msgstr ""
+
+#: admin/manage-users.php:53 var/Widget/Users/Profile.php:209
+msgid "昵称"
+msgstr ""
+
+#: var/Widget/Users/Edit.php:158 var/Widget/Users/EditTrait.php:70
+#: var/Widget/Users/Profile.php:230
+msgid "昵称已经存在"
+msgstr ""
+
+#: var/Widget/Users/Edit.php:160 var/Widget/Users/Profile.php:232
+msgid "昵称最多包含32个字符"
+msgstr ""
+
+#: var/Widget/XmlRpc.php:632
+msgid "显示"
+msgstr ""
+
+#: var/Widget/Options/Reading.php:105
+msgid "显示最新发布的文章"
+msgstr ""
+
+#: admin/editor-js.php:62
+msgid "普通列表"
+msgstr ""
+
+#: admin/manage-users.php:75
+msgid "暂无"
+msgstr ""
+
+#: admin/index.php:452 var/Widget/Ajax.php:588
+msgid "暂无动态"
+msgstr ""
+
+#: var/Typecho/Palette.php:426
+msgid "暂无可用命令"
+msgstr ""
+
+#: usr/themes/default/comments.php:10 usr/themes/default/functions.php:54
+msgid "暂无评论"
+msgstr ""
+
+#: admin/index.php:453 var/Widget/Ajax.php:525 var/Widget/Ajax.php:588
+msgid "暂时无法获取官方动态，请检查网络后重试。"
+msgstr ""
+
+#: admin/index.php:405
+msgid "暂时没有回复"
+msgstr ""
+
+#: admin/index.php:375
+msgid "暂时没有文章"
+msgstr ""
+
+#: var/Typecho/Palette.php:111
+msgid "暗色"
+msgstr ""
+
+#: var/Widget/Users/Profile.php:303
+msgid "更新密码"
+msgstr ""
+
+#: var/Widget/Users/Profile.php:222
+msgid "更新我的档案"
+msgstr ""
+
+#: var/Widget/Options/Discussion.php:144
+msgid "最后一页"
+msgstr ""
+
+#: admin/write-page.php:159 admin/write-post.php:151
+msgid "最后更新于 %s"
+msgstr ""
+
+#: admin/profile.php:27
+msgid "最后登录 %s"
+msgstr ""
+
+#: var/Typecho/Palette.php:135
+msgid "最大化"
+msgstr ""
+
+#: var/Widget/Options/Mail.php:354
+msgid "最大重试次数"
+msgstr ""
+
+#: admin/index.php:385
+msgid "最新回复"
+msgstr ""
+
+#: admin/options-general.php:34
+msgid "最晚解除时间 %s"
+msgstr ""
+
+#: admin/options-mail.php:167
+msgid "最近失败"
+msgstr ""
+
+#: admin/index.php:353
+msgid "最近文章"
+msgstr ""
+
+#: var/Typecho/Palette.php:423
+msgid "最近访问"
+msgstr ""
+
+#: admin/upgrade.php:214
+msgid "最近错误：%s"
+msgstr ""
+
+#: admin/manage-pages.php:86 admin/manage-posts.php:160
+msgid "有修订版"
+msgstr ""
+
+#: var/Utils/Migration/SchemaManager.php:231
+msgid "未发现按目标排序规则归一后的 contents.slug 重复"
+msgstr ""
+
+#: var/Utils/Migration/SchemaManager.php:199
+msgid "未发现按目标排序规则归一后的 email + scope 冲突"
+msgstr ""
+
+#: var/Utils/Migration/SchemaManager.php:215
+msgid "未发现按目标排序规则归一后的 users.mail 重复"
+msgstr ""
+
+#: var/Utils/Migration/SchemaManager.php:247
+msgid "未发现按目标排序规则归一后的 users.name 重复"
+msgstr ""
+
+#: admin/upgrade.php:362
+msgid "未发现需要预处理的 MySQL 风险。"
+msgstr ""
+
+#: var/Widget/Contents/Post/Edit.php:43 var/Widget/XmlRpc.php:280
+msgid "未命名文档"
+msgstr ""
+
+#: var/Widget/Contents/Page/Edit.php:42
+msgid "未命名页面"
+msgstr ""
+
+#: admin/manage-medias.php:89
+msgid "未归档"
+msgstr ""
+
+#: var/Widget/Contents/Attachment/Edit.php:86
+msgid "未归档文件 %s 已经被更新"
+msgstr ""
+
+#: var/Widget/Contents/Attachment/Edit.php:201
+msgid "未归档文件已经被清理"
+msgstr ""
+
+#: var/Typecho/Palette.php:425
+msgid "未找到匹配的命令"
+msgstr ""
+
+#: var/Typecho/Upgrade/Runner.php:251
+msgid "未找到可执行的升级包"
+msgstr ""
+
+#: var/Widget/Upgrade.php:117 var/Widget/Upgrade/Package.php:53
+msgid "未知升级操作"
+msgstr ""
+
+#: var/Widget/Backup.php:146
+msgid "未知恢复动作: %s"
+msgstr ""
+
+#: admin/backup.php:74
+msgid "本功能 <strong>不包含程序设置、主题文件与插件自建数据</strong>。"
+msgstr ""
+
+#: var/Widget/Ajax.php:437
+msgid "本地插件未声明有效版本号，无法完成版本比较。"
+msgstr ""
+
+#: admin/backup.php:71
+msgid "本备份功能 <strong>仅处理核心内容数据</strong>，包括文章、评论、分类标签、关系、用户与字段数据。"
+msgstr ""
+
+#: install.php:651
+msgid "本安装程序将自动检测您的服务器环境是否符合 TypeRenew 最低运行配置要求。"
+msgstr ""
+
+#: var/Widget/Backup.php:586
+msgid "本恢复仅迁移内容数据，不包含设置项、主题文件和插件自建表数据"
+msgstr ""
+
+#: admin/write-post.php:148
+msgid "本文由 <a href=\\"%s\\">%s</a> 撰写"
+msgstr ""
+
+#: var/Widget/Backup.php:967
+msgid "本次恢复未执行迁移后修复"
+msgstr ""
+
+#: install.php:657
+msgid "本程序 TypeRenew 基于原项目 <a href=\\"https://typecho.org/\\">Typecho</a> 进行二次开发，完整继承并严格遵守 GPL v2 开源许可协议。您可以在 <a href=\\"https://www.gnu.org/copyleft/gpl.html\\">GPL</a> 协议允许的范围内，自由使用、拷贝、修改和分发本程序，无论是用于商业还是非商业目的。"
+msgstr ""
+
+#: install.php:1442
+msgid "本程序由 TypeRenew 焕新呈现，基于 Typecho 开发，为现代化而生"
+msgstr ""
+
+#: admin/write-page.php:156
+msgid "本页面由 <a href=\\"%s\\">%s</a> 创建"
+msgstr ""
+
+#: install.php:1460
+msgid "本页面由 TypeRenew 创建, 这只是个测试页面."
+msgstr ""
+
+#: var/Widget/XmlRpc.php:198
+msgid "权限不足"
+msgstr ""
+
+#: admin/write-page.php:133 admin/write-post.php:120
+msgid "权限控制"
+msgstr ""
+
+#: admin/upgrade.php:211
+msgid "构建：%s"
+msgstr ""
+
+#: admin/auth.php:27
+msgid "柏影"
+msgstr ""
+
+#: admin/index.php:386
+msgid "查看全部"
+msgstr ""
+
+#: admin/upgrade.php:132
+msgid "查看完整环境检查详情"
+msgstr ""
+
+#: install.php:532
+msgid "查看您的 Blog"
+msgstr ""
+
+#: admin/upgrade.php:313
+msgid "查看数据库诊断详情"
+msgstr ""
+
+#: admin/menu.php:116
+msgid "查看网站"
+msgstr ""
+
+#: var/Typecho/Palette.php:379
+msgid "查看网站首页"
+msgstr ""
+
+#: var/Widget/XmlRpc.php:607
+msgid "标准"
+msgstr ""
+
+#: admin/write-post.php:83 var/Typecho/Palette.php:249
+#: var/Widget/Menu.php:80
+msgid "标签"
+msgstr ""
+
+#: usr/themes/default/header.php:10 usr/themes/default/index.php:19
+msgid "标签 %s 下的文章"
+msgstr ""
+
+#: var/Widget/Metas/Tag/Edit.php:96
+msgid "标签 <a href=\\"%s\\">%s</a> 已经被增加"
+msgstr ""
+
+#: var/Widget/Metas/Tag/Edit.php:196
+msgid "标签 <a href=\\"%s\\">%s</a> 已经被更新"
+msgstr ""
+
+#: var/Widget/Archive.php:1399 var/Widget/Metas/Tag/Admin.php:30
+#: var/Widget/Metas/Tag/Edit.php:171
+msgid "标签不存在"
+msgstr ""
+
+#: var/Widget/Metas/Tag/Edit.php:170
+msgid "标签主键不存在"
+msgstr ""
+
+#: var/Widget/Metas/Tag/Edit.php:265
+msgid "标签刷新已经完成"
+msgstr ""
+
+#: var/Widget/Metas/Tag/Edit.php:111
+msgid "标签名称"
+msgstr ""
+
+#: var/Widget/Metas/Tag/Edit.php:162
+msgid "标签名称已经存在"
+msgstr ""
+
+#: var/Widget/Metas/Tag/Edit.php:163
+msgid "标签名称无法被转换为缩略名"
+msgstr ""
+
+#: var/Widget/Metas/Tag/Edit.php:222
+msgid "标签已经删除"
+msgstr ""
+
+#: var/Widget/Metas/Tag/Edit.php:248
+msgid "标签已经合并"
+msgstr ""
+
+#: var/Widget/Metas/Tag/Edit.php:120
+msgid "标签缩略名"
+msgstr ""
+
+#: admin/manage-pages.php:27 admin/manage-pages.php:30
+#: admin/manage-posts.php:79 admin/manage-posts.php:82
+#: admin/manage-posts.php:85 admin/manage-posts.php:88
+msgid "标记为<strong>%s</strong>"
+msgstr ""
+
+#: admin/manage-comments.php:65
+msgid "标记垃圾"
+msgstr ""
+
+#: admin/upgrade.php:196
+msgid "标识：%s"
+msgstr ""
+
+#: admin/editor-js.php:65 admin/manage-pages.php:63
+#: admin/manage-posts.php:137 admin/write.php:42 admin/write.php:44
+#: var/Widget/Contents/Attachment/Edit.php:97
+msgid "标题"
+msgstr ""
+
+#: admin/editor-js.php:66
+msgid "标题文字"
+msgstr ""
+
+#: var/Widget/Options/General.php:425
+msgid "核心会校验扩展名，并对明显的危险内容类型做基础拦截；如需更严格策略，可通过安全类插件扩展"
+msgstr ""
+
+#: var/Widget/Options/Discussion.php:177
+msgid "检查评论来源页 URL 是否与文章链接一致"
+msgstr ""
+
+#: admin/upgrade.php:302
+msgid "检测到 %d 项 MySQL 风险，建议处理后再执行数据库升级或结构修复。"
+msgstr ""
+
+#: var/Widget/Upload.php:510
+msgid "检测到不安全的附件内容类型"
+msgstr ""
+
+#: admin/upgrade.php:276
+msgid "检测到关键结构异常，建议先执行数据库修复。"
+msgstr ""
+
+#: var/Typecho/Upgrade/Store.php:84
+msgid "检测到历史升级锁文件，系统会在下次升级时复用该文件"
+msgstr ""
+
+#: admin/themes.php:38
+msgid "检测到您之前使用的 \\"%s\\" 外观文件不存在，您可以重新上传此外观或者启用其他外观。"
+msgstr ""
+
+#: install.php:1556
+msgid "检测到数据库中已存在站点数据，但安装状态不完整。为防止被他人接管，安装程序已停止。请恢复数据库或删除 config.inc.php 后重试"
+msgstr ""
+
+#: var/Widget/Ajax.php:458
+msgid "检测到新版本：当前 %s，官方最新 %s。请前往官方插件仓库手动更新。"
+msgstr ""
+
+#: var/Typecho/Upgrade/Store.php:89
+msgid "检测到未清理的升级临时文件，建议先清理升级包后再继续"
+msgstr ""
+
+#: admin/upgrade.php:253
+msgid "检测到版本差异：%s → %s"
+msgstr ""
+
+#: admin/auth.php:17
+msgid "森林"
+msgstr ""
+
+#: var/Widget/Menu.php:53
+msgid "概要"
+msgstr ""
+
+#: admin/upgrade.php:200
+msgid "模式：%s"
+msgstr ""
+
+#: var/Widget/Options/Mail.php:178
+msgid "模板保存失败：%s"
+msgstr ""
+
+#: var/Widget/Options/Mail.php:176
+msgid "模板已保存"
+msgstr ""
+
+#: var/Widget/Options/Mail.php:188
+msgid "模板已重置"
+msgstr ""
+
+#: admin/theme-editor.php:35
+msgid "模板文件"
+msgstr ""
+
+#: var/Widget/Options/Mail.php:555
+msgid "模板联调示例文章"
+msgstr ""
+
+#: var/Widget/Options/Mail.php:190
+msgid "模板重置失败：%s"
+msgstr ""
+
+#: admin/menu.php:189
+msgid "橙"
+msgstr ""
+
+#: admin/options-mail.php:196
+msgid "次数"
+msgstr ""
+
+#: install.php:642 install.php:1439
+msgid "欢迎使用 TypeRenew"
+msgstr ""
+
+#: admin/index.php:189
+msgid "欢迎回来"
+msgstr ""
+
+#: install.php:660
+msgid "欢迎所有开发者、设计师和用户的反馈、建议与贡献，每一份力量都将帮助 TypeRenew 更好地成长。"
+msgstr ""
+
+#: admin/write-js.php:275
+msgid "正在上传附件，请等待上传完成后再提交"
+msgstr ""
+
+#: admin/write-js.php:296
+msgid "正在保存"
+msgstr ""
+
+#: admin/plugins.php:234
+msgid "正在强制刷新官方插件版本..."
+msgstr ""
+
+#: admin/plugins.php:233
+msgid "正在检测官方插件版本..."
+msgstr ""
+
+#: admin/plugins.php:41 admin/plugins.php:240
+msgid "正在检测版本状态"
+msgstr ""
+
+#: var/Widget/Options/Discussion.php:101
+msgid "此为评论日期的默认格式：在模板中调用评论日期显示方法时，若未指定日期格式，将按此格式输出"
+msgstr ""
+
+#: var/Widget/Base/Contents.php:365
+msgid "此内容被密码保护"
+msgstr ""
+
+#: admin/manage-categories.php:30
+msgid "此分类下的所有内容将被删除, 你确认要删除这些分类吗?"
+msgstr ""
+
+#: var/Widget/Metas/Category/Edit.php:154
+msgid "此分类将归档在您选择的父级分类下."
+msgstr ""
+
+#: var/Widget/Users/Profile.php:40
+msgid "此功能开启不会影响以前没有使用 Markdown 语法编辑的内容"
+msgstr ""
+
+#: admin/plugins.php:135
+msgid "此插件文件已经损坏或者被不安全移除, 强烈建议你禁用它"
+msgstr ""
+
+#: var/Widget/Options/Reading.php:199
+msgid "此数目用于指定文章归档输出时每页显示的文章数目"
+msgstr ""
+
+#: var/Widget/Options/Reading.php:189
+msgid "此数目用于指定显示在侧边栏中的文章列表数目"
+msgstr ""
+
+#: var/Widget/Options/Discussion.php:112
+msgid "此数目用于指定显示在侧边栏中的评论列表数目"
+msgstr ""
+
+#: admin/theme-editor.php:29
+msgid "此文件无法写入"
+msgstr ""
+
+#: var/Widget/Metas/Category/Edit.php:163
+msgid "此文字用于描述分类, 在有的主题中它会被显示."
+msgstr ""
+
+#: var/Widget/Contents/Attachment/Edit.php:114
+msgid "此文字用于描述文件,在有的主题中它会被显示."
+msgstr ""
+
+#: admin/write-js.php:74
+msgid "此标签不存在, 按回车创建"
+msgstr ""
+
+#: var/Widget/Options/Reading.php:93
+msgid "此格式用于定义文章归档中日期的默认显示样式"
+msgstr ""
+
+#: admin/editor-js.php:77
+msgid "此浏览器不支持全屏操作"
+msgstr ""
+
+#: var/Widget/Users/Edit.php:87
+msgid "此用户名将作为用户登录时所用的名称."
+msgstr ""
+
+#: var/Widget/Users/Edit.php:108
+msgid "此用户的个人主页地址, 请用 <code>https://</code> 开头."
+msgstr ""
+
+#: var/Widget/Users/Profile.php:216
+msgid "此邮箱为用户主要联系方式，请勿使用系统已存在的邮箱地址"
+msgstr ""
+
+#: var/Widget/Users/Edit.php:96 var/Widget/Users/Profile.php:210
+msgid "此项留空时，系统会自动使用用户名"
+msgstr ""
+
+#: admin/upgrade.php:208
+msgid "残留工件：%d"
+msgstr ""
+
+#: admin/write-post.php:137
+msgid "每一行一个引用地址, 用回车隔开"
+msgstr ""
+
+#: var/Widget/Options/Reading.php:198
+msgid "每页文章数目"
+msgstr ""
+
+#: var/Widget/Options/Discussion.php:212
+msgid "比如: %s"
+msgstr ""
+
+#: admin/options-tabs.php:8 var/Widget/Menu.php:92
+msgid "永久链接"
+msgstr ""
+
+#: var/Typecho/Palette.php:300 var/Widget/Menu.php:92
+msgid "永久链接设置"
+msgstr ""
+
+#: usr/themes/default/post.php:8 usr/themes/default/post.php:9
+msgid "没有了"
+msgstr ""
+
+#: admin/manage-categories.php:109
+msgid "没有任何分类"
+msgstr ""
+
+#: admin/manage-medias.php:97
+msgid "没有任何文件"
+msgstr ""
+
+#: admin/manage-posts.php:208
+msgid "没有任何文章"
+msgstr ""
+
+#: admin/manage-tags.php:56
+msgid "没有任何标签"
+msgstr ""
+
+#: admin/manage-pages.php:125
+msgid "没有任何页面"
+msgstr ""
+
+#: var/Widget/Metas/Category/Edit.php:327
+msgid "没有分类被删除"
+msgstr ""
+
+#: var/Widget/Comments/Edit.php:157
+msgid "没有垃圾评论被删除"
+msgstr ""
+
+#: admin/plugins.php:200
+msgid "没有安装插件"
+msgstr ""
+
+#: usr/themes/default/index.php:38
+msgid "没有找到内容"
+msgstr ""
+
+#: var/Widget/Contents/Attachment/Edit.php:164
+#: var/Widget/Contents/Attachment/Edit.php:169
+msgid "没有文件被删除"
+msgstr ""
+
+#: var/Widget/Contents/Post/Edit.php:229
+msgid "没有文章被删除"
+msgstr ""
+
+#: var/Widget/Contents/Post/Edit.php:178
+msgid "没有文章被标记"
+msgstr ""
+
+#: var/Widget/Contents/Attachment/Edit.php:201
+msgid "没有未归档文件被清理"
+msgstr ""
+
+#: var/Widget/Metas/Tag/Edit.php:222
+msgid "没有标签被删除"
+msgstr ""
+
+#: install.php:1152
+msgid "没有检测到您手动创建的配置文件, 请检查后再次创建"
+msgstr ""
+
+#: var/Widget/Users/Edit.php:285
+msgid "没有用户被删除"
+msgstr ""
+
+#: var/Widget/Contents/PrepareEditTrait.php:53
+msgid "没有编辑权限"
+msgstr ""
+
+#: var/Widget/Upload.php:165
+msgid "没有编辑该附件的权限"
+msgstr ""
+
+#: var/Widget/Contents/Page/Edit.php:216
+#: var/Widget/Contents/Post/Edit.php:261
+msgid "没有草稿被删除"
+msgstr ""
+
+#: var/Widget/XmlRpc.php:724
+msgid "没有获取评论的权限"
+msgstr ""
+
+#: admin/manage-comments.php:183
+msgid "没有评论"
+msgstr ""
+
+#: var/Widget/Comments/Edit.php:373
+msgid "没有评论被删除"
+msgstr ""
+
+#: var/Widget/Comments/Edit.php:76
+msgid "没有评论被标记为垃圾"
+msgstr ""
+
+#: var/Widget/Comments/Edit.php:25
+msgid "没有评论被标记为待审核"
+msgstr ""
+
+#: var/Widget/Comments/Edit.php:86
+msgid "没有评论被通过"
+msgstr ""
+
+#: var/Widget/Metas/Category/Edit.php:352
+#: var/Widget/Metas/Category/Edit.php:382
+msgid "没有选择任何分类"
+msgstr ""
+
+#: var/Widget/Backup.php:374 var/Widget/Backup.php:383
+#: var/Widget/Backup.php:394
+msgid "没有选择任何备份文件"
+msgstr ""
+
+#: var/Widget/Metas/Tag/Edit.php:250 var/Widget/Metas/Tag/Edit.php:267
+msgid "没有选择任何标签"
+msgstr ""
+
+#: var/Widget/Upload.php:210 var/Widget/Upload.php:432
+#: var/Widget/Upload.php:526 var/Widget/Upload.php:531
+msgid "没有选择任何附件文件"
+msgstr ""
+
+#: var/Widget/Contents/Page/Edit.php:184
+msgid "没有页面被删除"
+msgstr ""
+
+#: var/Widget/Contents/Page/Edit.php:125
+msgid "没有页面被标记"
+msgstr ""
+
+#: admin/register.php:18 admin/register.php:38 var/Widget/Menu.php:50
+msgid "注册"
+msgstr ""
+
+#: var/Widget/Menu.php:50
+msgid "注册到%s"
+msgstr ""
+
+#: admin/menu.php:164 usr/themes/default/functions.php:19
+msgid "浅色"
+msgstr ""
+
+#: admin/footer.php:27
+msgid "浅色主题"
+msgstr ""
+
+#: admin/options-mail.php:119
+msgid "测试发信"
+msgstr ""
+
+#: var/Widget/Options/Mail.php:125
+msgid "测试邮件发送失败：%s"
+msgstr ""
+
+#: var/Widget/Options/Mail.php:125
+msgid "测试邮件已发送"
+msgstr ""
+
+#: admin/manage-categories.php:80 admin/manage-medias.php:80
+#: admin/manage-pages.php:99 admin/manage-posts.php:179
+#: admin/manage-users.php:70
+msgid "浏览 %s"
+msgstr ""
+
+#: admin/auth.php:23
+msgid "海雾"
+msgstr ""
+
+#: admin/menu.php:168 usr/themes/default/functions.php:20
+msgid "深色"
+msgstr ""
+
+#: admin/footer.php:28
+msgid "深色主题"
+msgstr ""
+
+#: var/Widget/Options/General.php:114
+msgid "清华大学镜像"
+msgstr ""
+
+#: admin/index.php:343
+msgid "清晰的分类结构有助于内容管理"
+msgstr ""
+
+#: admin/upgrade.php:233
+msgid "清理升级包"
+msgstr ""
+
+#: admin/options-mail.php:106
+msgid "清理已发送"
+msgstr ""
+
+#: admin/manage-medias.php:29
+msgid "清理未归档文件"
+msgstr ""
+
+#: var/Widget/Options/Cache.php:185 var/Widget/Options/Mail.php:298
+msgid "清空密码"
+msgstr ""
+
+#: var/Widget/Options/Cache.php:183
+msgid "清空已保存的 Redis 密码"
+msgstr ""
+
+#: var/Widget/Options/Mail.php:296
+msgid "清空已保存的 SMTP 密码"
+msgstr ""
+
+#: admin/options-cache.php:96
+msgid "清空当前索引前缀下的全部缓存内容"
+msgstr ""
+
+#: admin/options-cache.php:100
+msgid "清空缓存"
+msgstr ""
+
+#: var/Typecho/Palette.php:399
+msgid "清除"
+msgstr ""
+
+#: var/Typecho/Palette.php:396
+msgid "清除前端缓存"
+msgstr ""
+
+#: var/Typecho/Palette.php:421
+msgid "清除缓存失败"
+msgstr ""
+
+#: var/Widget/XmlRpc.php:1260 var/Widget/XmlRpc.php:1264
+#: var/Widget/XmlRpc.php:1310
+msgid "源地址服务器错误"
+msgstr ""
+
+#: var/Typecho/Palette.php:143
+msgid "滚动"
+msgstr ""
+
+#: admin/menu.php:190
+msgid "灰"
+msgstr ""
+
+#: admin/dropzone-js.php:7
+msgid "点击可重新选择，支持拖拽替换"
+msgstr ""
+
+#: admin/file-upload-js.php:147 admin/file-upload.php:37
+msgid "点击插入文件"
+msgstr ""
+
+#: admin/upgrade.php:168
+msgid "点击选择升级包"
+msgstr ""
+
+#: admin/backup.php:116
+msgid "点击选择备份文件"
+msgstr ""
+
+#: var/Widget/Metas/Category/Edit.php:99
+#: var/Widget/Metas/Category/Edit.php:246
+msgid "父分类不存在"
+msgstr ""
+
+#: var/Widget/Metas/Category/Edit.php:153
+msgid "父级分类"
+msgstr ""
+
+#: var/Widget/Archive.php:1350
+msgid "父级分类不存在"
+msgstr ""
+
+#: var/Widget/Feedback.php:135
+msgid "父级评论不存在"
+msgstr ""
+
+#: admin/write-page.php:103
+msgid "父级页面"
+msgstr ""
+
+#: admin/plugins.php:92 admin/plugins.php:171 admin/themes.php:57
+msgid "版本"
+msgstr ""
+
+#: admin/plugins.php:271
+msgid "版本检测地址生成失败，已停止自动检测。"
+msgstr ""
+
+#: admin/plugins.php:263
+msgid "版本检测地址生成失败，暂时无法发起检测请求。"
+msgstr ""
+
+#: admin/plugins.php:238
+msgid "版本检测失败，当前请求未成功返回。"
+msgstr ""
+
+#: admin/plugins.php:237
+msgid "版本检测失败，请稍后重试。"
+msgstr ""
+
+#: var/Widget/Ajax.php:427
+msgid "版本检测失败：%s"
+msgstr ""
+
+#: admin/upgrade.php:204
+msgid "版本：%s → %s"
+msgstr ""
+
+#: admin/options-mail.php:195
+msgid "状态"
+msgstr ""
+
+#: var/Typecho/Upgrade/Store.php:42
+msgid "状态目录"
+msgstr ""
+
+#: admin/upgrade.php:198
+msgid "状态：%s"
+msgstr ""
+
+#: var/Widget/Menu.php:71
+msgid "独立页面"
+msgstr ""
+
+#: var/Widget/Options/Permalink.php:332
+msgid "独立页面路径"
+msgstr ""
+
+#: var/Widget/Options/Permalink.php:337
+msgid "独立页面路径中没有包含 {cid} 或者 {slug} "
+msgstr ""
+
+#: admin/menu.php:185
+msgid "玫"
+msgstr ""
+
+#: admin/upgrade.php:122
+msgid "环境提醒"
+msgstr ""
+
+#: admin/upgrade.php:186
+msgid "环境未通过预检前，在线升级入口已禁用。"
+msgstr ""
+
+#: admin/upgrade.php:90
+msgid "环境预检"
+msgstr ""
+
+#: admin/upgrade.php:93
+msgid "环境预检未通过：%d 项阻塞，%d 项提醒。"
+msgstr ""
+
+#: admin/upgrade.php:96
+msgid "环境预检通过，共检查 %d 项。"
+msgstr ""
+
+#: admin/write-js.php:10
+msgid "现在"
+msgstr ""
+
+#: admin/auth.php:26
+msgid "珊瑚"
+msgstr ""
+
+#: admin/menu.php:188
+msgid "琥珀"
+msgstr ""
+
+#: admin/options-general.php:30
+msgid "生效中的锁定 %d 条，跟踪中的记录 %d 条"
+msgstr ""
+
+#: var/Widget/Options/Mail.php:336
+msgid "用于定时投递签名，建议定期轮换"
+msgstr ""
+
+#: var/Widget/Options/Mail.php:227
+msgid "用于接收待审评论通知，留空则回退到文章作者邮箱"
+msgstr ""
+
+#: var/Widget/Options/General.php:135
+msgid "用于检测官方插件版本信息。国内服务器可切换镜像以解决 GitHub Raw 访问不稳定的问题。"
+msgstr ""
+
+#: var/Typecho/Palette.php:186 var/Typecho/Palette.php:267
+#: var/Widget/Menu.php:84
+msgid "用户"
+msgstr ""
+
+#: var/Widget/Users/Edit.php:78
+msgid "用户 %s 已经被增加"
+msgstr ""
+
+#: var/Widget/Users/Edit.php:233
+msgid "用户 %s 已经被更新"
+msgstr ""
+
+#: var/Widget/Register.php:96
+msgid "用户 <strong>%s</strong> 已经成功注册"
+msgstr ""
+
+#: var/Widget/Contents/Post/Admin.php:26 var/Widget/Users/Edit.php:33
+#: var/Widget/Users/Edit.php:186
+msgid "用户不存在"
+msgstr ""
+
+#: var/Widget/Users/Edit.php:185
+msgid "用户主键不存在"
+msgstr ""
+
+#: admin/manage-comments.php:332 admin/manage-users.php:52
+#: admin/register.php:22 install.php:1311 var/Widget/Users/Edit.php:87
+msgid "用户名"
+msgstr ""
+
+#: var/Widget/Register.php:37 var/Widget/Users/Edit.php:177
+#: var/Widget/Users/EditTrait.php:77
+msgid "用户名已经存在"
+msgstr ""
+
+#: var/Widget/Login.php:82
+msgid "用户名或密码无效"
+msgstr ""
+
+#: admin/login.php:23
+msgid "用户名或邮箱"
+msgstr ""
+
+#: var/Widget/Feedback.php:143
+msgid "用户名最多包含150个字符"
+msgstr ""
+
+#: var/Widget/Register.php:35
+msgid "用户名最多包含32个字符"
+msgstr ""
+
+#: var/Widget/Register.php:34
+msgid "用户名至少包含2个字符"
+msgstr ""
+
+#: install.php:1380
+msgid "用户名长度超过限制, 请不要超过 32 个字符"
+msgstr ""
+
+#: var/Widget/Users/Edit.php:99 var/Widget/Users/Edit.php:178
+#: var/Widget/Users/Profile.php:291
+msgid "用户密码"
+msgstr ""
+
+#: var/Widget/Users/Edit.php:104 var/Widget/Users/Edit.php:179
+#: var/Widget/Users/Profile.php:296
+msgid "用户密码确认"
+msgstr ""
+
+#: var/Widget/Users/Edit.php:281
+msgid "用户已经删除"
+msgstr ""
+
+#: var/Widget/Users/Edit.php:95
+msgid "用户昵称"
+msgstr ""
+
+#: admin/manage-users.php:55 var/Widget/Users/Edit.php:118
+msgid "用户组"
+msgstr ""
+
+#: var/Widget/Users/Edit.php:123
+msgid "用户组选择错误"
+msgstr ""
+
+#: var/Widget/Options/General.php:424
+msgid "用逗号 \\",\\" 将后缀名隔开, 例如: %s"
+msgstr ""
+
+#: admin/manage-users.php:54
+msgid "电子邮件"
+msgstr ""
+
+#: admin/manage-comments.php:334
+msgid "电子邮箱"
+msgstr ""
+
+#: var/Widget/Users/Edit.php:91
+msgid "电子邮箱地址将作为此用户的主要联系方式."
+msgstr ""
+
+#: var/Widget/Register.php:39 var/Widget/Users/Edit.php:164
+#: var/Widget/Users/EditTrait.php:74 var/Widget/Users/Profile.php:236
+msgid "电子邮箱地址已经存在"
+msgstr ""
+
+#: var/Widget/Feedback.php:150 var/Widget/Register.php:41
+#: var/Widget/Users/Edit.php:166 var/Widget/Users/Profile.php:238
+msgid "电子邮箱最多包含150个字符"
+msgstr ""
+
+#: install.php:1382 var/Widget/Register.php:40
+#: var/Widget/Users/Edit.php:165 var/Widget/Users/Profile.php:237
+msgid "电子邮箱格式错误"
+msgstr ""
+
+#: var/Typecho/Palette.php:448
+msgid "界面"
+msgstr ""
+
+#: var/Widget/Options/Cache.php:176 var/Widget/Options/Mail.php:289
+msgid "留空保持不变"
+msgstr ""
+
+#: admin/menu.php:119 var/Typecho/Palette.php:391
+msgid "登出"
+msgstr ""
+
+#: admin/login.php:18 admin/login.php:42 var/Widget/Menu.php:49
+msgid "登录"
+msgstr ""
+
+#: admin/options-general.php:37
+msgid "登录与密码找回按 IP 以及 IP + 账号两个维度限流，IP 和账号只保存摘要，不保存明文"
+msgstr ""
+
+#: admin/options-general.php:25
+msgid "登录保护"
+msgstr ""
+
+#: var/Widget/Menu.php:49
+msgid "登录到%s"
+msgstr ""
+
+#: var/Widget/XmlRpc.php:87
+msgid "登录地址"
+msgstr ""
+
+#: install.php:1318
+msgid "登录密码"
+msgstr ""
+
+#: install.php:1320
+msgid "登录密码至少需要 %d 个字符，且不能超过 %d 字节。若留空，系统将自动生成随机密码（不推荐）"
+msgstr ""
+
+#: admin/options-general.php:27
+msgid "登录尝试记录表不可用，限流已自动放行，请在升级页执行结构修复"
+msgstr ""
+
+#: var/Widget/XmlRpc.php:189
+msgid "登录尝试过于频繁, 请稍后重试"
+msgstr ""
+
+#: var/Widget/Login.php:56
+msgid "登录尝试过于频繁，请在 %d 分钟后重试"
+msgstr ""
+
+#: usr/themes/default/comments.php:36
+msgid "登录身份: "
+msgstr ""
+
+#: var/Utils/Schema.php:81
+msgid "登录限流表"
+msgstr ""
+
+#: admin/index.php:194
+msgid "目前有 %s 篇文章，%s 条评论，%s 个分类"
+msgstr ""
+
+#: var/Typecho/Upgrade/Runner.php:628 var/Typecho/Upgrade/Runner.php:636
+#: var/Typecho/Upgrade/Runner.php:772 var/Typecho/Upgrade/Runner.php:776
+msgid "目录不可写: %s"
+msgstr ""
+
+#: var/Typecho/Upgrade/Store.php:239
+msgid "目录可直接使用"
+msgstr ""
+
+#: var/Widget/XmlRpc.php:1272
+msgid "目标地址禁止Ping"
+msgstr ""
+
+#: var/Widget/Backup.php:556
+msgid "目标数据库缺少 %s 表或无法读取其结构"
+msgstr ""
+
+#: admin/auth.php:18
+msgid "石板"
+msgstr ""
+
+#: admin/auth.php:21
+msgid "砂岩"
+msgstr ""
+
+#: admin/editor-js.php:82
+msgid "确定"
+msgstr ""
+
+#: var/Typecho/Palette.php:400
+msgid "确定要清除前端缓存吗？这将重置您的界面偏好设置。"
+msgstr ""
+
+#: admin/register.php:34 admin/reset.php:55
+msgid "确认密码"
+msgstr ""
+
+#: admin/file-upload-js.php:291
+msgid "确认要删除文件 %s 吗?"
+msgstr ""
+
+#: admin/custom-fields-js.php:8
+msgid "确认要删除此字段吗?"
+msgstr ""
+
+#: var/Widget/Mail.php:88 var/Widget/Mail.php:176
+msgid "确认退订"
+msgstr ""
+
+#: install.php:907
+msgid "确认配置并开始安装 &raquo;"
+msgstr ""
+
+#: var/Widget/Options/Mail.php:556
+msgid "示例评论者"
+msgstr ""
+
+#: var/Widget/Mail.php:36 var/Widget/Service.php:37
+#: var/Widget/Service.php:268 var/Widget/User.php:214
+msgid "禁止访问"
+msgstr ""
+
+#: var/Widget/Feedback.php:304
+msgid "禁止重复提交"
+msgstr ""
+
+#: admin/plugins.php:120 admin/plugins.php:139
+msgid "禁用"
+msgstr ""
+
+#: admin/plugins.php:153
+msgid "禁用的插件"
+msgstr ""
+
+#: admin/manage-posts.php:88 admin/manage-posts.php:168
+#: admin/write-post.php:105 var/Widget/Contents/Post/Edit.php:107
+msgid "私密"
+msgstr ""
+
+#: admin/write-js.php:29
+msgid "秒"
+msgstr ""
+
+#: usr/themes/default/comments.php:42
+msgid "称呼"
+msgstr ""
+
+#: usr/themes/default/comments.php:42
+msgid "称呼 *"
+msgstr ""
+
+#: admin/upgrade.php:244
+msgid "程序文件升级后，请执行数据库迁移"
+msgstr ""
+
+#: admin/backup.php:140 admin/backup.php:182
+msgid "立即恢复"
+msgstr ""
+
+#: admin/options-mail.php:102
+msgid "立即投递"
+msgstr ""
+
+#: admin/write.php:56
+msgid "立即预览"
+msgstr ""
+
+#: usr/themes/default/functions.php:10
+msgid "站点 LOGO 地址"
+msgstr ""
+
+#: var/Widget/Options/General.php:305
+msgid "站点名称"
+msgstr ""
+
+#: var/Widget/Options/General.php:315
+msgid "站点地址"
+msgstr ""
+
+#: var/Widget/Options/General.php:316
+msgid "站点地址主要用于生成内容的永久链接"
+msgstr ""
+
+#: install.php:284
+msgid "站点已安装，但当前无法连接数据库，请检查数据库服务后重试"
+msgstr ""
+
+#: var/Widget/Options/General.php:329
+msgid "站点描述"
+msgstr ""
+
+#: var/Widget/Options/General.php:330
+msgid "站点描述将显示在网页代码的头部区域"
+msgstr ""
+
+#: install.php:879
+msgid "站点配置初始化"
+msgstr ""
+
+#: var/Widget/Options/Reading.php:181
+msgid "站点首页"
+msgstr ""
+
+#: var/Widget/Options/Mail.php:226
+msgid "站长邮箱"
+msgstr ""
+
+#: var/Widget/Options/Discussion.php:143
+msgid "第一页"
+msgstr ""
+
+#: usr/themes/default/comments.php:17
+msgid "等待审核"
+msgstr ""
+
+#: admin/manage-comments.php:85 admin/manage-medias.php:39
+#: admin/manage-pages.php:44 admin/manage-posts.php:110
+#: admin/manage-users.php:34
+msgid "筛选"
+msgstr ""
+
+#: admin/options-mail.php:152 admin/options-mail.php:153
+msgid "签名规则"
+msgstr ""
+
+#: var/Typecho/Palette.php:204 var/Typecho/Palette.php:213
+#: var/Typecho/Palette.php:222 var/Typecho/Palette.php:240
+#: var/Typecho/Palette.php:249 var/Typecho/Palette.php:267
+#: var/Typecho/Palette.php:444 var/Widget/Menu.php:45
+msgid "管理"
+msgstr ""
+
+#: var/Widget/Metas/Category/Admin.php:56
+msgid "管理 %s 的子分类"
+msgstr ""
+
+#: var/Widget/Contents/Page/Admin.php:70
+msgid "管理 %s 的子页面"
+msgstr ""
+
+#: var/Typecho/Palette.php:237 var/Widget/Menu.php:75
+#: var/Widget/Metas/Category/Admin.php:62
+msgid "管理分类"
+msgstr ""
+
+#: var/Widget/XmlRpc.php:92
+msgid "管理区域的地址"
+msgstr ""
+
+#: admin/manage-users.php:79 var/Widget/Users/Edit.php:115
+msgid "管理员"
+msgstr ""
+
+#: var/Typecho/Palette.php:255
+msgid "管理媒体文件"
+msgstr ""
+
+#: var/Widget/Menu.php:82
+msgid "管理文件"
+msgstr ""
+
+#: admin/index.php:205 var/Typecho/Palette.php:201 var/Widget/Menu.php:69
+msgid "管理文章"
+msgstr ""
+
+#: var/Typecho/Palette.php:246 var/Widget/Menu.php:80
+#: var/Widget/Metas/Tag/Admin.php:33
+msgid "管理标签"
+msgstr ""
+
+#: var/Typecho/Palette.php:210 var/Widget/Contents/Page/Admin.php:76
+#: var/Widget/Menu.php:71
+msgid "管理独立页面"
+msgstr ""
+
+#: var/Typecho/Palette.php:264 var/Widget/Menu.php:84
+msgid "管理用户"
+msgstr ""
+
+#: admin/index.php:209 var/Typecho/Palette.php:219 var/Widget/Menu.php:73
+msgid "管理评论"
+msgstr ""
+
+#: admin/options-mail.php:194 admin/upgrade.php:345
+msgid "类型"
+msgstr ""
+
+#: admin/menu.php:186
+msgid "粉"
+msgstr ""
+
+#: admin/index.php:214
+msgid "系统设置"
+msgstr ""
+
+#: admin/upgrade.php:342
+msgid "索引"
+msgstr ""
+
+#: var/Widget/Options/Cache.php:141
+msgid "索引前缀"
+msgstr ""
+
+#: admin/menu.php:180
+msgid "紫"
+msgstr ""
+
+#: admin/menu.php:187
+msgid "红"
+msgstr ""
+
+#: admin/upgrade.php:334
+msgid "结构不一致"
+msgstr ""
+
+#: admin/footer.php:17
+msgid "结果"
+msgstr ""
+
+#: admin/profile.php:31
+msgid "统计"
+msgstr ""
+
+#: install.php:1332
+msgid "继续安装 &raquo;"
+msgstr ""
+
+#: var/Typecho/Palette.php:321 var/Typecho/Palette.php:399
+#: var/Widget/Menu.php:93
+msgid "缓存"
+msgstr ""
+
+#: admin/options-cache.php:87
+msgid "缓存不可用时程序会自动回落到直连数据库，站点功能不受影响"
+msgstr ""
+
+#: var/Widget/Options/Cache.php:90
+msgid "缓存已清空，共清理 %d 项"
+msgstr ""
+
+#: admin/options-cache.php:95
+msgid "缓存操作"
+msgstr ""
+
+#: var/Widget/Options/Cache.php:131
+msgid "缓存时间"
+msgstr ""
+
+#: admin/options-cache.php:81
+msgid "缓存未能启用"
+msgstr ""
+
+#: admin/options-cache.php:28 var/Widget/Options/Cache.php:106
+msgid "缓存状态"
+msgstr ""
+
+#: admin/options-tabs.php:9 var/Typecho/Palette.php:318
+#: var/Widget/Menu.php:93
+msgid "缓存设置"
+msgstr ""
+
+#: admin/options-cache.php:41 var/Widget/Options/Cache.php:123
+msgid "缓存驱动"
+msgstr ""
+
+#: admin/file-upload-js.php:149 admin/file-upload.php:40
+#: admin/index.php:370 admin/manage-comments.php:170
+#: admin/manage-users.php:82 admin/themes.php:64
+#: var/Widget/Users/Edit.php:115
+msgid "编辑"
+msgstr ""
+
+#: admin/manage-pages.php:94 admin/manage-posts.php:174
+#: var/Widget/Contents/Page/Edit.php:280
+#: var/Widget/Contents/PrepareEditTrait.php:64
+msgid "编辑 %s"
+msgstr ""
+
+#: admin/theme-tabs.php:10
+msgid "编辑%s外观"
+msgstr ""
+
+#: var/Widget/Metas/Category/Edit.php:192
+msgid "编辑分类"
+msgstr ""
+
+#: var/Widget/Metas/Category/Edit.php:423
+msgid "编辑分类 %s"
+msgstr ""
+
+#: var/Typecho/Palette.php:348
+msgid "编辑器"
+msgstr ""
+
+#: var/Widget/Ajax.php:601
+msgid "编辑器尺寸只能通过 POST 保存。"
+msgstr ""
+
+#: admin/theme-tabs.php:8
+msgid "编辑当前外观"
+msgstr ""
+
+#: var/Widget/Themes/Files.php:95
+msgid "编辑文件 %s"
+msgstr ""
+
+#: var/Widget/Metas/Tag/Edit.php:148
+msgid "编辑标签"
+msgstr ""
+
+#: var/Widget/Metas/Tag/Admin.php:27
+msgid "编辑标签 %s"
+msgstr ""
+
+#: admin/theme-editor.php:20
+msgid "编辑源码"
+msgstr ""
+
+#: var/Widget/Users/Edit.php:138
+msgid "编辑用户"
+msgstr ""
+
+#: var/Widget/Users/Edit.php:40
+msgid "编辑用户 %s"
+msgstr ""
+
+#: admin/manage-categories.php:65
+#: var/Widget/Contents/Attachment/Edit.php:104
+msgid "缩略名"
+msgstr ""
+
+#: var/Widget/Contents/Attachment/Edit.php:138
+#: var/Widget/Metas/Category/Edit.php:209 var/Widget/Metas/Tag/Edit.php:165
+msgid "缩略名已经存在"
+msgstr ""
+
+#: var/Widget/Metas/Tag/Edit.php:121
+msgid "缩略名用于生成简洁友好的链接，若留空，将默认使用标签名称"
+msgstr ""
+
+#: var/Typecho/Upgrade/Runner.php:38
+msgid "缺失"
+msgstr ""
+
+#: admin/upgrade.php:332
+msgid "缺字段"
+msgstr ""
+
+#: install.php:630
+msgid "缺少PHP扩展"
+msgid_plural "请在服务器上安装以下PHP扩展中的至少一个"
+msgstr[0] ""
+msgstr[1] ""
+
+#: var/Widget/Upgrade/Package.php:89
+msgid "缺少升级包标识"
+msgstr ""
+
+#: admin/reset.php:27
+msgid "缺少重置令牌"
+msgstr ""
+
+#: admin/upgrade.php:330
+msgid "缺表"
+msgstr ""
+
+#: admin/write.php:47
+msgid "网址缩略名"
+msgstr ""
+
+#: usr/themes/default/comments.php:48 var/Typecho/Palette.php:382
+msgid "网站"
+msgstr ""
+
+#: install.php:1304
+msgid "网站地址"
+msgstr ""
+
+#: var/Widget/Menu.php:55
+msgid "网站外观"
+msgstr ""
+
+#: var/Widget/Menu.php:53
+msgid "网站概要"
+msgstr ""
+
+#: admin/menu.php:182
+msgid "翠"
+msgstr ""
+
+#: var/Widget/Options/Reading.php:208
+msgid "聚合全文输出"
+msgstr ""
+
+#: var/Widget/Feed.php:73
+msgid "聚合页不存在"
+msgstr ""
+
+#: var/Typecho/Palette.php:119
+msgid "自动"
+msgstr ""
+
+#: usr/themes/default/functions.php:18
+msgid "自动 (跟随系统)"
+msgstr ""
+
+#: var/Widget/Users/Profile.php:57
+msgid "自动保存"
+msgstr ""
+
+#: var/Widget/Users/Profile.php:58
+msgid "自动保存功能可以更好地保护你的文章不会丢失"
+msgstr ""
+
+#: admin/backup.php:125 admin/backup.php:167
+msgid "自动修复评论与计数异常"
+msgstr ""
+
+#: admin/backup.php:132 admin/backup.php:174
+msgid "自动创建快照"
+msgstr ""
+
+#: var/Widget/Options/Mail.php:314
+msgid "自动异步"
+msgstr ""
+
+#: var/Widget/Options/Mail.php:317
+msgid "自动异步为默认推荐方案；定时投递适合用 Cron 批量处理"
+msgstr ""
+
+#: var/Widget/Options/General.php:115
+msgid "自定义域名"
+msgstr ""
+
+#: admin/custom-fields.php:8
+msgid "自定义字段"
+msgstr ""
+
+#: admin/custom-fields.php:71
+msgid "自定义字段可以扩展你的模板功能, 使用方法参见 <a href=\\"https://docs.typecho.org/help/custom-fields\\">帮助文档</a>"
+msgstr ""
+
+#: var/Widget/Options/Permalink.php:319
+msgid "自定义文章路径"
+msgstr ""
+
+#: admin/write-page.php:88
+msgid "自定义模板"
+msgstr ""
+
+#: var/Widget/Options/General.php:197
+msgid "自定义请求头"
+msgstr ""
+
+#: var/Widget/Options/General.php:213
+msgid "自定义请求头名称"
+msgstr ""
+
+#: var/Widget/Options/Permalink.php:257
+msgid "自定义链接与现有规则存在冲突! 它可能影响解析效率, 建议你重新分配一个规则."
+msgstr ""
+
+#: var/Widget/Options/General.php:144
+msgid "自定义镜像域名"
+msgstr ""
+
+#: admin/register.php:31 admin/reset.php:52
+msgid "至少 %d 个字符，不超过 %d 字节"
+msgstr ""
+
+#: admin/auth.php:20
+msgid "苔绿"
+msgstr ""
+
+#: var/Widget/Options/Reading.php:209
+msgid "若不希望在内容聚合页展示文章全文，可选择「仅输出摘要」选项"
+msgstr ""
+
+#: install.php:659
+msgid "若在使用中遇到问题或是有新功能建议，欢迎在 <a href=\\"https://github.com/Yangsh888/TypeRenew\\">GitHub</a> 中交流反馈，也可直接向项目提交代码贡献。"
+msgstr ""
+
+#: install.php:652
+msgid "若环境不满足运行标准，页面顶部将出现明确提示，请您参照提示检查并调整主机配置。"
+msgstr ""
+
+#: install.php:653
+msgid "若环境符合全部要求，页面下方将出现「开始下一步」按钮，点击即可快速完成程序安装。"
+msgstr ""
+
+#: admin/manage-pages.php:84 admin/manage-posts.php:42
+#: admin/manage-posts.php:158 admin/write.php:33 var/Widget/XmlRpc.php:614
+#: var/Widget/XmlRpc.php:623
+msgid "草稿"
+msgstr ""
+
+#: var/Widget/Contents/EditTrait.php:783
+msgid "草稿 \\"%s\\" 已经被保存"
+msgstr ""
+
+#: var/Widget/Contents/Page/Edit.php:216
+#: var/Widget/Contents/Post/Edit.php:261
+msgid "草稿已经被删除"
+msgstr ""
+
+#: var/Widget/Comments/Edit.php:181
+msgid "获取评论失败"
+msgstr ""
+
+#: admin/menu.php:130
+msgid "菜单"
+msgstr ""
+
+#: admin/menu.php:179
+msgid "蓝"
+msgstr ""
+
+#: admin/auth.php:22
+msgid "蔷薇"
+msgstr ""
+
+#: admin/upgrade.php:200
+msgid "补丁"
+msgstr ""
+
+#: var/Widget/Backup.php:757
+msgid "表 %s 当前使用 %s 引擎，恢复将按非事务方式执行"
+msgstr ""
+
+#: var/Widget/Backup.php:562
+msgid "表 %s 缺少关键字段: %s"
+msgstr ""
+
+#: var/Utils/Migration/SchemaManager.php:182
+msgid "表不存在，升级时会按当前版本创建"
+msgstr ""
+
+#: admin/upgrade.php:203
+msgid "覆盖 install：%s"
+msgstr ""
+
+#: admin/upgrade.php:422
+msgid "覆盖策略"
+msgstr ""
+
+#: admin/options-general.php:42
+msgid "解除全部锁定"
+msgstr ""
+
+#: admin/upgrade.php:428
+msgid "触发升级后，系统会按顺序覆盖文件；执行完成后会在页面展示结果与最近一次失败原因"
+msgstr ""
+
+#: var/Widget/Options/Mail.php:363
+msgid "记录保留天数"
+msgstr ""
+
+#: install.php:655
+msgid "许可及协议"
+msgstr ""
+
+#: admin/manage-categories.php:98
+msgid "设为默认"
+msgstr ""
+
+#: admin/plugins.php:115 var/Typecho/Palette.php:276
+#: var/Typecho/Palette.php:285 var/Typecho/Palette.php:294
+#: var/Typecho/Palette.php:303 var/Typecho/Palette.php:312
+#: var/Typecho/Palette.php:321 var/Typecho/Palette.php:366
+#: var/Typecho/Palette.php:445 var/Widget/Menu.php:45
+msgid "设置"
+msgstr ""
+
+#: var/Widget/Users/Profile.php:80
+msgid "设置你经常使用的默认允许权限"
+msgstr ""
+
+#: admin/theme-tabs.php:15 var/Widget/Menu.php:57
+msgid "设置外观"
+msgstr ""
+
+#: admin/options-tabs.php:3
+msgid "设置导航"
+msgstr ""
+
+#: var/Widget/Options/Cache.php:79
+msgid "设置已保存，但缓存未能启用：%s"
+msgstr ""
+
+#: var/Widget/Base/Options.php:220 var/Widget/Users/Profile.php:255
+msgid "设置已经保存"
+msgstr ""
+
+#: var/Widget/Plugins/Config.php:37
+msgid "设置插件 %s"
+msgstr ""
+
+#: admin/reset.php:39
+msgid "设置新的登录密码"
+msgstr ""
+
+#: admin/options-mail.php:226
+msgid "访客"
+msgstr ""
+
+#: var/Widget/Options/Mail.php:379
+msgid "访客邮件标题"
+msgstr ""
+
+#: install.php:531
+msgid "访问后台控制面板"
+msgstr ""
+
+#: admin/index.php:420
+msgid "访问官网"
+msgstr ""
+
+#: admin/index.php:421
+msgid "访问社区"
+msgstr ""
+
+#: admin/manage-users.php:91
+msgid "访问者"
+msgstr ""
+
+#: admin/index.php:270 admin/index.php:303 admin/manage-pages.php:78
+#: admin/manage-posts.php:152 admin/profile.php:39
+#: var/Typecho/Palette.php:222 var/Typecho/Palette.php:231
+#: var/Typecho/Palette.php:294 var/Widget/Menu.php:73
+#: var/Widget/Menu.php:90
+msgid "评论"
+msgstr ""
+
+#: var/Widget/XmlRpc.php:720
+msgid "评论不存在"
+msgstr ""
+
+#: admin/manage-comments.php:375 admin/manage-comments.php:394
+msgid "评论保存失败"
+msgstr ""
+
+#: usr/themes/default/comments.php:53
+msgid "评论内容"
+msgstr ""
+
+#: var/Widget/Feedback.php:162
+msgid "评论内容最多包含 %d 个字符"
+msgstr ""
+
+#: var/Widget/Options/Discussion.php:111
+msgid "评论列表数目"
+msgstr ""
+
+#: var/Widget/Options/Cache.php:115
+msgid "评论发布、后台审核通过或后台回复评论后自动清理缓存，减少前台评论延迟显示"
+msgstr ""
+
+#: var/Widget/Options/Cache.php:114
+msgid "评论后自动清理缓存"
+msgstr ""
+
+#: usr/themes/default/comments.php:62
+msgid "评论已关闭"
+msgstr ""
+
+#: var/Widget/Comments/Edit.php:373
+msgid "评论已经被删除"
+msgstr ""
+
+#: var/Widget/Comments/Edit.php:75
+msgid "评论已经被标记为垃圾"
+msgstr ""
+
+#: var/Widget/Comments/Edit.php:24
+msgid "评论已经被标记为待审核"
+msgstr ""
+
+#: var/Widget/Comments/Edit.php:85
+msgid "评论已经被通过"
+msgstr ""
+
+#: var/Widget/Options/Discussion.php:202
+msgid "评论提交"
+msgstr ""
+
+#: var/Widget/Options/Discussion.php:100
+msgid "评论日期格式"
+msgstr ""
+
+#: var/Widget/Options/Discussion.php:168
+msgid "评论显示"
+msgstr ""
+
+#: var/Widget/Feedback.php:63 var/Widget/Feedback.php:74
+#: var/Widget/Feedback.php:77
+msgid "评论来源页错误."
+msgstr ""
+
+#: admin/index.php:274
+msgid "评论构成：通过 %s，待审核 %s，垃圾 %s"
+msgstr ""
+
+#: var/Widget/Options/Discussion.php:174
+msgid "评论者之前须有评论通过了审核"
+msgstr ""
+
+#: var/Widget/Options/Discussion.php:130
+msgid "评论者名称显示时自动加上其个人主页链接"
+msgstr ""
+
+#: admin/options-tabs.php:6 var/Typecho/Palette.php:291
+#: var/Widget/Menu.php:90
+msgid "评论设置"
+msgstr ""
+
+#: var/Widget/Backup.php:894
+msgid "该内容由迁移修复任务自动创建，用于承接原站点中未能匹配到文章的评论数据。"
+msgstr ""
+
+#: var/Widget/Metas/Tag/Edit.php:112
+msgid "该名称为标签在站点中的显示名称，支持中文，例如「地球」"
+msgstr ""
+
+#: admin/upgrade.php:295
+msgid "该操作会补齐邮件通知与密码找回依赖的关键表、索引、字段类型和排序规则，并同步历史评论作者昵称，不会覆盖已有业务数据。"
+msgstr ""
+
+#: admin/themes.php:31
+msgid "详情"
+msgstr ""
+
+#: var/Widget/Options/General.php:370
+msgid "语言"
+msgstr ""
+
+#: var/Widget/Users/Edit.php:88
+msgid "请不要与系统中现有的用户名重复."
+msgstr ""
+
+#: var/Widget/Users/Edit.php:92
+msgid "请不要与系统中现有的电子邮箱地址重复."
+msgstr ""
+
+#: var/Widget/Options/General.php:341
+msgid "请不要在关键词中使用特殊字符"
+msgstr ""
+
+#: var/Widget/Metas/Category/Edit.php:208
+msgid "请不要在分类名称中使用特殊字符"
+msgstr ""
+
+#: var/Widget/Options/Reading.php:98
+msgid "请不要在日期格式中使用特殊字符"
+msgstr ""
+
+#: var/Widget/Users/Edit.php:159 var/Widget/Users/Profile.php:231
+msgid "请不要在昵称中使用特殊字符"
+msgstr ""
+
+#: install.php:1379 var/Widget/Feedback.php:141 var/Widget/Register.php:36
+#: var/Widget/Users/Edit.php:176
+msgid "请不要在用户名中使用特殊字符"
+msgstr ""
+
+#: var/Widget/Options/General.php:308
+msgid "请不要在站点名称中使用特殊字符"
+msgstr ""
+
+#: var/Widget/Options/General.php:332
+msgid "请不要在站点描述中使用特殊字符"
+msgstr ""
+
+#: var/Widget/Metas/Category/Edit.php:210 var/Widget/Metas/Tag/Edit.php:166
+msgid "请不要在缩略名中使用特殊字符"
+msgstr ""
+
+#: var/Widget/Metas/Tag/Edit.php:164
+msgid "请不要标签名称中使用特殊字符"
+msgstr ""
+
+#: admin/upgrade.php:113
+msgid "请为上述目录开放写权限后重试。"
+msgstr ""
+
+#: admin/upgrade.php:115
+msgid "请为上述目录开放写权限；若不便调整当前路径，也可在 config.inc.php 中定义 __TYPECHO_UPGRADE_DIR__ 指向一个可写目录。"
+msgstr ""
+
+#: var/Widget/Options/General.php:339
+msgid "请以半角逗号 \\",\\" 分割多个关键字"
+msgstr ""
+
+#: admin/upgrade.php:269
+msgid "请先处理会阻断结构操作的 MySQL 风险，再执行数据库升级。"
+msgstr ""
+
+#: admin/upgrade.php:293
+msgid "请先处理数据库版本或 mail_unsub 重复值等阻断项，再执行结构修复。"
+msgstr ""
+
+#: admin/register.php:35 admin/reset.php:56
+msgid "请再次输入密码"
+msgstr ""
+
+#: var/Typecho/Upgrade/Runner.php:39
+msgid "请在 PHP 环境中启用 ZipArchive 扩展"
+msgstr ""
+
+#: admin/editor-js.php:79
+msgid "请在下方的输入框内输入要插入的远程图片地址"
+msgstr ""
+
+#: admin/editor-js.php:80
+msgid "请在下方的输入框内输入要插入的链接地址"
+msgstr ""
+
+#: var/Widget/Options/Permalink.php:334
+#: var/Widget/Options/Permalink.php:345
+msgid "请在路径中至少包含上述的一项参数"
+msgstr ""
+
+#: var/Widget/Options/Cache.php:135 var/Widget/Options/Cache.php:163
+#: var/Widget/Options/Cache.php:198 var/Widget/Options/Discussion.php:115
+#: var/Widget/Options/Discussion.php:125 var/Widget/Options/Mail.php:267
+#: var/Widget/Options/Mail.php:348 var/Widget/Options/Mail.php:357
+#: var/Widget/Options/Mail.php:366 var/Widget/Options/Reading.php:192
+#: var/Widget/Options/Reading.php:202
+msgid "请填入一个数字"
+msgstr ""
+
+#: var/Widget/Options/Cache.php:154
+msgid "请填写 Redis 主机"
+msgstr ""
+
+#: install.php:1376 usr/themes/default/functions.php:13
+#: var/Widget/Options/General.php:322
+msgid "请填写一个合法的URL地址"
+msgstr ""
+
+#: var/Widget/Users/Profile.php:213
+msgid "请填写个人主页地址，需以 <code>https://</code> 开头"
+msgstr ""
+
+#: install.php:1313
+msgid "请填写您的用户名"
+msgstr ""
+
+#: install.php:1327
+msgid "请填写您的邮箱地址"
+msgstr ""
+
+#: var/Widget/Options/General.php:382
+msgid "请填写时区"
+msgstr ""
+
+#: var/Widget/Options/Mail.php:114
+msgid "请填写正确的测试收件邮箱"
+msgstr ""
+
+#: var/Widget/Options/General.php:307
+msgid "请填写站点名称"
+msgstr ""
+
+#: install.php:1375 var/Widget/Options/General.php:321
+msgid "请填写站点地址"
+msgstr ""
+
+#: var/Widget/Options/Cache.php:145
+msgid "请填写索引前缀"
+msgstr ""
+
+#: var/Widget/Metas/Tag/Edit.php:232
+msgid "请填写需要合并到的标签"
+msgstr ""
+
+#: var/Typecho/Upgrade/Store.php:246
+msgid "请开放目录写权限"
+msgstr ""
+
+#: install.php:892
+msgid "请根据您使用的数据库类型选择对应的适配器；若不确定，请保持默认选项"
+msgstr ""
+
+#: admin/options-mail.php:156 admin/options-mail.php:157
+msgid "请求头"
+msgstr ""
+
+#: var/Widget/Upgrade.php:107
+msgid "请求方法不允许"
+msgstr ""
+
+#: var/Widget/Action.php:64 var/Widget/Archive.php:439
+#: var/Widget/Archive.php:1266 var/Widget/Archive.php:1294
+#: var/Widget/Archive.php:1468 var/Widget/Archive.php:1472
+#: var/Widget/CommentPage.php:20 var/Widget/XmlRpc.php:1406
+msgid "请求的地址不存在"
+msgstr ""
+
+#: var/Widget/Backup.php:131
+msgid "请求缺少必要动作参数，请重新提交恢复请求"
+msgstr ""
+
+#: var/Widget/Forgot.php:67
+msgid "请求过于频繁，请稍后再试"
+msgstr ""
+
+#: admin/login.php:19
+msgid "请登录以继续"
+msgstr ""
+
+#: var/Widget/Users/Edit.php:104
+msgid "请确认你的密码, 与上面输入的密码保持一致."
+msgstr ""
+
+#: var/Widget/Users/Profile.php:296
+msgid "请确认你的密码，与上面输入的密码保持一致"
+msgstr ""
+
+#: var/Widget/Options/Permalink.php:284
+msgid "请调整你的目录权限, 或者手动创建一个.htaccess文件"
+msgstr ""
+
+#: var/Widget/Options/General.php:379
+msgid "请输入 IANA 时区标识符，例如 Asia/Shanghai、America/New_York、Europe/Berlin。系统会自动兼容旧版配置"
+msgstr ""
+
+#: admin/editor-js.php:56
+msgid "请输入代码"
+msgstr ""
+
+#: admin/manage-comments.php:77 admin/manage-comments.php:78
+#: admin/manage-medias.php:36 admin/manage-medias.php:37
+#: admin/manage-pages.php:41 admin/manage-pages.php:42
+#: admin/manage-posts.php:98 admin/manage-posts.php:99
+#: admin/manage-users.php:31 admin/manage-users.php:32
+msgid "请输入关键字"
+msgstr ""
+
+#: var/Widget/Options/General.php:148
+msgid "请输入可访问的公网镜像域名"
+msgstr ""
+
+#: admin/editor-js.php:59
+msgid "请输入图片描述"
+msgstr ""
+
+#: admin/login.php:28 var/Widget/Login.php:31
+msgid "请输入密码"
+msgstr ""
+
+#: var/Widget/Base/Contents.php:381
+msgid "请输入密码访问"
+msgstr ""
+
+#: var/Widget/Options/General.php:383
+msgid "请输入有效的 IANA 时区标识符"
+msgstr ""
+
+#: var/Widget/Forgot.php:40
+msgid "请输入有效的邮箱地址"
+msgstr ""
+
+#: admin/write-js.php:73
+msgid "请输入标签名"
+msgstr ""
+
+#: admin/forgot.php:30
+msgid "请输入注册邮箱"
+msgstr ""
+
+#: admin/register.php:23 var/Widget/Login.php:30
+msgid "请输入用户名"
+msgstr ""
+
+#: admin/login.php:24
+msgid "请输入用户名或邮箱"
+msgstr ""
+
+#: admin/register.php:27
+msgid "请输入邮箱"
+msgstr ""
+
+#: admin/editor-js.php:50
+msgid "请输入链接描述"
+msgstr ""
+
+#: var/Widget/Upgrade/Package.php:66 var/Widget/Upgrade/Package.php:72
+msgid "请选择升级包 ZIP 文件"
+msgstr ""
+
+#: install.php:1061
+msgid "请选择数据库适配器"
+msgstr ""
+
+#: var/Widget/Metas/Category/Edit.php:336
+msgid "请选择需要合并的分类"
+msgstr ""
+
+#: admin/index.php:426
+msgid "读取官方动态中..."
+msgstr ""
+
+#: admin/manage-users.php:85 var/Widget/Users/Edit.php:115
+msgid "贡献者"
+msgstr ""
+
+#: var/Typecho/Palette.php:366
+msgid "资料"
+msgstr ""
+
+#: var/Widget/Options/Discussion.php:122
+msgid "超出此字符数的评论将被拒绝，上限 16000。评论正文字段为 TEXT，16000 个字符在 utf8mb4 下不会超出 65535 字节"
+msgstr ""
+
+#: admin/footer.php:29 admin/menu.php:172
+msgid "跟随系统"
+msgstr ""
+
+#: var/Typecho/Palette.php:116
+msgid "跟随系统主题"
+msgstr ""
+
+#: var/Typecho/Upgrade/Store.php:253
+msgid "路径冲突"
+msgstr ""
+
+#: var/Widget/XmlRpc.php:67
+msgid "软件名称"
+msgstr ""
+
+#: var/Widget/XmlRpc.php:72
+msgid "软件版本"
+msgstr ""
+
+#: admin/forgot.php:19 admin/reset.php:40
+msgid "轻量化后台管理"
+msgstr ""
+
+#: admin/auth.php:14
+msgid "轻量化管理后台，由 TypeRenew 焕新呈现"
+msgstr ""
+
+#: var/Widget/Options/Discussion.php:150
+msgid "较新的"
+msgstr ""
+
+#: var/Widget/Options/Discussion.php:151
+msgid "较旧的"
+msgstr ""
+
+#: admin/footer.php:10
+msgid "输入以搜索或执行命令"
+msgstr ""
+
+#: var/Typecho/Palette.php:424
+msgid "输入关键词搜索命令"
+msgstr ""
+
+#: var/Widget/Backup.php:890
+msgid "迁移占位内容"
+msgstr ""
+
+#: admin/backup.php:123 admin/backup.php:165
+msgid "迁移后修复"
+msgstr ""
+
+#: admin/options-mail.php:176
+msgid "运行告警"
+msgstr ""
+
+#: admin/index.php:222
+msgid "近 %s 天文章"
+msgstr ""
+
+#: admin/index.php:231
+msgid "近 %s 天评论"
+msgstr ""
+
+#: var/Typecho/Palette.php:371
+msgid "返回仪表盘"
+msgstr ""
+
+#: var/Widget/Metas/Category/Admin.php:44
+msgid "返回父级分类"
+msgstr ""
+
+#: var/Widget/Contents/Page/Admin.php:58
+msgid "返回父级页面"
+msgstr ""
+
+#: admin/forgot.php:39 admin/register.php:43 admin/reset.php:66
+msgid "返回登录"
+msgstr ""
+
+#: admin/forgot.php:41 admin/login.php:38 admin/register.php:45
+#: admin/reset.php:68
+msgid "返回首页"
+msgstr ""
+
+#: var/Widget/XmlRpc.php:1268
+msgid "这个目标地址不存在"
+msgstr ""
+
+#: admin/plugins.php:42 var/Widget/Ajax.php:417
+msgid "这并非 TypeRenew 官方插件，无法在官方插件仓库中检测版本状态。"
+msgstr ""
+
+#: var/Widget/Options/Mail.php:464
+msgid "这是一条用于模板联调的示例评论。\n可用于检查段落、特殊字符与链接显示。"
+msgstr ""
+
+#: admin/backup.php:80
+msgid "这种情况下，<strong>建议使用数据库工具</strong> 完成更完整的数据导出与备份。"
+msgstr ""
+
+#: admin/editor-js.php:353
+msgid "这篇文章不是由Markdown语法创建的, 继续使用Markdown编辑它吗?"
+msgstr ""
+
+#: var/Widget/Options/Mail.php:486
+msgid "这里是父评论示例内容。\n用于模拟访客回复通知。"
+msgstr ""
+
+#: admin/upgrade.php:217
+msgid "进度：%d / %d"
+msgstr ""
+
+#: usr/themes/default/comments.php:37 var/Typecho/Palette.php:391
+msgid "退出"
+msgstr ""
+
+#: admin/editor-js.php:76 admin/editor-js.php:167 admin/editor-js.php:199
+msgid "退出全屏"
+msgstr ""
+
+#: var/Typecho/Palette.php:388
+msgid "退出登录"
+msgstr ""
+
+#: var/Widget/Mail.php:93
+msgid "退订失败"
+msgstr ""
+
+#: var/Widget/Mail.php:93
+msgid "退订成功"
+msgstr ""
+
+#: var/Widget/Options/Permalink.php:40
+msgid "适用于 Apache + mod_rewrite。当前项目优先使用这一写法"
+msgstr ""
+
+#: var/Widget/Options/Permalink.php:62
+msgid "适用于 Nginx 的标准规则，不建议使用 if + rewrite 规则"
+msgstr ""
+
+#: admin/manage-categories.php:27 admin/manage-comments.php:61
+#: admin/manage-medias.php:20 admin/manage-pages.php:20
+#: admin/manage-posts.php:71 admin/manage-tags.php:22
+#: admin/manage-users.php:18
+msgid "选中项"
+msgstr ""
+
+#: var/Widget/Options/General.php:136
+msgid "选择\\"自定义域名\\"后，在下方填写自定义镜像域名（仅域名，不含 https:// 前缀和路径）。"
+msgstr ""
+
+#: admin/backup.php:155
+msgid "选择一个备份文件恢复数据"
+msgstr ""
+
+#: var/Widget/Options/Permalink.php:321
+msgid "选择一种合适的文章静态路径风格，使得你的网站链接更加友好；一旦你选择了某种链接风格请不要轻易修改它"
+msgstr ""
+
+#: usr/themes/default/functions.php:24
+msgid "选择主题的颜色风格"
+msgstr ""
+
+#: admin/write-js.php:23
+msgid "选择时间"
+msgstr ""
+
+#: admin/write-page.php:62 admin/write-post.php:47 admin/write.php:72
+msgid "选项"
+msgstr ""
+
+#: var/Widget/Options/Mail.php:367
+msgid "通知作者"
+msgstr ""
+
+#: var/Widget/Options/Mail.php:368
+msgid "通知访客"
+msgstr ""
+
+#: admin/manage-comments.php:63 admin/manage-comments.php:153
+#: admin/manage-comments.php:155 var/Typecho/Mail/Notify.php:293
+msgid "通过"
+msgstr ""
+
+#: var/Typecho/Palette.php:312 var/Widget/Menu.php:94
+msgid "邮件"
+msgstr ""
+
+#: install.php:1325 var/Widget/Users/Edit.php:91
+#: var/Widget/Users/Profile.php:216
+msgid "邮件地址"
+msgstr ""
+
+#: admin/index.php:37
+msgid "邮件异步发送可能不可靠"
+msgstr ""
+
+#: admin/options-mail.php:218 admin/options-mail.php:234
+msgid "邮件模板"
+msgstr ""
+
+#: var/Widget/Forgot.php:33
+msgid "邮件系统未启用，无法使用密码找回功能"
+msgstr ""
+
+#: admin/forgot.php:24
+msgid "邮件系统未启用，无法使用密码找回功能。"
+msgstr ""
+
+#: var/Typecho/Palette.php:309
+msgid "邮件设置"
+msgstr ""
+
+#: var/Utils/Schema.php:57
+msgid "邮件退订表"
+msgstr ""
+
+#: admin/options-tabs.php:10 var/Widget/Menu.php:94
+#: var/Widget/Options/Mail.php:210
+msgid "邮件通知"
+msgstr ""
+
+#: var/Utils/Schema.php:39
+msgid "邮件队列表"
+msgstr ""
+
+#: admin/forgot.php:29 admin/register.php:26
+msgid "邮箱"
+msgstr ""
+
+#: var/Widget/Feedback.php:149
+msgid "邮箱地址不合法"
+msgstr ""
+
+#: install.php:1383
+msgid "邮箱长度超过限制, 请不要超过 150 个字符"
+msgstr ""
+
+#: var/Widget/Ajax.php:585
+msgid "部分官方动态读取失败。"
+msgstr ""
+
+#: admin/editor-js.php:72 admin/editor-js.php:73
+msgid "重做"
+msgstr ""
+
+#: var/Widget/Options/Permalink.php:276
+msgid "重写功能检测失败，请检查你的服务器设置"
+msgstr ""
+
+#: var/Utils/Migration/SchemaManager.php:197
+#: var/Utils/Migration/SchemaManager.php:213
+#: var/Utils/Migration/SchemaManager.php:229
+#: var/Utils/Migration/SchemaManager.php:245
+msgid "重复值检查失败：%s"
+msgstr ""
+
+#: admin/themes.php:40
+msgid "重新上传此外观后刷新当前页面，此提示将会消失。"
+msgstr ""
+
+#: admin/reset.php:47
+msgid "重新获取重置链接"
+msgstr ""
+
+#: admin/options-mail.php:228
+msgid "重置"
+msgstr ""
+
+#: admin/reset.php:30 admin/reset.php:38 admin/reset.php:59
+msgid "重置密码"
+msgstr ""
+
+#: admin/options-mail.php:143
+msgid "重置投递密钥"
+msgstr ""
+
+#: admin/options-mail.php:247
+msgid "重置模板"
+msgstr ""
+
+#: var/Widget/Forgot.php:49 var/Widget/Reset.php:40
+msgid "重置请求过于频繁，请在 %d 分钟后重试"
+msgstr ""
+
+#: var/Widget/Forgot.php:122
+msgid "重置邮件暂时无法发送，请稍后重试"
+msgstr ""
+
+#: var/Widget/Reset.php:78
+msgid "重置链接无效、已过期或已被使用，请重新获取"
+msgstr ""
+
+#: admin/reset.php:17 admin/reset.php:23
+msgid "重置链接无效或已过期"
+msgstr ""
+
+#: var/Widget/Reset.php:48
+msgid "重置链接无效或已过期，请重新获取"
+msgstr ""
+
+#: admin/options-mail.php:110
+msgid "重试失败"
+msgstr ""
+
+#: admin/auth.php:25
+msgid "鎏金"
+msgstr ""
+
+#: admin/editor-js.php:49 var/Typecho/Palette.php:303
+msgid "链接"
+msgstr ""
+
+#: var/Widget/Mail.php:79
+msgid "链接无效"
+msgstr ""
+
+#: admin/footer.php:24 admin/options-mail.php:197
+msgid "错误"
+msgstr ""
+
+#: var/Typecho/Palette.php:285 var/Widget/Menu.php:91
+msgid "阅读"
+msgstr ""
+
+#: usr/themes/default/index.php:29
+msgid "阅读全文"
+msgstr ""
+
+#: admin/options-tabs.php:7 var/Typecho/Palette.php:282
+#: var/Widget/Menu.php:91
+msgid "阅读设置"
+msgstr ""
+
+#: admin/options-mail.php:95
+msgid "队列操作"
+msgstr ""
+
+#: admin/backup.php:26
+msgid "阻断项"
+msgstr ""
+
+#: var/Widget/Backup.php:991
+msgid "阻断：%s"
+msgstr ""
+
+#: admin/editor-js.php:229 admin/write-page.php:63 admin/write-post.php:48
+#: admin/write.php:73 var/Typecho/Palette.php:258
+msgid "附件"
+msgstr ""
+
+#: var/Widget/Upload.php:546
+msgid "附件上传失败"
+msgstr ""
+
+#: var/Widget/Upload.php:383
+msgid "附件上传失败，请检查文件类型与目录权限"
+msgstr ""
+
+#: var/Widget/Upload.php:314
+msgid "附件上传数据无效"
+msgstr ""
+
+#: var/Widget/Upload.php:154
+msgid "附件不存在"
+msgstr ""
+
+#: var/Widget/Upload.php:291 var/Widget/Upload.php:296
+#: var/Widget/Upload.php:303 var/Widget/Upload.php:307
+#: var/Widget/Upload.php:311 var/Widget/Upload.php:336
+#: var/Widget/Upload.php:344 var/Widget/Upload.php:352
+#: var/Widget/Upload.php:357
+msgid "附件写入失败，请检查上传目录权限"
+msgstr ""
+
+#: var/Widget/Upload.php:178
+msgid "附件替换失败，请检查文件类型与目录权限"
+msgstr ""
+
+#: var/Widget/Upload.php:286
+msgid "附件目录不可写，请检查上传目录权限"
+msgstr ""
+
+#: admin/manage-pages.php:30 admin/manage-pages.php:90
+#: admin/manage-posts.php:85 admin/manage-posts.php:164
+#: admin/write-page.php:127 admin/write-post.php:101
+#: var/Widget/Contents/Page/Edit.php:91
+#: var/Widget/Contents/Post/Edit.php:108
+msgid "隐藏"
+msgstr ""
+
+#: admin/upgrade.php:368
+msgid "需处理"
+msgstr ""
+
+#: var/Widget/Options/Reading.php:94
+msgid "需注意，部分主题中该格式可能不生效，因主题作者可自定义日期格式"
+msgstr ""
+
+#: admin/menu.php:184
+msgid "青"
+msgstr ""
+
+#: admin/menu.php:181
+msgid "靛"
+msgstr ""
+
+#: usr/themes/default/404.php:6
+msgid "非常抱歉，您访问的页面不存在。"
+msgstr ""
+
+#: admin/index.php:266 var/Typecho/Palette.php:168
+#: var/Typecho/Palette.php:213
+msgid "页面"
+msgstr ""
+
+#: var/Widget/Contents/Page/Edit.php:65
+msgid "页面 \\"<a href=\\"%s\\">%s</a>\\" 已经发布"
+msgstr ""
+
+#: admin/extending.php:9 admin/extending.php:14 admin/extending.php:20
+#: var/Widget/Contents/Page/Admin.php:73
+#: var/Widget/Contents/Page/Edit.php:243
+#: var/Widget/Contents/Page/Edit.php:293
+msgid "页面不存在"
+msgstr ""
+
+#: admin/write-page.php:46
+msgid "页面内容"
+msgstr ""
+
+#: var/Widget/Contents/Page/Edit.php:184
+msgid "页面已经被删除"
+msgstr ""
+
+#: var/Widget/Contents/Page/Edit.php:125
+msgid "页面已经被标记为<strong>%s</strong>"
+msgstr ""
+
+#: admin/manage-pages.php:167 admin/manage-pages.php:169
+msgid "页面排序失败, 已恢复原顺序"
+msgstr ""
+
+#: var/Widget/Contents/Page/Edit.php:235
+msgid "页面排序已经完成"
+msgstr ""
+
+#: var/Widget/Archive.php:1272
+msgid "页面没找到"
+msgstr ""
+
+#: admin/write-page.php:81
+msgid "页面顺序"
+msgstr ""
+
+#: var/Typecho/Palette.php:143
+msgid "顶部"
+msgstr ""
+
+#: admin/menu.php:128
+msgid "顶部栏"
+msgstr ""
+
+#: admin/copyright.php:9
+msgid "项目地址"
+msgstr ""
+
+#: var/Widget/Backup.php:587
+msgid "预检备份版本: %s"
+msgstr ""
+
+#: var/Widget/Backup.php:936
+msgid "预检阻断项：%d，预警项：%d"
+msgstr ""
+
+#: admin/editor-js.php:295
+msgid "预览"
+msgstr ""
+
+#: admin/manage-pages.php:99 admin/manage-posts.php:179
+msgid "预览 %s"
+msgstr ""
+
+#: admin/write-post.php:33
+msgid "预览文章"
+msgstr ""
+
+#: admin/options-mail.php:242
+msgid "预览模板"
+msgstr ""
+
+#: admin/write-page.php:47
+msgid "预览页面"
+msgstr ""
+
+#: admin/backup.php:34
+msgid "预警项"
+msgstr ""
+
+#: var/Widget/Backup.php:995
+msgid "预警：%s"
+msgstr ""
+
+#: var/Widget/Themes/Files.php:84
+msgid "风格文件不存在"
+msgstr ""
+
+#: var/Typecho/Upgrade/Store.php:278
+msgid "首次使用时会自动创建"
+msgstr ""
+
+#: usr/themes/default/header.php:66 var/Typecho/Palette.php:374
+#: var/Typecho/Palette.php:382
+msgid "首页"
+msgstr ""
+
+#: var/Widget/Options/Cache.php:79
+msgid "驱动不可用"
+msgstr ""
+
+#: admin/write-page.php:118 admin/write-post.php:91
+msgid "高级选项"
+msgstr ""
+
+#: admin/manage-categories.php:93 admin/manage-categories.php:98
+msgid "默认"
+msgstr ""
+
+#: var/Widget/Options/General.php:205
+msgid "默认 REMOTE_ADDR 最安全；其余来源头可被伪造，请仅在确认前端代理会覆盖该头时选用。"
+msgstr ""
+
+#: admin/upgrade.php:423
+msgid "默认不覆盖 install 目录及 install.php 文件；仅在确有必要时，勾选「允许覆盖 install（谨慎操作）」选项"
+msgstr ""
+
+#: var/Widget/Users/Profile.php:79
+msgid "默认允许"
+msgstr ""
+
+#: install.php:1427
+msgid "默认分类"
+msgstr ""
+
+#: install.php:900
+msgid "默认前缀是 \\"%s\\"，您也可以根据自己的博客名称自定义设置"
+msgstr ""
+
+#: var/Widget/Options/Discussion.php:211
+msgid "默认的用户评论不允许填写任何的HTML标签, 你可以在这里填写允许使用的HTML标签"
+msgstr ""
+
+#: admin/options-mail.php:221
+msgid "默认自动转义，使用 {raw:变量名} 可输出原始值"
+msgstr ""
+
+#: var/Widget/Options/Permalink.php:297
+msgid "默认风格"
+msgstr ""
+
+#: var/Widget/Options/General.php:109
+msgid "默认（raw.githubusercontent.com）"
+msgstr ""
+

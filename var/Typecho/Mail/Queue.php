@@ -423,7 +423,7 @@ class Queue
                 $errors[] = ['id' => $id, 'error' => $err];
                 $nextAttempts = $attempts + 1;
                 $isDead = $nextAttempts >= $maxAttempts;
-                $truncatedErr = function_exists('mb_substr') ? mb_substr($err, 0, 500, 'UTF-8') : substr($err, 0, 500);
+                $truncatedErr = mb_substr($err, 0, 500, 'UTF-8');
                 $db->query($db->update('table.mail_queue')->rows([
                     'status' => $isDead ? 'dead' : 'failed',
                     'lockedUntil' => 0,
@@ -451,10 +451,17 @@ class Queue
     public static function stats(Db $db): array
     {
         try {
-            $pending = (int) ($db->fetchRow($db->select('COUNT(*) AS c')->from('table.mail_queue')->where('status = ?', 'pending'))['c'] ?? 0);
-            $failed = (int) ($db->fetchRow($db->select('COUNT(*) AS c')->from('table.mail_queue')->where('status = ?', 'failed'))['c'] ?? 0);
-            $dead = (int) ($db->fetchRow($db->select('COUNT(*) AS c')->from('table.mail_queue')->where('status = ?', 'dead'))['c'] ?? 0);
-            $sent = (int) ($db->fetchRow($db->select('COUNT(*) AS c')->from('table.mail_queue')->where('status = ?', 'sent'))['c'] ?? 0);
+            $counts = [];
+            foreach ($db->fetchAll(
+                $db->select('status', 'COUNT(*) AS c')->from('table.mail_queue')->group('status')
+            ) as $row) {
+                $counts[(string) ($row['status'] ?? '')] = (int) ($row['c'] ?? 0);
+            }
+
+            $pending = $counts['pending'] ?? 0;
+            $failed = $counts['failed'] ?? 0;
+            $dead = $counts['dead'] ?? 0;
+            $sent = $counts['sent'] ?? 0;
 
             $lastFail = $db->fetchRow(
                 $db->select('id', 'lastError', 'updated')->from('table.mail_queue')->where('status = ?', 'failed')->order('updated', Db::SORT_DESC)->limit(1)
@@ -757,7 +764,7 @@ class Queue
         if ($text === '') {
             return;
         }
-        $value = '[' . $scope . '] ' . (function_exists('mb_substr') ? mb_substr($text, 0, 500, 'UTF-8') : substr($text, 0, 500));
+        $value = '[' . $scope . '] ' . mb_substr($text, 0, 500, 'UTF-8');
         error_log('TypeRenew.MailQueue ' . $value);
         self::setRuntimeOption('mailRuntimeError', $value);
         self::setRuntimeOption('mailRuntimeErrorAt', (string) time());

@@ -107,6 +107,11 @@ abstract class Widget
         );
     }
 
+    public static function destory(?string $alias = null): void
+    {
+        self::destroy($alias);
+    }
+
     public static function destroy(?string $alias = null): void
     {
         if (Common::nativeClassName(static::class) == 'Typecho_Widget') {

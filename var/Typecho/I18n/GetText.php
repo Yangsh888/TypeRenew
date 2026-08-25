@@ -68,7 +68,14 @@ class GetText
             return;
         }
 
-        $unpacked = unpack('c', $this->read(4));
+        $header = $this->read(4);
+        if (!is_string($header) || strlen($header) < 4) {
+            $this->error = 1;
+            $this->short_circuit = true;
+            return;
+        }
+
+        $unpacked = unpack('c', $header);
         $magic = array_shift($unpacked);
 
         if (-34 == $magic) {
@@ -167,7 +174,12 @@ class GetText
 
     private function readInt(): int
     {
-        $end = unpack($this->BYTE_ORDER == 0 ? 'V' : 'N', $this->read(4));
+        $data = $this->read(4);
+        if (!is_string($data) || strlen($data) < 4) {
+            return 0;
+        }
+
+        $end = unpack($this->BYTE_ORDER == 0 ? 'V' : 'N', $data);
         return array_shift($end);
     }
 
@@ -189,7 +201,7 @@ class GetText
         if ($this->enable_cache) {
             $this->cache_translations = ['' => null];
             for ($i = 0; $i < $this->total; $i++) {
-                if ($this->table_originals[$i * 2 + 1] > 0 || $this->table_translations[$i * 2 + 1] > 0) {
+                if ($this->table_originals[$i * 2 + 1] > 0 && $this->table_translations[$i * 2 + 1] > 0) {
                     fseek($this->STREAM, $this->table_originals[$i * 2 + 2]);
                     $original = fread($this->STREAM, $this->table_originals[$i * 2 + 1]);
                     fseek($this->STREAM, $this->table_translations[$i * 2 + 2]);
@@ -202,7 +214,12 @@ class GetText
 
     private function readIntArray(int $count): array
     {
-        return unpack(($this->BYTE_ORDER == 0 ? 'V' : 'N') . $count, $this->read(4 * $count));
+        $data = $count > 0 ? $this->read(4 * $count) : false;
+        if (!is_string($data) || strlen($data) < 4 * $count) {
+            return [];
+        }
+
+        return unpack(($this->BYTE_ORDER == 0 ? 'V' : 'N') . $count, $data);
     }
 
     private function findString(string $string, int $start = -1, int $end = -1): int

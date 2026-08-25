@@ -350,6 +350,11 @@ class Options extends Base
         return Zone::serverOffsetAt(Date::time());
     }
 
+    protected function ___gmtTime(): int
+    {
+        return Date::gmtTime();
+    }
+
     protected function ___timezone(): int
     {
         return $this->getTimezoneOffset();

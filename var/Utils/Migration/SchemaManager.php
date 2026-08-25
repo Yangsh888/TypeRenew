@@ -282,7 +282,10 @@ class SchemaManager
 
     private static function ensureGeneralOptions(Db $db): void
     {
-        self::ensureOptions($db, ['ipSource' => 'REMOTE_ADDR']);
+        self::ensureOptions($db, [
+            'ipSource' => 'REMOTE_ADDR',
+            'commentsMaxLength' => 8000
+        ]);
     }
 
     private static function ensureOptions(Db $db, array $defaults): void

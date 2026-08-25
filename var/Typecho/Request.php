@@ -251,8 +251,8 @@ class Request
         }
 
         if (!empty($pathInfo)) {
-            $pathInfo = defined('__TYPECHO_PATHINFO_ENCODING__') && function_exists('mb_convert_encoding') ?
-                mb_convert_encoding($pathInfo, 'UTF-8', __TYPECHO_PATHINFO_ENCODING__) : $pathInfo;
+            $pathInfo = defined('__TYPECHO_PATHINFO_ENCODING__')
+                ? mb_convert_encoding($pathInfo, 'UTF-8', __TYPECHO_PATHINFO_ENCODING__) : $pathInfo;
         } else {
             $pathInfo = '/';
         }
