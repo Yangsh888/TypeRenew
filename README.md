@@ -1,4 +1,4 @@
-# TypeRenew - 焕新 CMS 程序
+# TypeRenew - 基于 Typecho 焕新的现代化 CMS 程序
 
 [![PHP Version](https://img.shields.io/static/v1?label=PHP&message=8.0%20-%208.5&color=777BB4&style=flat-square&logo=php)](https://github.com/Yangsh888/TypeRenew)
 [![MySQL](https://img.shields.io/badge/MySQL-8.0+-4479A1?style=flat-square&logo=mysql)](https://github.com/Yangsh888/TypeRenew)
@@ -6,7 +6,7 @@
 [![Based on](https://img.shields.io/badge/Based%20on-Typecho%201.3.0-orange?style=flat-square)](https://github.com/typecho/typecho)
 [![zread](https://img.shields.io/badge/Ask_Zread-_.svg?style=flat-square&color=00b0aa&labelColor=000000&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTQuOTYxNTYgMS42MDAxSDIuMjQxNTZDMS44ODgxIDEuNjAwMSAxLjYwMTU2IDEuODg2NjQgMS42MDE1NiAyLjI0MDFWNC45NjAxQzEuNjAxNTYgNS4zMTM1NiAxLjg4ODEgNS42MDAxIDIuMjQxNTYgNS42MDAxSDQuOTYxNTZDNS4zMTUwMiA1LjYwMDEgNS42MDE1NiA1LjMxMzU2IDUuNjAxNTYgNC45NjAxVjIuMjQwMUM1LjYwMTU2IDEuODg2NjQgNS4zMTUwMiAxLjYwMDEgNC45NjE1NiAxLjYwMDFaIiBmaWxsPSIjZmZmIi8%2BCjxwYXRoIGQ9Ik00Ljk2MTU2IDEwLjM5OTlIMi4yNDE1NkMxLjg4ODEgMTAuMzk5OSAxLjYwMTU2IDEwLjY4NjQgMS42MDE1NiAxMS4wMzk5VjEzLjc1OTlDMS42MDE1NiAxNC4xMTM0IDEuODg4MSAxNC4zOTk5IDIuMjQxNTYgMTQuMzk5OUg0Ljk2MTU2QzUuMzE1MDIgMTQuMzk5OSA1LjYwMTU2IDE0LjExMzQgNS42MDE1NiAxMy43NTk5VjExLjAzOTlDNS42MDE1NiAxMC42ODY0IDUuMzE1MDIgMTAuMzk5OSA0Ljk2MTU2IDEwLjM5OTlaIiBmaWxsPSIjZmZmIi8%2BCjxwYXRoIGQ9Ik0xMy43NTg0IDEuNjAwMUgxMS4wMzg0QzEwLjY4NSAxLjYwMDEgMTAuMzk4NCAxLjg4NjY0IDEwLjM5ODQgMi4yNDAxVjQuOTYwMUMxMC4zOTg0IDUuMzEzNTYgMTAuNjg1IDUuNjAwMSAxMS4wMzg0IDUuNjAwMUgxMy43NTg0QzE0LjExMTkgNS42MDAxIDE0LjM5ODQgNS4zMTM1NiAxNC4zOTg0IDQuOTYwMVYyLjI0MDFDMTQuMzk4NCAxLjg4NjY0IDE0LjExMTkgMS42MDAxIDEzLjc1ODQgMS42MDAxWiIgZmlsbD0iI2ZmZiIvPgo8cGF0aCBkPSJNNCAxMkwxMiA0TDQgMTJaIiBmaWxsPSIjZmZmIi8%2BCjxwYXRoIGQ9Ik00IDEyTDEyIDQiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8L3N2Zz4K&logoColor=ffffff)](https://zread.ai/Yangsh888/TypeRenew)
 
-TypeRenew 是基于开源博客系统 Typecho 所开发的现代化 CMS 程序，完整继承其轻量、简洁、高效的内核基因，同时针对现代运行环境进行优化，修复兼容问题并原生集成缓存、邮件、在线升级等实用功能，同时提供安全中心、SEO、优化加速、外链安全与编辑器增强等官方拓展能力，适合搭建个人博客或轻量内容站点，QQ 交流群：1073739854
+TypeRenew 基于开源博客系统 Typecho，并在完整兼容 Typecho 的前提下进行二次开发与焕新，全面继承其轻量、简洁、高效的内核基因，同时针对现代运行环境进行优化，修复兼容问题并原生集成缓存、邮件、多语言、在线升级等实用功能，同时提供安全中心、SEO、优化加速、外链控制与 Vditor 编辑器增强等官方拓展能力，非常适合个人博客或轻量内容站点的搭建，欢迎加入 QQ 交流群：1073739854
 
 ## 开发背景
 
@@ -31,6 +31,7 @@ Typecho 作为知名的轻量级博客程序，以代码简洁、运行高效著
 - MySQL / MariaDB 安装流程默认使用 `utf8mb4` + `InnoDB`，并根据版本自动选择合适的排序规则
 - 内置缓存层，原生集成 Redis 或 APCu 缓存，显著降低数据库查询压力
 - 内置邮件队列、密码重置、数据库结构升级与在线升级入口，减少依赖额外插件的基础能力补齐成本
+- 内置多语言支持，随发行包提供 `usr/langs/typerenew.pot` 提取模板，放入 `.mo` 语言包后可在基本设置中切换界面语言
 
 ### 内置插件
 
@@ -40,16 +41,11 @@ Typecho 作为知名的轻量级博客程序，以代码简洁、运行高效著
 
 ### 社区拓展
 
-`TypeRenew Add-ons`是由社区开发者 @abdulhalim 贡献的第三方拓展，为 TypeRenew 补充多语言本地化与界面适配能力，适配 TypeRenew v1.5.1 及以上版本，提供完整的英文（en_US）、波斯语（fa_IR）语言包与全自动从右到左（RTL）布局支持，覆盖前台默认主题、后台管理面板与安装引导页全场景。
+`TypeRenew Add-ons`是由社区开发者 @abdulhalim 贡献的第三方拓展，为 TypeRenew 补充多语言本地化与界面适配能力，提供完整的英文（en_US）、波斯语（fa_IR）语言包与全自动从右到左（RTL）布局支持，覆盖前台默认主题、后台管理面板与安装引导页全场景。
+
+【注意】该拓展面向 v1.5.1 编写，目前 v1.6.0 已内置可用的多语言链路，如需在新版上使用，请留意其核心补丁与当前代码的差异。
 
 项目仓库：https://github.com/abdulhalim/TypeRenew-Add-ons
-
-核心特性：
-- 提供核心系统与默认主题双层语言包，完整覆盖前后台界面文本
-- 基于当前激活语言自动切换 RTL / LTR 布局，原生适配波斯语等右向书写语言
-- 内嵌 Vazirmatn 字体，优化波斯语排版与阅读体验
-- 轻量无插件实现，仅需少量核心代码补丁，无额外性能开销
-- 兼容 TypeRenew 原生深色模式与响应式布局
 
 ## 运行环境
 
@@ -64,13 +60,14 @@ Typecho 作为知名的轻量级博客程序，以代码简洁、运行高效著
 | SQLite | 3.x | 3.x |
 | Redis（可选） | 5.0 | 6.0+ |
 
+【提示】生产环境推荐使用 MySQL 8.0+ 或 MariaDB 10.6+
+
 ### PHP 扩展要求
 
 必需扩展：
 
 - mbstring
-- json
-- Reflection
+- openssl
 
 数据库扩展（至少安装一个）：
 
@@ -88,6 +85,8 @@ Typecho 作为知名的轻量级博客程序，以代码简洁、运行高效著
 安装前请确保以下目录具有写入权限：
 
 - `/usr/uploads/` - 上传文件存储目录
+- `/usr/backups/` - 后台备份文件存储目录
+- `/var/Upgrade/` - 在线升级包与临时状态目录
 - `/` - 根目录（安装时需要写入 config.inc.php）
 
 ## 安装部署
@@ -186,6 +185,14 @@ chmod 755 usr/uploads
 1. 清除浏览器 Cookie 后重试
 2. 检查 `config.inc.php` 中的站点 URL 配置
 3. 确认数据库中 `typerenew_users` 表存在且管理员账号正常
+
+### 提示「登录尝试过于频繁」
+
+连续多次密码错误会触发登录限流。可等待提示中的锁定时间自行解除，或由其他管理员在后台「设置」-「基本」页点击「解除全部锁定」。
+
+### 使用反向代理后访客 IP 都相同
+
+出于防伪造考虑，转发头只在明确配置受信代理后才会被读取。请在 `config.inc.php` 中定义 `__TYPECHO_TRUST_PROXY__`，仅设置 `__TYPECHO_IP_SOURCE__` 不会生效。
 
 ## 开源许可协议
 
