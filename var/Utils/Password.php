@@ -7,6 +7,7 @@ use Typecho\Common;
 class Password
 {
     private const BCRYPT_COST = 12;
+    private const ITOA64 = './0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
     public const MIN_LENGTH = 8;
     public const MAX_LENGTH = 72;
 
@@ -94,6 +95,11 @@ class Password
 
     private static function verifyLegacy(string $password, string $hash): bool
     {
+        if (strpos($hash, '$P$') === 0) {
+            $computed = self::phpass($password, $hash);
+            return $computed !== '' && hash_equals($hash, $computed);
+        }
+
         if (strpos($hash, '$T$') === 0) {
             if (strpos($password, "\0") !== false) {
                 return false;
@@ -108,5 +114,65 @@ class Password
 
         $computed = md5($password);
         return hash_equals($hash, $computed);
+    }
+
+    private static function phpass(string $password, string $setting): string
+    {
+        $salt = substr($setting, 4, 8);
+
+        if (strlen($salt) !== 8) {
+            return '';
+        }
+
+        $countLog2 = strpos(self::ITOA64, $setting[3] ?? '');
+
+        if ($countLog2 === false || $countLog2 < 7 || $countLog2 > 30) {
+            return '';
+        }
+
+        $count = 1 << $countLog2;
+        $digest = md5($salt . $password, true);
+
+        do {
+            $digest = md5($digest . $password, true);
+        } while (--$count);
+
+        return substr($setting, 0, 12) . self::encode64($digest);
+    }
+
+    private static function encode64(string $input): string
+    {
+        $count = strlen($input);
+        $output = '';
+        $i = 0;
+
+        do {
+            $value = ord($input[$i++]);
+            $output .= self::ITOA64[$value & 0x3f];
+
+            if ($i < $count) {
+                $value |= ord($input[$i]) << 8;
+            }
+
+            $output .= self::ITOA64[($value >> 6) & 0x3f];
+
+            if ($i++ >= $count) {
+                break;
+            }
+
+            if ($i < $count) {
+                $value |= ord($input[$i]) << 16;
+            }
+
+            $output .= self::ITOA64[($value >> 12) & 0x3f];
+
+            if ($i++ >= $count) {
+                break;
+            }
+
+            $output .= self::ITOA64[($value >> 18) & 0x3f];
+        } while ($i < $count);
+
+        return $output;
     }
 }

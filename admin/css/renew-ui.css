@@ -4912,6 +4912,11 @@ body.tr-admin .ui-front {
     z-index: 110 !important;
 }
 
+body.tr-admin #ui-datepicker-div .ui_tpicker_time_input {
+    width: 100%;
+    box-sizing: border-box;
+}
+
 body.tr-admin .ui-widget-overlay {
     z-index: 109 !important;
 }
