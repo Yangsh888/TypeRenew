@@ -30,6 +30,7 @@
         ], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT, '{}'); ?>;</script>
         <?php \Typecho\Palette::outputConfig(); ?>
         <?php \Typecho\Plugin::factory('admin/footer.php')->call('palette'); ?>
+        <script src="<?php $options->adminStaticUrl('js', 'tr-store.js'); ?>"></script>
         <script src="<?php $options->adminStaticUrl('js', 'renew-ui.js'); ?>"></script>
         <script src="<?php $options->adminStaticUrl('js', 'tr-theme.js'); ?>"></script>
         <script src="<?php $options->adminStaticUrl('js', 'tr-palette.js'); ?>"></script>

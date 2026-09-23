@@ -336,6 +336,7 @@ class Upload extends Contents implements ActionInterface
                 throw new \RuntimeException(_t('附件写入失败，请检查上传目录权限'));
             }
 
+            @chmod($target, 0644);
             return;
         }
 
@@ -344,6 +345,7 @@ class Upload extends Contents implements ActionInterface
                 throw new \RuntimeException(_t('附件写入失败，请检查上传目录权限'));
             }
 
+            @chmod($target, 0644);
             return;
         }
 
@@ -356,6 +358,8 @@ class Upload extends Contents implements ActionInterface
             if (!rename($temp, $target)) {
                 throw new \RuntimeException(_t('附件写入失败，请检查上传目录权限'));
             }
+
+            @chmod($target, 0644);
 
             if (is_file($backup)) {
                 unlink($backup);

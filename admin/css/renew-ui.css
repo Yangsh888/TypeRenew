@@ -6740,3 +6740,19 @@ body.tr-admin .mime-unknown {
 html.tr-theme-dark body.tr-admin [class*="mime-"] {
     filter: invert(1) hue-rotate(180deg) brightness(1.35);
 }
+
+body.tr-admin .tr-thumb {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 6px;
+    vertical-align: middle;
+    margin-right: 6px;
+    border: 1px solid var(--tr-border);
+}
+
+body.tr-admin .tr-thumb-wrap {
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 2px;
+}

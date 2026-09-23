@@ -460,7 +460,7 @@ class Db
             $resource = $this->query($query);
             $rows = $this->adapter->fetch($resource);
             if ($cacheKey) {
-                $cache->set($cacheKey, $rows, $cacheTtl);
+                $cache->set($cacheKey, $rows ?: null, $cacheTtl);
             }
         } finally {
             if ($cacheKey && $locked) {
@@ -511,7 +511,7 @@ class Db
             $resource = $this->query($query);
             $rows = $this->adapter->fetchObject($resource);
             if ($cacheKey) {
-                $cache->set($cacheKey, $rows, $cacheTtl);
+                $cache->set($cacheKey, $rows ?: null, $cacheTtl);
             }
         } finally {
             if ($cacheKey && $locked) {

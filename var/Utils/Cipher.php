@@ -60,11 +60,13 @@ class Cipher
     {
         static $keys = [];
 
-        if (!isset($keys[$secret])) {
-            $salt = 'typerenew:v1:' . hash('sha256', $secret);
-            $keys[$secret] = hash_pbkdf2('sha256', $secret, $salt, 10000, 32, true);
+        $cacheKey = hash('sha256', $secret);
+
+        if (!isset($keys[$cacheKey])) {
+            $salt = 'typerenew:v1:' . $cacheKey;
+            $keys[$cacheKey] = hash_pbkdf2('sha256', $secret, $salt, 60000, 32, true);
         }
 
-        return $keys[$secret];
+        return $keys[$cacheKey];
     }
 }

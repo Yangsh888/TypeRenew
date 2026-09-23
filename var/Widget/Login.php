@@ -68,7 +68,7 @@ class Login extends Users implements ActionInterface
 
         if (!$valid) {
             LoginGuard::recordFailure($this->db, LoginGuard::SCOPE_LOGIN, $ip, $name);
-            sleep(3);
+            usleep(random_int(500000, 1500000));
 
             self::pluginHandle()->call(
                 'loginFailure',

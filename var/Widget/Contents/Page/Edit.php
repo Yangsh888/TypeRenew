@@ -205,6 +205,7 @@ class Edit extends Contents implements ActionInterface
             $draft = $this->db->fetchRow($this->revisionSelect((int) $page));
 
             if ($draft) {
+                $this->unAttach($draft['cid']);
                 $this->deleteContent($draft['cid'], false);
                 $this->deleteFields($draft['cid']);
                 $deleteCount++;

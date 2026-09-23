@@ -74,7 +74,13 @@ $mediaToken = htmlspecialchars($security->getToken($request->getRequestUrl()), E
                                             class="balloon-button size-<?php echo \Typecho\Common::splitByCount($attachments->commentsNum, 1, 10, 20, 50, 100); ?>"><?php $attachments->commentsNum(); ?></a>
                                     </td>
                                     <td>
-                                        <i class="mime-<?php echo $mime; ?>"></i>
+                                        <?php if ($attachments->attachment->isImage): ?>
+                                            <a href="<?php $options->adminUrl('media.php?cid=' . $attachments->cid); ?>" class="tr-thumb-wrap">
+                                                <img src="<?php $attachments->attachment->url(); ?>" alt="<?php echo htmlspecialchars((string) $attachments->title, ENT_QUOTES, 'UTF-8'); ?>" class="tr-thumb" loading="lazy" />
+                                            </a>
+                                        <?php else: ?>
+                                            <i class="mime-<?php echo $mime; ?>"></i>
+                                        <?php endif; ?>
                                         <a href="<?php $options->adminUrl('media.php?cid=' . $attachments->cid); ?>"><?php echo htmlspecialchars((string) $attachments->title, ENT_QUOTES, 'UTF-8'); ?></a>
                                         <a href="<?php $attachments->permalink(); ?>"
                                            title="<?php _e('浏览 %s', htmlspecialchars((string) $attachments->title, ENT_QUOTES, 'UTF-8')); ?>"><i

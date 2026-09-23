@@ -105,7 +105,7 @@ namespace Typecho {
     class Common
     {
         public const SOFTWARE = 'TypeRenew';
-        public const VERSION = '1.6.0';
+        public const VERSION = '1.6.1';
 
         public static function generator(?string $version = null): string
         {
@@ -546,9 +546,9 @@ EOF;
 
             if ('$T$' == substr($to, 0, 3)) {
                 $salt = substr($to, 3, 9);
-                return self::hash($from, $salt) === $to;
+                return hash_equals(self::hash($from, $salt), $to);
             } else {
-                return md5($from) === $to;
+                return hash_equals(md5($from), $to);
             }
         }
 
