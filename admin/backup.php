@@ -84,7 +84,7 @@ $reportLines = \Widget\Backup::consumeReport();
                                     </div>
                                 </div>
                                 
-                                <form action="<?php echo $actionUrl; ?>" method="post" class="tr-mt-12">
+                                <form action="<?php echo $actionUrl; ?>" method="post" target="_self" class="tr-mt-12">
                                     <button class="tr-btn primary tr-block" type="submit">
                                         <span><?php _e('开始备份'); ?></span>
                                     </button>

@@ -28,7 +28,7 @@ if (isset($_COOKIE[session_name()]) && \Utils\Session::start()) {
 
             if (messages && 'success|notice|error'.indexOf(noticeType) >= 0) {
                 var sanitizeMessage = function (raw) {
-                    var wrap = document.createElement('div');
+                    var wrap = document.implementation.createHTMLDocument('').createElement('div');
                     wrap.innerHTML = String(raw == null ? '' : raw);
                     var nodes = Array.prototype.slice.call(wrap.querySelectorAll('*'));
                     nodes.forEach(function (node) {

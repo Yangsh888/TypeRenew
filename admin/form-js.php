@@ -21,10 +21,18 @@
 
             if (self.hasClass('submitting')) {
                 return false;
-            } else {
-                $('button[type=submit]', this).attr('disabled', 'disabled');
-                self.addClass('submitting');
             }
+
+            if (self.attr('target')) {
+                return;
+            }
+
+            setTimeout(function () {
+                if (!event.isDefaultPrevented()) {
+                    $('button[type=submit]', self).attr('disabled', 'disabled');
+                    self.addClass('submitting');
+                }
+            }, 0);
         }).on('submitted', function () {
             $('button[type=submit]', this).removeAttr('disabled');
             $(this).removeClass('submitting');

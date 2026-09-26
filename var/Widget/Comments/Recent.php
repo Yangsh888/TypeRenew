@@ -21,20 +21,23 @@ class Recent extends Comments
 
     public function execute()
     {
-        $select = $this->select()->limit($this->parameter->pageSize)
+        $select = $this->select('table.comments.*')->limit($this->parameter->pageSize)
+            ->join('table.contents', 'table.contents.cid = table.comments.cid')
             ->where('table.comments.status = ?', 'approved')
+            ->where('table.contents.status = ?', 'publish')
+            ->where("table.contents.password IS NULL OR table.contents.password = ''")
             ->order('table.comments.coid', Db::SORT_DESC);
 
         if ($this->parameter->parentId) {
-            $select->where('cid = ?', $this->parameter->parentId);
+            $select->where('table.comments.cid = ?', $this->parameter->parentId);
         }
 
         if ($this->options->commentsShowCommentOnly) {
-            $select->where('type = ?', 'comment');
+            $select->where('table.comments.type = ?', 'comment');
         }
 
         if ($this->parameter->ignoreAuthor) {
-            $select->where('ownerId <> authorId');
+            $select->where('table.comments.ownerId <> table.comments.authorId');
         }
 
         $this->db->fetchAll($select, [$this, 'push']);
