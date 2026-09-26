@@ -132,7 +132,7 @@
         if (!id) {
             return;
         }
-        const el = document.getElementById(String(id));
+        const el = document.getElementById(String(id)) || document.getElementById('mid-' + id);
         if (!el) {
             return;
         }
