@@ -38,6 +38,8 @@ class SchemaManager
         if ($syncedComments > 0) {
             $messages[] = _t('已同步 %d 条历史评论的作者昵称', $syncedComments);
         }
+        self::unescapeJson($db);
+        self::normalizePluginHandles($db);
 
         Plugin::factory(self::class)->call('syncSchema', $db);
 
@@ -331,6 +333,89 @@ class SchemaManager
         $index = $usrDir . '/index.html';
         if (!file_exists($index)) {
             file_put_contents($index, '');
+        }
+    }
+
+    private static function unescapeJson(Db $db): void
+    {
+        $targets = [
+            ['table.options', 'value', ['name', 'user'], null],
+            ['table.contents', 'text', ['cid'], ['type = ?', 'attachment']],
+            ['table.fields', 'str_value', ['cid', 'name'], ['type = ?', 'json']],
+        ];
+
+        foreach ($targets as [$table, $column, $keys, $condition]) {
+            $query = $db->select(...array_merge($keys, [$column]))->from($table);
+            if ($condition !== null) {
+                $query->where(...$condition);
+            }
+
+            foreach ($db->fetchAll($query) as $row) {
+                $raw = (string) $row[$column];
+                if (!str_contains($raw, '\\u')) {
+                    continue;
+                }
+
+                $decoded = json_decode($raw);
+                if (!is_array($decoded) && !is_object($decoded)) {
+                    continue;
+                }
+
+                $encoded = Common::jsonEncode($decoded, 0, '');
+                if ($encoded === '' || $encoded === $raw) {
+                    continue;
+                }
+
+                $update = $db->update($table)->rows([$column => $encoded]);
+                foreach ($keys as $key) {
+                    $update->where($key . ' = ?', $row[$key]);
+                }
+                $db->query($update);
+            }
+        }
+    }
+
+    private static function normalizePluginHandles(Db $db): void
+    {
+        $row = $db->fetchRow($db->select('value')->from('table.options')
+            ->where('name = ? AND user = ?', 'plugins', 0)->limit(1));
+        $plugins = json_decode((string) ($row['value'] ?? ''), true);
+        if (!is_array($plugins)) {
+            return;
+        }
+
+        $changed = false;
+        $rename = static function (array $handles) use (&$changed): array {
+            $result = [];
+            foreach ($handles as $component => $callbacks) {
+                $target = preg_replace('/^(Widget_Abstract_(?:Content|Comment|Meta|Option|User)):/', '$1s:', (string) $component);
+                $changed = $changed || $target !== $component;
+                foreach ((array) $callbacks as $weight => $callback) {
+                    if (isset($result[$target]) && in_array($callback, $result[$target], true)) {
+                        continue;
+                    }
+                    $key = (string) $weight;
+                    while (isset($result[$target][$key])) {
+                        $key = (string) ((float) $key + 0.001);
+                    }
+                    $result[$target][$key] = $callback;
+                }
+                ksort($result[$target], SORT_NUMERIC);
+            }
+            return $result;
+        };
+
+        $plugins['handles'] = $rename((array) ($plugins['handles'] ?? []));
+        foreach ((array) ($plugins['activated'] ?? []) as $name => $info) {
+            if (is_array($info) && isset($info['handles']) && is_array($info['handles'])) {
+                $plugins['activated'][$name]['handles'] = $rename($info['handles']);
+            }
+        }
+
+        if ($changed) {
+            $db->query($db->update('table.options')
+                ->rows(['value' => Common::jsonEncode($plugins, 0, '{}')])
+                ->where('name = ? AND user = ?', 'plugins', 0));
         }
     }
 

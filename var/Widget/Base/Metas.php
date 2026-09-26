@@ -86,6 +86,15 @@ class Metas extends Base implements QueryInterface, RowFilterInterface, PrimaryK
         $result = [];
 
         foreach ($tags as $tag) {
+            if (!isset($existing[$tag]) && !empty($existing)) {
+                $row = $this->db->fetchRow($this->select('mid')
+                    ->where('type = ?', 'tag')
+                    ->where('name = ?', $tag)->limit(1));
+                if ($row) {
+                    $existing[$tag] = $row['mid'];
+                }
+            }
+
             if (isset($existing[$tag])) {
                 $result[] = $existing[$tag];
                 continue;
