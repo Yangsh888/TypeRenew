@@ -378,7 +378,6 @@ class Archive extends Contents
                     return;
                 }
 
-                Helper::resetFrontPage($this->options->routingTable);
                 $frontPage = 'recent';
             }
         }
@@ -980,7 +979,7 @@ EOF;
                 }
             }
 
-            if (!$valid && 'index' != $this->archiveType) {
+            if (!$valid && 'index' != $this->archiveType && 'front' != $this->archiveType) {
                 $themeFile = $this->archiveSingle ? 'single.php' : 'archive.php';
                 if (file_exists($this->themeDir . $themeFile)) {
                     $this->themeFile = $themeFile;

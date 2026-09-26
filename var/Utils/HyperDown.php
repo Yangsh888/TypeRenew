@@ -113,44 +113,7 @@ class HyperDown
             $text = mb_convert_encoding($text, 'UTF-8', 'UTF-8');
         }
 
-        $text = str_replace(["\t", "\r"], ['    ', ''], $text);
-        $text = $this->normalizeDefinitionLinks($text);
-        return $text;
-    }
-
-    private function normalizeDefinitionLinks(string $text): string
-    {
-        $lines = explode("\n", $text);
-        $result = [];
-        $i = 0;
-        $count = count($lines);
-
-        while ($i < $count) {
-            $line = $lines[$i];
-            $trimmedLine = trim($line);
-
-            if (preg_match("/^\s*\[((?:[^\]]|\\]|\\[)+?)\]:\s*$/", $trimmedLine)) {
-                $nextLineIndex = $i + 1;
-
-                while ($nextLineIndex < $count) {
-                    $nextLine = $lines[$nextLineIndex];
-                    $trimmedNextLine = trim($nextLine);
-
-                    if ($trimmedNextLine !== '') {
-                        $result[] = $line . ' ' . ltrim($nextLine);
-                        $i = $nextLineIndex + 1;
-                        continue 2;
-                    }
-
-                    $nextLineIndex++;
-                }
-            }
-
-            $result[] = $line;
-            $i++;
-        }
-
-        return implode("\n", $result);
+        return str_replace(["\t", "\r"], ['    ', ''], $text);
     }
 
     private function makeFootnotes(string $html): string
