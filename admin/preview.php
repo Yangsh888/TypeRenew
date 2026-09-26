@@ -16,6 +16,10 @@ $content->render();
 ?>
 <script>
     (function () {
+        if (window.parent === window) {
+            return;
+        }
+
         function cancelPreview() {
             if (window.parent) {
                 window.parent.postMessage('cancelPreview', '*');

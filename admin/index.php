@@ -164,7 +164,7 @@ $donut = function (int $posts, int $pages, int $comments, int $total): string {
 ?>
 <main class="main">
     <div class="body container">
-        <?php if (!empty($securityWarnings)): ?>
+        <?php if (!empty($securityWarnings) && $user->pass('administrator', true)): ?>
             <div class="tr-card tr-mb-16">
                 <div class="tr-card-b">
                     <div class="tr-section-head">
@@ -199,7 +199,6 @@ $donut = function (int $posts, int $pages, int $comments, int $total): string {
                                         <svg class="tr-ico" aria-hidden="true"><use href="<?php echo htmlspecialchars($options->adminStaticUrl('img', 'icons.svg', true), ENT_QUOTES, 'UTF-8'); ?>#i-pencil"></use></svg>
                                         <span><?php _e('写新文章'); ?></span>
                                     </a>
-                                <?php endif; ?>
                                 <a class="tr-btn tr-btn-square" href="<?php $options->adminUrl('manage-posts.php'); ?>">
                                     <svg class="tr-ico" aria-hidden="true"><use href="<?php echo htmlspecialchars($options->adminStaticUrl('img', 'icons.svg', true), ENT_QUOTES, 'UTF-8'); ?>#i-file-text"></use></svg>
                                     <span><?php _e('管理文章'); ?></span>
@@ -208,6 +207,7 @@ $donut = function (int $posts, int $pages, int $comments, int $total): string {
                                     <svg class="tr-ico" aria-hidden="true"><use href="<?php echo htmlspecialchars($options->adminStaticUrl('img', 'icons.svg', true), ENT_QUOTES, 'UTF-8'); ?>#i-message"></use></svg>
                                     <span><?php _e('管理评论'); ?></span>
                                 </a>
+                                <?php endif; ?>
                                 <?php if ($user->pass('administrator', true)): ?>
                                     <a class="tr-btn tr-btn-square" href="<?php $options->adminUrl('options-general.php'); ?>">
                                         <svg class="tr-ico" aria-hidden="true"><use href="<?php echo htmlspecialchars($options->adminStaticUrl('img', 'icons.svg', true), ENT_QUOTES, 'UTF-8'); ?>#i-gear"></use></svg>
@@ -367,7 +367,9 @@ $donut = function (int $posts, int $pages, int $comments, int $total): string {
                                                 <div class="tr-subtext"><?php $posts->date('Y-m-d'); ?></div>
                                             </td>
                                             <td class="tr-td tr-td-right">
+                                                <?php if ($user->pass('editor', true) || $posts->authorId == $user->uid): ?>
                                                 <a class="tr-pill" href="<?php $options->adminUrl('write-post.php?cid=' . $posts->cid); ?>"><?php _e('编辑'); ?></a>
+                                                <?php endif; ?>
                                             </td>
                                         </tr>
                                     <?php endwhile; ?>

@@ -187,7 +187,8 @@ $tplContent = \Typecho\Mail\Template::load($tplName, $options);
                         <div class="tr-card-b">
                             <div class="tr-section-title"><?php _e('失败任务列表'); ?></div>
                             <div class="tr-help"><?php _e('展示最近失败或已放弃的任务'); ?></div>
-                            <table class="typecho-list-table striped" style="margin-top:10px;">
+                            <div class="tr-scroll-x" style="margin-top:10px;">
+                            <table class="typecho-list-table striped">
                                 <thead>
                                 <tr>
                                     <th><?php _e('ID'); ?></th>
@@ -209,6 +210,7 @@ $tplContent = \Typecho\Mail\Template::load($tplName, $options);
                                 <?php endforeach; ?>
                                 </tbody>
                             </table>
+                            </div>
                         </div>
                     </div>
                 <?php endif; ?>

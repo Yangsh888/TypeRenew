@@ -1535,19 +1535,24 @@ html.tr-theme-dark body.tr-admin .message.popup {
     color: var(--tr-text);
 }
 
-html.tr-theme-dark body.tr-admin .message.popup.success {
+html.tr-theme-dark body.tr-admin .message.success {
     border-color: rgba(34, 197, 94, 0.28);
     background: rgba(34, 197, 94, 0.12);
 }
 
-html.tr-theme-dark body.tr-admin .message.popup.notice {
+html.tr-theme-dark body.tr-admin .message.notice {
     border-color: rgba(245, 158, 11, 0.28);
     background: rgba(245, 158, 11, 0.12);
 }
 
-html.tr-theme-dark body.tr-admin .message.popup.error {
+html.tr-theme-dark body.tr-admin .message.error {
     border-color: rgba(248, 113, 113, 0.30);
     background: rgba(248, 113, 113, 0.12);
+}
+
+html.tr-theme-dark body.tr-admin .message,
+html.tr-theme-dark body.tr-admin .message :is(p, li) {
+    color: var(--tr-text);
 }
 
 html.tr-theme-dark body.tr-admin .balloon-button {
@@ -4041,7 +4046,8 @@ body.tr-admin .typecho-page-main table.typecho-list-table {
 
 body.tr-admin .typecho-page-main .operate-form,
 body.tr-admin .typecho-page-main > .typecho-list > .operate-form,
-body.tr-admin .typecho-page-main .typecho-table-wrap {
+body.tr-admin .typecho-page-main .typecho-table-wrap,
+body.tr-admin .tr-scroll-x {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
 }
@@ -4338,7 +4344,7 @@ body.tr-admin .tr-settings-tabs {
     padding: 0;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: safe center;
     gap: 18px;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;

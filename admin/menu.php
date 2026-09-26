@@ -107,7 +107,7 @@ $userAvatarUrl = \Typecho\Common::gravatarUrl($user->mail, 38);
         </nav>
         <div class="tr-user">
             <div class="tr-user-card">
-                <img class="tr-user-avatar" src="<?php echo htmlspecialchars($userAvatarUrl, ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars($user->screenName, ENT_QUOTES, 'UTF-8'); ?>">
+                <img class="tr-user-avatar" src="<?php echo htmlspecialchars($userAvatarUrl, ENT_QUOTES, 'UTF-8', false); ?>" alt="<?php echo htmlspecialchars((string) $user->screenName, ENT_QUOTES, 'UTF-8'); ?>">
                 <div class="tr-user-meta">
                     <div class="tr-user-name"><a href="<?php $options->adminUrl('profile.php'); ?>"><?php echo htmlspecialchars((string) $user->screenName, ENT_QUOTES, 'UTF-8'); ?></a></div>
                     <div class="tr-user-role"><?php echo htmlspecialchars((string) $user->group, ENT_QUOTES, 'UTF-8'); ?></div>

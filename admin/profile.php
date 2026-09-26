@@ -15,7 +15,7 @@ $stat = \Widget\Stat::alloc();
                         <div class="tr-profile-head">
                             <div class="tr-profile-head-left">
                                 <a class="tr-profile-avatar-link" href="https://gravatar.com/" title="<?php _e('在 Gravatar 上修改头像'); ?>">
-                                    <img class="tr-profile-avatar" src="<?php echo htmlspecialchars(\Typecho\Common::gravatarUrl($user->mail, 96, 'X', 'mm', $request->isSecure()), ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars($user->screenName, ENT_QUOTES, 'UTF-8'); ?>">
+                                    <img class="tr-profile-avatar" src="<?php echo htmlspecialchars(\Typecho\Common::gravatarUrl($user->mail, 96, 'X', 'mm', $request->isSecure()), ENT_QUOTES, 'UTF-8', false); ?>" alt="<?php echo htmlspecialchars((string) $user->screenName, ENT_QUOTES, 'UTF-8'); ?>">
                                 </a>
                                 <div class="tr-profile-meta">
                                     <div class="tr-profile-name"><?php $user->screenName(); ?></div>

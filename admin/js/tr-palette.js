@@ -714,7 +714,7 @@
     }
 
     document.addEventListener('keydown', (e) => {
-        const k = e.key.toLowerCase();
+        const k = (e.key || '').toLowerCase();
         const mod = e.metaKey || e.ctrlKey;
 
         if (mod && k === 'k') {
