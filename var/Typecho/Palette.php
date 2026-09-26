@@ -42,7 +42,11 @@ class Palette
             'hidden' => false
         ];
 
-        self::$commands[$command['id']] = array_merge($defaults, $command);
+        $command = array_merge($defaults, $command);
+        $command['title'] = (string) $command['title'];
+        $command['access'] = (string) ($command['access'] ?? 'subscriber');
+        $command['keywords'] = array_values(array_map('strval', (array) $command['keywords']));
+        self::$commands[$command['id']] = $command;
     }
 
     public static function registerAll(array $commands): void

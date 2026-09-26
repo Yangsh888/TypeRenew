@@ -827,6 +827,10 @@ html.tr-theme-dark body.tr-admin .tr-empty {
     color: var(--tr-muted);
 }
 
+html.tr-theme-dark body.tr-admin .tr-help.tr-tone-warning {
+    color: var(--tr-warning);
+}
+
 html.tr-theme-dark body.tr-admin .tr-link,
 html.tr-theme-dark body.tr-admin .tr-link-strong {
     color: var(--tr-text);
@@ -899,6 +903,12 @@ html.tr-theme-dark body.tr-admin .tr-pill:hover,
 html.tr-theme-dark body.tr-admin .tr-topbar-ext a:hover {
     background: rgba(148, 163, 184, 0.08);
     color: rgba(226, 232, 240, 0.92);
+}
+
+html.tr-theme-dark body.tr-admin .tr-pill.tr-pill-accent {
+    background: rgb(var(--tr-accent-rgb) / 0.18);
+    border-color: rgb(var(--tr-accent-rgb) / 0.32);
+    color: rgba(241, 245, 249, 0.95);
 }
 
 html.tr-theme-dark body.tr-admin .tr-topbar a:hover,
@@ -1012,6 +1022,13 @@ html.tr-theme-dark body.tr-admin a.btn {
     background: var(--tr-surface);
     color: var(--tr-text);
     box-shadow: var(--tr-shadow-sm);
+}
+
+html.tr-theme-dark body.tr-admin .btn.primary,
+html.tr-theme-dark body.tr-admin a.btn.primary {
+    border: 0;
+    background: linear-gradient(135deg, var(--tr-accent), var(--tr-accent-2));
+    color: #fff;
 }
 
 html.tr-theme-dark body.tr-admin .btn:hover,
@@ -1398,12 +1415,12 @@ html.tr-theme-dark body.tr-admin .tr-notice.tr-error .tr-notice-badge {
     color: rgba(254, 226, 226, 0.92);
 }
 
-html.tr-theme-dark body.tr-admin .tr-notice.tr-notice {
+html.tr-theme-dark body.tr-admin .tr-notice:not(.tr-success):not(.tr-error) {
     border-color: rgba(245, 158, 11, 0.26);
     background: rgba(245, 158, 11, 0.10);
 }
 
-html.tr-theme-dark body.tr-admin .tr-notice.tr-notice .tr-notice-badge {
+html.tr-theme-dark body.tr-admin .tr-notice:not(.tr-success):not(.tr-error) .tr-notice-badge {
     border-color: rgba(245, 158, 11, 0.28);
     background: rgba(245, 158, 11, 0.12);
     color: rgba(254, 243, 199, 0.92);
@@ -2068,7 +2085,7 @@ body.tr-admin.tr-sidebar-collapsed .tr-shell {
 }
 
 body.tr-admin.tr-sidebar-collapsed .tr-nav {
-    overflow-x: visible;
+    overflow: visible;
 }
 
 body.tr-admin.tr-sidebar-collapsed .tr-brand-name {
@@ -5100,12 +5117,12 @@ body.tr-admin .tr-notice-close:hover {
     color: rgba(15, 23, 42, 0.82);
 }
 
-body.tr-admin .tr-notice.tr-notice {
+body.tr-admin .tr-notice:not(.tr-success):not(.tr-error) {
     border-color: rgba(245, 158, 11, 0.22);
     background: rgba(255, 251, 235, 0.88);
 }
 
-body.tr-admin .tr-notice.tr-notice .tr-notice-badge {
+body.tr-admin .tr-notice:not(.tr-success):not(.tr-error) .tr-notice-badge {
     border-color: rgba(245, 158, 11, 0.26);
     background: rgba(255, 251, 235, 0.92);
     color: rgba(180, 83, 9, 0.92);

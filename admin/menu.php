@@ -132,7 +132,7 @@ $userAvatarUrl = \Typecho\Common::gravatarUrl($user->mail, 38);
         </button>
         <?php
         $parentLabel = method_exists($menu, 'getCurrentParentLabel') ? $menu->getCurrentParentLabel() : null;
-        $currentTitle = $menu->title ?? _t('控制台');
+        $currentTitle = $menu->title ?: _t('控制台');
         $rootTitle = _t('控制台');
         $subtitle = null;
         if (!empty($parentLabel) && $parentLabel !== $currentTitle && $parentLabel !== $rootTitle) {

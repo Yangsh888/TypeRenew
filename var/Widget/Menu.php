@@ -122,12 +122,8 @@ class Menu extends Base
         }
 
         foreach ($extendingChildMenu as $key => $val) {
-            foreach ($val as $child) {
-                $menuUrl = (string) ($child[2] ?? '');
-                $path = parse_url($menuUrl, PHP_URL_PATH);
-                $targetKey = basename((string) $path) === 'extending.php' ? 5 : (int) $key;
-                $childNodes[$targetKey] = array_merge($childNodes[$targetKey] ?? [], [$child]);
-            }
+            $targetKey = isset($parentNodes[$key]) ? (int) $key : 5;
+            $childNodes[$targetKey] = array_merge($childNodes[$targetKey] ?? [], $val);
         }
 
         foreach ($parentNodes as $key => $parentNode) {
