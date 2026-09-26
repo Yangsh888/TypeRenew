@@ -237,7 +237,7 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
         echo false !== $more && false !== strpos((string) $this->text, '<!--more-->') ?
             $this->excerpt
             . '<p class="more"><a href="' . htmlspecialchars($this->permalink, ENT_QUOTES, 'UTF-8') . '" title="'
-            . htmlspecialchars($this->title, ENT_QUOTES, 'UTF-8') . '">' . htmlspecialchars($more, ENT_QUOTES, 'UTF-8') . '</a></p>'
+            . htmlspecialchars($this->title, ENT_QUOTES, 'UTF-8', false) . '">' . $more . '</a></p>'
             : $this->content;
     }
 

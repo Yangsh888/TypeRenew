@@ -44,11 +44,11 @@ class Archive extends Contents
 
     private Router\ParamsDelegateInterface $pageRow;
 
-    private string $archiveFeedUrl;
+    private string $archiveFeedUrl = '';
 
-    private string $archiveFeedRssUrl;
+    private string $archiveFeedRssUrl = '';
 
-    private string $archiveFeedAtomUrl;
+    private string $archiveFeedAtomUrl = '';
 
     private ?string $archiveKeywords = null;
 
@@ -247,6 +247,11 @@ class Archive extends Contents
         return $this->getCurrentPage();
     }
 
+    public function ____currentPage(): int
+    {
+        return $this->getCurrentPage();
+    }
+
     public function getTotalPage(): int
     {
         $pageSize = max(1, (int) $this->parameter->pageSize);
@@ -408,14 +413,10 @@ class Archive extends Contents
         self::pluginHandle()->call('handleInit', $this, $select);
 
         $functionsFile = $this->themeDir . 'functions.php';
-        if (
-            (!$this->invokeFromOutside || $this->parameter->type == 404 || $this->parameter->preview)
-            && file_exists($functionsFile)
-        ) {
+        $loadTheme = (!$this->invokeFromOutside || $this->parameter->type == 404 || $this->parameter->preview)
+            && file_exists($functionsFile);
+        if ($loadTheme) {
             require_once $functionsFile;
-            if (function_exists('themeInit')) {
-                themeInit($this);
-            }
         }
 
         if (isset($handles[$this->parameter->type])) {
@@ -423,6 +424,10 @@ class Archive extends Contents
             $this->{$handle}($select, $hasPushed);
         } else {
             $hasPushed = self::pluginHandle()->call('handle', $this->parameter->type, $this, $select);
+        }
+
+        if ($loadTheme && function_exists('themeInit')) {
+            themeInit($this);
         }
 
         if ($hasPushed) {
@@ -919,7 +924,7 @@ EOF;
                 $define = $defines[$this->archiveType];
             }
 
-            echo $before . sprintf($define, htmlspecialchars($this->archiveTitle, ENT_QUOTES, 'UTF-8')) . $end;
+            echo $before . sprintf($define, htmlspecialchars($this->archiveTitle, ENT_QUOTES, 'UTF-8', false)) . $end;
         }
     }
 

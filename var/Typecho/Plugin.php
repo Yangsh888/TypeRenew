@@ -425,7 +425,7 @@ class Plugin
         $result = $value;
 
         foreach (self::$plugin['handles'][$componentKey] as $callback) {
-            $currentArgs = array_merge([$result], $args);
+            $currentArgs = array_merge([$result], $args, [$result]);
             $result = call_user_func_array($callback, $currentArgs);
         }
 

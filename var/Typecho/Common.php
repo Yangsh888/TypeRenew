@@ -122,7 +122,7 @@ namespace Typecho {
 
         public static function jsonEncode($value, int $flags = 0, string $fallback = 'null'): string
         {
-            $json = json_encode($value, $flags);
+            $json = json_encode($value, $flags | JSON_UNESCAPED_UNICODE);
             return is_string($json) ? $json : $fallback;
         }
 
