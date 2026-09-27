@@ -40,7 +40,7 @@ class Archive extends Contents
 
     private bool $invokeByFeed = false;
 
-    private int $currentPage;
+    private int $currentPage = 1;
 
     private Router\ParamsDelegateInterface $pageRow;
 
@@ -64,7 +64,7 @@ class Archive extends Contents
 
     private bool $makeSinglePageAsFrontPage = false;
 
-    private string $archiveSlug;
+    private ?string $archiveSlug = null;
 
     protected function initParameter(Config $parameter)
     {

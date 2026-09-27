@@ -210,6 +210,8 @@ class Upload extends Contents implements ActionInterface
             throw new \RuntimeException(_t('没有选择任何附件文件'));
         }
 
+        self::pluginHandle()->call('beforeModifyHandle', $content, $file);
+
         $result = self::pluginHandle()->trigger($hasModified)->call('modifyHandle', $content, $file);
         if ($hasModified) {
             return $result;
@@ -435,6 +437,8 @@ class Upload extends Contents implements ActionInterface
         if (empty($file['name'])) {
             throw new \RuntimeException(_t('没有选择任何附件文件'));
         }
+
+        self::pluginHandle()->call('beforeUploadHandle', $file);
 
         $result = self::pluginHandle()->trigger($hasUploaded)->call('uploadHandle', $file);
         if ($hasUploaded) {
