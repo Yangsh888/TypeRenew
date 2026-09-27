@@ -250,7 +250,8 @@ class Edit extends Contents implements ActionInterface
             $draft = $this->db->fetchRow($this->revisionSelect((int) $post));
 
             if ($draft) {
-                $this->unAttach($draft['cid']);
+                $this->db->query($this->db->update('table.contents')->rows(['parent' => $post])
+                    ->where('parent = ? AND type = ?', $draft['cid'], 'attachment'));
                 $this->deleteContent($draft['cid']);
                 $this->deleteFields($draft['cid']);
                 $deleteCount++;

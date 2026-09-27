@@ -492,40 +492,16 @@ trait EditTrait
     protected function attach(int $cid, array $contents = [])
     {
         $attachments = !empty($contents['attachment']) ? $contents['attachment'] : $this->request->getArray('attachment');
-        if (!empty($attachments) && is_array($attachments)) {
-            foreach ($attachments as $key => $attachment) {
-                $attachmentCid = intval($attachment);
-                if ($attachmentCid <= 0) {
-                    continue;
-                }
-                if (!$this->canWriteAttachment($attachmentCid)) {
-                    continue;
-                }
-                $this->db->query($this->db->update('table.contents')->rows([
-                    'parent' => $cid,
-                    'status' => 'publish',
-                    'order'  => $key + 1
-                ])->where('cid = ? AND type = ?', $attachmentCid, 'attachment'));
+        foreach ($attachments as $key => $attachment) {
+            $attachmentCid = intval($attachment);
+            if ($attachmentCid <= 0 || !$this->canWriteAttachment($attachmentCid)) {
+                continue;
             }
-        }
-
-        $attachUnattached = !empty($contents['attachUnattached']) || $this->request->get('attachUnattached');
-        if ($attachUnattached) {
-            $authorId = $this->user->uid;
             $this->db->query($this->db->update('table.contents')->rows([
                 'parent' => $cid,
-                'status' => 'publish'
-            ])->where('parent = 0 AND type = ? AND authorId = ?', 'attachment', $authorId)
-                ->limit(100));
-        }
-        
-        if (!empty($contents['oldCid']) && $contents['oldCid'] != $cid) {
-            $oldCid = intval($contents['oldCid']);
-            $authorId = $this->user->uid;
-            $this->db->query($this->db->update('table.contents')->rows([
-                'parent' => $cid,
-                'status' => 'publish'
-            ])->where('parent = ? AND type = ? AND authorId = ?', $oldCid, 'attachment', $authorId));
+                'status' => 'publish',
+                'order'  => $key + 1
+            ])->where('cid = ? AND type = ?', $attachmentCid, 'attachment'));
         }
     }
 
@@ -669,7 +645,7 @@ trait EditTrait
                 }
             }
 
-            $this->attach($realId, $contents);
+            $this->attach($this->cid ?: $realId, $contents);
 
             $this->applyFields($this->getFields(), $realId);
 
@@ -753,12 +729,6 @@ trait EditTrait
             }
         }
 
-        if (empty($this->cid)) {
-            $contents['attachUnattached'] = true;
-        } else {
-            $contents['oldCid'] = $this->cid;
-        }
-
         if ($this->request->is('markdown=1')) {
             $contents['text'] = '<!--markdown-->' . (string) ($contents['text'] ?? '');
         }
@@ -773,7 +743,7 @@ trait EditTrait
         if ($this->request->isAjax()) {
             $this->response->throwJson([
                 'success' => 1,
-                'time' => date('H:i:s A', (int) $this->options->time),
+                'time' => $this->options->formatDateTime((int) $this->options->time, 'H:i:s A'),
                 'cid' => $this->cid,
                 'draftId' => $draftId
             ]);
