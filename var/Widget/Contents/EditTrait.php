@@ -362,7 +362,6 @@ trait EditTrait
             $created = 0;
         }
 
-        // MySQL 驱动的整型列取出来是字符串, 统一收口避免返回类型报错
         return (int) $created;
     }
 
@@ -370,12 +369,6 @@ trait EditTrait
     {
         $created = $created ?? (int) ($this->created ?? 0);
         return $created > 0 && $created > (int) $this->options->time;
-    }
-
-    protected function isCountablePublishedPost(?string $status, ?int $created): bool
-    {
-        return $status === 'publish'
-            && (int) ($created ?? 0) <= (int) $this->options->time;
     }
 
     public function getAdminPreviewUrl(?int $cid = null): string
@@ -521,12 +514,11 @@ trait EditTrait
 
         $isDraftToPublish = false;
         $isBeforePublish = false;
-        $isAfterPublish = $this->isCountablePublishedPost($contents['status'] ?? null, (int) ($contents['created'] ?? 0));
+        $isAfterPublish = 'publish' === ($contents['status'] ?? null);
 
         if ($this->have()) {
             $isDraftToPublish = preg_match("/_draft$/", $this->type);
-            $isBeforePublish = !$isDraftToPublish
-                && $this->isCountablePublishedPost((string) ($this->status ?? ''), (int) ($this->created ?? 0));
+            $isBeforePublish = !$isDraftToPublish && 'publish' === $this->status;
 
             if (!$isDraftToPublish && $this->draft) {
                 $draftCid = $this->draft['cid'];

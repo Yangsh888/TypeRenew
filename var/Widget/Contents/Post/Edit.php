@@ -128,15 +128,17 @@ class Edit extends Contents implements ActionInterface
                 $isDraftToPublish = $status == 'publish' && $postObject->type == 'post_draft';
                 if ($isDraftToPublish) {
                     $rows['type'] = 'post';
+                    if ((int) $postObject->created <= 0) {
+                        $rows['created'] = $this->options->time;
+                    }
                 }
 
                 $this->db->query($condition->update('table.contents')->rows($rows));
 
                 if ($postObject->type == 'post' || $isDraftToPublish) {
                     $op = null;
-                    $beforeCountable = $postObject->type == 'post'
-                        && $this->isCountablePublishedPost((string) $postObject->status, (int) ($postObject->created ?? 0));
-                    $afterCountable = $this->isCountablePublishedPost($status, (int) ($postObject->created ?? 0));
+                    $beforeCountable = $postObject->type == 'post' && $postObject->status == 'publish';
+                    $afterCountable = $status == 'publish';
 
                     if ($afterCountable && !$beforeCountable) {
                         $op = '+';
@@ -195,8 +197,7 @@ class Edit extends Contents implements ActionInterface
                 ->from('table.contents')->where('cid = ? AND (type = ? OR type = ?)', $post, 'post', 'post_draft'));
 
             if ($this->isWriteable(clone $condition) && count((array)$postObject) && $this->delete($condition)) {
-                $isCountable = 'post' == $postObject->type
-                    && $this->isCountablePublishedPost((string) $postObject->status, (int) ($postObject->created ?? 0));
+                $isCountable = 'post' == $postObject->type && 'publish' == $postObject->status;
                 $this->setCategories($post, [], $isCountable);
 
                 $this->setTags($post, null, $isCountable);

@@ -103,13 +103,8 @@ trait EditTrait
             ->join('table.relationships', 'table.contents.cid = table.relationships.cid')
             ->where('table.relationships.mid IN ?', $mids)
             ->where('table.contents.type = ?', $type)
-            ->where('table.contents.status = ?', $status);
-
-        if ($status === 'publish') {
-            $select->where('table.contents.created < ?', $this->options->time);
-        }
-
-        $select->group('table.relationships.mid');
+            ->where('table.contents.status = ?', $status)
+            ->group('table.relationships.mid');
 
         $counts = array_fill_keys($mids, 0);
         foreach ($this->db->fetchAll($select) as $row) {
