@@ -247,6 +247,9 @@ class General extends Options implements ActionInterface
             'lang',
             'timezoneId'
         );
+        if (!isset(self::getLangs()[$settings['lang'] ?? ''])) {
+            unset($settings['lang']);
+        }
         $settings['attachmentTypes'] = $this->request->getArray('attachmentTypes');
         $settings['timezoneId'] = (string) ($settings['timezoneId'] ?? '');
         $settings['ipSource'] = $this->resolveIpSourceInput();

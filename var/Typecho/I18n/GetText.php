@@ -151,7 +151,7 @@ class GetText
         }
 
         $list = explode(chr(0), $result);
-        return $list[$select] ?? '';
+        return $list[$select] ?? $list[count($list) - 1];
     }
 
     public function __destruct()
@@ -199,11 +199,14 @@ class GetText
         $this->table_translations = $this->readIntArray($this->total * 2);
 
         if ($this->enable_cache) {
-            $this->cache_translations = ['' => null];
+            $this->cache_translations = [];
             for ($i = 0; $i < $this->total; $i++) {
-                if ($this->table_originals[$i * 2 + 1] > 0 && $this->table_translations[$i * 2 + 1] > 0) {
-                    fseek($this->STREAM, $this->table_originals[$i * 2 + 2]);
-                    $original = fread($this->STREAM, $this->table_originals[$i * 2 + 1]);
+                if ($this->table_translations[$i * 2 + 1] > 0) {
+                    $original = '';
+                    if ($this->table_originals[$i * 2 + 1] > 0) {
+                        fseek($this->STREAM, $this->table_originals[$i * 2 + 2]);
+                        $original = fread($this->STREAM, $this->table_originals[$i * 2 + 1]);
+                    }
                     fseek($this->STREAM, $this->table_translations[$i * 2 + 2]);
                     $translation = fread($this->STREAM, $this->table_translations[$i * 2 + 1]);
                     $this->cache_translations[$original] = $translation;
@@ -563,12 +566,12 @@ class GetText
 
         if (!is_string($this->pluralHeader)) {
             if ($this->enable_cache) {
-                $header = $this->cache_translations[""];
+                $header = $this->cache_translations[""] ?? null;
             } else {
                 $header = $this->getTranslationString(0);
             }
-            
-            if (!is_null($header) && preg_match("/plural\-forms: ([^\n]*)\n/i", $header, $regs)) {
+
+            if (is_string($header) && preg_match('/plural-forms:\s*([^\n]*)/i', $header, $regs)) {
                 $expr = $regs[1];
             } else {
                 $expr = "nplurals=2; plural=n == 1 ? 0 : 1;";
