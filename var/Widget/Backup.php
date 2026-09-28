@@ -165,9 +165,10 @@ class Backup extends BaseOptions implements ActionInterface
         }
 
         $host = (string) (parse_url($this->options->siteUrl, PHP_URL_HOST) ?: 'site');
+        $host = preg_replace('/[^a-z0-9.-]+/i', '-', $host) ?: 'site';
         $this->response->setContentType('application/octet-stream');
         $this->response->setHeader('Content-Disposition', 'attachment; filename="'
-            . date('Ymd') . '_' . $host . '_' . uniqid() . '.dat"');
+            . (new \Typecho\Date())->format('Ymd') . '_' . $host . '_' . bin2hex(Common::secureRandomBytes(8)) . '.dat"');
 
         try {
             $this->writeBackupFile($fp);
@@ -685,7 +686,7 @@ class Backup extends BaseOptions implements ActionInterface
 
     private function makeSnapshot(): ?string
     {
-        $fileName = date('Ymd_His') . '_before_import_' . bin2hex(Common::secureRandomBytes(8)) . '.dat';
+        $fileName = (new \Typecho\Date())->format('Ymd_His') . '_before_import_' . bin2hex(Common::secureRandomBytes(8)) . '.dat';
         $path = __TYPECHO_BACKUP_DIR__ . '/' . $fileName;
         if (!is_dir(__TYPECHO_BACKUP_DIR__) || !is_writable(__TYPECHO_BACKUP_DIR__)) {
             return null;
