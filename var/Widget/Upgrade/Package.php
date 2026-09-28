@@ -74,7 +74,7 @@ class Package extends BaseOptions implements ActionInterface
             );
         }
 
-        $allowInstall = empty($this->request->get('allowInstall')) ? false : null;
+        $allowInstall = $this->request->get('allowInstall') === '1';
         $state = $runner->saveUpload($file, $allowInstall);
         $manifest = $state['manifest'] ?? [];
         $from = (string) ($manifest['from'] ?? '');

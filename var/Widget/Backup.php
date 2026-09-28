@@ -17,6 +17,10 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
 
 class Backup extends BaseOptions implements ActionInterface
 {
+    private const MAX_IMPORT_BYTES = 524288000;
+    private const MAX_IMPORT_RECORDS = 200000;
+    private const MAX_IMPORT_FIELD_BYTES = 16777216;
+    private const MAX_IMPORT_PLUGIN_BYTES = 67108864;
     public const HEADER = '%TYPECHO_BACKUP_XXXX%';
     public const HEADER_VERSION = '0001';
     private const REPORT_SESSION_KEY = '__typecho_backup_report';
@@ -419,6 +423,11 @@ class Backup extends BaseOptions implements ActionInterface
         }
 
         $fileSize = filesize($file);
+        if ($fileSize === false || $fileSize <= 0 || $fileSize > self::MAX_IMPORT_BYTES) {
+            fclose($fp);
+            throw new Exception(_t('备份文件大小超出限制'));
+        }
+
         $headerSize = strlen(self::HEADER);
         if ($fileSize < $headerSize) {
             fclose($fp);
@@ -461,6 +470,8 @@ class Backup extends BaseOptions implements ActionInterface
 
         $contentCids = [];
         $commentCids = [];
+        $recordCount = 0;
+        $pluginBytes = 0;
 
         fseek($fp, $headerSize);
         $offset = $headerSize;
@@ -470,6 +481,11 @@ class Backup extends BaseOptions implements ActionInterface
             if (!$data) {
                 fclose($fp);
                 throw new Exception(_t('恢复数据出现错误'));
+            }
+
+            if (++$recordCount > self::MAX_IMPORT_RECORDS || $offset > $fileSize - $headerSize) {
+                fclose($fp);
+                throw new Exception(_t('备份文件格式错误'));
             }
 
             [$type, $header, $body] = $data;
@@ -485,8 +501,16 @@ class Backup extends BaseOptions implements ActionInterface
                 $record = [];
                 $cursor = 0;
                 foreach ($schema as $key => $val) {
-                    $record[$key] = null === $val ? null : substr($body, $cursor, (int) $val);
-                    $cursor += (int) $val;
+                    if (!is_string($key) || ($val !== null && (!is_int($val) || $val < 0 || $val > self::MAX_IMPORT_FIELD_BYTES || $cursor + $val > strlen($body)))) {
+                        fclose($fp);
+                        throw new Exception(_t('备份文件格式错误'));
+                    }
+                    $record[$key] = $val === null ? null : substr($body, $cursor, $val);
+                    $cursor += $val ?? 0;
+                }
+                if ($cursor !== strlen($body)) {
+                    fclose($fp);
+                    throw new Exception(_t('备份文件格式错误'));
                 }
 
                 $record = $this->applyFields($table, $record, false);
@@ -519,10 +543,19 @@ class Backup extends BaseOptions implements ActionInterface
                     $payload['summary']['adminUsers']++;
                 }
             } else {
+                $pluginBytes += strlen($header) + strlen($body);
+                if ($pluginBytes > self::MAX_IMPORT_PLUGIN_BYTES) {
+                    fclose($fp);
+                    throw new Exception(_t('备份文件格式错误'));
+                }
                 $payload['plugins'][] = [$type, $header, $body];
             }
         }
 
+        if ($offset !== $fileSize - $headerSize) {
+            fclose($fp);
+            throw new Exception(_t('备份文件格式错误'));
+        }
         fclose($fp);
 
         $orphanCids = [];
@@ -591,7 +624,7 @@ class Backup extends BaseOptions implements ActionInterface
             return false;
         }
 
-        if (!preg_match("/%TYPECHO_BACKUP_[A-Z0-9]{4}%/", $str)) {
+        if (!preg_match('/^%TYPECHO_BACKUP_(0001|FILE)%$/D', $str)) {
             return false;
         }
 
