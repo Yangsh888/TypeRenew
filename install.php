@@ -76,7 +76,9 @@ function install_register_exception_handler(): void
             http_response_code(500);
         }
 
-        echo '<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><title>500</title></head><body><div>'
+        $lang = class_exists('\Typecho\I18n', false) ? basename((string) (\Typecho\I18n::getLang() ?? 'zh_CN'), '.mo') : 'zh_CN';
+        $lang = preg_match('/^[A-Za-z0-9_-]+$/', $lang) ? str_replace('_', '-', $lang) : 'zh-CN';
+        echo '<!DOCTYPE html><html lang="' . $lang . '"><head><meta charset="UTF-8"><title>500</title></head><body><div>'
             . htmlspecialchars($message, ENT_QUOTES, 'UTF-8')
             . '</div></body></html>';
         exit(1);

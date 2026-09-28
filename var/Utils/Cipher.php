@@ -10,7 +10,8 @@ class Cipher
 {
     private const CIPHER = 'aes-256-gcm';
     private const TAG_LENGTH = 16;
-    private const MARKER = 'enc:v1:';
+    private const MARKER = 'enc:v2:';
+    private const LEGACY_MARKER = 'enc:v1:';
 
     public static function encrypt(string $plaintext, string $secret): string
     {
@@ -18,11 +19,9 @@ class Cipher
             return '';
         }
 
-        $key = self::deriveKey($secret);
         $iv = random_bytes(12);
-
         $tag = '';
-        $ciphertext = openssl_encrypt($plaintext, self::CIPHER, $key, OPENSSL_RAW_DATA, $iv, $tag, '', self::TAG_LENGTH);
+        $ciphertext = openssl_encrypt($plaintext, self::CIPHER, self::key($secret), OPENSSL_RAW_DATA, $iv, $tag, '', self::TAG_LENGTH);
 
         if ($ciphertext === false) {
             return '';
@@ -37,7 +36,11 @@ class Cipher
             return '';
         }
 
-        if (!str_starts_with($ciphertext, self::MARKER)) {
+        if (str_starts_with($ciphertext, self::MARKER)) {
+            $key = self::key($secret);
+        } elseif (str_starts_with($ciphertext, self::LEGACY_MARKER)) {
+            $key = self::legacyKey($secret);
+        } else {
             return $ciphertext;
         }
 
@@ -46,27 +49,22 @@ class Cipher
             return '';
         }
 
-        $key = self::deriveKey($secret);
-        $iv = substr($data, 0, 12);
-        $tag = substr($data, 12, self::TAG_LENGTH);
-        $encrypted = substr($data, 28);
-
-        $decrypted = openssl_decrypt($encrypted, self::CIPHER, $key, OPENSSL_RAW_DATA, $iv, $tag);
+        $decrypted = openssl_decrypt(substr($data, 28), self::CIPHER, $key, OPENSSL_RAW_DATA, substr($data, 0, 12), substr($data, 12, self::TAG_LENGTH));
 
         return $decrypted === false ? '' : $decrypted;
     }
 
-    private static function deriveKey(string $secret): string
+    private static function key(string $secret): string
+    {
+        return hash_hkdf('sha256', $secret, 32, 'typerenew:cipher:v2');
+    }
+
+    private static function legacyKey(string $secret): string
     {
         static $keys = [];
 
         $cacheKey = hash('sha256', $secret);
 
-        if (!isset($keys[$cacheKey])) {
-            $salt = 'typerenew:v1:' . $cacheKey;
-            $keys[$cacheKey] = hash_pbkdf2('sha256', $secret, $salt, 60000, 32, true);
-        }
-
-        return $keys[$cacheKey];
+        return $keys[$cacheKey] ??= hash_pbkdf2('sha256', $secret, 'typerenew:v1:' . $cacheKey, 60000, 32, true);
     }
 }

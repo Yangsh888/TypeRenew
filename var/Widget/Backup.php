@@ -383,7 +383,7 @@ class Backup extends BaseOptions implements ActionInterface
                 return $tmp;
             }
 
-            return $this->failAndFinish(Common::uploadErrorMessage($error, '备份文件上传'));
+            return $this->failAndFinish(Common::uploadErrorMessage($error, _t('备份文件上传')));
         }
 
         if (!$this->request->is('file')) {

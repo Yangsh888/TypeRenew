@@ -203,7 +203,7 @@ class Service extends BaseOptions implements ActionInterface
 
     private function getServiceUrl(string $do): string
     {
-        $url = Common::url('/action/service', $this->options->index);
+        $url = $this->options->canonicalUrl(Common::url('/action/service', $this->options->index));
 
         if (defined('__TYPECHO_SERVICE_URL__')) {
             $rootPath = rtrim((string) (parse_url($this->options->rootUrl, PHP_URL_PATH) ?: ''), '/');

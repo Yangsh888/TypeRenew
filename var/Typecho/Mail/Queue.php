@@ -228,7 +228,7 @@ class Queue
                         'token' => $token,
                         'ts' => $ts
                     ])
-                    ->send(Common::url('/action/mail?do=async', (string) $options->index));
+                    ->send($options->canonicalUrl(Common::url('/action/mail?do=async', (string) $options->index)));
 
                 $status = $client->getResponseStatus();
                 if ($status < 200 || $status >= 300) {

@@ -540,7 +540,7 @@ class Upload extends Contents implements ActionInterface
         }
 
         if ($error !== UPLOAD_ERR_OK || !is_uploaded_file((string) ($file['tmp_name'] ?? ''))) {
-            throw new \RuntimeException(Common::uploadErrorMessage($error, '附件上传', '没有选择任何附件文件'));
+            throw new \RuntimeException(Common::uploadErrorMessage($error, _t('附件上传'), _t('没有选择任何附件文件')));
         }
 
         return $file;

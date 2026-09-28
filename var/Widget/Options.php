@@ -237,6 +237,19 @@ class Options extends Base
         return $siteUrl;
     }
 
+    public function canonicalUrl(string $url): string
+    {
+        $origin = static fn(string $value): string => preg_match('#^[a-z][a-z0-9+.-]*://[^/?\#]+#i', $value, $m) ? $m[0] : '';
+        $root = $origin((string) $this->rootUrl);
+        $site = $origin((string) $this->siteUrl);
+
+        if ($root === '' || $site === '' || strcasecmp($root, $site) === 0 || strcasecmp($origin($url), $root) !== 0) {
+            return $url;
+        }
+
+        return $site . substr($url, strlen($root));
+    }
+
     protected function ___siteDomain(): string
     {
         return (string) (parse_url($this->siteUrl, PHP_URL_HOST) ?: '');

@@ -84,10 +84,7 @@ class Forgot extends Users implements ActionInterface
         $tokenHash = PasswordReset::hashToken($rawToken);
         $expires = time() + 1800;
 
-        $resetUrl = Common::url(
-            'reset.php?token=' . $rawToken,
-            $this->options->adminUrl
-        );
+        $resetUrl = $this->options->canonicalUrl(Common::url('reset.php?token=' . $rawToken, $this->options->adminUrl));
 
         $this->db->query('BEGIN');
 

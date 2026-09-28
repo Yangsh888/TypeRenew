@@ -36,7 +36,7 @@ class Template
     public static function render(string $name, array $vars, Options $options): string
     {
         $content = self::load($name, $options);
-        return self::replace($content, $vars);
+        return self::replace($content, $vars, $options);
     }
 
     public static function load(string $name, Options $options): string
@@ -151,8 +151,13 @@ class Template
         return $name;
     }
 
-    private static function replace(string $content, array $vars): string
+    private static function replace(string $content, array $vars, Options $options): string
     {
+        $vars['lang'] ??= str_replace('_', '-', (string) ($options->lang ?? 'zh_CN'));
+        $content = (string) preg_replace_callback('/\{_:([^{}]+)\}/u', static function (array $matches): string {
+            return htmlspecialchars(_t($matches[1]), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        }, $content);
+
         return (string) preg_replace_callback('/\{(raw:)?([a-zA-Z0-9_]+)\}/', static function (array $matches) use ($vars): string {
             $isRaw = !empty($matches[1]);
             $key = (string) ($matches[2] ?? '');

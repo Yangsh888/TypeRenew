@@ -194,6 +194,8 @@ namespace Typecho {
             }
 
             $message = nl2br(htmlspecialchars($message, ENT_QUOTES, 'UTF-8'));
+            $lang = str_replace('_', '-', basename((string) (I18n::getLang() ?? 'zh_CN'), '.mo'));
+            $lang = preg_match('/^[A-Za-z0-9-]+$/', $lang) ? $lang : 'zh-CN';
 
             if (defined('__TYPECHO_EXCEPTION_FILE__')) {
                 require_once __TYPECHO_EXCEPTION_FILE__;
@@ -201,7 +203,7 @@ namespace Typecho {
                 echo
                 <<<EOF
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{$lang}">
     <head>
         <meta charset="UTF-8">
         <title>{$code}</title>
@@ -213,14 +215,13 @@ namespace Typecho {
                 color: #666;
                 background: #F6F6F3;
                 -webkit-text-size-adjust: 100%;
-                -ms-text-size-adjust: 100%;
+                text-size-adjust: 100%;
             }
 
             html,
-            input { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; }
+            input { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif; }
             body {
                 max-width: 500px;
-                _width: 500px;
                 padding: 30px 20px;
                 margin: 0 auto;
                 background: #FFF;
@@ -230,7 +231,6 @@ namespace Typecho {
             }
             .container {
                 max-width: 380px;
-                _width: 380px;
                 margin: 0 auto;
             }
         </style>
@@ -753,7 +753,12 @@ EOF;
             [$type, $headerLen, $bodyLen]
                 = array_values(unpack($version == 'FILE' ? 'v3' : 'v1type/v1headerLen/V1bodyLen', $meta));
 
-            $header = fread($fp, $headerLen);
+            $stat = fstat($fp);
+            if (!is_array($stat) || !isset($stat['size']) || $headerLen > $stat['size'] - $offset - 32) {
+                return false;
+            }
+
+            $header = $headerLen > 0 ? fread($fp, $headerLen) : '';
             $offset += $headerLen;
 
             if (false === $header || strlen($header) != $headerLen) {
@@ -766,12 +771,19 @@ EOF;
                     return false;
                 }
 
-                $bodyLen = array_reduce($headerMap, function ($carry, $len) {
-                    return null === $len ? $carry : $carry + $len;
-                }, 0);
+                $bodyLen = 0;
+                foreach ($headerMap as $len) {
+                    if ($len !== null && (!is_int($len) || $len < 0)) {
+                        return false;
+                    }
+                    $bodyLen += $len ?? 0;
+                }
             }
 
-            $body = fread($fp, $bodyLen);
+            if ($bodyLen < 0 || $bodyLen > $stat['size'] - $offset - 32) {
+                return false;
+            }
+            $body = $bodyLen > 0 ? fread($fp, $bodyLen) : '';
             $offset += $bodyLen;
 
             if (false === $body || strlen($body) != $bodyLen) {

@@ -179,7 +179,8 @@ class Mail extends BaseOptions implements ActionInterface
                 . $escapedMask . '</p>';
         }
 
-        $html = '<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>'
+        $lang = htmlspecialchars(str_replace('_', '-', (string) ($this->options->lang ?? 'zh_CN')), ENT_QUOTES, 'UTF-8');
+        $html = '<!DOCTYPE html><html lang="' . $lang . '"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>'
             . $escapedTitle . '</title></head><body style="margin:0;padding:40px 16px;background:#f4f5f2;color:#202420;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,PingFang SC,Microsoft YaHei,sans-serif;">'
             . '<main style="box-sizing:border-box;max-width:560px;margin:0 auto;background:#fff;border:1px solid #dedfdc;border-radius:8px;padding:24px;">'
             . '<h1 style="margin:0;font-size:20px;line-height:1.4;">' . $escapedTitle . '</h1>'

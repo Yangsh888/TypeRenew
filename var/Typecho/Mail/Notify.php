@@ -214,8 +214,7 @@ class Notify
         }
 
         $siteUrl = (string) ($options->siteUrl ?? '');
-        $adminUrl = (string) ($options->adminUrl ?? '');
-        $manageUrl = $adminUrl !== '' ? $adminUrl . 'manage-comments.php' : '';
+        $manageUrl = $options->canonicalUrl(Common::url('manage-comments.php', (string) $options->adminUrl));
         $postAuthor = '';
         try {
             $post = Helper::widgetById('Contents', (int) ($comment->cid ?? 0));
@@ -242,7 +241,7 @@ class Notify
             'author' => (string) ($comment->author ?? ''),
             'mail' => (string) ($comment->mail ?? ''),
             'ip' => (string) ($comment->ip ?? ''),
-            'permalink' => (string) ($comment->permalink ?? ''),
+            'permalink' => $options->canonicalUrl((string) ($comment->permalink ?? '')),
             'siteUrl' => $siteUrl,
             'siteTitle' => (string) ($options->title ?? ''),
             'Pname' => $parentName,
@@ -340,7 +339,7 @@ class Notify
         $payload = 'v2|' . $email . '|' . $scope . '|' . $ts;
         $sig = hash_hmac('sha256', $payload, (string) ($options->secret ?? ''), true);
         $token = rtrim(strtr(base64_encode($payload . '|' . base64_encode($sig)), '+/', '-_'), '=');
-        return Common::url('/action/mail?do=unsub&token=' . rawurlencode($token), (string) $options->index);
+        return $options->canonicalUrl(Common::url('/action/mail?do=unsub&token=' . rawurlencode($token), (string) $options->index));
     }
 
     private static function settings(Options $options): array
