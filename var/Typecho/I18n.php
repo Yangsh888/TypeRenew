@@ -54,5 +54,6 @@ class I18n
     public static function setLang(string $lang)
     {
         self::$lang = $lang;
+        self::$loaded = null;
     }
 }

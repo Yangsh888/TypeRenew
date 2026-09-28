@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: TypeRenew 1.6.0\n"
+"Project-Id-Version: TypeRenew 1.6.1\n"
 "Report-Msgid-Bugs-To: https://github.com/Yangsh888/TypeRenew/issues\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -16,15 +16,139 @@ msgstr ""
 msgid "%d 条评论"
 msgstr ""
 
-#: var/Widget/Archive.php:1466
+#: var/Widget/Archive.php:1470
 msgid "%d年"
 msgstr ""
 
-#: var/Widget/Archive.php:1462
+#: admin/auth.php:15 admin/forgot.php:20 admin/reset.php:41
+msgid "© %s TypeRenew Team"
+msgstr ""
+
+#: var/Widget/Backup.php:428
+msgid "备份文件大小超出限制"
+msgstr ""
+
+#: var/Widget/Backup.php:386
+msgid "备份文件上传"
+msgstr ""
+
+#: var/Typecho/Cache.php:77
+msgid "不支持的缓存驱动：%s"
+msgstr ""
+
+#: var/Typecho/Mail/tpl/guest.html:23
+msgid "查看回复"
+msgstr ""
+
+#: var/Typecho/Mail/tpl/owner.html:25
+msgid "查看评论"
+msgstr ""
+
+#: var/Widget/Options/General.php:206
+msgid "当前未在 config.inc.php 中定义 %s，除 REMOTE_ADDR 外的来源不会生效。"
+msgstr ""
+
+#: var/Widget/Upload.php:543
+msgid "附件上传"
+msgstr ""
+
+#: var/Typecho/Mail/tpl/owner.html:26
+msgid "后台管理"
+msgstr ""
+
+#: var/Typecho/Mail/tpl/guest.html:17
+msgid "回复者："
+msgstr ""
+
+#: var/Typecho/Mail/tpl/reset.html:22
+msgid "链接有效期至："
+msgstr ""
+
+#: var/Typecho/Mail/tpl/guest.html:13
+msgid "你的评论收到了新回复"
+msgstr ""
+
+#: var/Typecho/Mail/tpl/owner.html:13
+msgid "你的文章有了新评论"
+msgstr ""
+
+#: var/Typecho/Mail/tpl/guest.html:18
+msgid "你的原评论："
+msgstr ""
+
+#: var/Typecho/Mail/tpl/notice.html:17 var/Typecho/Mail/tpl/owner.html:17
+msgid "评论者："
+msgstr ""
+
+#: var/Typecho/Mail/tpl/notice.html:25
+msgid "去后台审核"
+msgstr ""
+
+#: var/Typecho/Mail/tpl/reset.html:25
+msgid "若按钮不可用，请复制链接访问："
+msgstr ""
+
+#: var/Typecho/Upgrade/Manifest.php:58
+msgid "升级包安装标记格式无效"
+msgstr ""
+
+#: var/Typecho/Upgrade/Manifest.php:52
+msgid "升级包清单字段格式无效"
+msgstr ""
+
+#: var/Typecho/Upgrade/Manifest.php:40
+msgid "升级包文件路径格式无效"
+msgstr ""
+
+#: var/Typecho/Mail/tpl/notice.html:20 var/Typecho/Mail/tpl/owner.html:20
+msgid "时间："
+msgstr ""
+
+#: admin/options-mail.php:224
+msgid "使用 {_:文本} 可按站点语言翻译固定文案，{lang} 输出当前语言代码"
+msgstr ""
+
+#: var/Typecho/Common.php:178
+msgid "数据库服务器错误"
+msgstr ""
+
+#: var/Typecho/Mail/tpl/notice.html:28
+msgid "退订待审提醒"
+msgstr ""
+
+#: var/Typecho/Mail/tpl/guest.html:24
+msgid "退订回复通知"
+msgstr ""
+
+#: var/Typecho/Mail/tpl/owner.html:29
+msgid "退订作者通知"
+msgstr ""
+
+#: var/Typecho/Mail/tpl/guest.html:16 var/Typecho/Mail/tpl/notice.html:16 var/Typecho/Mail/tpl/owner.html:16
+msgid "文章："
+msgstr ""
+
+#: var/Typecho/Mail/tpl/reset.html:16
+msgid "我们收到了账号密码重置请求，如非本人操作，请忽略本邮件。"
+msgstr ""
+
+#: var/Typecho/Common.php:182
+msgid "无法连接到数据库"
+msgstr ""
+
+#: var/Typecho/Common.php:184
+msgid "数据库查询错误"
+msgstr ""
+
+#: var/Typecho/Common.php:189
+msgid "服务器错误"
+msgstr ""
+
+#: var/Widget/Archive.php:1466
 msgid "%d年%d月"
 msgstr ""
 
-#: var/Widget/Archive.php:1458
+#: var/Widget/Archive.php:1462
 msgid "%d年%d月%d日"
 msgstr ""
 
@@ -44,7 +168,7 @@ msgstr ""
 msgid "%s 无法在此版本的typecho下正常工作"
 msgstr ""
 
-#: var/Widget/Feed.php:103
+#: var/Widget/Feed.php:102
 msgid "%s 的评论"
 msgstr ""
 
@@ -100,9 +224,7 @@ msgstr ""
 msgid "&laquo;"
 msgstr ""
 
-#: admin/manage-comments.php:75 admin/manage-medias.php:34
-#: admin/manage-pages.php:39 admin/manage-posts.php:96
-#: admin/manage-users.php:29
+#: admin/manage-comments.php:75 admin/manage-medias.php:34 admin/manage-pages.php:39 admin/manage-posts.php:96 admin/manage-users.php:29
 msgid "&laquo; 取消筛选"
 msgstr ""
 
@@ -126,6 +248,22 @@ msgstr ""
 msgid "<a href=\"%s\">%s</a> 无法在此版本的typecho下正常工作"
 msgstr ""
 
+#: var/Typecho/Mail/tpl/guest.html:20
+msgid "新回复："
+msgstr ""
+
+#: var/Typecho/Mail/tpl/notice.html:13
+msgid "有一条评论待审核"
+msgstr ""
+
+#: var/Typecho/Mail/tpl/reset.html:17
+msgid "账号："
+msgstr ""
+
+#: var/Typecho/Mail/tpl/notice.html:22 var/Typecho/Mail/tpl/owner.html:22
+msgid "状态："
+msgstr ""
+
 #: var/Widget/Options/Permalink.php:50
 msgid "Apache 兼容回退规则"
 msgstr ""
@@ -142,7 +280,7 @@ msgstr ""
 msgid "Client-IP（通用代理）"
 msgstr ""
 
-#: usr/themes/default/comments.php:45
+#: usr/themes/default/comments.php:44
 msgid "Email"
 msgstr ""
 
@@ -158,12 +296,11 @@ msgstr ""
 msgid "GitHub 源码"
 msgstr ""
 
-#: admin/options-mail.php:193
+#: admin/options-mail.php:194
 msgid "ID"
 msgstr ""
 
-#: admin/custom-fields-js.php:29 admin/custom-fields.php:33
-#: admin/custom-fields.php:56
+#: admin/custom-fields-js.php:29 admin/custom-fields.php:33 admin/custom-fields.php:56
 msgid "JSON 结构"
 msgstr ""
 
@@ -175,11 +312,7 @@ msgstr ""
 msgid "Markdown语法帮助"
 msgstr ""
 
-#: var/Widget/Backup.php:124 var/Widget/Feedback.php:40
-#: var/Widget/Forgot.php:22 var/Widget/Login.php:20 var/Widget/Mail.php:83
-#: var/Widget/Metas/Category/Edit.php:446 var/Widget/Metas/Tag/Edit.php:276
-#: var/Widget/Register.php:22 var/Widget/Reset.php:21
-#: var/Widget/Service.php:301
+#: var/Widget/Backup.php:128 var/Widget/Feedback.php:40 var/Widget/Forgot.php:22 var/Widget/Login.php:20 var/Widget/Mail.php:83 var/Widget/Metas/Category/Edit.php:446 var/Widget/Metas/Tag/Edit.php:276 var/Widget/Register.php:22 var/Widget/Reset.php:21 var/Widget/Service.php:301
 msgid "Method Not Allowed"
 msgstr ""
 
@@ -187,7 +320,7 @@ msgstr ""
 msgid "MySQL 升级预检查"
 msgstr ""
 
-#: install.php:136
+#: install.php:138
 msgid "Mysql 原生函数适配器"
 msgstr ""
 
@@ -207,19 +340,19 @@ msgstr ""
 msgid "PHP redis 扩展未安装"
 msgstr ""
 
-#: install.php:124
+#: install.php:126
 msgid "Pdo 驱动 Mysql 适配器"
 msgstr ""
 
-#: install.php:132
+#: install.php:134
 msgid "Pdo 驱动 PostgreSql 适配器"
 msgstr ""
 
-#: install.php:128
+#: install.php:130
 msgid "Pdo 驱动 SQLite 适配器"
 msgstr ""
 
-#: install.php:144
+#: install.php:146
 msgid "Pgsql 原生函数适配器"
 msgstr ""
 
@@ -231,7 +364,7 @@ msgstr ""
 msgid "Pingback 接口已关闭"
 msgstr ""
 
-#: install.php:1106
+#: install.php:1108
 msgid "PostgreSQL 字符集仅支持 utf8"
 msgstr ""
 
@@ -291,31 +424,31 @@ msgstr ""
 msgid "SMTP 端口"
 msgstr ""
 
-#: install.php:140
+#: install.php:142
 msgid "SQLite 原生函数适配器"
 msgstr ""
 
-#: install.php:1117 install.php:1148
+#: install.php:1119 install.php:1150
 msgid "SQLite 数据库文件必须位于 usr 目录内"
 msgstr ""
 
-#: install.php:1095
+#: install.php:1097
 msgid "SSL CA 证书路径无效"
 msgstr ""
 
-#: install.php:1096 install.php:1108
+#: install.php:1098 install.php:1110
 msgid "SSL 校验选项无效"
 msgstr ""
 
-#: install.php:1599
+#: install.php:1601
 msgid "TypeRenew 安装程序"
 msgstr ""
 
-#: install.php:660
+#: install.php:662
 msgid "TypeRenew 由开源社区驱动维护，旨在继承 <a href=\"https://typecho.org/\">Typecho</a> 的轻量与优雅，并为其注入新的活力。"
 msgstr ""
 
-#: install.php:649
+#: install.php:651
 msgid "TypeRenew 脱胎于经典博客程序 <a href=\"https://typecho.org/\">Typecho</a>，完整继承其干净、克制、高效的内核基因，并优化对现代主流运行环境的适配，修复遗留的兼容性问题，原生集成更多实用特性，让跨越十余年的经典，在当下重焕新生。"
 msgstr ""
 
@@ -339,7 +472,7 @@ msgstr ""
 msgid "XML-RPC 已启用"
 msgstr ""
 
-#: var/Widget/Options/General.php:355
+#: var/Widget/Options/General.php:361
 msgid "XMLRPC 接口"
 msgstr ""
 
@@ -355,7 +488,7 @@ msgstr ""
 msgid "apcu 扩展已安装但未启用"
 msgstr ""
 
-#: var/Utils/Migration/SchemaManager.php:224
+#: var/Utils/Migration/SchemaManager.php:226
 msgid "contents 缩略名唯一值冲突"
 msgstr ""
 
@@ -375,15 +508,15 @@ msgstr ""
 msgid "jsDelivr 官方镜像"
 msgstr ""
 
-#: var/Widget/Options/General.php:364
+#: var/Widget/Options/General.php:370
 msgid "lang"
 msgstr ""
 
-#: var/Utils/Migration/SchemaManager.php:192
+#: var/Utils/Migration/SchemaManager.php:194
 msgid "mail_unsub 唯一值冲突"
 msgstr ""
 
-#: var/Utils/Migration/SchemaManager.php:179
+#: var/Utils/Migration/SchemaManager.php:181
 msgid "mail_unsub 排序规则"
 msgstr ""
 
@@ -395,11 +528,11 @@ msgstr ""
 msgid "sign = sha256_hmac(\"{ts}|deliver\", 投递密钥)"
 msgstr ""
 
-#: var/Utils/Migration/SchemaManager.php:240
+#: var/Utils/Migration/SchemaManager.php:242
 msgid "users 用户名唯一值冲突"
 msgstr ""
 
-#: var/Utils/Migration/SchemaManager.php:208
+#: var/Utils/Migration/SchemaManager.php:210
 msgid "users 邮箱唯一值冲突"
 msgstr ""
 
@@ -407,11 +540,7 @@ msgstr ""
 msgid "wordpress风格"
 msgstr ""
 
-#: var/Widget/Feed.php:58
-msgid "zh-CN"
-msgstr ""
-
-#: var/Widget/Options/General.php:357
+#: var/Widget/Options/General.php:363
 msgid "“仅关闭 Pingback 接口”可保留常规 XML-RPC，同时避免站点接收 Pingback"
 msgstr ""
 
@@ -491,7 +620,7 @@ msgstr ""
 msgid "上一篇"
 msgstr ""
 
-#: admin/upgrade.php:417 var/Typecho/Palette.php:195
+#: admin/upgrade.php:417 var/Typecho/Palette.php:199
 msgid "上传"
 msgstr ""
 
@@ -507,7 +636,7 @@ msgstr ""
 msgid "上传升级包并自动覆盖程序文件"
 msgstr ""
 
-#: var/Typecho/Palette.php:192
+#: var/Typecho/Palette.php:196
 msgid "上传媒体文件"
 msgstr ""
 
@@ -519,19 +648,19 @@ msgstr ""
 msgid "上传文件"
 msgstr ""
 
-#: var/Widget/Upload.php:514
+#: var/Widget/Upload.php:522
 msgid "上传文件内容与扩展名不一致"
 msgstr ""
 
-#: var/Widget/Upload.php:221
+#: var/Widget/Upload.php:223
 msgid "上传文件类型与原附件不一致"
 msgstr ""
 
-#: var/Widget/Upload.php:455
+#: var/Widget/Upload.php:463
 msgid "上传目录不可写，请检查上传目录权限"
 msgstr ""
 
-#: install.php:732
+#: install.php:734
 msgid "上传目录暂无写入权限，请先检查您的站点是否存在 %s 目录；若存在，请将该目录权限设置为可写状态，完成后再继续安装操作。"
 msgstr ""
 
@@ -571,7 +700,7 @@ msgstr ""
 msgid "下次自动登录"
 msgstr ""
 
-#: admin/upgrade.php:203 var/Widget/Options/General.php:344
+#: admin/upgrade.php:203 var/Widget/Options/General.php:350
 msgid "不允许"
 msgstr ""
 
@@ -591,8 +720,7 @@ msgstr ""
 msgid "不同的用户组拥有不同的权限."
 msgstr ""
 
-#: install/Mysql.php:78 install/Pgsql.php:48
-#: var/Widget/Options/Permalink.php:268
+#: install/Mysql.php:78 install/Pgsql.php:48 var/Widget/Options/Permalink.php:268
 msgid "不启用"
 msgstr ""
 
@@ -604,17 +732,15 @@ msgstr ""
 msgid "不能将分类自身设置为父分类"
 msgstr ""
 
-#: admin/write-page.php:10 admin/write-page.php:91
-#: var/Widget/Metas/Category/Edit.php:139
+#: admin/write-page.php:10 admin/write-page.php:91 var/Widget/Metas/Category/Edit.php:139
 msgid "不选择"
 msgstr ""
 
-#: var/Widget/Register.php:49 var/Widget/Reset.php:61
-#: var/Widget/Users/Edit.php:171 var/Widget/Users/Profile.php:312
+#: var/Widget/Register.php:49 var/Widget/Reset.php:61 var/Widget/Users/Edit.php:171 var/Widget/Users/Profile.php:312
 msgid "两次输入的密码不一致"
 msgstr ""
 
-#: var/Typecho/Palette.php:366
+#: var/Typecho/Palette.php:370
 msgid "个人"
 msgstr ""
 
@@ -634,12 +760,11 @@ msgstr ""
 msgid "个人主页地址最多包含255个字符"
 msgstr ""
 
-#: var/Widget/Feedback.php:155 var/Widget/Users/Edit.php:161
-#: var/Widget/Users/Profile.php:233
+#: var/Widget/Feedback.php:155 var/Widget/Users/Edit.php:161 var/Widget/Users/Profile.php:233
 msgid "个人主页地址格式错误"
 msgstr ""
 
-#: install.php:1379
+#: install.php:1381
 msgid "个人主页地址长度超过限制, 请不要超过 150 个字符"
 msgstr ""
 
@@ -651,7 +776,7 @@ msgstr ""
 msgid "个人资料"
 msgstr ""
 
-#: var/Typecho/Palette.php:363
+#: var/Typecho/Palette.php:367
 msgid "个人资料设置"
 msgstr ""
 
@@ -679,10 +804,7 @@ msgstr ""
 msgid "为此用户分配一个密码."
 msgstr ""
 
-#: admin/auth.php:35 admin/menu.php:158 admin/menu.php:161
-#: var/Typecho/Palette.php:103 var/Typecho/Palette.php:111
-#: var/Typecho/Palette.php:119 var/Typecho/Palette.php:339
-#: var/Typecho/Palette.php:348
+#: admin/auth.php:35 admin/menu.php:158 admin/menu.php:161 var/Typecho/Palette.php:107 var/Typecho/Palette.php:115 var/Typecho/Palette.php:123 var/Typecho/Palette.php:343 var/Typecho/Palette.php:352
 msgid "主题"
 msgstr ""
 
@@ -690,11 +812,11 @@ msgstr ""
 msgid "主题切换"
 msgstr ""
 
-#: var/Typecho/Palette.php:336
+#: var/Typecho/Palette.php:340
 msgid "主题管理"
 msgstr ""
 
-#: var/Typecho/Palette.php:345
+#: var/Typecho/Palette.php:349
 msgid "主题编辑器"
 msgstr ""
 
@@ -730,7 +852,7 @@ msgstr ""
 msgid "交流社区"
 msgstr ""
 
-#: var/Typecho/Palette.php:103
+#: var/Typecho/Palette.php:107
 msgid "亮色"
 msgstr ""
 
@@ -738,7 +860,7 @@ msgstr ""
 msgid "仅允许字母、数字、冒号、下划线与短横线"
 msgstr ""
 
-#: var/Widget/Options/General.php:353
+#: var/Widget/Options/General.php:359
 msgid "仅关闭 Pingback 接口"
 msgstr ""
 
@@ -790,7 +912,7 @@ msgstr ""
 msgid "以下项目不会阻断站点运行，但建议尽快确认是否仍有保留必要。"
 msgstr ""
 
-#: var/Typecho/Palette.php:374
+#: var/Typecho/Palette.php:378
 msgid "仪表盘"
 msgstr ""
 
@@ -802,13 +924,11 @@ msgstr ""
 msgid "余烬"
 msgstr ""
 
-#: admin/manage-comments.php:102 admin/manage-pages.php:65
-#: admin/manage-posts.php:138 admin/options-mail.php:225
-#: admin/plugins.php:93 admin/plugins.php:172 admin/themes.php:56
+#: admin/manage-comments.php:102 admin/manage-pages.php:65 admin/manage-posts.php:138 admin/options-mail.php:228 admin/plugins.php:93 admin/plugins.php:172 admin/themes.php:56
 msgid "作者"
 msgstr ""
 
-#: var/Widget/Archive.php:1429
+#: var/Widget/Archive.php:1433
 msgid "作者不存在"
 msgstr ""
 
@@ -868,7 +988,7 @@ msgstr ""
 msgid "你确认要禁用插件 %s 吗?"
 msgstr ""
 
-#: var/Widget/Options/Reading.php:136
+#: var/Widget/Options/Reading.php:135
 msgid "使用 %s 页面作为首页"
 msgstr ""
 
@@ -880,7 +1000,7 @@ msgstr ""
 msgid "使用 Markdown 语法编辑和解析内容"
 msgstr ""
 
-#: install.php:1281
+#: install.php:1283
 msgid "使用原有数据"
 msgstr ""
 
@@ -888,7 +1008,7 @@ msgstr ""
 msgid "使用当前模板与变量渲染后发送测试邮件"
 msgstr ""
 
-#: admin/menu.php:95 var/Typecho/Palette.php:127
+#: admin/menu.php:95 var/Typecho/Palette.php:131
 msgid "侧边栏"
 msgstr ""
 
@@ -900,7 +1020,7 @@ msgstr ""
 msgid "保存于 %s"
 msgstr ""
 
-#: admin/options-mail.php:219
+#: admin/options-mail.php:221
 msgid "保存后会写入当前主题 mail 目录，优先级高于系统默认模板"
 msgstr ""
 
@@ -912,7 +1032,7 @@ msgstr ""
 msgid "保存文件"
 msgstr ""
 
-#: admin/options-mail.php:238
+#: admin/options-mail.php:241
 msgid "保存模板"
 msgstr ""
 
@@ -920,11 +1040,7 @@ msgstr ""
 msgid "保存草稿"
 msgstr ""
 
-#: var/Widget/Options/Cache.php:200 var/Widget/Options/Discussion.php:217
-#: var/Widget/Options/General.php:428 var/Widget/Options/Mail.php:382
-#: var/Widget/Options/Permalink.php:350 var/Widget/Options/Reading.php:214
-#: var/Widget/Plugins/Config.php:72 var/Widget/Themes/Config.php:65
-#: var/Widget/Users/Profile.php:87 var/Widget/Users/Profile.php:143
+#: var/Widget/Options/Cache.php:200 var/Widget/Options/Discussion.php:217 var/Widget/Options/General.php:434 var/Widget/Options/Mail.php:382 var/Widget/Options/Permalink.php:350 var/Widget/Options/Reading.php:214 var/Widget/Plugins/Config.php:72 var/Widget/Themes/Config.php:63 var/Widget/Users/Profile.php:87 var/Widget/Users/Profile.php:143
 msgid "保存设置"
 msgstr ""
 
@@ -932,7 +1048,7 @@ msgstr ""
 msgid "修复关键数据库结构"
 msgstr ""
 
-#: var/Widget/Backup.php:959
+#: var/Widget/Backup.php:984
 msgid "修复结果：ownerId %d 条，状态 %d 条，孤儿评论 %d 条，计数回填 %d 篇，作者昵称同步 %d 条"
 msgstr ""
 
@@ -948,11 +1064,11 @@ msgstr ""
 msgid "修评论失败"
 msgstr ""
 
-#: admin/upgrade.php:203 var/Widget/Options/General.php:344
+#: admin/upgrade.php:203 var/Widget/Options/General.php:350
 msgid "允许"
 msgstr ""
 
-#: var/Widget/Options/General.php:422
+#: var/Widget/Options/General.php:428
 msgid "允许上传的文件类型"
 msgstr ""
 
@@ -976,7 +1092,7 @@ msgstr ""
 msgid "允许覆盖 install（谨慎操作）"
 msgstr ""
 
-#: var/Widget/Options/General.php:347
+#: var/Widget/Options/General.php:353
 msgid "允许访问者注册到你的网站，默认的注册用户不享有任何写入权限"
 msgstr ""
 
@@ -988,8 +1104,7 @@ msgstr ""
 msgid "全局导航"
 msgstr ""
 
-#: admin/editor-js.php:75 admin/editor-js.php:167 admin/editor-js.php:199
-#: var/Typecho/Palette.php:135
+#: admin/editor-js.php:75 admin/editor-js.php:167 admin/editor-js.php:199 var/Typecho/Palette.php:139
 msgid "全屏"
 msgstr ""
 
@@ -997,10 +1112,7 @@ msgstr ""
 msgid "全文输出"
 msgstr ""
 
-#: admin/manage-categories.php:23 admin/manage-comments.php:59
-#: admin/manage-medias.php:16 admin/manage-pages.php:16
-#: admin/manage-posts.php:67 admin/manage-tags.php:18
-#: admin/manage-users.php:14
+#: admin/manage-categories.php:23 admin/manage-comments.php:59 admin/manage-medias.php:16 admin/manage-pages.php:16 admin/manage-posts.php:67 admin/manage-tags.php:18 admin/manage-users.php:14
 msgid "全选"
 msgstr ""
 
@@ -1012,10 +1124,7 @@ msgstr ""
 msgid "八月"
 msgstr ""
 
-#: admin/manage-pages.php:27 admin/manage-posts.php:79
-#: admin/write-page.php:125 admin/write-post.php:99
-#: var/Widget/Contents/Page/Edit.php:90
-#: var/Widget/Contents/Post/Edit.php:106
+#: admin/manage-pages.php:27 admin/manage-posts.php:79 admin/write-page.php:125 admin/write-post.php:99 var/Widget/Contents/Page/Edit.php:90 var/Widget/Contents/Post/Edit.php:106
 msgid "公开"
 msgstr ""
 
@@ -1031,7 +1140,7 @@ msgstr ""
 msgid "六月"
 msgstr ""
 
-#: install.php:1458
+#: install.php:1460
 msgid "关于"
 msgstr ""
 
@@ -1051,19 +1160,15 @@ msgstr ""
 msgid "关键结构正常，共检查 %d 项。"
 msgstr ""
 
-#: var/Widget/Options/General.php:337
+#: var/Widget/Options/General.php:343
 msgid "关键词"
 msgstr ""
 
-#: admin/footer.php:22 admin/options-cache.php:29
-#: var/Widget/Options/Cache.php:104 var/Widget/Options/Cache.php:112
-#: var/Widget/Options/General.php:353 var/Widget/Options/Mail.php:208
-#: var/Widget/Options/Mail.php:501 var/Widget/Users/Profile.php:36
-#: var/Widget/Users/Profile.php:46 var/Widget/Users/Profile.php:55
+#: admin/footer.php:22 admin/options-cache.php:29 var/Widget/Options/Cache.php:104 var/Widget/Options/Cache.php:112 var/Widget/Options/General.php:359 var/Widget/Options/Mail.php:208 var/Widget/Options/Mail.php:501 var/Widget/Users/Profile.php:36 var/Widget/Users/Profile.php:46 var/Widget/Users/Profile.php:55
 msgid "关闭"
 msgstr ""
 
-#: admin/preview.php:33 admin/preview.php:34
+#: admin/preview.php:37 admin/preview.php:38
 msgid "关闭预览"
 msgstr ""
 
@@ -1071,11 +1176,11 @@ msgstr ""
 msgid "其中 %d 项会阻断当前结构修复。"
 msgstr ""
 
-#: var/Typecho/Palette.php:427
+#: var/Typecho/Palette.php:431
 msgid "其他"
 msgstr ""
 
-#: var/Widget/Options/General.php:412
+#: var/Widget/Options/General.php:417
 msgid "其他格式 %s"
 msgstr ""
 
@@ -1091,8 +1196,7 @@ msgstr ""
 msgid "具体的权限分配表请<a href=\"https://docs.typecho.org/develop/acl\">参考这里</a>."
 msgstr ""
 
-#: admin/manage-comments.php:103 admin/manage-comments.php:276
-#: admin/manage-comments.php:339
+#: admin/manage-comments.php:103 admin/manage-comments.php:276 admin/manage-comments.php:339
 msgid "内容"
 msgstr ""
 
@@ -1116,8 +1220,7 @@ msgstr ""
 msgid "内容被隐藏"
 msgstr ""
 
-#: admin/write-page.php:55 admin/write-page.php:58 admin/write-post.php:40
-#: admin/write-post.php:43
+#: admin/write-page.php:55 admin/write-page.php:58 admin/write-post.php:40 admin/write-post.php:43
 msgid "写作设置"
 msgstr ""
 
@@ -1129,7 +1232,7 @@ msgstr ""
 msgid "写新文章"
 msgstr ""
 
-#: usr/themes/default/comments.php:53
+#: usr/themes/default/comments.php:52
 msgid "写点什么吧..."
 msgstr ""
 
@@ -1149,9 +1252,7 @@ msgstr ""
 msgid "分割线"
 msgstr ""
 
-#: admin/index.php:335 admin/manage-posts.php:139 admin/profile.php:43
-#: admin/write-post.php:66 var/Typecho/Palette.php:177
-#: var/Typecho/Palette.php:240 var/Widget/Menu.php:75
+#: admin/index.php:335 admin/manage-posts.php:139 admin/profile.php:43 admin/write-post.php:66 var/Typecho/Palette.php:181 var/Typecho/Palette.php:244 var/Widget/Menu.php:75
 msgid "分类"
 msgstr ""
 
@@ -1167,18 +1268,11 @@ msgstr ""
 msgid "分类 <a href=\"%s\">%s</a> 已经被更新"
 msgstr ""
 
-#: var/Widget/Archive.php:1346 var/Widget/Metas/Category/Admin.php:59
-#: var/Widget/Metas/Category/Edit.php:215
-#: var/Widget/Metas/Category/Edit.php:235
-#: var/Widget/Metas/Category/Edit.php:392
-#: var/Widget/Metas/Category/Edit.php:426
-#: var/Widget/Metas/Category/Edit.php:437 var/Widget/XmlRpc.php:401
+#: var/Widget/Archive.php:1350 var/Widget/Metas/Category/Admin.php:59 var/Widget/Metas/Category/Edit.php:215 var/Widget/Metas/Category/Edit.php:235 var/Widget/Metas/Category/Edit.php:392 var/Widget/Metas/Category/Edit.php:426 var/Widget/Metas/Category/Edit.php:437 var/Widget/XmlRpc.php:401
 msgid "分类不存在"
 msgstr ""
 
-#: var/Widget/Metas/Category/Edit.php:214
-#: var/Widget/Metas/Category/Edit.php:335
-#: var/Widget/Metas/Category/Edit.php:391
+#: var/Widget/Metas/Category/Edit.php:214 var/Widget/Metas/Category/Edit.php:335 var/Widget/Metas/Category/Edit.php:391
 msgid "分类主键不存在"
 msgstr ""
 
@@ -1242,19 +1336,19 @@ msgstr ""
 msgid "切换主题"
 msgstr ""
 
-#: var/Typecho/Palette.php:124
+#: var/Typecho/Palette.php:128
 msgid "切换侧边栏"
 msgstr ""
 
-#: var/Typecho/Palette.php:132
+#: var/Typecho/Palette.php:136
 msgid "切换全屏模式"
 msgstr ""
 
-#: var/Typecho/Palette.php:100
+#: var/Typecho/Palette.php:104
 msgid "切换浅色主题"
 msgstr ""
 
-#: var/Typecho/Palette.php:108
+#: var/Typecho/Palette.php:112
 msgid "切换深色主题"
 msgstr ""
 
@@ -1266,7 +1360,7 @@ msgstr ""
 msgid "刚刚"
 msgstr ""
 
-#: var/Typecho/Palette.php:168 var/Typecho/Palette.php:443
+#: var/Typecho/Palette.php:172 var/Typecho/Palette.php:447
 msgid "创建"
 msgstr ""
 
@@ -1274,11 +1368,11 @@ msgstr ""
 msgid "创建一个新账号"
 msgstr ""
 
-#: install.php:926
+#: install.php:928
 msgid "创建完毕, 继续安装 &raquo;"
 msgstr ""
 
-#: install.php:1301
+#: install.php:1303
 msgid "创建您的管理员帐号"
 msgstr ""
 
@@ -1286,7 +1380,7 @@ msgstr ""
 msgid "创建新页面"
 msgstr ""
 
-#: var/Typecho/Palette.php:165
+#: var/Typecho/Palette.php:169
 msgid "创建独立页面"
 msgstr ""
 
@@ -1294,13 +1388,7 @@ msgstr ""
 msgid "创建页面"
 msgstr ""
 
-#: admin/custom-fields-js.php:32 admin/custom-fields.php:40
-#: admin/custom-fields.php:63 admin/file-upload-js.php:151
-#: admin/file-upload.php:41 admin/manage-categories.php:31
-#: admin/manage-comments.php:66 admin/manage-comments.php:176
-#: admin/manage-medias.php:24 admin/manage-pages.php:24
-#: admin/manage-posts.php:75 admin/manage-tags.php:26
-#: admin/manage-users.php:22
+#: admin/custom-fields-js.php:32 admin/custom-fields.php:40 admin/custom-fields.php:63 admin/file-upload-js.php:151 admin/file-upload.php:41 admin/manage-categories.php:31 admin/manage-comments.php:66 admin/manage-comments.php:176 admin/manage-medias.php:24 admin/manage-pages.php:24 admin/manage-posts.php:75 admin/manage-tags.php:26 admin/manage-users.php:22
 msgid "删除"
 msgstr ""
 
@@ -1312,7 +1400,7 @@ msgstr ""
 msgid "删除全局配置"
 msgstr ""
 
-#: install.php:1280
+#: install.php:1282
 msgid "删除原有数据"
 msgstr ""
 
@@ -1336,8 +1424,7 @@ msgstr ""
 msgid "删除评论成功"
 msgstr ""
 
-#: admin/manage-categories.php:34 admin/manage-tags.php:29
-#: var/Typecho/Palette.php:151
+#: admin/manage-categories.php:34 admin/manage-tags.php:29 var/Typecho/Palette.php:155
 msgid "刷新"
 msgstr ""
 
@@ -1349,7 +1436,7 @@ msgstr ""
 msgid "刷新分类可能需要等待较长时间, 你确认要刷新这些分类吗?"
 msgstr ""
 
-#: var/Typecho/Palette.php:148
+#: var/Typecho/Palette.php:152
 msgid "刷新当前页面"
 msgstr ""
 
@@ -1365,7 +1452,7 @@ msgstr ""
 msgid "前往设置"
 msgstr ""
 
-#: var/Typecho/Palette.php:422
+#: var/Typecho/Palette.php:426
 msgid "前端缓存已清除"
 msgstr ""
 
@@ -1425,8 +1512,7 @@ msgstr ""
 msgid "升级包保存失败"
 msgstr ""
 
-#: var/Typecho/Upgrade/Runner.php:457 var/Typecho/Upgrade/Runner.php:487
-#: var/Typecho/Upgrade/Runner.php:611
+#: var/Typecho/Upgrade/Runner.php:457 var/Typecho/Upgrade/Runner.php:487 var/Typecho/Upgrade/Runner.php:611
 msgid "升级包包含受保护路径: %s"
 msgstr ""
 
@@ -1558,8 +1644,7 @@ msgstr ""
 msgid "升级状态"
 msgstr ""
 
-#: var/Typecho/Upgrade/Store.php:148 var/Typecho/Upgrade/Store.php:153
-#: var/Typecho/Upgrade/Store.php:157
+#: var/Typecho/Upgrade/Store.php:148 var/Typecho/Upgrade/Store.php:153 var/Typecho/Upgrade/Store.php:157
 msgid "升级状态写入失败"
 msgstr ""
 
@@ -1631,8 +1716,7 @@ msgstr ""
 msgid "发布文章"
 msgstr ""
 
-#: admin/manage-medias.php:61 admin/write-page.php:68
-#: admin/write-post.php:53
+#: admin/manage-medias.php:61 admin/write-page.php:68 admin/write-post.php:53
 msgid "发布日期"
 msgstr ""
 
@@ -1640,31 +1724,31 @@ msgstr ""
 msgid "发布页面"
 msgstr ""
 
-#: var/Utils/Migration/SchemaManager.php:200
+#: var/Utils/Migration/SchemaManager.php:202
 msgid "发现 %d 组按目标排序规则归一后的 email + scope 重复，修复索引前需先清理"
 msgstr ""
 
-#: var/Utils/Migration/SchemaManager.php:248
+#: var/Utils/Migration/SchemaManager.php:250
 msgid "发现 %d 组按目标排序规则归一后的重复用户名，升级后可能触发唯一键冲突"
 msgstr ""
 
-#: var/Utils/Migration/SchemaManager.php:232
+#: var/Utils/Migration/SchemaManager.php:234
 msgid "发现 %d 组按目标排序规则归一后的重复缩略名，升级后可能触发唯一键冲突"
 msgstr ""
 
-#: var/Utils/Migration/SchemaManager.php:216
+#: var/Utils/Migration/SchemaManager.php:218
 msgid "发现 %d 组按目标排序规则归一后的重复邮箱，排序规则升级后可能触发唯一键冲突"
 msgstr ""
 
-#: var/Widget/Backup.php:583
+#: var/Widget/Backup.php:608
 msgid "发现孤儿评论关联内容 %d 个，导入后将自动迁移到占位内容"
 msgstr ""
 
-#: var/Widget/Backup.php:575
+#: var/Widget/Backup.php:600
 msgid "发现异常评论状态值 %d 条，导入后将自动修复为 waiting"
 msgstr ""
 
-#: var/Widget/Backup.php:579
+#: var/Widget/Backup.php:604
 msgid "发现疑似编码异常评论 %d 条，可能影响编辑回填"
 msgstr ""
 
@@ -1680,8 +1764,7 @@ msgstr ""
 msgid "发送重置链接"
 msgstr ""
 
-#: admin/editor-js.php:83 admin/manage-comments.php:277
-#: admin/manage-comments.php:342
+#: admin/editor-js.php:83 admin/manage-comments.php:277 admin/manage-comments.php:342
 msgid "取消"
 msgstr ""
 
@@ -1693,7 +1776,7 @@ msgstr ""
 msgid "取消预览"
 msgstr ""
 
-#: admin/options-mail.php:220
+#: admin/options-mail.php:222
 msgid "变量示例：{siteTitle}、{title}、{author}、{commentTextPlain}、{commentHtml}、{permalink}、{manageurl}、{unsubUrl}、{resetUrl}、{expiresAt}"
 msgstr ""
 
@@ -1709,7 +1792,7 @@ msgstr ""
 msgid "另有 %d 项环境提醒。"
 msgstr ""
 
-#: install.php:1432
+#: install.php:1434
 msgid "只是一个默认分类"
 msgstr ""
 
@@ -1773,7 +1856,7 @@ msgstr ""
 msgid "同一 IP 发布评论的时间间隔限制为 %s 分钟"
 msgstr ""
 
-#: var/Widget/Options/Reading.php:112
+#: var/Widget/Options/Reading.php:111
 msgid "同时将文章列表页路径更改为 %s"
 msgstr ""
 
@@ -1781,8 +1864,7 @@ msgstr ""
 msgid "同步投递"
 msgstr ""
 
-#: admin/manage-categories.php:63 admin/plugins.php:90
-#: admin/plugins.php:169
+#: admin/manage-categories.php:63 admin/plugins.php:90 admin/plugins.php:169
 msgid "名称"
 msgstr ""
 
@@ -1790,8 +1872,7 @@ msgstr ""
 msgid "否"
 msgstr ""
 
-#: admin/plugins.php:192 admin/themes.php:69 install/Mysql.php:79
-#: install/Pgsql.php:49 var/Widget/Options/Permalink.php:268
+#: admin/plugins.php:192 admin/themes.php:69 install/Mysql.php:79 install/Pgsql.php:49 var/Widget/Options/Permalink.php:268
 msgid "启用"
 msgstr ""
 
@@ -1847,7 +1928,7 @@ msgstr ""
 msgid "周日"
 msgstr ""
 
-#: var/Typecho/Palette.php:428
+#: var/Typecho/Palette.php:432
 msgid "命令执行失败"
 msgstr ""
 
@@ -1859,13 +1940,11 @@ msgstr ""
 msgid "四月"
 msgstr ""
 
-#: var/Typecho/Palette.php:140
+#: var/Typecho/Palette.php:144
 msgid "回到页面顶部"
 msgstr ""
 
-#: admin/manage-comments.php:173 admin/manage-comments.php:277
-#: usr/themes/default/functions.php:116 var/Widget/Comments/Archive.php:221
-#: var/Widget/Comments/Archive.php:324
+#: admin/manage-comments.php:173 admin/manage-comments.php:277 usr/themes/default/functions.php:116 var/Widget/Comments/Archive.php:221 var/Widget/Comments/Archive.php:324
 msgid "回复"
 msgstr ""
 
@@ -1873,8 +1952,7 @@ msgstr ""
 msgid "回复内容不能为空"
 msgstr ""
 
-#: admin/manage-comments.php:303 admin/manage-comments.php:316
-#: var/Widget/Comments/Edit.php:313
+#: admin/manage-comments.php:303 admin/manage-comments.php:316 var/Widget/Comments/Edit.php:313
 msgid "回复评论失败"
 msgstr ""
 
@@ -1898,7 +1976,7 @@ msgstr ""
 msgid "图片"
 msgstr ""
 
-#: var/Widget/Options/General.php:408
+#: var/Widget/Options/General.php:414
 msgid "图片文件"
 msgstr ""
 
@@ -1938,9 +2016,7 @@ msgstr ""
 msgid "地址重写（rewrite）是部分服务器软件提供的内部链接优化功能"
 msgstr ""
 
-#: admin/manage-comments.php:38 admin/manage-comments.php:165
-#: admin/manage-comments.php:167 var/Typecho/Mail/Notify.php:295
-#: var/Widget/XmlRpc.php:633
+#: admin/manage-comments.php:38 admin/manage-comments.php:165 admin/manage-comments.php:167 var/Typecho/Mail/Notify.php:294 var/Widget/XmlRpc.php:633
 msgid "垃圾"
 msgstr ""
 
@@ -1948,12 +2024,11 @@ msgstr ""
 msgid "基于 <a href=\"https://typecho.org/\">Typecho</a> 开发，由 <a href=\"https://www.typerenew.com\">%s</a> 焕新呈现，版本 %s"
 msgstr ""
 
-#: var/Typecho/Palette.php:276 var/Widget/Menu.php:89
+#: var/Typecho/Palette.php:280 var/Widget/Menu.php:89
 msgid "基本"
 msgstr ""
 
-#: admin/options-tabs.php:5 var/Typecho/Palette.php:273
-#: var/Widget/Menu.php:89
+#: admin/options-tabs.php:5 var/Typecho/Palette.php:277 var/Widget/Menu.php:89
 msgid "基本设置"
 msgstr ""
 
@@ -1981,7 +2056,7 @@ msgstr ""
 msgid "处理摘要"
 msgstr ""
 
-#: var/Typecho/Palette.php:357 var/Widget/Menu.php:59
+#: var/Typecho/Palette.php:361 var/Widget/Menu.php:59
 msgid "备份"
 msgstr ""
 
@@ -1989,28 +2064,27 @@ msgstr ""
 msgid "备份您的数据"
 msgstr ""
 
-#: var/Widget/Backup.php:412
+#: var/Widget/Backup.php:408
 msgid "备份文件不存在"
 msgstr ""
 
-#: var/Widget/Backup.php:399
+#: var/Widget/Backup.php:395
 msgid "备份文件名不合法"
 msgstr ""
 
-#: var/Widget/Backup.php:454
+#: var/Widget/Backup.php:455
 msgid "备份文件头尾版本不一致"
 msgstr ""
 
-#: var/Widget/Backup.php:567
+#: var/Widget/Backup.php:592
 msgid "备份文件未包含用户数据，无法安全恢复"
 msgstr ""
 
-#: var/Widget/Backup.php:571
+#: var/Widget/Backup.php:596
 msgid "备份文件未检测到管理员账户，恢复后无法登录后台"
 msgstr ""
 
-#: var/Widget/Backup.php:433 var/Widget/Backup.php:442
-#: var/Widget/Backup.php:449 var/Widget/Backup.php:490
+#: var/Widget/Backup.php:434 var/Widget/Backup.php:443 var/Widget/Backup.php:450 var/Widget/Backup.php:488 var/Widget/Backup.php:498 var/Widget/Backup.php:506 var/Widget/Backup.php:513 var/Widget/Backup.php:549 var/Widget/Backup.php:557
 msgid "备份文件格式错误"
 msgstr ""
 
@@ -2018,9 +2092,7 @@ msgstr ""
 msgid "备份说明"
 msgstr ""
 
-#: var/Typecho/Palette.php:103 var/Typecho/Palette.php:111
-#: var/Typecho/Palette.php:119 var/Typecho/Palette.php:339
-#: var/Typecho/Palette.php:446 var/Widget/Menu.php:55
+#: var/Typecho/Palette.php:107 var/Typecho/Palette.php:115 var/Typecho/Palette.php:123 var/Typecho/Palette.php:343 var/Typecho/Palette.php:450 var/Widget/Menu.php:55
 msgid "外观"
 msgstr ""
 
@@ -2040,7 +2112,7 @@ msgstr ""
 msgid "外观风格"
 msgstr ""
 
-#: var/Widget/Options/General.php:409
+#: var/Widget/Options/General.php:415
 msgid "多媒体文件"
 msgstr ""
 
@@ -2056,7 +2128,7 @@ msgstr ""
 msgid "失败任务列表"
 msgstr ""
 
-#: var/Widget/Options/General.php:356
+#: var/Widget/Options/General.php:362
 msgid "如无远程写作、离线客户端或第三方同步需求，建议保持关闭"
 msgstr ""
 
@@ -2080,7 +2152,7 @@ msgstr ""
 msgid "如果数据量较大，直接通过面板备份可能因执行时间过长而导致 <strong>操作超时</strong>。"
 msgstr ""
 
-#: var/Widget/Forgot.php:79 var/Widget/Forgot.php:127
+#: var/Widget/Forgot.php:79 var/Widget/Forgot.php:124
 msgid "如果该邮箱已注册，您将收到重置邮件"
 msgstr ""
 
@@ -2088,7 +2160,7 @@ msgstr ""
 msgid "如需减小备份文件体积并提升备份速度，建议在备份前先清理不再需要的数据。"
 msgstr ""
 
-#: var/Typecho/Palette.php:195 var/Typecho/Palette.php:258
+#: var/Typecho/Palette.php:199 var/Typecho/Palette.php:262
 msgid "媒体"
 msgstr ""
 
@@ -2100,23 +2172,19 @@ msgstr ""
 msgid "子页面"
 msgstr ""
 
-#: admin/custom-fields-js.php:31 admin/custom-fields.php:37
-#: admin/custom-fields.php:60 admin/custom-fields.php:61
+#: admin/custom-fields-js.php:31 admin/custom-fields.php:37 admin/custom-fields.php:60 admin/custom-fields.php:61
 msgid "字段值"
 msgstr ""
 
-#: admin/custom-fields-js.php:24 admin/custom-fields.php:21
-#: admin/custom-fields.php:48 admin/custom-fields.php:49
+#: admin/custom-fields-js.php:24 admin/custom-fields.php:21 admin/custom-fields.php:48 admin/custom-fields.php:49
 msgid "字段名称"
 msgstr ""
 
-#: admin/custom-fields-js.php:25 admin/custom-fields.php:24
-#: admin/custom-fields.php:51
+#: admin/custom-fields-js.php:25 admin/custom-fields.php:24 admin/custom-fields.php:51
 msgid "字段类型"
 msgstr ""
 
-#: admin/custom-fields-js.php:26 admin/custom-fields.php:27
-#: admin/custom-fields.php:53
+#: admin/custom-fields-js.php:26 admin/custom-fields.php:27 admin/custom-fields.php:53
 msgid "字符"
 msgstr ""
 
@@ -2128,19 +2196,19 @@ msgstr ""
 msgid "安全与兼容提醒"
 msgstr ""
 
-#: install.php:437
+#: install.php:439
 msgid "安装会话已失效, 请刷新页面后重新提交"
 msgstr ""
 
-#: install.php:379
+#: install.php:381
 msgid "安装会话已失效, 请返回上一步重新执行数据库配置"
 msgstr ""
 
-#: install.php:485 install.php:522
+#: install.php:487 install.php:524
 msgid "安装成功"
 msgstr ""
 
-#: install.php:1065 install.php:1066
+#: install.php:1067 install.php:1068
 msgid "安装流程状态无效"
 msgstr ""
 
@@ -2148,35 +2216,35 @@ msgstr ""
 msgid "安装程序发生未处理错误，请检查配置后重试"
 msgstr ""
 
-#: install.php:1512
+#: install.php:1514
 msgid "安装程序无法创建管理员帐号，请检查数据库权限和配置信息"
 msgstr ""
 
-#: install.php:1287
+#: install.php:1289
 msgid "安装程序无法初始化数据库，请检查数据库权限和配置信息"
 msgstr ""
 
-#: install.php:1229
+#: install.php:1231
 msgid "安装程序无法删除原有数据表，请检查数据库权限和配置信息。"
 msgstr ""
 
-#: install.php:1171
+#: install.php:1173
 msgid "安装程序无法完成数据库连接，请检查您的配置信息"
 msgstr ""
 
-#: install.php:1178
+#: install.php:1180
 msgid "安装程序无法自动创建 <strong>config.inc.php</strong> 文件"
 msgstr ""
 
-#: install.php:1236
+#: install.php:1238
 msgid "安装程序无法读取数据库初始化脚本，请检查 install/%s.sql 文件是否存在且可读。"
 msgstr ""
 
-#: install.php:1279
+#: install.php:1281
 msgid "安装程序检查到原有数据表已经存在."
 msgstr ""
 
-#: install.php:651
+#: install.php:653
 msgid "安装说明"
 msgstr ""
 
@@ -2188,7 +2256,7 @@ msgstr ""
 msgid "完成数据库升级"
 msgstr ""
 
-#: admin/index.php:418
+#: admin/index.php:420
 msgid "官方动态"
 msgstr ""
 
@@ -2244,8 +2312,7 @@ msgstr ""
 msgid "密码已重置，请使用新密码登录"
 msgstr ""
 
-#: install.php:1389 var/Widget/Register.php:47 var/Widget/Reset.php:54
-#: var/Widget/Users/Edit.php:169 var/Widget/Users/Profile.php:310
+#: install.php:1391 var/Widget/Register.php:47 var/Widget/Reset.php:54 var/Widget/Users/Edit.php:169 var/Widget/Users/Profile.php:310
 msgid "密码至少需要 %d 个字符，且不能超过 %d 字节"
 msgstr ""
 
@@ -2261,11 +2328,11 @@ msgstr ""
 msgid "密码重置表"
 msgstr ""
 
-#: var/Widget/Forgot.php:138 var/Widget/Options/Mail.php:446
+#: var/Typecho/Mail/tpl/reset.html:13 var/Widget/Forgot.php:135 var/Widget/Options/Mail.php:446
 msgid "密码重置请求"
 msgstr ""
 
-#: var/Widget/Forgot.php:111
+#: var/Widget/Forgot.php:108
 msgid "密码重置邮件入队失败"
 msgstr ""
 
@@ -2273,11 +2340,11 @@ msgstr ""
 msgid "对不起, 您的发言过于频繁, 请稍候再次发布."
 msgstr ""
 
-#: install.php:1168
+#: install.php:1170
 msgid "对不起, 无法连接数据库, 请先检查数据库配置再继续进行安装"
 msgstr ""
 
-#: var/Widget/Archive.php:1304
+#: var/Widget/Archive.php:1308
 msgid "对不起,您输入的密码错误"
 msgstr ""
 
@@ -2305,11 +2372,11 @@ msgstr ""
 msgid "对评论者个人主页链接使用 <a href=\"https://en.wikipedia.org/wiki/Nofollow\">nofollow 属性</a>"
 msgstr ""
 
-#: var/Typecho/Palette.php:357
+#: var/Typecho/Palette.php:361
 msgid "导出"
 msgstr ""
 
-#: var/Typecho/Palette.php:442
+#: var/Typecho/Palette.php:446
 msgid "导航"
 msgstr ""
 
@@ -2321,8 +2388,7 @@ msgstr ""
 msgid "将备份文件手动上传至服务器的 %s 目录后, 本页面会自动显示该备份文件选项"
 msgstr ""
 
-#: admin/custom-fields-js.php:28 admin/custom-fields.php:31
-#: admin/custom-fields.php:55
+#: admin/custom-fields-js.php:28 admin/custom-fields.php:31 admin/custom-fields.php:55
 msgid "小数"
 msgstr ""
 
@@ -2330,7 +2396,7 @@ msgstr ""
 msgid "尚未保存"
 msgstr ""
 
-#: var/Typecho/Palette.php:127
+#: var/Typecho/Palette.php:131
 msgid "展开"
 msgstr ""
 
@@ -2342,7 +2408,7 @@ msgstr ""
 msgid "展示最近失败或已放弃的任务"
 msgstr ""
 
-#: var/Typecho/Palette.php:447
+#: var/Typecho/Palette.php:451
 msgid "工具"
 msgstr ""
 
@@ -2410,8 +2476,7 @@ msgstr ""
 msgid "已有升级任务正在执行，请稍后重试"
 msgstr ""
 
-#: var/Utils/Migration/SchemaManager.php:597
-#: var/Utils/Migration/SchemaManager.php:606
+#: var/Utils/Migration/SchemaManager.php:682 var/Utils/Migration/SchemaManager.php:691
 msgid "已有数据库迁移正在执行，请稍后重试"
 msgstr ""
 
@@ -2423,11 +2488,11 @@ msgstr ""
 msgid "已清理 %d 条已发送记录"
 msgstr ""
 
-#: var/Widget/Backup.php:951
+#: var/Widget/Backup.php:977
 msgid "已生成恢复前快照：%s"
 msgstr ""
 
-#: var/Widget/Options/General.php:441
+#: var/Widget/Options/General.php:447
 msgid "已解除 %d 条登录锁定"
 msgstr ""
 
@@ -2451,15 +2516,15 @@ msgstr ""
 msgid "已重试 %d 条任务（失败 %d，已放弃 %d）"
 msgstr ""
 
-#: install.php:536
+#: install.php:538
 msgid "希望您能尽情享用 TypeRenew 带来的乐趣!"
 msgstr ""
 
-#: var/Typecho/Palette.php:449
+#: var/Typecho/Palette.php:453
 msgid "帮助"
 msgstr ""
 
-#: var/Widget/Options/General.php:410
+#: var/Widget/Options/General.php:416
 msgid "常用档案文件"
 msgstr ""
 
@@ -2487,9 +2552,7 @@ msgstr ""
 msgid "建议定期处理待审核与垃圾评论"
 msgstr ""
 
-#: admin/options-cache.php:29 var/Widget/Options/Cache.php:104
-#: var/Widget/Options/Cache.php:112 var/Widget/Options/Mail.php:208
-#: var/Widget/Options/Mail.php:501
+#: admin/options-cache.php:29 var/Widget/Options/Cache.php:104 var/Widget/Options/Cache.php:112 var/Widget/Options/Mail.php:208 var/Widget/Options/Mail.php:501
 msgid "开启"
 msgstr ""
 
@@ -2517,8 +2580,7 @@ msgstr ""
 msgid "异步回调白名单"
 msgstr ""
 
-#: admin/editor-js.php:52 admin/manage-comments.php:131
-#: admin/manage-comments.php:382
+#: admin/editor-js.php:52 admin/manage-comments.php:131 admin/manage-comments.php:382
 msgid "引用"
 msgstr ""
 
@@ -2538,23 +2600,23 @@ msgstr ""
 msgid "当上面的 PATH_INFO 写法不可用时，可改用这一套回退规则"
 msgstr ""
 
-#: var/Utils/Migration/SchemaManager.php:168
+#: var/Utils/Migration/SchemaManager.php:170
 msgid "当前 %s 版本为 %s，低于结构修复建议的最低版本 %s"
 msgstr ""
 
-#: install.php:755
+#: install.php:757
 msgid "当前 %s 版本为 %s，安装器最低要求 %s %s，请升级后继续安装。"
 msgstr ""
 
-#: install.php:690
+#: install.php:692
 msgid "当前 PHP 版本为 %s，TypeRenew 最低要求 PHP 8.0，请升级后继续安装。"
 msgstr ""
 
-#: var/Utils/Migration/SchemaManager.php:184
+#: var/Utils/Migration/SchemaManager.php:186
 msgid "当前为 %s，目标推荐为 %s"
 msgstr ""
 
-#: install.php:1308
+#: install.php:1310
 msgid "当前为程序自动匹配的网站根目录路径，若与实际不符，请手动调整"
 msgstr ""
 
@@ -2586,11 +2648,11 @@ msgstr ""
 msgid "当前同时开放 XML-RPC 与 Pingback；如无明确业务需求，建议至少关闭 Pingback，或直接关闭 XML-RPC。"
 msgstr ""
 
-#: var/Widget/Options/General.php:317
+#: var/Widget/Options/General.php:323
 msgid "当前地址 <strong>%s</strong> 与上述设定值不一致"
 msgstr ""
 
-#: var/Utils/Migration/SchemaManager.php:185
+#: var/Utils/Migration/SchemaManager.php:187
 msgid "当前已与目标排序规则一致"
 msgstr ""
 
@@ -2598,11 +2660,11 @@ msgstr ""
 msgid "当前插件状态未返回，暂时无法显示版本检测结果。"
 msgstr ""
 
-#: var/Widget/Backup.php:278
+#: var/Widget/Backup.php:282
 msgid "当前数据库恢复将以非事务方式执行，为避免清表后中断导致数据损坏，必须先创建恢复前快照"
 msgstr ""
 
-#: var/Widget/Upgrade.php:45
+#: var/Widget/Upgrade.php:44
 msgid "当前数据库环境仍有未处理风险，暂不能执行%s：%s。请先在升级页查看数据库诊断并处理后重试。"
 msgstr ""
 
@@ -2622,7 +2684,7 @@ msgstr ""
 msgid "当前没有可清理的升级包或临时目录"
 msgstr ""
 
-#: var/Widget/Options/General.php:441
+#: var/Widget/Options/General.php:447
 msgid "当前没有生效中的登录锁定"
 msgstr ""
 
@@ -2638,7 +2700,7 @@ msgstr ""
 msgid "当前版本所需的数据库结构已同步"
 msgstr ""
 
-#: var/Utils/Migration/SchemaManager.php:169
+#: var/Utils/Migration/SchemaManager.php:171
 msgid "当前版本满足结构修复的最低要求"
 msgstr ""
 
@@ -2674,7 +2736,7 @@ msgstr ""
 msgid "当前站点部署在根目录。若以后迁移到子目录，请同步修改 RewriteBase 和入口脚本路径"
 msgstr ""
 
-#: admin/index.php:454
+#: admin/index.php:456
 msgid "当前网络不可达，已展示上次缓存内容。"
 msgstr ""
 
@@ -2690,11 +2752,11 @@ msgstr ""
 msgid "当站点位于 CDN 或反向代理之后时，请选择对应的来源头以获取访客真实 IP。"
 msgstr ""
 
-#: var/Widget/Options/General.php:213
+#: var/Widget/Options/General.php:216
 msgid "当选择“自定义请求头”时填写，例如 HTTP_TRUE_CLIENT_IP、HTTP_ALI_CDN_REAL_IP。可省略 HTTP_ 前缀。"
 msgstr ""
 
-#: admin/options-mail.php:227 var/Typecho/Mail/Notify.php:294
+#: admin/options-mail.php:230 var/Typecho/Mail/Notify.php:293
 msgid "待审"
 msgstr ""
 
@@ -2702,17 +2764,11 @@ msgstr ""
 msgid "待审提醒"
 msgstr ""
 
-#: admin/index.php:319 admin/manage-comments.php:29
-#: admin/manage-comments.php:64 admin/manage-comments.php:159
-#: admin/manage-comments.php:161 admin/manage-posts.php:32
-#: admin/manage-posts.php:82 admin/manage-posts.php:166
-#: admin/write-post.php:107 var/Typecho/Palette.php:231
-#: var/Widget/Contents/Post/Edit.php:109 var/Widget/XmlRpc.php:615
-#: var/Widget/XmlRpc.php:631
+#: admin/index.php:319 admin/manage-comments.php:29 admin/manage-comments.php:64 admin/manage-comments.php:159 admin/manage-comments.php:161 admin/manage-posts.php:32 admin/manage-posts.php:82 admin/manage-posts.php:166 admin/write-post.php:107 var/Typecho/Palette.php:235 var/Widget/Contents/Post/Edit.php:109 var/Widget/XmlRpc.php:615 var/Widget/XmlRpc.php:631
 msgid "待审核"
 msgstr ""
 
-#: var/Typecho/Palette.php:228
+#: var/Typecho/Palette.php:232
 msgid "待审核评论"
 msgstr ""
 
@@ -2732,8 +2788,7 @@ msgstr ""
 msgid "必须填写分类名称"
 msgstr ""
 
-#: var/Widget/Register.php:43 var/Widget/Users/Edit.php:180
-#: var/Widget/Users/Profile.php:307
+#: var/Widget/Register.php:43 var/Widget/Users/Edit.php:180 var/Widget/Users/Profile.php:307
 msgid "必须填写密码"
 msgstr ""
 
@@ -2749,13 +2804,11 @@ msgstr ""
 msgid "必须填写用户名"
 msgstr ""
 
-#: install.php:1380 var/Widget/Register.php:33
-#: var/Widget/Users/Edit.php:175
+#: install.php:1382 var/Widget/Register.php:33 var/Widget/Users/Edit.php:175
 msgid "必须填写用户名称"
 msgstr ""
 
-#: install.php:1383 var/Widget/Register.php:38
-#: var/Widget/Users/Edit.php:163 var/Widget/Users/Profile.php:235
+#: install.php:1385 var/Widget/Register.php:38 var/Widget/Users/Edit.php:163 var/Widget/Users/Profile.php:235
 msgid "必须填写电子邮箱"
 msgstr ""
 
@@ -2791,7 +2844,7 @@ msgstr ""
 msgid "总量"
 msgstr ""
 
-#: var/Widget/Backup.php:355
+#: var/Widget/Backup.php:351
 msgid "恢复事务已自动回滚，数据库保持原状态"
 msgstr ""
 
@@ -2799,35 +2852,31 @@ msgstr ""
 msgid "恢复前快照"
 msgstr ""
 
-#: var/Widget/Backup.php:953
+#: var/Widget/Backup.php:979
 msgid "恢复前快照创建失败"
 msgstr ""
 
-#: var/Widget/Backup.php:293
+#: var/Widget/Backup.php:297
 msgid "恢复前快照创建失败，已继续执行恢复"
 msgstr ""
 
-#: var/Widget/Backup.php:296
+#: var/Widget/Backup.php:300
 msgid "恢复前快照创建失败，当前数据库又不支持事务回滚，已中止恢复以避免数据损坏"
 msgstr ""
 
-#: var/Widget/Backup.php:1123
+#: var/Widget/Backup.php:1149
 msgid "恢复后的用户数据无有效作者，无法创建迁移占位内容"
 msgstr ""
 
-#: var/Widget/Backup.php:357
+#: var/Widget/Backup.php:353
 msgid "恢复在清表后中断，数据库可能处于部分恢复状态，请使用快照或备份回滚"
 msgstr ""
 
-#: var/Widget/Backup.php:333
+#: var/Widget/Backup.php:327
 msgid "恢复完成，但未能自动恢复当前登录态，请使用恢复后的账号重新登录"
 msgstr ""
 
-#: var/Widget/Backup.php:328
-msgid "恢复完成，但自动恢复当前登录态失败：%s"
-msgstr ""
-
-#: var/Widget/Backup.php:946
+#: var/Widget/Backup.php:972
 msgid "恢复已完成：核心数据已导入"
 msgstr ""
 
@@ -2839,11 +2888,11 @@ msgstr ""
 msgid "恢复数据"
 msgstr ""
 
-#: var/Widget/Backup.php:480
+#: var/Widget/Backup.php:483
 msgid "恢复数据出现错误"
 msgstr ""
 
-#: var/Widget/Backup.php:266
+#: var/Widget/Backup.php:270
 msgid "恢复未开始：请先处理下列阻断项"
 msgstr ""
 
@@ -2855,11 +2904,11 @@ msgstr ""
 msgid "恢复结果"
 msgstr ""
 
-#: var/Widget/Backup.php:352
+#: var/Widget/Backup.php:348
 msgid "恢复过程中遇到如下错误: %s"
 msgstr ""
 
-#: install.php:526
+#: install.php:528
 msgid "恭喜！您的 TypeRenew 安装已完成"
 msgstr ""
 
@@ -2867,7 +2916,7 @@ msgstr ""
 msgid "您也可以使用附件功能插入上传的本地图片"
 msgstr ""
 
-#: install.php:1179
+#: install.php:1181
 msgid "您可以在网站根目录下手动创建 <strong>config.inc.php</strong> 文件, 并复制如下代码至其中"
 msgstr ""
 
@@ -2883,7 +2932,7 @@ msgstr ""
 msgid "您所使用的用户名已经被注册,请登录后再次提交"
 msgstr ""
 
-#: install.php:487 install.php:530
+#: install.php:489 install.php:532
 msgid "您的密码是"
 msgstr ""
 
@@ -2891,7 +2940,7 @@ msgstr ""
 msgid "您的档案已经更新"
 msgstr ""
 
-#: install.php:486 install.php:529
+#: install.php:488 install.php:531
 msgid "您的用户名是"
 msgstr ""
 
@@ -2907,12 +2956,11 @@ msgstr ""
 msgid "您确认要清理未归档的文件吗?"
 msgstr ""
 
-#: var/Widget/Themes/Edit.php:90 var/Widget/Themes/Edit.php:154
-#: var/Widget/Themes/Edit.php:171
+#: var/Widget/Themes/Edit.php:90 var/Widget/Themes/Edit.php:154 var/Widget/Themes/Edit.php:171
 msgid "您编辑的文件不存在"
 msgstr ""
 
-#: var/Widget/Options/General.php:304
+#: var/Widget/Options/General.php:310
 msgid "您设置的站点名称，会展示在网页的标题位置"
 msgstr ""
 
@@ -2924,7 +2972,7 @@ msgstr ""
 msgid "想起密码了？"
 msgstr ""
 
-#: install.php:1483
+#: install.php:1485
 msgid "感恩相遇，为你而来."
 msgstr ""
 
@@ -2940,7 +2988,7 @@ msgstr ""
 msgid "我们检测到你使用了 Apache 服务器, 但是程序无法在根目录创建.htaccess文件, 这可能是产生这个错误的原因"
 msgstr ""
 
-#: install.php:666
+#: install.php:668
 msgid "我已阅读并同意上述协议内容，开始下一步 &raquo;"
 msgstr ""
 
@@ -2976,7 +3024,7 @@ msgstr ""
 msgid "所有评论必须经过审核"
 msgstr ""
 
-#: var/Widget/Options/General.php:370
+#: var/Widget/Options/General.php:376
 msgid "所选择的语言包不存在"
 msgstr ""
 
@@ -2984,8 +3032,7 @@ msgstr ""
 msgid "手动投递、清理与重试队列任务"
 msgstr ""
 
-#: var/Widget/Options/General.php:353 var/Widget/Users/Profile.php:36
-#: var/Widget/Users/Profile.php:46 var/Widget/Users/Profile.php:55
+#: var/Widget/Options/General.php:359 var/Widget/Users/Profile.php:36 var/Widget/Users/Profile.php:46 var/Widget/Users/Profile.php:55
 msgid "打开"
 msgstr ""
 
@@ -3005,7 +3052,7 @@ msgstr ""
 msgid "执行插件停用回滚"
 msgstr ""
 
-#: var/Typecho/Palette.php:330
+#: var/Typecho/Palette.php:334
 msgid "扩展"
 msgstr ""
 
@@ -3045,7 +3092,7 @@ msgstr ""
 msgid "投递模式"
 msgstr ""
 
-#: var/Typecho/Palette.php:127
+#: var/Typecho/Palette.php:131
 msgid "折叠"
 msgstr ""
 
@@ -3073,8 +3120,7 @@ msgstr ""
 msgid "控制台"
 msgstr ""
 
-#: admin/plugins.php:91 admin/plugins.php:170
-#: var/Widget/Contents/Attachment/Edit.php:113
+#: admin/plugins.php:91 admin/plugins.php:170 var/Widget/Contents/Attachment/Edit.php:113
 msgid "描述"
 msgstr ""
 
@@ -3086,7 +3132,7 @@ msgstr ""
 msgid "提交修改"
 msgstr ""
 
-#: usr/themes/default/comments.php:56
+#: usr/themes/default/comments.php:55
 msgid "提交评论"
 msgstr ""
 
@@ -3094,8 +3140,7 @@ msgstr ""
 msgid "提示"
 msgstr ""
 
-#: var/Typecho/Palette.php:330 var/Widget/Menu.php:45
-#: var/Widget/Menu.php:97
+#: var/Typecho/Palette.php:334 var/Widget/Menu.php:45 var/Widget/Menu.php:97
 msgid "插件"
 msgstr ""
 
@@ -3119,15 +3164,15 @@ msgstr ""
 msgid "插件已经被禁用"
 msgstr ""
 
-#: var/Widget/Backup.php:787
+#: var/Widget/Backup.php:812
 msgid "插件扩展导入失败(type=%s): %s"
 msgstr ""
 
-#: var/Widget/Backup.php:780
+#: var/Widget/Backup.php:805
 msgid "插件扩展导入数据格式无效"
 msgstr ""
 
-#: var/Typecho/Palette.php:327 var/Widget/Menu.php:97
+#: var/Typecho/Palette.php:331 var/Widget/Menu.php:97
 msgid "插件管理"
 msgstr ""
 
@@ -3143,8 +3188,7 @@ msgstr ""
 msgid "插入链接"
 msgstr ""
 
-#: usr/themes/default/404.php:8 usr/themes/default/404.php:9
-#: usr/themes/default/header.php:76
+#: usr/themes/default/404.php:8 usr/themes/default/404.php:9 usr/themes/default/header.php:76
 msgid "搜索"
 msgstr ""
 
@@ -3168,8 +3212,7 @@ msgstr ""
 msgid "撤销"
 msgstr ""
 
-#: admin/editor-js.php:295 var/Typecho/Palette.php:159
-#: var/Widget/Menu.php:45
+#: admin/editor-js.php:295 var/Typecho/Palette.php:163 var/Widget/Menu.php:45
 msgid "撰写"
 msgstr ""
 
@@ -3177,7 +3220,7 @@ msgstr ""
 msgid "撰写文章"
 msgstr ""
 
-#: var/Typecho/Palette.php:156 var/Widget/Menu.php:62
+#: var/Typecho/Palette.php:160 var/Widget/Menu.php:62
 msgid "撰写新文章"
 msgstr ""
 
@@ -3189,10 +3232,7 @@ msgstr ""
 msgid "撰写评论"
 msgstr ""
 
-#: admin/manage-categories.php:27 admin/manage-comments.php:61
-#: admin/manage-medias.php:20 admin/manage-pages.php:20
-#: admin/manage-posts.php:71 admin/manage-tags.php:22
-#: admin/manage-users.php:18 admin/plugins.php:94 admin/plugins.php:173
+#: admin/manage-categories.php:27 admin/manage-comments.php:61 admin/manage-medias.php:20 admin/manage-pages.php:20 admin/manage-posts.php:71 admin/manage-tags.php:22 admin/manage-users.php:18 admin/plugins.php:94 admin/plugins.php:173
 msgid "操作"
 msgstr ""
 
@@ -3228,7 +3268,7 @@ msgstr ""
 msgid "数字列表"
 msgstr ""
 
-#: var/Typecho/Palette.php:354
+#: var/Typecho/Palette.php:358
 msgid "数据备份"
 msgstr ""
 
@@ -3240,7 +3280,7 @@ msgstr ""
 msgid "数据库 SSL 证书"
 msgstr ""
 
-#: install.php:1166
+#: install.php:1168
 msgid "数据库: \"%s\"不存在，请手动创建后重试"
 msgstr ""
 
@@ -3248,23 +3288,23 @@ msgstr ""
 msgid "数据库关键结构已同步"
 msgstr ""
 
-#: install.php:900
+#: install.php:902
 msgid "数据库前缀"
 msgstr ""
 
-#: install.php:1059
+#: install.php:1061
 msgid "数据库前缀不能为空"
 msgstr ""
 
-#: install.php:1061
+#: install.php:1063
 msgid "数据库前缀不能超过 16 个字符"
 msgstr ""
 
-#: install.php:1062
+#: install.php:1064
 msgid "数据库前缀仅允许字母、数字和下划线"
 msgstr ""
 
-#: install.php:1060
+#: install.php:1062
 msgid "数据库前缀至少 1 个字符"
 msgstr ""
 
@@ -3280,7 +3320,7 @@ msgstr ""
 msgid "数据库名"
 msgstr ""
 
-#: install.php:1090 install.php:1107
+#: install.php:1092 install.php:1109
 msgid "数据库名不能为空"
 msgstr ""
 
@@ -3288,15 +3328,15 @@ msgstr ""
 msgid "数据库地址"
 msgstr ""
 
-#: install.php:1084 install.php:1101
+#: install.php:1086 install.php:1103
 msgid "数据库地址不能为空"
 msgstr ""
 
-#: install.php:1088 install.php:1105
+#: install.php:1090 install.php:1107
 msgid "数据库字符集不能为空"
 msgstr ""
 
-#: install.php:1089
+#: install.php:1091
 msgid "数据库字符集仅支持 utf8mb4"
 msgstr ""
 
@@ -3312,15 +3352,15 @@ msgstr ""
 msgid "数据库文件路径"
 msgstr ""
 
-#: install.php:1113
+#: install.php:1115
 msgid "数据库文件路径不能为空"
 msgstr ""
 
-#: var/Utils/Migration/SchemaManager.php:156
+#: var/Utils/Migration/SchemaManager.php:158
 msgid "数据库版本"
 msgstr ""
 
-#: var/Utils/Migration/SchemaManager.php:165
+#: var/Utils/Migration/SchemaManager.php:167
 msgid "数据库版本不满足结构修复要求"
 msgstr ""
 
@@ -3328,7 +3368,7 @@ msgstr ""
 msgid "数据库用户名"
 msgstr ""
 
-#: install.php:1087 install.php:1104
+#: install.php:1089 install.php:1106
 msgid "数据库用户名不能为空"
 msgstr ""
 
@@ -3336,11 +3376,11 @@ msgstr ""
 msgid "数据库端口"
 msgstr ""
 
-#: install.php:1085 install.php:1102
+#: install.php:1087 install.php:1104
 msgid "数据库端口不能为空"
 msgstr ""
 
-#: install.php:1086 install.php:1103
+#: install.php:1088 install.php:1105
 msgid "数据库端口必须是整数"
 msgstr ""
 
@@ -3352,23 +3392,23 @@ msgstr ""
 msgid "数据库编码"
 msgstr ""
 
-#: install.php:886
+#: install.php:888
 msgid "数据库适配器"
 msgstr ""
 
-#: install.php:1064
+#: install.php:1066
 msgid "数据库适配器无效"
 msgstr ""
 
-#: install.php:1121
+#: install.php:1123
 msgid "数据库配置无效"
 msgstr ""
 
-#: install.php:1091
+#: install.php:1093
 msgid "数据表引擎不能为空"
 msgstr ""
 
-#: install.php:1092
+#: install.php:1094
 msgid "数据表引擎仅支持 InnoDB"
 msgstr ""
 
@@ -3376,13 +3416,11 @@ msgstr ""
 msgid "整包"
 msgstr ""
 
-#: admin/custom-fields-js.php:27 admin/custom-fields.php:29
-#: admin/custom-fields.php:54
+#: admin/custom-fields-js.php:27 admin/custom-fields.php:29 admin/custom-fields.php:54
 msgid "整数"
 msgstr ""
 
-#: var/Typecho/Palette.php:195 var/Typecho/Palette.php:258
-#: var/Widget/Menu.php:82
+#: var/Typecho/Palette.php:199 var/Typecho/Palette.php:262 var/Widget/Menu.php:82
 msgid "文件"
 msgstr ""
 
@@ -3390,9 +3428,7 @@ msgstr ""
 msgid "文件 %s 已经替换"
 msgstr ""
 
-#: var/Widget/Themes/Edit.php:35 var/Widget/Themes/Edit.php:41
-#: var/Widget/Themes/Edit.php:50 var/Widget/Themes/Edit.php:54
-#: var/Widget/Themes/Edit.php:167
+#: var/Widget/Themes/Edit.php:35 var/Widget/Themes/Edit.php:41 var/Widget/Themes/Edit.php:50 var/Widget/Themes/Edit.php:54 var/Widget/Themes/Edit.php:167
 msgid "文件 %s 无法被写入"
 msgstr ""
 
@@ -3408,13 +3444,11 @@ msgstr ""
 msgid "文件不可读: %s"
 msgstr ""
 
-#: var/Widget/Archive.php:303 var/Widget/Archive.php:996
-#: var/Widget/Contents/Attachment/Edit.php:210
+#: var/Widget/Archive.php:308 var/Widget/Archive.php:1000 var/Widget/Contents/Attachment/Edit.php:210
 msgid "文件不存在"
 msgstr ""
 
-#: var/Typecho/Upgrade/Runner.php:353 var/Typecho/Upgrade/Runner.php:357
-#: var/Typecho/Upgrade/Runner.php:388
+#: var/Typecho/Upgrade/Runner.php:353 var/Typecho/Upgrade/Runner.php:357 var/Typecho/Upgrade/Runner.php:388
 msgid "文件写入失败: %s"
 msgstr ""
 
@@ -3430,12 +3464,11 @@ msgstr ""
 msgid "文件大小超过限制"
 msgstr ""
 
-#: var/Widget/Contents/Attachment/Edit.php:164
-#: var/Widget/Contents/Attachment/Edit.php:169
+#: var/Widget/Contents/Attachment/Edit.php:164 var/Widget/Contents/Attachment/Edit.php:169
 msgid "文件已经被删除"
 msgstr ""
 
-#: admin/file-upload-js.php:104 var/Widget/Upload.php:443
+#: admin/file-upload-js.php:104 var/Widget/Upload.php:451
 msgid "文件扩展名不被支持"
 msgstr ""
 
@@ -3455,13 +3488,11 @@ msgstr ""
 msgid "文件缩略名用于创建友好的链接形式,建议使用字母,数字,下划线和横杠."
 msgstr ""
 
-#: admin/index.php:262 admin/index.php:287 admin/profile.php:35
-#: var/Typecho/Palette.php:159 var/Typecho/Palette.php:204
-#: var/Widget/Menu.php:69
+#: admin/index.php:262 admin/index.php:287 admin/profile.php:35 var/Typecho/Palette.php:163 var/Typecho/Palette.php:208 var/Widget/Menu.php:69
 msgid "文章"
 msgstr ""
 
-#: var/Widget/Contents/Post/Edit.php:63
+#: var/Widget/Contents/Post/Edit.php:62
 msgid "文章 \"%s\" 已计划于 %s 发布，当前可先<a href=\"%s\">预览</a>"
 msgstr ""
 
@@ -3485,7 +3516,7 @@ msgstr ""
 msgid "文章「{title}」有一条待审评论"
 msgstr ""
 
-#: var/Widget/Contents/Post/Edit.php:270
+#: var/Widget/Contents/Post/Edit.php:273
 msgid "文章不存在"
 msgstr ""
 
@@ -3509,11 +3540,11 @@ msgstr ""
 msgid "文章导航"
 msgstr ""
 
-#: var/Widget/Contents/Post/Edit.php:229
+#: var/Widget/Contents/Post/Edit.php:230
 msgid "文章已经被删除"
 msgstr ""
 
-#: var/Widget/Contents/Post/Edit.php:178
+#: var/Widget/Contents/Post/Edit.php:180
 msgid "文章已经被标记为<strong>%s</strong>"
 msgstr ""
 
@@ -3537,8 +3568,7 @@ msgstr ""
 msgid "斜体文字"
 msgstr ""
 
-#: admin/manage-categories.php:87 admin/manage-pages.php:107
-#: admin/menu.php:154
+#: admin/manage-categories.php:87 admin/manage-pages.php:107 admin/menu.php:154
 msgid "新增"
 msgstr ""
 
@@ -3546,7 +3576,7 @@ msgstr ""
 msgid "新增 %s 的子分类"
 msgstr ""
 
-#: var/Widget/Contents/Page/Edit.php:289
+#: var/Widget/Contents/Page/Edit.php:300
 msgid "新增 %s 的子页面"
 msgstr ""
 
@@ -3562,16 +3592,15 @@ msgstr ""
 msgid "新密码"
 msgstr ""
 
-#: var/Typecho/Palette.php:159 var/Typecho/Palette.php:168
-#: var/Typecho/Palette.php:177 var/Typecho/Palette.php:186
+#: var/Typecho/Palette.php:163 var/Typecho/Palette.php:172 var/Typecho/Palette.php:181 var/Typecho/Palette.php:190
 msgid "新建"
 msgstr ""
 
-#: var/Typecho/Palette.php:174
+#: var/Typecho/Palette.php:178
 msgid "新建分类"
 msgstr ""
 
-#: var/Typecho/Palette.php:183
+#: var/Typecho/Palette.php:187
 msgid "新建用户"
 msgstr ""
 
@@ -3579,11 +3608,11 @@ msgstr ""
 msgid "无"
 msgstr ""
 
-#: var/Widget/Backup.php:160
+#: var/Widget/Backup.php:164
 msgid "无法写入临时备份文件"
 msgstr ""
 
-#: var/Widget/Backup.php:154
+#: var/Widget/Backup.php:158
 msgid "无法创建临时备份文件"
 msgstr ""
 
@@ -3595,28 +3624,27 @@ msgstr ""
 msgid "无法登录, 密码错误"
 msgstr ""
 
-#: var/Widget/Backup.php:746
+#: var/Widget/Backup.php:771
 msgid "无法确认表 %s 的事务能力，恢复将按非事务方式执行: %s"
 msgstr ""
 
-#: var/Widget/Backup.php:752
+#: var/Widget/Backup.php:777
 msgid "无法确认表 %s 的存储引擎，恢复将按非事务方式执行"
 msgstr ""
 
-#: var/Utils/Helper.php:87 var/Widget/Plugins/Edit.php:283
-#: var/Widget/Plugins/Edit.php:294
+#: var/Utils/Helper.php:87 var/Widget/Plugins/Edit.php:283 var/Widget/Plugins/Edit.php:294
 msgid "无法禁用插件"
 msgstr ""
 
-#: install.php:748
+#: install.php:750
 msgid "无法识别当前 MySQL 服务端版本：%s"
 msgstr ""
 
-#: var/Utils/Migration/SchemaManager.php:158
+#: var/Utils/Migration/SchemaManager.php:160
 msgid "无法识别当前版本"
 msgstr ""
 
-#: var/Widget/Backup.php:421 var/Widget/Backup.php:426
+#: var/Widget/Backup.php:417 var/Widget/Backup.php:422
 msgid "无法读取备份文件"
 msgstr ""
 
@@ -3628,9 +3656,7 @@ msgstr ""
 msgid "无法选择数据库 %d"
 msgstr ""
 
-#: var/Widget/Plugins/Config.php:48 var/Widget/Plugins/Config.php:53
-#: var/Widget/Users/Profile.php:325 var/Widget/Users/Profile.php:334
-#: var/Widget/Users/Profile.php:341
+#: var/Widget/Plugins/Config.php:48 var/Widget/Plugins/Config.php:53 var/Widget/Users/Profile.php:325 var/Widget/Users/Profile.php:334 var/Widget/Users/Profile.php:341
 msgid "无法配置插件"
 msgstr ""
 
@@ -3654,7 +3680,7 @@ msgstr ""
 msgid "时"
 msgstr ""
 
-#: var/Widget/Options/General.php:377 var/Widget/XmlRpc.php:104
+#: var/Widget/Options/General.php:383 var/Widget/XmlRpc.php:104
 msgid "时区"
 msgstr ""
 
@@ -3706,7 +3732,7 @@ msgstr ""
 msgid "是否使用地址重写功能"
 msgstr ""
 
-#: var/Widget/Options/General.php:346 var/Widget/XmlRpc.php:129
+#: var/Widget/Options/General.php:352 var/Widget/XmlRpc.php:129
 msgid "是否允许注册"
 msgstr ""
 
@@ -3714,8 +3740,7 @@ msgstr ""
 msgid "昵称"
 msgstr ""
 
-#: var/Widget/Users/Edit.php:158 var/Widget/Users/EditTrait.php:70
-#: var/Widget/Users/Profile.php:230
+#: var/Widget/Users/Edit.php:158 var/Widget/Users/EditTrait.php:70 var/Widget/Users/Profile.php:230
 msgid "昵称已经存在"
 msgstr ""
 
@@ -3739,11 +3764,11 @@ msgstr ""
 msgid "暂无"
 msgstr ""
 
-#: admin/index.php:452 var/Widget/Ajax.php:583
+#: admin/index.php:454 var/Widget/Ajax.php:583
 msgid "暂无动态"
 msgstr ""
 
-#: var/Typecho/Palette.php:426
+#: var/Typecho/Palette.php:430
 msgid "暂无可用命令"
 msgstr ""
 
@@ -3751,19 +3776,19 @@ msgstr ""
 msgid "暂无评论"
 msgstr ""
 
-#: admin/index.php:453 var/Widget/Ajax.php:520 var/Widget/Ajax.php:583
+#: admin/index.php:455 var/Widget/Ajax.php:520 var/Widget/Ajax.php:583
 msgid "暂时无法获取官方动态，请检查网络后重试。"
 msgstr ""
 
-#: admin/index.php:405
+#: admin/index.php:407
 msgid "暂时没有回复"
 msgstr ""
 
-#: admin/index.php:375
+#: admin/index.php:377
 msgid "暂时没有文章"
 msgstr ""
 
-#: var/Typecho/Palette.php:111
+#: var/Typecho/Palette.php:115
 msgid "暗色"
 msgstr ""
 
@@ -3787,7 +3812,7 @@ msgstr ""
 msgid "最后登录 %s"
 msgstr ""
 
-#: var/Typecho/Palette.php:135
+#: var/Typecho/Palette.php:139
 msgid "最大化"
 msgstr ""
 
@@ -3795,7 +3820,7 @@ msgstr ""
 msgid "最大重试次数"
 msgstr ""
 
-#: admin/index.php:385
+#: admin/index.php:387
 msgid "最新回复"
 msgstr ""
 
@@ -3811,7 +3836,7 @@ msgstr ""
 msgid "最近文章"
 msgstr ""
 
-#: var/Typecho/Palette.php:423
+#: var/Typecho/Palette.php:427
 msgid "最近访问"
 msgstr ""
 
@@ -3823,19 +3848,19 @@ msgstr ""
 msgid "有修订版"
 msgstr ""
 
-#: var/Utils/Migration/SchemaManager.php:231
+#: var/Utils/Migration/SchemaManager.php:233
 msgid "未发现按目标排序规则归一后的 contents.slug 重复"
 msgstr ""
 
-#: var/Utils/Migration/SchemaManager.php:199
+#: var/Utils/Migration/SchemaManager.php:201
 msgid "未发现按目标排序规则归一后的 email + scope 冲突"
 msgstr ""
 
-#: var/Utils/Migration/SchemaManager.php:215
+#: var/Utils/Migration/SchemaManager.php:217
 msgid "未发现按目标排序规则归一后的 users.mail 重复"
 msgstr ""
 
-#: var/Utils/Migration/SchemaManager.php:247
+#: var/Utils/Migration/SchemaManager.php:249
 msgid "未发现按目标排序规则归一后的 users.name 重复"
 msgstr ""
 
@@ -3851,7 +3876,7 @@ msgstr ""
 msgid "未命名页面"
 msgstr ""
 
-#: admin/manage-medias.php:89
+#: admin/manage-medias.php:95
 msgid "未归档"
 msgstr ""
 
@@ -3863,7 +3888,7 @@ msgstr ""
 msgid "未归档文件已经被清理"
 msgstr ""
 
-#: var/Typecho/Palette.php:425
+#: var/Typecho/Palette.php:429
 msgid "未找到匹配的命令"
 msgstr ""
 
@@ -3875,7 +3900,7 @@ msgstr ""
 msgid "未知升级操作"
 msgstr ""
 
-#: var/Widget/Backup.php:146
+#: var/Widget/Backup.php:150
 msgid "未知恢复动作: %s"
 msgstr ""
 
@@ -3891,11 +3916,11 @@ msgstr ""
 msgid "本备份功能 <strong>仅处理核心内容数据</strong>，包括文章、评论、分类标签、关系、用户与字段数据。"
 msgstr ""
 
-#: install.php:653
+#: install.php:655
 msgid "本安装程序将自动检测您的服务器环境是否符合 TypeRenew 最低运行配置要求。"
 msgstr ""
 
-#: var/Widget/Backup.php:586
+#: var/Widget/Backup.php:611
 msgid "本恢复仅迁移内容数据，不包含设置项、主题文件和插件自建表数据"
 msgstr ""
 
@@ -3903,15 +3928,15 @@ msgstr ""
 msgid "本文由 <a href=\"%s\">%s</a> 撰写"
 msgstr ""
 
-#: var/Widget/Backup.php:967
+#: var/Widget/Backup.php:993
 msgid "本次恢复未执行迁移后修复"
 msgstr ""
 
-#: install.php:659
+#: install.php:661
 msgid "本程序 TypeRenew 基于原项目 <a href=\"https://typecho.org/\">Typecho</a> 进行二次开发，完整继承并严格遵守 GPL v2 开源许可协议。您可以在 <a href=\"https://www.gnu.org/copyleft/gpl.html\">GPL</a> 协议允许的范围内，自由使用、拷贝、修改和分发本程序，无论是用于商业还是非商业目的。"
 msgstr ""
 
-#: install.php:1444
+#: install.php:1446
 msgid "本程序由 TypeRenew 焕新呈现，基于 Typecho 开发，为现代化而生"
 msgstr ""
 
@@ -3919,7 +3944,7 @@ msgstr ""
 msgid "本页面由 <a href=\"%s\">%s</a> 创建"
 msgstr ""
 
-#: install.php:1462
+#: install.php:1464
 msgid "本页面由 TypeRenew 创建, 这只是个测试页面."
 msgstr ""
 
@@ -3939,7 +3964,7 @@ msgstr ""
 msgid "柏影"
 msgstr ""
 
-#: admin/index.php:386
+#: admin/index.php:388
 msgid "查看全部"
 msgstr ""
 
@@ -3947,7 +3972,7 @@ msgstr ""
 msgid "查看完整环境检查详情"
 msgstr ""
 
-#: install.php:534
+#: install.php:536
 msgid "查看您的 Blog"
 msgstr ""
 
@@ -3959,7 +3984,7 @@ msgstr ""
 msgid "查看网站"
 msgstr ""
 
-#: var/Typecho/Palette.php:379
+#: var/Typecho/Palette.php:383
 msgid "查看网站首页"
 msgstr ""
 
@@ -3967,8 +3992,7 @@ msgstr ""
 msgid "标准"
 msgstr ""
 
-#: admin/write-post.php:83 var/Typecho/Palette.php:249
-#: var/Widget/Menu.php:80
+#: admin/write-post.php:83 var/Typecho/Palette.php:253 var/Widget/Menu.php:80
 msgid "标签"
 msgstr ""
 
@@ -3984,8 +4008,7 @@ msgstr ""
 msgid "标签 <a href=\"%s\">%s</a> 已经被更新"
 msgstr ""
 
-#: var/Widget/Archive.php:1399 var/Widget/Metas/Tag/Admin.php:30
-#: var/Widget/Metas/Tag/Edit.php:171
+#: var/Widget/Archive.php:1403 var/Widget/Metas/Tag/Admin.php:30 var/Widget/Metas/Tag/Edit.php:171
 msgid "标签不存在"
 msgstr ""
 
@@ -4021,9 +4044,7 @@ msgstr ""
 msgid "标签缩略名"
 msgstr ""
 
-#: admin/manage-pages.php:27 admin/manage-pages.php:30
-#: admin/manage-posts.php:79 admin/manage-posts.php:82
-#: admin/manage-posts.php:85 admin/manage-posts.php:88
+#: admin/manage-pages.php:27 admin/manage-pages.php:30 admin/manage-posts.php:79 admin/manage-posts.php:82 admin/manage-posts.php:85 admin/manage-posts.php:88
 msgid "标记为<strong>%s</strong>"
 msgstr ""
 
@@ -4035,9 +4056,7 @@ msgstr ""
 msgid "标识：%s"
 msgstr ""
 
-#: admin/editor-js.php:65 admin/manage-pages.php:63
-#: admin/manage-posts.php:137 admin/write.php:42 admin/write.php:44
-#: var/Widget/Contents/Attachment/Edit.php:97
+#: admin/editor-js.php:65 admin/manage-pages.php:63 admin/manage-posts.php:137 admin/write.php:42 admin/write.php:44 var/Widget/Contents/Attachment/Edit.php:97
 msgid "标题"
 msgstr ""
 
@@ -4045,7 +4064,7 @@ msgstr ""
 msgid "标题文字"
 msgstr ""
 
-#: var/Widget/Options/General.php:424
+#: var/Widget/Options/General.php:430
 msgid "核心会校验扩展名，并对明显的危险内容类型做基础拦截；如需更严格策略，可通过安全类插件扩展"
 msgstr ""
 
@@ -4057,7 +4076,7 @@ msgstr ""
 msgid "检测到 %d 项 MySQL 风险，建议处理后再执行数据库升级或结构修复。"
 msgstr ""
 
-#: var/Widget/Upload.php:510
+#: var/Widget/Upload.php:518
 msgid "检测到不安全的附件内容类型"
 msgstr ""
 
@@ -4073,7 +4092,7 @@ msgstr ""
 msgid "检测到您之前使用的 \"%s\" 外观文件不存在，您可以重新上传此外观或者启用其他外观。"
 msgstr ""
 
-#: install.php:1558
+#: install.php:1560
 msgid "检测到数据库中已存在站点数据，但安装状态不完整。为防止被他人接管，安装程序已停止。请恢复数据库或删除 config.inc.php 后重试"
 msgstr ""
 
@@ -4129,11 +4148,11 @@ msgstr ""
 msgid "橙"
 msgstr ""
 
-#: admin/options-mail.php:196
+#: admin/options-mail.php:197
 msgid "次数"
 msgstr ""
 
-#: install.php:644 install.php:1441
+#: install.php:646 install.php:1443
 msgid "欢迎使用 TypeRenew"
 msgstr ""
 
@@ -4141,7 +4160,7 @@ msgstr ""
 msgid "欢迎回来"
 msgstr ""
 
-#: install.php:662
+#: install.php:664
 msgid "欢迎所有开发者、设计师和用户的反馈、建议与贡献，每一份力量都将帮助 TypeRenew 更好地成长。"
 msgstr ""
 
@@ -4261,7 +4280,7 @@ msgstr ""
 msgid "永久链接"
 msgstr ""
 
-#: var/Typecho/Palette.php:300 var/Widget/Menu.php:92
+#: var/Typecho/Palette.php:304 var/Widget/Menu.php:92
 msgid "永久链接设置"
 msgstr ""
 
@@ -4273,7 +4292,7 @@ msgstr ""
 msgid "没有任何分类"
 msgstr ""
 
-#: admin/manage-medias.php:97
+#: admin/manage-medias.php:103
 msgid "没有任何文件"
 msgstr ""
 
@@ -4305,16 +4324,15 @@ msgstr ""
 msgid "没有找到内容"
 msgstr ""
 
-#: var/Widget/Contents/Attachment/Edit.php:164
-#: var/Widget/Contents/Attachment/Edit.php:169
+#: var/Widget/Contents/Attachment/Edit.php:164 var/Widget/Contents/Attachment/Edit.php:169
 msgid "没有文件被删除"
 msgstr ""
 
-#: var/Widget/Contents/Post/Edit.php:229
+#: var/Widget/Contents/Post/Edit.php:230
 msgid "没有文章被删除"
 msgstr ""
 
-#: var/Widget/Contents/Post/Edit.php:178
+#: var/Widget/Contents/Post/Edit.php:180
 msgid "没有文章被标记"
 msgstr ""
 
@@ -4326,7 +4344,7 @@ msgstr ""
 msgid "没有标签被删除"
 msgstr ""
 
-#: install.php:1154
+#: install.php:1156
 msgid "没有检测到您手动创建的配置文件, 请检查后再次创建"
 msgstr ""
 
@@ -4342,8 +4360,7 @@ msgstr ""
 msgid "没有编辑该附件的权限"
 msgstr ""
 
-#: var/Widget/Contents/Page/Edit.php:216
-#: var/Widget/Contents/Post/Edit.php:261
+#: var/Widget/Contents/Page/Edit.php:218 var/Widget/Contents/Post/Edit.php:264
 msgid "没有草稿被删除"
 msgstr ""
 
@@ -4371,13 +4388,11 @@ msgstr ""
 msgid "没有评论被通过"
 msgstr ""
 
-#: var/Widget/Metas/Category/Edit.php:352
-#: var/Widget/Metas/Category/Edit.php:382
+#: var/Widget/Metas/Category/Edit.php:352 var/Widget/Metas/Category/Edit.php:382
 msgid "没有选择任何分类"
 msgstr ""
 
-#: var/Widget/Backup.php:374 var/Widget/Backup.php:383
-#: var/Widget/Backup.php:394
+#: var/Widget/Backup.php:370 var/Widget/Backup.php:379 var/Widget/Backup.php:390
 msgid "没有选择任何备份文件"
 msgstr ""
 
@@ -4385,8 +4400,7 @@ msgstr ""
 msgid "没有选择任何标签"
 msgstr ""
 
-#: var/Widget/Upload.php:210 var/Widget/Upload.php:432
-#: var/Widget/Upload.php:526 var/Widget/Upload.php:531
+#: var/Widget/Upload.php:210 var/Widget/Upload.php:438 var/Widget/Upload.php:534 var/Widget/Upload.php:539 var/Widget/Upload.php:543
 msgid "没有选择任何附件文件"
 msgstr ""
 
@@ -4426,9 +4440,7 @@ msgstr ""
 msgid "测试邮件已发送"
 msgstr ""
 
-#: admin/manage-categories.php:80 admin/manage-medias.php:80
-#: admin/manage-pages.php:99 admin/manage-posts.php:179
-#: admin/manage-users.php:70
+#: admin/manage-categories.php:80 admin/manage-medias.php:86 admin/manage-pages.php:99 admin/manage-posts.php:179 admin/manage-users.php:70
 msgid "浏览 %s"
 msgstr ""
 
@@ -4480,24 +4492,23 @@ msgstr ""
 msgid "清空缓存"
 msgstr ""
 
-#: var/Typecho/Palette.php:399
+#: var/Typecho/Palette.php:403
 msgid "清除"
 msgstr ""
 
-#: var/Typecho/Palette.php:396
+#: var/Typecho/Palette.php:400
 msgid "清除前端缓存"
 msgstr ""
 
-#: var/Typecho/Palette.php:421
+#: var/Typecho/Palette.php:425
 msgid "清除缓存失败"
 msgstr ""
 
-#: var/Widget/XmlRpc.php:1260 var/Widget/XmlRpc.php:1264
-#: var/Widget/XmlRpc.php:1310
+#: var/Widget/XmlRpc.php:1260 var/Widget/XmlRpc.php:1264 var/Widget/XmlRpc.php:1310
 msgid "源地址服务器错误"
 msgstr ""
 
-#: var/Typecho/Palette.php:143
+#: var/Typecho/Palette.php:147
 msgid "滚动"
 msgstr ""
 
@@ -4521,8 +4532,7 @@ msgstr ""
 msgid "点击选择备份文件"
 msgstr ""
 
-#: var/Widget/Metas/Category/Edit.php:99
-#: var/Widget/Metas/Category/Edit.php:246
+#: var/Widget/Metas/Category/Edit.php:99 var/Widget/Metas/Category/Edit.php:246
 msgid "父分类不存在"
 msgstr ""
 
@@ -4530,7 +4540,7 @@ msgstr ""
 msgid "父级分类"
 msgstr ""
 
-#: var/Widget/Archive.php:1350
+#: var/Widget/Archive.php:1354
 msgid "父级分类不存在"
 msgstr ""
 
@@ -4570,7 +4580,7 @@ msgstr ""
 msgid "版本：%s → %s"
 msgstr ""
 
-#: admin/options-mail.php:195
+#: admin/options-mail.php:196
 msgid "状态"
 msgstr ""
 
@@ -4646,8 +4656,7 @@ msgstr ""
 msgid "用于检测官方插件版本信息。国内服务器可切换镜像以解决 GitHub Raw 访问不稳定的问题。"
 msgstr ""
 
-#: var/Typecho/Palette.php:186 var/Typecho/Palette.php:267
-#: var/Widget/Menu.php:84
+#: var/Typecho/Palette.php:190 var/Typecho/Palette.php:271 var/Widget/Menu.php:84
 msgid "用户"
 msgstr ""
 
@@ -4663,8 +4672,7 @@ msgstr ""
 msgid "用户 <strong>%s</strong> 已经成功注册"
 msgstr ""
 
-#: var/Widget/Contents/Post/Admin.php:26 var/Widget/Users/Edit.php:33
-#: var/Widget/Users/Edit.php:186
+#: var/Widget/Contents/Post/Admin.php:26 var/Widget/Users/Edit.php:33 var/Widget/Users/Edit.php:186
 msgid "用户不存在"
 msgstr ""
 
@@ -4672,13 +4680,11 @@ msgstr ""
 msgid "用户主键不存在"
 msgstr ""
 
-#: admin/manage-comments.php:332 admin/manage-users.php:52
-#: admin/register.php:22 install.php:1313 var/Widget/Users/Edit.php:87
+#: admin/manage-comments.php:332 admin/manage-users.php:52 admin/register.php:22 install.php:1315 var/Widget/Users/Edit.php:87
 msgid "用户名"
 msgstr ""
 
-#: var/Widget/Register.php:37 var/Widget/Users/Edit.php:177
-#: var/Widget/Users/EditTrait.php:77
+#: var/Widget/Register.php:37 var/Widget/Users/Edit.php:177 var/Widget/Users/EditTrait.php:77
 msgid "用户名已经存在"
 msgstr ""
 
@@ -4702,17 +4708,15 @@ msgstr ""
 msgid "用户名至少包含2个字符"
 msgstr ""
 
-#: install.php:1382
+#: install.php:1384
 msgid "用户名长度超过限制, 请不要超过 32 个字符"
 msgstr ""
 
-#: var/Widget/Users/Edit.php:99 var/Widget/Users/Edit.php:178
-#: var/Widget/Users/Profile.php:291
+#: var/Widget/Users/Edit.php:99 var/Widget/Users/Edit.php:178 var/Widget/Users/Profile.php:291
 msgid "用户密码"
 msgstr ""
 
-#: var/Widget/Users/Edit.php:104 var/Widget/Users/Edit.php:179
-#: var/Widget/Users/Profile.php:296
+#: var/Widget/Users/Edit.php:104 var/Widget/Users/Edit.php:179 var/Widget/Users/Profile.php:296
 msgid "用户密码确认"
 msgstr ""
 
@@ -4732,7 +4736,7 @@ msgstr ""
 msgid "用户组选择错误"
 msgstr ""
 
-#: var/Widget/Options/General.php:423
+#: var/Widget/Options/General.php:429
 msgid "用逗号 \",\" 将后缀名隔开, 例如: %s"
 msgstr ""
 
@@ -4748,22 +4752,19 @@ msgstr ""
 msgid "电子邮箱地址将作为此用户的主要联系方式."
 msgstr ""
 
-#: var/Widget/Register.php:39 var/Widget/Users/Edit.php:164
-#: var/Widget/Users/EditTrait.php:74 var/Widget/Users/Profile.php:236
+#: var/Widget/Register.php:39 var/Widget/Users/Edit.php:164 var/Widget/Users/EditTrait.php:74 var/Widget/Users/Profile.php:236
 msgid "电子邮箱地址已经存在"
 msgstr ""
 
-#: var/Widget/Feedback.php:150 var/Widget/Register.php:41
-#: var/Widget/Users/Edit.php:166 var/Widget/Users/Profile.php:238
+#: var/Widget/Feedback.php:150 var/Widget/Register.php:41 var/Widget/Users/Edit.php:166 var/Widget/Users/Profile.php:238
 msgid "电子邮箱最多包含150个字符"
 msgstr ""
 
-#: install.php:1384 var/Widget/Register.php:40
-#: var/Widget/Users/Edit.php:165 var/Widget/Users/Profile.php:237
+#: install.php:1386 var/Widget/Register.php:40 var/Widget/Users/Edit.php:165 var/Widget/Users/Profile.php:237
 msgid "电子邮箱格式错误"
 msgstr ""
 
-#: var/Typecho/Palette.php:448
+#: var/Typecho/Palette.php:452
 msgid "界面"
 msgstr ""
 
@@ -4771,7 +4772,7 @@ msgstr ""
 msgid "留空保持不变"
 msgstr ""
 
-#: admin/menu.php:119 var/Typecho/Palette.php:391
+#: admin/menu.php:119 var/Typecho/Palette.php:395
 msgid "登出"
 msgstr ""
 
@@ -4795,11 +4796,11 @@ msgstr ""
 msgid "登录地址"
 msgstr ""
 
-#: install.php:1320
+#: install.php:1322
 msgid "登录密码"
 msgstr ""
 
-#: install.php:1322
+#: install.php:1324
 msgid "登录密码至少需要 %d 个字符，且不能超过 %d 字节。若留空，系统将自动生成随机密码（不推荐）"
 msgstr ""
 
@@ -4815,7 +4816,7 @@ msgstr ""
 msgid "登录尝试过于频繁，请在 %d 分钟后重试"
 msgstr ""
 
-#: usr/themes/default/comments.php:36
+#: usr/themes/default/comments.php:35
 msgid "登录身份: "
 msgstr ""
 
@@ -4827,8 +4828,7 @@ msgstr ""
 msgid "目前有 %s 篇文章，%s 条评论，%s 个分类"
 msgstr ""
 
-#: var/Typecho/Upgrade/Runner.php:628 var/Typecho/Upgrade/Runner.php:636
-#: var/Typecho/Upgrade/Runner.php:772 var/Typecho/Upgrade/Runner.php:776
+#: var/Typecho/Upgrade/Runner.php:628 var/Typecho/Upgrade/Runner.php:636 var/Typecho/Upgrade/Runner.php:772 var/Typecho/Upgrade/Runner.php:776
 msgid "目录不可写: %s"
 msgstr ""
 
@@ -4840,11 +4840,11 @@ msgstr ""
 msgid "目标地址禁止Ping"
 msgstr ""
 
-#: var/Widget/Backup.php:556
+#: var/Widget/Backup.php:581
 msgid "目标数据库缺少 %s 表或无法读取其结构"
 msgstr ""
 
-#: var/Widget/Options/Reading.php:164
+#: var/Widget/Options/Reading.php:163
 msgid "直接调用 %s 模板文件"
 msgstr ""
 
@@ -4860,7 +4860,7 @@ msgstr ""
 msgid "确定"
 msgstr ""
 
-#: var/Typecho/Palette.php:400
+#: var/Typecho/Palette.php:404
 msgid "确定要清除前端缓存吗？这将重置您的界面偏好设置。"
 msgstr ""
 
@@ -4880,7 +4880,7 @@ msgstr ""
 msgid "确认退订"
 msgstr ""
 
-#: install.php:909
+#: install.php:911
 msgid "确认配置并开始安装 &raquo;"
 msgstr ""
 
@@ -4888,8 +4888,7 @@ msgstr ""
 msgid "示例评论者"
 msgstr ""
 
-#: var/Widget/Mail.php:36 var/Widget/Service.php:37
-#: var/Widget/Service.php:268 var/Widget/User.php:214
+#: var/Widget/Mail.php:36 var/Widget/Service.php:37 var/Widget/Service.php:268 var/Widget/User.php:214
 msgid "禁止访问"
 msgstr ""
 
@@ -4905,8 +4904,7 @@ msgstr ""
 msgid "禁用的插件"
 msgstr ""
 
-#: admin/manage-posts.php:88 admin/manage-posts.php:168
-#: admin/write-post.php:105 var/Widget/Contents/Post/Edit.php:107
+#: admin/manage-posts.php:88 admin/manage-posts.php:168 admin/write-post.php:105 var/Widget/Contents/Post/Edit.php:107
 msgid "私密"
 msgstr ""
 
@@ -4914,11 +4912,11 @@ msgstr ""
 msgid "秒"
 msgstr ""
 
-#: usr/themes/default/comments.php:42
+#: usr/themes/default/comments.php:41
 msgid "称呼"
 msgstr ""
 
-#: usr/themes/default/comments.php:42
+#: usr/themes/default/comments.php:41
 msgid "称呼 *"
 msgstr ""
 
@@ -4942,31 +4940,31 @@ msgstr ""
 msgid "站点 LOGO 地址"
 msgstr ""
 
-#: var/Widget/Options/General.php:304
+#: var/Widget/Options/General.php:310
 msgid "站点名称"
 msgstr ""
 
-#: var/Widget/Options/General.php:314
+#: var/Widget/Options/General.php:320
 msgid "站点地址"
 msgstr ""
 
-#: var/Widget/Options/General.php:315
+#: var/Widget/Options/General.php:321
 msgid "站点地址主要用于生成内容的永久链接"
 msgstr ""
 
-#: install.php:286
+#: install.php:288
 msgid "站点已安装，但当前无法连接数据库，请检查数据库服务后重试"
 msgstr ""
 
-#: var/Widget/Options/General.php:328
+#: var/Widget/Options/General.php:334
 msgid "站点描述"
 msgstr ""
 
-#: var/Widget/Options/General.php:329
+#: var/Widget/Options/General.php:335
 msgid "站点描述将显示在网页代码的头部区域"
 msgstr ""
 
-#: install.php:881
+#: install.php:883
 msgid "站点配置初始化"
 msgstr ""
 
@@ -4986,9 +4984,7 @@ msgstr ""
 msgid "等待审核"
 msgstr ""
 
-#: admin/manage-comments.php:85 admin/manage-medias.php:39
-#: admin/manage-pages.php:44 admin/manage-posts.php:110
-#: admin/manage-users.php:34
+#: admin/manage-comments.php:85 admin/manage-medias.php:39 admin/manage-pages.php:44 admin/manage-posts.php:110 admin/manage-users.php:34
 msgid "筛选"
 msgstr ""
 
@@ -4996,10 +4992,7 @@ msgstr ""
 msgid "签名规则"
 msgstr ""
 
-#: var/Typecho/Palette.php:204 var/Typecho/Palette.php:213
-#: var/Typecho/Palette.php:222 var/Typecho/Palette.php:240
-#: var/Typecho/Palette.php:249 var/Typecho/Palette.php:267
-#: var/Typecho/Palette.php:444 var/Widget/Menu.php:45
+#: var/Typecho/Palette.php:208 var/Typecho/Palette.php:217 var/Typecho/Palette.php:226 var/Typecho/Palette.php:244 var/Typecho/Palette.php:253 var/Typecho/Palette.php:271 var/Typecho/Palette.php:448 var/Widget/Menu.php:45
 msgid "管理"
 msgstr ""
 
@@ -5011,8 +5004,7 @@ msgstr ""
 msgid "管理 %s 的子页面"
 msgstr ""
 
-#: var/Typecho/Palette.php:237 var/Widget/Menu.php:75
-#: var/Widget/Metas/Category/Admin.php:62
+#: var/Typecho/Palette.php:241 var/Widget/Menu.php:75 var/Widget/Metas/Category/Admin.php:62
 msgid "管理分类"
 msgstr ""
 
@@ -5024,7 +5016,7 @@ msgstr ""
 msgid "管理员"
 msgstr ""
 
-#: var/Typecho/Palette.php:255
+#: var/Typecho/Palette.php:259
 msgid "管理媒体文件"
 msgstr ""
 
@@ -5032,29 +5024,27 @@ msgstr ""
 msgid "管理文件"
 msgstr ""
 
-#: admin/index.php:205 var/Typecho/Palette.php:201 var/Widget/Menu.php:69
+#: admin/index.php:204 var/Typecho/Palette.php:205 var/Widget/Menu.php:69
 msgid "管理文章"
 msgstr ""
 
-#: var/Typecho/Palette.php:246 var/Widget/Menu.php:80
-#: var/Widget/Metas/Tag/Admin.php:33
+#: var/Typecho/Palette.php:250 var/Widget/Menu.php:80 var/Widget/Metas/Tag/Admin.php:33
 msgid "管理标签"
 msgstr ""
 
-#: var/Typecho/Palette.php:210 var/Widget/Contents/Page/Admin.php:76
-#: var/Widget/Menu.php:71
+#: var/Typecho/Palette.php:214 var/Widget/Contents/Page/Admin.php:76 var/Widget/Menu.php:71
 msgid "管理独立页面"
 msgstr ""
 
-#: var/Typecho/Palette.php:264 var/Widget/Menu.php:84
+#: var/Typecho/Palette.php:268 var/Widget/Menu.php:84
 msgid "管理用户"
 msgstr ""
 
-#: admin/index.php:209 var/Typecho/Palette.php:219 var/Widget/Menu.php:73
+#: admin/index.php:208 var/Typecho/Palette.php:223 var/Widget/Menu.php:73
 msgid "管理评论"
 msgstr ""
 
-#: admin/options-mail.php:194 admin/upgrade.php:345
+#: admin/options-mail.php:195 admin/upgrade.php:345
 msgid "类型"
 msgstr ""
 
@@ -5094,12 +5084,11 @@ msgstr ""
 msgid "统计"
 msgstr ""
 
-#: install.php:1334
+#: install.php:1336
 msgid "继续安装 &raquo;"
 msgstr ""
 
-#: var/Typecho/Palette.php:321 var/Typecho/Palette.php:399
-#: var/Widget/Menu.php:93
+#: var/Typecho/Palette.php:325 var/Typecho/Palette.php:403 var/Widget/Menu.php:93
 msgid "缓存"
 msgstr ""
 
@@ -5131,8 +5120,7 @@ msgstr ""
 msgid "缓存状态"
 msgstr ""
 
-#: admin/options-tabs.php:9 var/Typecho/Palette.php:318
-#: var/Widget/Menu.php:93
+#: admin/options-tabs.php:9 var/Typecho/Palette.php:322 var/Widget/Menu.php:93
 msgid "缓存设置"
 msgstr ""
 
@@ -5140,16 +5128,11 @@ msgstr ""
 msgid "缓存驱动"
 msgstr ""
 
-#: admin/file-upload-js.php:149 admin/file-upload.php:40
-#: admin/index.php:370 admin/manage-comments.php:170
-#: admin/manage-users.php:82 admin/themes.php:64
-#: var/Widget/Users/Edit.php:115
+#: admin/file-upload-js.php:149 admin/file-upload.php:40 admin/index.php:371 admin/manage-comments.php:170 admin/manage-users.php:82 admin/themes.php:64 var/Widget/Users/Edit.php:115
 msgid "编辑"
 msgstr ""
 
-#: admin/manage-pages.php:94 admin/manage-posts.php:174
-#: var/Widget/Contents/Page/Edit.php:280
-#: var/Widget/Contents/PrepareEditTrait.php:64
+#: admin/manage-pages.php:94 admin/manage-posts.php:174 var/Widget/Contents/Page/Edit.php:291 var/Widget/Contents/PrepareEditTrait.php:64
 msgid "编辑 %s"
 msgstr ""
 
@@ -5165,7 +5148,7 @@ msgstr ""
 msgid "编辑分类 %s"
 msgstr ""
 
-#: var/Typecho/Palette.php:348
+#: var/Typecho/Palette.php:352
 msgid "编辑器"
 msgstr ""
 
@@ -5201,13 +5184,11 @@ msgstr ""
 msgid "编辑用户 %s"
 msgstr ""
 
-#: admin/manage-categories.php:65
-#: var/Widget/Contents/Attachment/Edit.php:104
+#: admin/manage-categories.php:65 var/Widget/Contents/Attachment/Edit.php:104
 msgid "缩略名"
 msgstr ""
 
-#: var/Widget/Contents/Attachment/Edit.php:138
-#: var/Widget/Metas/Category/Edit.php:209 var/Widget/Metas/Tag/Edit.php:165
+#: var/Widget/Contents/Attachment/Edit.php:138 var/Widget/Metas/Category/Edit.php:209 var/Widget/Metas/Tag/Edit.php:165
 msgid "缩略名已经存在"
 msgstr ""
 
@@ -5223,7 +5204,7 @@ msgstr ""
 msgid "缺字段"
 msgstr ""
 
-#: install.php:632
+#: install.php:634
 msgid "缺少PHP扩展"
 msgid_plural "请在服务器上安装以下PHP扩展中的至少一个"
 msgstr[0] ""
@@ -5245,11 +5226,11 @@ msgstr ""
 msgid "网址缩略名"
 msgstr ""
 
-#: usr/themes/default/comments.php:48 var/Typecho/Palette.php:382
+#: usr/themes/default/comments.php:47 var/Typecho/Palette.php:386
 msgid "网站"
 msgstr ""
 
-#: install.php:1306
+#: install.php:1308
 msgid "网站地址"
 msgstr ""
 
@@ -5273,7 +5254,7 @@ msgstr ""
 msgid "聚合页不存在"
 msgstr ""
 
-#: var/Typecho/Palette.php:119
+#: var/Typecho/Palette.php:123
 msgid "自动"
 msgstr ""
 
@@ -5329,7 +5310,7 @@ msgstr ""
 msgid "自定义请求头"
 msgstr ""
 
-#: var/Widget/Options/General.php:212
+#: var/Widget/Options/General.php:215
 msgid "自定义请求头名称"
 msgstr ""
 
@@ -5357,30 +5338,27 @@ msgstr ""
 msgid "若不确定，请保持默认选项"
 msgstr ""
 
-#: install.php:661
+#: install.php:663
 msgid "若在使用中遇到问题或是有新功能建议，欢迎在 <a href=\"https://github.com/Yangsh888/TypeRenew\">GitHub</a> 中交流反馈，也可直接向项目提交代码贡献。"
 msgstr ""
 
-#: install.php:654
+#: install.php:656
 msgid "若环境不满足运行标准，页面顶部将出现明确提示，请您参照提示检查并调整主机配置。"
 msgstr ""
 
-#: install.php:655
+#: install.php:657
 msgid "若环境符合全部要求，页面下方将出现「开始下一步」按钮，点击即可快速完成程序安装。"
 msgstr ""
 
-#: admin/manage-pages.php:84 admin/manage-posts.php:42
-#: admin/manage-posts.php:158 admin/write.php:33 var/Widget/XmlRpc.php:614
-#: var/Widget/XmlRpc.php:623
+#: admin/manage-pages.php:84 admin/manage-posts.php:42 admin/manage-posts.php:158 admin/write.php:33 var/Widget/XmlRpc.php:614 var/Widget/XmlRpc.php:623
 msgid "草稿"
 msgstr ""
 
-#: var/Widget/Contents/EditTrait.php:783
+#: var/Widget/Contents/EditTrait.php:747
 msgid "草稿 \"%s\" 已经被保存"
 msgstr ""
 
-#: var/Widget/Contents/Page/Edit.php:216
-#: var/Widget/Contents/Post/Edit.php:261
+#: var/Widget/Contents/Page/Edit.php:218 var/Widget/Contents/Post/Edit.php:264
 msgid "草稿已经被删除"
 msgstr ""
 
@@ -5404,15 +5382,15 @@ msgstr ""
 msgid "补丁"
 msgstr ""
 
-#: var/Widget/Backup.php:757
+#: var/Widget/Backup.php:782
 msgid "表 %s 当前使用 %s 引擎，恢复将按非事务方式执行"
 msgstr ""
 
-#: var/Widget/Backup.php:562
+#: var/Widget/Backup.php:587
 msgid "表 %s 缺少关键字段: %s"
 msgstr ""
 
-#: var/Utils/Migration/SchemaManager.php:182
+#: var/Utils/Migration/SchemaManager.php:184
 msgid "表不存在，升级时会按当前版本创建"
 msgstr ""
 
@@ -5436,11 +5414,11 @@ msgstr ""
 msgid "记录保留天数"
 msgstr ""
 
-#: var/Widget/Backup.php:928
+#: var/Widget/Backup.php:953
 msgid "记录统计：文章 %d、评论 %d、分类与标签 %d、关系 %d、用户 %d、字段 %d"
 msgstr ""
 
-#: install.php:657
+#: install.php:659
 msgid "许可及协议"
 msgstr ""
 
@@ -5448,11 +5426,7 @@ msgstr ""
 msgid "设为默认"
 msgstr ""
 
-#: admin/plugins.php:115 var/Typecho/Palette.php:276
-#: var/Typecho/Palette.php:285 var/Typecho/Palette.php:294
-#: var/Typecho/Palette.php:303 var/Typecho/Palette.php:312
-#: var/Typecho/Palette.php:321 var/Typecho/Palette.php:366
-#: var/Typecho/Palette.php:445 var/Widget/Menu.php:45
+#: admin/plugins.php:115 var/Typecho/Palette.php:280 var/Typecho/Palette.php:289 var/Typecho/Palette.php:298 var/Typecho/Palette.php:307 var/Typecho/Palette.php:316 var/Typecho/Palette.php:325 var/Typecho/Palette.php:370 var/Typecho/Palette.php:449 var/Widget/Menu.php:45
 msgid "设置"
 msgstr ""
 
@@ -5484,7 +5458,7 @@ msgstr ""
 msgid "设置新的登录密码"
 msgstr ""
 
-#: admin/options-mail.php:226
+#: admin/options-mail.php:229
 msgid "访客"
 msgstr ""
 
@@ -5492,15 +5466,15 @@ msgstr ""
 msgid "访客邮件标题"
 msgstr ""
 
-#: install.php:533
+#: install.php:535
 msgid "访问后台控制面板"
 msgstr ""
 
-#: admin/index.php:420
+#: admin/index.php:422
 msgid "访问官网"
 msgstr ""
 
-#: admin/index.php:421
+#: admin/index.php:423
 msgid "访问社区"
 msgstr ""
 
@@ -5508,11 +5482,7 @@ msgstr ""
 msgid "访问者"
 msgstr ""
 
-#: admin/index.php:270 admin/index.php:303 admin/manage-pages.php:78
-#: admin/manage-posts.php:152 admin/profile.php:39
-#: var/Typecho/Palette.php:222 var/Typecho/Palette.php:231
-#: var/Typecho/Palette.php:294 var/Widget/Menu.php:73
-#: var/Widget/Menu.php:90
+#: admin/index.php:270 admin/index.php:303 admin/manage-pages.php:78 admin/manage-posts.php:152 admin/profile.php:39 var/Typecho/Palette.php:226 var/Typecho/Palette.php:235 var/Typecho/Palette.php:298 var/Widget/Menu.php:73 var/Widget/Menu.php:90
 msgid "评论"
 msgstr ""
 
@@ -5524,7 +5494,7 @@ msgstr ""
 msgid "评论保存失败"
 msgstr ""
 
-#: usr/themes/default/comments.php:53
+#: usr/themes/default/comments.php:52
 msgid "评论内容"
 msgstr ""
 
@@ -5544,7 +5514,7 @@ msgstr ""
 msgid "评论后自动清理缓存"
 msgstr ""
 
-#: usr/themes/default/comments.php:62
+#: usr/themes/default/comments.php:61
 msgid "评论已关闭"
 msgstr ""
 
@@ -5576,8 +5546,7 @@ msgstr ""
 msgid "评论显示"
 msgstr ""
 
-#: var/Widget/Feedback.php:63 var/Widget/Feedback.php:74
-#: var/Widget/Feedback.php:77
+#: var/Widget/Feedback.php:63 var/Widget/Feedback.php:74 var/Widget/Feedback.php:77
 msgid "评论来源页错误."
 msgstr ""
 
@@ -5593,12 +5562,11 @@ msgstr ""
 msgid "评论者名称显示时自动加上其个人主页链接"
 msgstr ""
 
-#: admin/options-tabs.php:6 var/Typecho/Palette.php:291
-#: var/Widget/Menu.php:90
+#: admin/options-tabs.php:6 var/Typecho/Palette.php:295 var/Widget/Menu.php:90
 msgid "评论设置"
 msgstr ""
 
-#: var/Widget/Backup.php:894
+#: var/Widget/Backup.php:920
 msgid "该内容由迁移修复任务自动创建，用于承接原站点中未能匹配到文章的评论数据。"
 msgstr ""
 
@@ -5614,7 +5582,7 @@ msgstr ""
 msgid "详情"
 msgstr ""
 
-#: var/Widget/Options/General.php:369
+#: var/Widget/Options/General.php:375
 msgid "语言"
 msgstr ""
 
@@ -5626,7 +5594,7 @@ msgstr ""
 msgid "请不要与系统中现有的电子邮箱地址重复."
 msgstr ""
 
-#: var/Widget/Options/General.php:340
+#: var/Widget/Options/General.php:346
 msgid "请不要在关键词中使用特殊字符"
 msgstr ""
 
@@ -5642,16 +5610,15 @@ msgstr ""
 msgid "请不要在昵称中使用特殊字符"
 msgstr ""
 
-#: install.php:1381 var/Widget/Feedback.php:141 var/Widget/Register.php:36
-#: var/Widget/Users/Edit.php:176
+#: install.php:1383 var/Widget/Feedback.php:141 var/Widget/Register.php:36 var/Widget/Users/Edit.php:176
 msgid "请不要在用户名中使用特殊字符"
 msgstr ""
 
-#: var/Widget/Options/General.php:307
+#: var/Widget/Options/General.php:313
 msgid "请不要在站点名称中使用特殊字符"
 msgstr ""
 
-#: var/Widget/Options/General.php:331
+#: var/Widget/Options/General.php:337
 msgid "请不要在站点描述中使用特殊字符"
 msgstr ""
 
@@ -5671,7 +5638,7 @@ msgstr ""
 msgid "请为上述目录开放写权限；若不便调整当前路径，也可在 config.inc.php 中定义 __TYPECHO_UPGRADE_DIR__ 指向一个可写目录。"
 msgstr ""
 
-#: var/Widget/Options/General.php:338
+#: var/Widget/Options/General.php:344
 msgid "请以半角逗号 \",\" 分割多个关键字"
 msgstr ""
 
@@ -5699,17 +5666,11 @@ msgstr ""
 msgid "请在下方的输入框内输入要插入的链接地址"
 msgstr ""
 
-#: var/Widget/Options/Permalink.php:334
-#: var/Widget/Options/Permalink.php:345
+#: var/Widget/Options/Permalink.php:334 var/Widget/Options/Permalink.php:345
 msgid "请在路径中至少包含上述的一项参数"
 msgstr ""
 
-#: var/Widget/Options/Cache.php:135 var/Widget/Options/Cache.php:163
-#: var/Widget/Options/Cache.php:198 var/Widget/Options/Discussion.php:115
-#: var/Widget/Options/Discussion.php:125 var/Widget/Options/Mail.php:267
-#: var/Widget/Options/Mail.php:348 var/Widget/Options/Mail.php:357
-#: var/Widget/Options/Mail.php:366 var/Widget/Options/Reading.php:192
-#: var/Widget/Options/Reading.php:202
+#: var/Widget/Options/Cache.php:135 var/Widget/Options/Cache.php:163 var/Widget/Options/Cache.php:198 var/Widget/Options/Discussion.php:115 var/Widget/Options/Discussion.php:125 var/Widget/Options/Mail.php:267 var/Widget/Options/Mail.php:348 var/Widget/Options/Mail.php:357 var/Widget/Options/Mail.php:366 var/Widget/Options/Reading.php:192 var/Widget/Options/Reading.php:202
 msgid "请填入一个数字"
 msgstr ""
 
@@ -5717,8 +5678,7 @@ msgstr ""
 msgid "请填写 Redis 主机"
 msgstr ""
 
-#: install.php:1378 usr/themes/default/functions.php:13
-#: var/Widget/Options/General.php:321
+#: install.php:1380 usr/themes/default/functions.php:13 var/Widget/Options/General.php:327
 msgid "请填写一个合法的URL地址"
 msgstr ""
 
@@ -5726,15 +5686,15 @@ msgstr ""
 msgid "请填写个人主页地址，需以 <code>https://</code> 开头"
 msgstr ""
 
-#: install.php:1315
+#: install.php:1317
 msgid "请填写您的用户名"
 msgstr ""
 
-#: install.php:1329
+#: install.php:1331
 msgid "请填写您的邮箱地址"
 msgstr ""
 
-#: var/Widget/Options/General.php:381
+#: var/Widget/Options/General.php:387
 msgid "请填写时区"
 msgstr ""
 
@@ -5742,11 +5702,11 @@ msgstr ""
 msgid "请填写正确的测试收件邮箱"
 msgstr ""
 
-#: var/Widget/Options/General.php:306
+#: var/Widget/Options/General.php:312
 msgid "请填写站点名称"
 msgstr ""
 
-#: install.php:1377 var/Widget/Options/General.php:320
+#: install.php:1379 var/Widget/Options/General.php:326
 msgid "请填写站点地址"
 msgstr ""
 
@@ -5766,7 +5726,7 @@ msgstr ""
 msgid "请您指定数据库名称"
 msgstr ""
 
-#: install.php:894
+#: install.php:896
 msgid "请根据您使用的数据库类型选择对应的适配器；若不确定，请保持默认选项"
 msgstr ""
 
@@ -5778,14 +5738,11 @@ msgstr ""
 msgid "请求方法不允许"
 msgstr ""
 
-#: var/Widget/Action.php:64 var/Widget/Archive.php:439
-#: var/Widget/Archive.php:1266 var/Widget/Archive.php:1294
-#: var/Widget/Archive.php:1468 var/Widget/Archive.php:1472
-#: var/Widget/CommentPage.php:20 var/Widget/XmlRpc.php:1406
+#: var/Widget/Action.php:64 var/Widget/Archive.php:443 var/Widget/Archive.php:1270 var/Widget/Archive.php:1298 var/Widget/Archive.php:1472 var/Widget/Archive.php:1476 var/Widget/CommentPage.php:20 var/Widget/XmlRpc.php:1406
 msgid "请求的地址不存在"
 msgstr ""
 
-#: var/Widget/Backup.php:131
+#: var/Widget/Backup.php:135
 msgid "请求缺少必要动作参数，请重新提交恢复请求"
 msgstr ""
 
@@ -5809,7 +5766,7 @@ msgstr ""
 msgid "请调整你的目录权限, 或者手动创建一个.htaccess文件"
 msgstr ""
 
-#: var/Widget/Options/General.php:378
+#: var/Widget/Options/General.php:384
 msgid "请输入 IANA 时区标识符，例如 Asia/Shanghai、America/New_York、Europe/Berlin。系统会自动兼容旧版配置"
 msgstr ""
 
@@ -5817,11 +5774,7 @@ msgstr ""
 msgid "请输入代码"
 msgstr ""
 
-#: admin/manage-comments.php:77 admin/manage-comments.php:78
-#: admin/manage-medias.php:36 admin/manage-medias.php:37
-#: admin/manage-pages.php:41 admin/manage-pages.php:42
-#: admin/manage-posts.php:98 admin/manage-posts.php:99
-#: admin/manage-users.php:31 admin/manage-users.php:32
+#: admin/manage-comments.php:77 admin/manage-comments.php:78 admin/manage-medias.php:36 admin/manage-medias.php:37 admin/manage-pages.php:41 admin/manage-pages.php:42 admin/manage-posts.php:98 admin/manage-posts.php:99 admin/manage-users.php:31 admin/manage-users.php:32
 msgid "请输入关键字"
 msgstr ""
 
@@ -5841,7 +5794,7 @@ msgstr ""
 msgid "请输入密码访问"
 msgstr ""
 
-#: var/Widget/Options/General.php:382
+#: var/Widget/Options/General.php:388
 msgid "请输入有效的 IANA 时区标识符"
 msgstr ""
 
@@ -5877,7 +5830,7 @@ msgstr ""
 msgid "请选择升级包 ZIP 文件"
 msgstr ""
 
-#: install.php:1063
+#: install.php:1065
 msgid "请选择数据库适配器"
 msgstr ""
 
@@ -5885,7 +5838,7 @@ msgstr ""
 msgid "请选择需要合并的分类"
 msgstr ""
 
-#: admin/index.php:426
+#: admin/index.php:428
 msgid "读取官方动态中..."
 msgstr ""
 
@@ -5893,7 +5846,7 @@ msgstr ""
 msgid "贡献者"
 msgstr ""
 
-#: var/Typecho/Palette.php:366
+#: var/Typecho/Palette.php:370
 msgid "资料"
 msgstr ""
 
@@ -5905,7 +5858,7 @@ msgstr ""
 msgid "跟随系统"
 msgstr ""
 
-#: var/Typecho/Palette.php:116
+#: var/Typecho/Palette.php:120
 msgid "跟随系统主题"
 msgstr ""
 
@@ -5941,11 +5894,11 @@ msgstr ""
 msgid "输入以搜索或执行命令"
 msgstr ""
 
-#: var/Typecho/Palette.php:424
+#: var/Typecho/Palette.php:428
 msgid "输入关键词搜索命令"
 msgstr ""
 
-#: var/Widget/Backup.php:890
+#: var/Widget/Backup.php:916
 msgid "迁移占位内容"
 msgstr ""
 
@@ -5965,7 +5918,7 @@ msgstr ""
 msgid "近 %s 天评论"
 msgstr ""
 
-#: var/Typecho/Palette.php:371
+#: var/Typecho/Palette.php:375
 msgid "返回仪表盘"
 msgstr ""
 
@@ -5981,8 +5934,7 @@ msgstr ""
 msgid "返回登录"
 msgstr ""
 
-#: admin/forgot.php:41 admin/login.php:38 admin/register.php:45
-#: admin/reset.php:68
+#: admin/forgot.php:41 admin/login.php:38 admin/register.php:45 admin/reset.php:68
 msgid "返回首页"
 msgstr ""
 
@@ -6014,7 +5966,7 @@ msgstr ""
 msgid "进度：%d / %d"
 msgstr ""
 
-#: usr/themes/default/comments.php:37 var/Typecho/Palette.php:391
+#: usr/themes/default/comments.php:36 var/Typecho/Palette.php:395
 msgid "退出"
 msgstr ""
 
@@ -6022,7 +5974,7 @@ msgstr ""
 msgid "退出全屏"
 msgstr ""
 
-#: var/Typecho/Palette.php:388
+#: var/Typecho/Palette.php:392
 msgid "退出登录"
 msgstr ""
 
@@ -6042,10 +5994,7 @@ msgstr ""
 msgid "适用于 Nginx 的标准规则，不建议使用 if + rewrite 规则"
 msgstr ""
 
-#: admin/manage-categories.php:27 admin/manage-comments.php:61
-#: admin/manage-medias.php:20 admin/manage-pages.php:20
-#: admin/manage-posts.php:71 admin/manage-tags.php:22
-#: admin/manage-users.php:18
+#: admin/manage-categories.php:27 admin/manage-comments.php:61 admin/manage-medias.php:20 admin/manage-pages.php:20 admin/manage-posts.php:71 admin/manage-tags.php:22 admin/manage-users.php:18
 msgid "选中项"
 msgstr ""
 
@@ -6081,17 +6030,15 @@ msgstr ""
 msgid "通知访客"
 msgstr ""
 
-#: admin/manage-comments.php:63 admin/manage-comments.php:153
-#: admin/manage-comments.php:155 var/Typecho/Mail/Notify.php:293
+#: admin/manage-comments.php:63 admin/manage-comments.php:153 admin/manage-comments.php:155 var/Typecho/Mail/Notify.php:292
 msgid "通过"
 msgstr ""
 
-#: var/Typecho/Palette.php:312 var/Widget/Menu.php:94
+#: var/Typecho/Palette.php:316 var/Widget/Menu.php:94
 msgid "邮件"
 msgstr ""
 
-#: install.php:1327 var/Widget/Users/Edit.php:91
-#: var/Widget/Users/Profile.php:216
+#: install.php:1329 var/Widget/Users/Edit.php:91 var/Widget/Users/Profile.php:216
 msgid "邮件地址"
 msgstr ""
 
@@ -6099,7 +6046,7 @@ msgstr ""
 msgid "邮件异步发送可能不可靠"
 msgstr ""
 
-#: admin/options-mail.php:218 admin/options-mail.php:234
+#: admin/options-mail.php:220 admin/options-mail.php:237
 msgid "邮件模板"
 msgstr ""
 
@@ -6111,7 +6058,7 @@ msgstr ""
 msgid "邮件系统未启用，无法使用密码找回功能。"
 msgstr ""
 
-#: var/Typecho/Palette.php:309
+#: var/Typecho/Palette.php:313
 msgid "邮件设置"
 msgstr ""
 
@@ -6119,8 +6066,7 @@ msgstr ""
 msgid "邮件退订表"
 msgstr ""
 
-#: admin/options-tabs.php:10 var/Widget/Menu.php:94
-#: var/Widget/Options/Mail.php:210
+#: admin/options-tabs.php:10 var/Widget/Menu.php:94 var/Widget/Options/Mail.php:210
 msgid "邮件通知"
 msgstr ""
 
@@ -6136,7 +6082,7 @@ msgstr ""
 msgid "邮箱地址不合法"
 msgstr ""
 
-#: install.php:1385
+#: install.php:1387
 msgid "邮箱长度超过限制, 请不要超过 150 个字符"
 msgstr ""
 
@@ -6152,10 +6098,7 @@ msgstr ""
 msgid "重写功能检测失败，请检查你的服务器设置"
 msgstr ""
 
-#: var/Utils/Migration/SchemaManager.php:197
-#: var/Utils/Migration/SchemaManager.php:213
-#: var/Utils/Migration/SchemaManager.php:229
-#: var/Utils/Migration/SchemaManager.php:245
+#: var/Utils/Migration/SchemaManager.php:199 var/Utils/Migration/SchemaManager.php:215 var/Utils/Migration/SchemaManager.php:231 var/Utils/Migration/SchemaManager.php:247
 msgid "重复值检查失败：%s"
 msgstr ""
 
@@ -6167,11 +6110,11 @@ msgstr ""
 msgid "重新获取重置链接"
 msgstr ""
 
-#: admin/options-mail.php:228
+#: admin/options-mail.php:231
 msgid "重置"
 msgstr ""
 
-#: admin/reset.php:30 admin/reset.php:38 admin/reset.php:59
+#: admin/reset.php:30 admin/reset.php:38 admin/reset.php:59 var/Typecho/Mail/tpl/reset.html:19
 msgid "重置密码"
 msgstr ""
 
@@ -6179,7 +6122,7 @@ msgstr ""
 msgid "重置投递密钥"
 msgstr ""
 
-#: admin/options-mail.php:247
+#: admin/options-mail.php:250
 msgid "重置模板"
 msgstr ""
 
@@ -6187,7 +6130,7 @@ msgstr ""
 msgid "重置请求过于频繁，请在 %d 分钟后重试"
 msgstr ""
 
-#: var/Widget/Forgot.php:122
+#: var/Widget/Forgot.php:119
 msgid "重置邮件暂时无法发送，请稍后重试"
 msgstr ""
 
@@ -6211,7 +6154,7 @@ msgstr ""
 msgid "鎏金"
 msgstr ""
 
-#: admin/editor-js.php:49 var/Typecho/Palette.php:303
+#: admin/editor-js.php:49 var/Typecho/Palette.php:307
 msgid "链接"
 msgstr ""
 
@@ -6219,11 +6162,11 @@ msgstr ""
 msgid "链接无效"
 msgstr ""
 
-#: admin/footer.php:24 admin/options-mail.php:197
+#: admin/footer.php:24 admin/options-mail.php:198
 msgid "错误"
 msgstr ""
 
-#: var/Typecho/Palette.php:285 var/Widget/Menu.php:91
+#: var/Typecho/Palette.php:289 var/Widget/Menu.php:91
 msgid "阅读"
 msgstr ""
 
@@ -6231,8 +6174,7 @@ msgstr ""
 msgid "阅读全文"
 msgstr ""
 
-#: admin/options-tabs.php:7 var/Typecho/Palette.php:282
-#: var/Widget/Menu.php:91
+#: admin/options-tabs.php:7 var/Typecho/Palette.php:286 var/Widget/Menu.php:91
 msgid "阅读设置"
 msgstr ""
 
@@ -6244,24 +6186,23 @@ msgstr ""
 msgid "阻断项"
 msgstr ""
 
-#: var/Widget/Backup.php:991
+#: var/Widget/Backup.php:1017
 msgid "阻断：%s"
 msgstr ""
 
-#: admin/editor-js.php:229 admin/write-page.php:63 admin/write-post.php:48
-#: admin/write.php:73 var/Typecho/Palette.php:258
+#: admin/editor-js.php:229 admin/write-page.php:63 admin/write-post.php:48 admin/write.php:73 var/Typecho/Palette.php:262
 msgid "附件"
 msgstr ""
 
-#: var/Widget/Upload.php:546
+#: var/Widget/Upload.php:554
 msgid "附件上传失败"
 msgstr ""
 
-#: var/Widget/Upload.php:383
+#: var/Widget/Upload.php:389
 msgid "附件上传失败，请检查文件类型与目录权限"
 msgstr ""
 
-#: var/Widget/Upload.php:314
+#: var/Widget/Upload.php:316
 msgid "附件上传数据无效"
 msgstr ""
 
@@ -6269,11 +6210,7 @@ msgstr ""
 msgid "附件不存在"
 msgstr ""
 
-#: var/Widget/Upload.php:291 var/Widget/Upload.php:296
-#: var/Widget/Upload.php:303 var/Widget/Upload.php:307
-#: var/Widget/Upload.php:311 var/Widget/Upload.php:336
-#: var/Widget/Upload.php:344 var/Widget/Upload.php:352
-#: var/Widget/Upload.php:357
+#: var/Widget/Upload.php:293 var/Widget/Upload.php:298 var/Widget/Upload.php:305 var/Widget/Upload.php:309 var/Widget/Upload.php:313 var/Widget/Upload.php:338 var/Widget/Upload.php:347 var/Widget/Upload.php:356 var/Widget/Upload.php:361
 msgid "附件写入失败，请检查上传目录权限"
 msgstr ""
 
@@ -6281,15 +6218,11 @@ msgstr ""
 msgid "附件替换失败，请检查文件类型与目录权限"
 msgstr ""
 
-#: var/Widget/Upload.php:286
+#: var/Widget/Upload.php:288
 msgid "附件目录不可写，请检查上传目录权限"
 msgstr ""
 
-#: admin/manage-pages.php:30 admin/manage-pages.php:90
-#: admin/manage-posts.php:85 admin/manage-posts.php:164
-#: admin/write-page.php:127 admin/write-post.php:101
-#: var/Widget/Contents/Page/Edit.php:91
-#: var/Widget/Contents/Post/Edit.php:108
+#: admin/manage-pages.php:30 admin/manage-pages.php:90 admin/manage-posts.php:85 admin/manage-posts.php:164 admin/write-page.php:127 admin/write-post.php:101 var/Widget/Contents/Page/Edit.php:91 var/Widget/Contents/Post/Edit.php:108
 msgid "隐藏"
 msgstr ""
 
@@ -6313,12 +6246,11 @@ msgstr ""
 msgid "非常抱歉，您访问的页面不存在。"
 msgstr ""
 
-#: admin/index.php:266 var/Typecho/Palette.php:168
-#: var/Typecho/Palette.php:213
+#: admin/index.php:266 var/Typecho/Palette.php:172 var/Typecho/Palette.php:217
 msgid "页面"
 msgstr ""
 
-#: var/Widget/Contents/Page/Edit.php:60
+#: var/Widget/Contents/Page/Edit.php:59
 msgid "页面 \"%s\" 已计划于 %s 发布，当前可先<a href=\"%s\">预览</a>"
 msgstr ""
 
@@ -6326,10 +6258,7 @@ msgstr ""
 msgid "页面 \"<a href=\"%s\">%s</a>\" 已经发布"
 msgstr ""
 
-#: admin/extending.php:9 admin/extending.php:14 admin/extending.php:20
-#: var/Widget/Contents/Page/Admin.php:73
-#: var/Widget/Contents/Page/Edit.php:243
-#: var/Widget/Contents/Page/Edit.php:293
+#: admin/extending.php:9 admin/extending.php:14 admin/extending.php:20 var/Widget/Contents/Page/Admin.php:73 var/Widget/Contents/Page/Edit.php:254 var/Widget/Contents/Page/Edit.php:304
 msgid "页面不存在"
 msgstr ""
 
@@ -6349,11 +6278,11 @@ msgstr ""
 msgid "页面排序失败, 已恢复原顺序"
 msgstr ""
 
-#: var/Widget/Contents/Page/Edit.php:235
+#: var/Widget/Contents/Page/Edit.php:246
 msgid "页面排序已经完成"
 msgstr ""
 
-#: var/Widget/Archive.php:1272
+#: var/Widget/Archive.php:1276
 msgid "页面没找到"
 msgstr ""
 
@@ -6361,7 +6290,7 @@ msgstr ""
 msgid "页面顺序"
 msgstr ""
 
-#: var/Typecho/Palette.php:143
+#: var/Typecho/Palette.php:147
 msgid "顶部"
 msgstr ""
 
@@ -6373,11 +6302,11 @@ msgstr ""
 msgid "项目地址"
 msgstr ""
 
-#: var/Widget/Backup.php:587
+#: var/Widget/Backup.php:612
 msgid "预检备份版本: %s"
 msgstr ""
 
-#: var/Widget/Backup.php:936
+#: var/Widget/Backup.php:962
 msgid "预检阻断项：%d，预警项：%d"
 msgstr ""
 
@@ -6393,7 +6322,7 @@ msgstr ""
 msgid "预览文章"
 msgstr ""
 
-#: admin/options-mail.php:242
+#: admin/options-mail.php:245
 msgid "预览模板"
 msgstr ""
 
@@ -6405,7 +6334,7 @@ msgstr ""
 msgid "预警项"
 msgstr ""
 
-#: var/Widget/Backup.php:995
+#: var/Widget/Backup.php:1021
 msgid "预警：%s"
 msgstr ""
 
@@ -6417,8 +6346,7 @@ msgstr ""
 msgid "首次使用时会自动创建"
 msgstr ""
 
-#: usr/themes/default/header.php:66 var/Typecho/Palette.php:374
-#: var/Typecho/Palette.php:382
+#: usr/themes/default/header.php:66 var/Typecho/Palette.php:378 var/Typecho/Palette.php:386
 msgid "首页"
 msgstr ""
 
@@ -6426,8 +6354,7 @@ msgstr ""
 msgid "驱动不可用"
 msgstr ""
 
-#: admin/write-page.php:118 admin/write-post.php:91 install/Mysql.php:36
-#: install/Pgsql.php:32
+#: admin/write-page.php:118 admin/write-post.php:91 install/Mysql.php:36 install/Pgsql.php:32
 msgid "高级选项"
 msgstr ""
 
@@ -6447,11 +6374,11 @@ msgstr ""
 msgid "默认允许"
 msgstr ""
 
-#: install.php:1429
+#: install.php:1431
 msgid "默认分类"
 msgstr ""
 
-#: install.php:902
+#: install.php:904
 msgid "默认前缀是 \"%s\"，您也可以根据自己的博客名称自定义设置"
 msgstr ""
 
@@ -6459,7 +6386,7 @@ msgstr ""
 msgid "默认的用户评论不允许填写任何的HTML标签, 你可以在这里填写允许使用的HTML标签"
 msgstr ""
 
-#: admin/options-mail.php:221
+#: admin/options-mail.php:223
 msgid "默认自动转义，使用 {raw:变量名} 可输出原始值"
 msgstr ""
 

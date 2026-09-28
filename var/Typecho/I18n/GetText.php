@@ -235,7 +235,7 @@ class GetText
         if ($this->enable_cache) {
             $this->cache_translations = [];
             for ($i = 0; $i < $this->total; $i++) {
-                if ($this->table_translations[$i * 2 + 1] > 0) {
+                if ($this->table_translations[$i * 2 + 1] >= 0) {
                     $original = '';
                     if ($this->table_originals[$i * 2 + 1] > 0) {
                         fseek($this->STREAM, $this->table_originals[$i * 2 + 2]);
