@@ -87,8 +87,8 @@ class Init extends Widget
             'redisDatabase' => (int) ($options->cacheRedisDatabase ?? 0)
         ]);
 
-        $lang = basename((string) ($options->lang ?? ''));
-        if ($lang !== '' && $lang != 'zh_CN') {
+        $lang = (string) ($options->lang ?? '');
+        if ($lang !== '' && $lang !== 'zh_CN' && preg_match('/^[A-Za-z0-9_-]+$/', $lang)) {
             $dir = defined('__TYPECHO_LANG_DIR__') ? __TYPECHO_LANG_DIR__ : __TYPECHO_ROOT_DIR__ . '/usr/langs';
             I18n::setLang($dir . '/' . $lang . '.mo');
         }

@@ -36,7 +36,10 @@ class Manifest
             }
 
             foreach ($data['files'] as $file) {
-                $normalized = self::normalize((string) $file);
+                if (!is_string($file)) {
+                    throw new RuntimeException(_t('升级包文件路径格式无效'));
+                }
+                $normalized = self::normalize($file);
                 if ($normalized === '') {
                     continue;
                 }
@@ -44,7 +47,16 @@ class Manifest
             }
         }
 
-        $allowInstall = (bool) ($data['allowInstall'] ?? false);
+        foreach (['build', 'hash'] as $field) {
+            if (isset($data[$field]) && !is_string($data[$field])) {
+                throw new RuntimeException(_t('升级包清单字段格式无效'));
+            }
+        }
+
+        $allowInstall = $data['allowInstall'] ?? false;
+        if (!is_bool($allowInstall)) {
+            throw new RuntimeException(_t('升级包安装标记格式无效'));
+        }
 
         return [
             'product' => $product,

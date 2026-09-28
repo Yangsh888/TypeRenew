@@ -314,29 +314,21 @@ class Backup extends BaseOptions implements ActionInterface
                 $this->repairResult = $this->repairData();
             }
 
-            $this->pendingLoginUser = $this->resolveLoginUser();
+            $this->pendingLoginUser = null;
             if ($this->inTransaction) {
                 $this->db->query('COMMIT');
                 $this->inTransaction = false;
             }
 
-            if ($this->pendingLoginUser !== null) {
-                try {
-                    $this->reLogin($this->pendingLoginUser);
-                } catch (Throwable $e) {
-                    $this->runtimeWarnings[] = _t(
-                        '恢复完成，但自动恢复当前登录态失败：%s',
-                        $e->getMessage()
-                    );
-                }
-            } else {
-                $this->runtimeWarnings[] = _t('恢复完成，但未能自动恢复当前登录态，请使用恢复后的账号重新登录');
-            }
+            $this->runtimeWarnings[] = _t('恢复完成，但未能自动恢复当前登录态，请使用恢复后的账号重新登录');
 
             $report = $this->buildReport($payload, $preflight, false, false, $snapshotName, $doRepair, $doSnapshot);
             $messages = $this->reportMessages($report);
             $this->stashReport($report);
             Notice::alloc()->set($messages, 'success');
+            \Typecho\Cookie::delete('__typecho_uid');
+            \Typecho\Cookie::delete('__typecho_authCode');
+            \Utils\Session::destroy();
         } catch (Throwable $e) {
             $rolledBack = false;
             if ($this->inTransaction) {
@@ -1068,7 +1060,7 @@ class Backup extends BaseOptions implements ActionInterface
         $uid = (int) ($this->currentOperator['uid'] ?? 0);
         if ($uid > 0) {
             $user = $this->findUserBy('uid', $uid);
-            if (null !== $user) {
+            if (null !== $user && ($user['group'] ?? '') === 'administrator') {
                 return $user;
             }
         }

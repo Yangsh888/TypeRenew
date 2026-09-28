@@ -21,9 +21,9 @@ class GetTextMulti
         $count = -1;
 
         foreach ($this->handlers as $handle) {
-            $string = $handle->translate($string, $count);
+            $translated = $handle->translate($string, $count);
             if (- 1 != $count) {
-                break;
+                return $translated;
             }
         }
 
@@ -37,11 +37,11 @@ class GetTextMulti
         foreach ($this->handlers as $handler) {
             $string = $handler->ngettext($single, $plural, $number, $count);
             if (- 1 != $count) {
-                break;
+                return $string;
             }
         }
 
-        return $string;
+        return $number != 1 ? $plural : $single;
     }
 
     public function __destruct()

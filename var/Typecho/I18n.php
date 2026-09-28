@@ -26,7 +26,7 @@ class I18n
     public static function ngettext(string $single, string $plural, int $number): string
     {
         self::init();
-        return self::$loaded ? self::$loaded->ngettext($single, $plural, $number) : ($number > 1 ? $plural : $single);
+        return self::$loaded ? self::$loaded->ngettext($single, $plural, $number) : ($number != 1 ? $plural : $single);
     }
 
     public static function dateWord(int $from, int $now): string
