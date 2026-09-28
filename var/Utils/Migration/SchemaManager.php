@@ -5,6 +5,7 @@ namespace Utils\Migration;
 use Typecho\Common;
 use Typecho\Db;
 use Typecho\Plugin;
+use Utils\Cipher;
 use Utils\Comment;
 use Utils\Defaults;
 use Utils\Schema;
@@ -40,6 +41,7 @@ class SchemaManager
         }
         self::unescapeJson($db);
         self::normalizePluginHandles($db);
+        self::upgradeCipherOptions($db);
 
         Plugin::factory(self::class)->call('syncSchema', $db);
 
@@ -416,6 +418,30 @@ class SchemaManager
             $db->query($db->update('table.options')
                 ->rows(['value' => Common::jsonEncode($plugins, 0, '{}')])
                 ->where('name = ? AND user = ?', 'plugins', 0));
+        }
+    }
+
+    private static function upgradeCipherOptions(Db $db): void
+    {
+        $rows = $db->fetchAll($db->select('name', 'value')->from('table.options')
+            ->where('user = 0 AND name IN ?', ['secret', 'cacheRedisPassword', 'mailSmtpPass']));
+        $values = array_column($rows, 'value', 'name');
+        $secret = (string) ($values['secret'] ?? '');
+
+        foreach (['cacheRedisPassword', 'mailSmtpPass'] as $name) {
+            $value = (string) ($values[$name] ?? '');
+            if (!str_starts_with($value, 'enc:v1:')) {
+                continue;
+            }
+
+            $plain = Cipher::decrypt($value, $secret);
+            if ($plain === '') {
+                continue;
+            }
+
+            $db->query($db->update('table.options')
+                ->rows(['value' => Cipher::encrypt($plain, $secret)])
+                ->where('name = ? AND user = 0', $name));
         }
     }
 

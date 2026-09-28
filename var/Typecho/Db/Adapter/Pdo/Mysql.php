@@ -26,12 +26,15 @@ class Mysql extends Pdo
 
     public function init(Config $config): \PDO
     {
+        $attr = static fn(string $name): int => constant(
+            class_exists(\Pdo\Mysql::class, false) ? \Pdo\Mysql::class . '::ATTR_' . $name : 'PDO::MYSQL_ATTR_' . $name
+        );
         $options = [];
         if (!empty($config->sslCa)) {
-            $options[\PDO::MYSQL_ATTR_SSL_CA] = $config->sslCa;
+            $options[$attr('SSL_CA')] = $config->sslCa;
 
             if (isset($config->sslVerify)) {
-                $options[\PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT] = $config->sslVerify;
+                $options[$attr('SSL_VERIFY_SERVER_CERT')] = $config->sslVerify;
             }
         }
 
@@ -60,7 +63,7 @@ class Mysql extends Pdo
             $pdo->exec($sql);
         }
 
-        $pdo->setAttribute(\PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, true);
+        $pdo->setAttribute($attr('USE_BUFFERED_QUERY'), true);
 
         return $pdo;
     }

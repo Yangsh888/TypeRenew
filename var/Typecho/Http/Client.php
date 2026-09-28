@@ -142,6 +142,10 @@ class Client
             throw new Exception('Invalid request url');
         }
 
+        if (!in_array(strtolower((string) ($params['scheme'] ?? '')), ['http', 'https'], true)) {
+            throw new Exception('Invalid request url');
+        }
+
         $host = $params['host'] ?? '';
         if (!Common::checkSafeHost($host)) {
             throw new Exception('Unsafe host: potential SSRF attack');
@@ -245,12 +249,10 @@ class Client
         if (!empty($this->data)) {
             $content = $this->data;
             if (is_array($content)) {
-                $content = is_array($content) ? http_build_query($content) : $content;
+                $content = http_build_query($content);
                 if (!isset($this->headers['Content-Type'])) {
                     $headers[] = 'Content-Type: application/x-www-form-urlencoded';
                 }
-            } elseif (!$this->multipart) {
-                $content = is_array($content) ? http_build_query($content) : $content;
             }
         }
 
@@ -272,15 +274,21 @@ class Client
         ]);
 
         $prevError = error_get_last();
-        $response = file_get_contents($url, false, $context);
+        $stream = fopen($url, 'rb', false, $context);
+        $response = is_resource($stream) ? stream_get_contents($stream) : false;
         $error = error_get_last();
+        $meta = is_resource($stream) ? stream_get_meta_data($stream) : [];
+        if (is_resource($stream)) {
+            fclose($stream);
+        }
+
         if ($response === false) {
             throw new Exception(($error['message'] ?? $prevError['message'] ?? 'Stream request failed'), 500);
         }
 
         $this->responseHeader = [];
         $this->responseStatus = 200;
-        $responseHeaders = is_array($http_response_header ?? null) ? $http_response_header : [];
+        $responseHeaders = is_array($meta['wrapper_data'] ?? null) ? $meta['wrapper_data'] : [];
         foreach ($responseHeaders as $index => $header) {
             if ($index === 0) {
                 if (preg_match('#\s(\d{3})(?:\s|$)#', $header, $matches)) {
