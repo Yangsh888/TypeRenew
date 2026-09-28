@@ -17,7 +17,7 @@ include 'auth.php';
 <?php tr_auth_open([
     'label' => _t('找回密码'),
     'heroSubtitle' => _t('轻量化后台管理'),
-    'heroFoot' => '© ' . date('Y') . ' TypeRenew Team'
+    'heroFoot' => _t('© %s TypeRenew Team', date('Y'))
 ]); ?>
 <?php if (!$mailEnabled): ?>
 <div class="tr-auth-notice" role="status">

@@ -55,7 +55,7 @@ class Feed extends Contents
             Common::VERSION,
             $feedType,
             $this->options->charset,
-            _t('zh-CN')
+            $this->options->lang ?? 'zh_CN'
         );
 
         if (preg_match("/^\/comments\/?$/", $feedPath)) {

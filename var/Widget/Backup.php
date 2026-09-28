@@ -830,8 +830,9 @@ class Backup extends BaseOptions implements ActionInterface
             $coids = array_values(array_filter($coids, static fn($coid) => $coid > 0));
 
             foreach (array_chunk($coids, 200) as $chunk) {
+                $safeChunk = implode(',', array_map('intval', $chunk));
                 $sql = 'UPDATE ' . $comments . ' SET ' . $cidColumn . ' = ' . $holderCid
-                    . ' WHERE ' . $coidColumn . ' IN (' . implode(',', $chunk) . ')';
+                    . ' WHERE ' . $coidColumn . ' IN (' . $safeChunk . ')';
                 $orphanMoved += (int) $this->db->query($sql, Db::WRITE, Db::UPDATE);
             }
         }

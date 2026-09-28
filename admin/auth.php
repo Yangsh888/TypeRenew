@@ -12,7 +12,7 @@ function tr_auth_open(array $config): void
     $description = (string) ($config['description'] ?? $label);
     $heroTitle = (string) ($config['heroTitle'] ?? (string) $options->title);
     $heroSubtitle = (string) ($config['heroSubtitle'] ?? _t('轻量化管理后台，由 TypeRenew 焕新呈现'));
-    $heroFoot = (string) ($config['heroFoot'] ?? ('© ' . date('Y') . ' TypeRenew Team'));
+    $heroFoot = (string) ($config['heroFoot'] ?? _t('© %s TypeRenew Team', date('Y')));
     $themes = [
         ['id' => 'forest', 'name' => _t('森林')],
         ['id' => 'slate', 'name' => _t('石板')],

@@ -175,18 +175,18 @@ namespace Typecho {
             if ($exception instanceof \Typecho\Db\Exception) {
                 $code = 500;
 
-                $message = 'Database Server Error';
+                $message = _t('数据库服务器错误');
 
                 if ($exception instanceof \Typecho\Db\Adapter\ConnectionException) {
                     $code = 503;
-                    $message = 'Error establishing a database connection';
+                    $message = _t('无法连接到数据库');
                 } elseif ($exception instanceof \Typecho\Db\Adapter\SQLException) {
-                    $message = 'Database Query Error';
+                    $message = _t('数据库查询错误');
                 }
             } elseif ($exception instanceof \Typecho\Widget\Exception) {
                 $message = $exception->getMessage();
             } else {
-                $message = 'Server Error';
+                $message = _t('服务器错误');
             }
 
             if (is_numeric($code) && $code > 200) {
