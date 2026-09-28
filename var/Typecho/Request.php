@@ -557,11 +557,12 @@ class Request
     {
         $key = strtoupper(str_replace('-', '_', $key));
 
-        if (in_array($key, ['CONTENT_TYPE', 'CONTENT_LENGTH'])) {
-            $default = $this->getServer($key, $default);
+        if (in_array($key, ['CONTENT_TYPE', 'CONTENT_LENGTH'], true)) {
+            return $this->getServer($key, $default);
         }
 
-        return $this->getServer('HTTP_' . $key, $default);
+        $serverKey = str_starts_with($key, 'HTTP_') ? $key : 'HTTP_' . $key;
+        return $this->getServer($serverKey, $default);
     }
 
     public function getAgent(): ?string
@@ -673,13 +674,10 @@ class Request
         } elseif (isset($_SERVER['REQUEST_URI'])) {
             $requestUri = $_SERVER['REQUEST_URI'];
             $parts = parse_url($requestUri);
-            $host = $this->getTrustedHost();
 
-            if ($host !== '' && str_contains($requestUri, $host)) {
-                if (false !== $parts) {
-                    $requestUri = (empty($parts['path']) ? '' : $parts['path'])
-                        . ((empty($parts['query'])) ? '' : '?' . $parts['query']);
-                }
+            if (is_array($parts) && isset($parts['host'])) {
+                $requestUri = (string) ($parts['path'] ?? '')
+                    . (!empty($parts['query']) ? '?' . $parts['query'] : '');
             } elseif (!empty($_SERVER['QUERY_STRING']) && (false === $parts || empty($parts['query']))) {
                 $requestUri .= '?' . $_SERVER['QUERY_STRING'];
             }

@@ -71,8 +71,12 @@ class Cache
                 'database' => (int) ($config['redisDatabase'] ?? 0),
                 'timeout' => 1.0
             ]);
-        } else {
+        } elseif ($driver === 'apcu') {
             $instance = new Apcu();
+        } else {
+            $this->lastError = _t('不支持的缓存驱动：%s', $driver);
+            $this->enabled = false;
+            return;
         }
 
         if ($instance->available()) {
