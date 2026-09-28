@@ -175,7 +175,7 @@ include 'table-js.php';
                         });
 
                         $.post('<?php echo $pageAction; ?>',
-                            $.param({do: 'sort', cid: ids, _: '<?php echo $pageToken; ?>'}), null, 'json')
+                            $.param({do: 'sort', cid: ids, parent: <?php echo (int) $request->filter('int')->get('parent', 0); ?>, _: '<?php echo $pageToken; ?>'}), null, 'json')
                             .done(function (response) {
                                 if (!response || response.success != 1) {
                                     showError();

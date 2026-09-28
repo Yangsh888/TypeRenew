@@ -158,6 +158,8 @@ trait EditTrait
                 if (!$this->isDuplicateConstraintError($e)) {
                     throw $e;
                 }
+                $exist = $this->db->fetchRow($this->db->select('type')->from('table.fields')
+                    ->where('cid = ? AND name = ?', $cid, $name));
             }
         }
 

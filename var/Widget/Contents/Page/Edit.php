@@ -225,11 +225,20 @@ class Edit extends Contents implements ActionInterface
     public function sortPage()
     {
         $pages = $this->request->filter('int')->getArray('cid');
+        $parent = max(0, (int) $this->request->filter('int')->get('parent', 0));
 
         if ($pages) {
-            foreach ($pages as $sort => $cid) {
+            $ids = array_map('intval', $pages);
+            $rows = $this->db->fetchAll($this->db->select('cid')->from('table.contents')
+                ->where('cid IN ?', $ids)->where('parent = ?', $parent)
+                ->where('(type = ? OR type = ?)', 'page', 'page_draft'));
+            if (count($ids) !== count(array_unique($ids)) || count($rows) !== count($ids)) {
+                $this->response->setStatus(400);
+                $this->response->throwJson(['success' => 0]);
+            }
+            foreach ($ids as $sort => $cid) {
                 $this->db->query($this->db->update('table.contents')->rows(['order' => $sort + 1])
-                    ->where('cid = ? AND (type = ? OR type = ?)', $cid, 'page', 'page_draft'));
+                    ->where('cid = ? AND parent = ? AND (type = ? OR type = ?)', $cid, $parent, 'page', 'page_draft'));
             }
         }
 
