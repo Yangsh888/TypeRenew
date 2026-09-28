@@ -202,6 +202,9 @@ class General extends Options implements ActionInterface
             _t('客户端 IP 获取来源'),
             _t('当站点位于 CDN 或反向代理之后时，请选择对应的来源头以获取访客真实 IP。')
             . '<br />' . _t('默认 REMOTE_ADDR 最安全；其余来源头可被伪造，请仅在确认前端代理会覆盖该头时选用。')
+            . (defined('__TYPECHO_TRUST_PROXY__') ? '' : '<br /><strong>'
+                . _t('当前未在 config.inc.php 中定义 %s，除 REMOTE_ADDR 外的来源不会生效。', '<code>__TYPECHO_TRUST_PROXY__</code>')
+                . '</strong>')
         );
         $form->addInput($ipSource);
 
