@@ -221,6 +221,7 @@ $tplContent = \Typecho\Mail\Template::load($tplName, $options);
                         <div class="tr-help"><?php _e('保存后会写入当前主题 mail 目录，优先级高于系统默认模板'); ?></div>
                         <div class="tr-help"><?php _e('变量示例：{siteTitle}、{title}、{author}、{commentTextPlain}、{commentHtml}、{permalink}、{manageurl}、{unsubUrl}、{resetUrl}、{expiresAt}'); ?></div>
                         <div class="tr-help"><?php _e('默认自动转义，使用 {raw:变量名} 可输出原始值'); ?></div>
+                        <div class="tr-help"><?php _e('使用 {_:文本} 可按站点语言翻译固定文案，{lang} 输出当前语言代码'); ?></div>
                         <div class="tr-mt-12">
                             <div class="tr-tabs-wrap">
                                 <ul class="tr-settings-tabs">
