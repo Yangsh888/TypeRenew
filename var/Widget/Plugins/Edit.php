@@ -128,7 +128,7 @@ class Edit extends Options implements ActionInterface
 
                 $message = $e->getMessage();
                 if ($rollbackErrors !== []) {
-                    $message .= "\n" . _t('回滚阶段附加错误：%s', implode('；', $rollbackErrors));
+                    $message .= "\n" . _t('回滚阶段附加错误：%s', implode(_t('；'), $rollbackErrors));
                 }
 
                 Notice::alloc()->set($message, 'error');

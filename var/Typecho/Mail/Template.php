@@ -78,52 +78,52 @@ class Template
     {
         $name = self::normalizeName($name);
         if (!in_array($name, self::ALLOWED, true)) {
-            return 'Invalid template name';
+            return _t('模板名称无效');
         }
 
         $themeRoot = self::themeRoot($options);
         $file = self::overrideFile($name, $options);
         if ($themeRoot === false || $file === null) {
-            return 'Invalid theme path';
+            return _t('主题路径无效');
         }
 
         $dir = dirname($file);
         if (!is_dir($dir)) {
             if (!is_writable($themeRoot)) {
-                return 'Cannot create directory';
+                return _t('无法创建目录');
             }
 
             if (!mkdir($dir, 0755, true) && !is_dir($dir)) {
-                return 'Cannot create directory';
+                return _t('无法创建目录');
             }
         }
 
         if (!Helper::isPathInsideRoots($dir, [$themeRoot], false)) {
-            return 'Invalid theme path';
+            return _t('主题路径无效');
         }
 
         if (file_exists($file) && !is_writable($file)) {
-            return 'File not writable';
+            return _t('此文件无法写入');
         }
 
         if (!is_writable($dir)) {
-            return 'File not writable';
+            return _t('此文件无法写入');
         }
 
         $ok = file_put_contents($file, $content) !== false;
-        return $ok ? true : 'Write failed';
+        return $ok ? true : _t('写入失败');
     }
 
     public static function deleteOverride(string $name, Options $options): bool|string
     {
         $name = self::normalizeName($name);
         if (!in_array($name, self::ALLOWED, true)) {
-            return 'Invalid template name';
+            return _t('模板名称无效');
         }
 
         $file = self::overrideFile($name, $options);
         if ($file === null) {
-            return 'Invalid theme path';
+            return _t('主题路径无效');
         }
 
         if (!file_exists($file)) {
@@ -131,14 +131,14 @@ class Template
         }
 
         if (!Helper::isPathInsideRoots($file, [self::themeRoot($options)])) {
-            return 'Invalid theme path';
+            return _t('主题路径无效');
         }
 
         if (!is_writable($file)) {
-            return 'File not writable';
+            return _t('此文件无法写入');
         }
 
-        return unlink($file) ? true : 'Delete failed';
+        return unlink($file) ? true : _t('删除失败');
     }
 
     public static function normalizeName(string $name): string

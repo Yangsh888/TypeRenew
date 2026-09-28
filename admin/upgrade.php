@@ -134,11 +134,10 @@ $dbOverviewUrl = $options->adminUrl('upgrade.php', true);
                                 <ul class="tr-help tr-mt-8">
                                     <?php foreach ($upgradeItems as $item): ?>
                                         <li>
-                                            <?php echo htmlspecialchars((string) $item['label'], ENT_QUOTES, 'UTF-8'); ?>
-                                            ：<?php echo htmlspecialchars((string) $item['status'], ENT_QUOTES, 'UTF-8'); ?>
+                                            <?php echo htmlspecialchars((string) $item['label'], ENT_QUOTES, 'UTF-8'); ?><?php _e('：'); ?><?php echo htmlspecialchars((string) $item['status'], ENT_QUOTES, 'UTF-8'); ?>
                                             <span class="tr-help">
-                                                （<?php echo htmlspecialchars((string) $item['path'], ENT_QUOTES, 'UTF-8'); ?>，
-                                                <?php echo htmlspecialchars((string) $item['detail'], ENT_QUOTES, 'UTF-8'); ?>）
+                                                <?php _e('（'); ?><?php echo htmlspecialchars((string) $item['path'], ENT_QUOTES, 'UTF-8'); ?><?php _e('，'); ?>
+                                                <?php echo htmlspecialchars((string) $item['detail'], ENT_QUOTES, 'UTF-8'); ?><?php _e('）'); ?>
                                             </span>
                                         </li>
                                     <?php endforeach; ?>
@@ -324,8 +323,7 @@ $dbOverviewUrl = $options->adminUrl('upgrade.php', true);
                                                     <ul class="tr-help tr-mt-8">
                                                         <?php foreach ($schemaIssues as $item): ?>
                                                             <li>
-                                                                <?php echo htmlspecialchars((string) $item['label'], ENT_QUOTES, 'UTF-8'); ?>
-                                                                ：<?php
+                                                                <?php echo htmlspecialchars((string) $item['label'], ENT_QUOTES, 'UTF-8'); ?><?php _e('：'); ?><?php
                                                                 if (!$item['exists']) {
                                                                     echo _t('缺表');
                                                                 } elseif (!empty($item['missingColumns'])) {
@@ -364,8 +362,7 @@ $dbOverviewUrl = $options->adminUrl('upgrade.php', true);
                                                         <ul class="tr-help tr-mt-8">
                                                             <?php foreach ($mysqlRiskItems as $item): ?>
                                                                 <li>
-                                                                    <?php echo htmlspecialchars((string) ($item['label'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>
-                                                                    ：<?php _e('需处理'); ?>
+                                                                    <?php echo htmlspecialchars((string) ($item['label'] ?? ''), ENT_QUOTES, 'UTF-8'); ?><?php _e('：'); ?><?php _e('需处理'); ?>
                                                                     <?php if (!empty($item['detail'])): ?>
                                                                         <span class="tr-help">(<?php echo htmlspecialchars((string) $item['detail'], ENT_QUOTES, 'UTF-8'); ?>)</span>
                                                                     <?php endif; ?>
@@ -384,7 +381,7 @@ $dbOverviewUrl = $options->adminUrl('upgrade.php', true);
                                                                                     $samples[] = (string) $sample['name'] . ' x' . (int) ($sample['count'] ?? 0);
                                                                                 }
                                                                             }
-                                                                            echo htmlspecialchars(implode('；', $samples), ENT_QUOTES, 'UTF-8');
+                                                                            echo htmlspecialchars(implode(_t('；'), $samples), ENT_QUOTES, 'UTF-8');
                                                                             ?>]
                                                                         </span>
                                                                     <?php endif; ?>

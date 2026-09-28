@@ -528,8 +528,8 @@ function install_js_support()
                     <?php _e('恭喜！您的 TypeRenew 安装已完成'); ?>
                 </p>
                 <p class="fresh-word">
-                    <?php _e('您的用户名是'); ?>：<strong class="warning" id="success-user"></strong><br>
-                    <?php _e('您的密码是'); ?>：<strong class="warning" id="success-password"></strong>
+                    <?php _e('您的用户名是'); ?><?php _e('：'); ?><strong class="warning" id="success-user"></strong><br>
+                    <?php _e('您的密码是'); ?><?php _e('：'); ?><strong class="warning" id="success-password"></strong>
                 </p>
                 <ul>
                     <li><a id="login-url" href=""><?php _e('访问后台控制面板'); ?></a></li>

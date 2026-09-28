@@ -44,7 +44,7 @@ class Upgrade extends BaseOptions implements ActionInterface
             _t(
                 '当前数据库环境仍有未处理风险，暂不能执行%s：%s。请先在升级页查看数据库诊断并处理后重试。',
                 $actionLabel,
-                implode('、', $labels)
+                implode(_t('、'), $labels)
             )
         );
     }
@@ -94,7 +94,7 @@ class Upgrade extends BaseOptions implements ActionInterface
                 $result['after']['missing']
             );
             Notice::alloc()->set(
-                _t('仍有关键结构异常：%s', implode('、', array_filter($names))),
+                _t('仍有关键结构异常：%s', implode(_t('、'), array_filter($names))),
                 'error'
             );
         }

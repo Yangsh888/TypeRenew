@@ -28,7 +28,7 @@ class Package extends BaseOptions implements ActionInterface
                 if (!$report['available']) {
                     $message = _t('在线升级环境未就绪');
                     if (!empty($report['blocking'])) {
-                        $message .= '：' . implode('；', $report['blocking']);
+                        $message .= _t('：') . implode(_t('；'), $report['blocking']);
                     }
 
                     $message .= defined('__TYPECHO_UPGRADE_DIR__')
