@@ -93,6 +93,14 @@ class GetText
         $this->total = $this->readInt();
         $this->originals = $this->readInt();
         $this->translations = $this->readInt();
+        $size = fstat($this->STREAM)['size'] ?? 0;
+        if ($this->total < 1 || $this->total > intdiv($size, 16)
+            || $this->originals < 28 || $this->translations < 28
+            || $this->originals > $size - $this->total * 8
+            || $this->translations > $size - $this->total * 8) {
+            $this->error = 1;
+            $this->short_circuit = true;
+        }
     }
 
     public function translate($string, ?int &$num): string
@@ -102,6 +110,10 @@ class GetText
             return $string;
         }
         $this->loadTables();
+        if ($this->short_circuit) {
+            $num = -1;
+            return $string;
+        }
 
         if ($this->enable_cache) {
             if (array_key_exists($string, $this->cache_translations)) {
@@ -125,6 +137,12 @@ class GetText
     {
         $number = intval($number);
 
+        if ($this->short_circuit) {
+            $num = -1;
+            return $number != 1 ? $plural : $single;
+        }
+
+        $this->loadTables();
         if ($this->short_circuit) {
             $num = -1;
             return $number != 1 ? $plural : $single;
@@ -185,11 +203,7 @@ class GetText
 
     private function loadTables()
     {
-        if (
-            is_array($this->cache_translations) &&
-            is_array($this->table_originals) &&
-            is_array($this->table_translations)
-        ) {
+        if (is_array($this->table_originals) && is_array($this->table_translations)) {
             return;
         }
 
@@ -197,6 +211,26 @@ class GetText
         $this->table_originals = $this->readIntArray($this->total * 2);
         fseek($this->STREAM, $this->translations);
         $this->table_translations = $this->readIntArray($this->total * 2);
+        if (count($this->table_originals) !== $this->total * 2
+            || count($this->table_translations) !== $this->total * 2) {
+            $this->short_circuit = true;
+            $this->error = 1;
+            return;
+        }
+
+        $size = fstat($this->STREAM)['size'] ?? 0;
+        for ($i = 0; $i < $this->total; $i++) {
+            $originalLength = $this->table_originals[$i * 2 + 1];
+            $originalOffset = $this->table_originals[$i * 2 + 2];
+            $translationLength = $this->table_translations[$i * 2 + 1];
+            $translationOffset = $this->table_translations[$i * 2 + 2];
+            if ($originalOffset > $size || $originalLength > $size - $originalOffset
+                || $translationOffset > $size || $translationLength > $size - $translationOffset) {
+                $this->short_circuit = true;
+                $this->error = 1;
+                return;
+            }
+        }
 
         if ($this->enable_cache) {
             $this->cache_translations = [];
@@ -231,15 +265,16 @@ class GetText
             $start = 0;
             $end = $this->total;
         }
-        if (abs($start - $end) <= 1) {
+        if ($start >= $end) {
+            return -1;
+        }
+        if ($end - $start === 1) {
             $txt = $this->getOriginalString($start);
             if ($string == $txt) {
                 return $start;
             } else {
                 return -1;
             }
-        } elseif ($start > $end) {
-            return $this->findString($string, $end, $start);
         } else {
             $half = (int)(($start + $end) / 2);
             $cmp = strcmp($string, $this->getOriginalString($half));
