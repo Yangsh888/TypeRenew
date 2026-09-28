@@ -141,6 +141,12 @@ class Client
         if ($params === []) {
             throw new Exception('Invalid request url');
         }
+
+        $host = $params['host'] ?? '';
+        if (!Common::checkSafeHost($host)) {
+            throw new Exception('Unsafe host: potential SSRF attack');
+        }
+
         $query = $params['query'] ?? '';
 
         if ($this->query !== '') {
