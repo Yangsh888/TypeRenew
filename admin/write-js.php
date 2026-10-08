@@ -150,7 +150,13 @@ $(document).ready(function() {
         draftId = draft.length > 0 ? draft.val() : 0,
         changed = false,
         written = false,
-        lastSaveTime = null;
+        lastSaveTime = null,
+        saveInFlight = false,
+        saveQueued = false,
+        changeVersion = 0,
+        saveCallbacks = [],
+        pendingSubmit = false,
+        pendingSubmitter = null;
 
     function refreshActionHeight() {
         const height = actionBar.length > 0 ? Math.ceil(actionBar.outerHeight(true)) : 72;
@@ -241,6 +247,15 @@ $(document).ready(function() {
         }
     });
 
+    form.on('input', '#title, #slug, #text, input[name="fieldNames[]"], textarea[name="fieldValues[]"]', function () {
+        written = true;
+        form.trigger('datachange');
+    });
+
+    form.on('datachange', function () {
+        changeVersion++;
+    });
+
     $('button[name=do]').click(function () {
         $('input[name=do]').val($(this).val());
     });
@@ -289,32 +304,73 @@ $(document).ready(function() {
             return false;
         }
 
-        if (markClean) {
-            changed = false;
+        if (cb) {
+            saveCallbacks.push(cb);
+        }
+        if (saveInFlight) {
+            saveQueued = true;
+            return true;
         }
 
+        saveInFlight = true;
+        const version = changeVersion;
+        let saved = false;
         autoSave.text('<?php _e('正在保存'); ?>');
         const data = new FormData(form.get(0));
-        data.append('do', 'save');
+        data.set('do', 'save');
+
+        function saveFailed() {
+            changed = true;
+            saveCallbacks = [];
+            autoSave.text('<?php _e('保存失败, 请重试'); ?>');
+        }
 
         $.ajax({
             url: form.attr('action'),
             processData: false,
             contentType: false,
+            dataType: 'json',
             type: 'POST',
             data: data,
             success: function (o) {
-                applySaveResult(o);
-                cb && cb(o);
-            },
-            error: function () {
-                if (markClean) {
-                    changed = true;
+                if (!o || o.success !== 1 || !(Number(o.cid) > 0) || !(Number(o.draftId) > 0) || typeof o.time !== 'string') {
+                    saveFailed();
+                    return;
                 }
-                autoSave.text('<?php _e('保存失败, 请重试'); ?>');
+                saved = true;
+                applySaveResult(o);
+                if (markClean && version === changeVersion) {
+                    changed = false;
+                }
+                if (version !== changeVersion) {
+                    autoSave.text('<?php _e('尚未保存'); ?>' + ' (<?php _e('上次保存时间'); ?>: ' + lastSaveTime + ')');
+                }
+                if (!changed) {
+                    const callbacks = saveCallbacks;
+                    saveCallbacks = [];
+                    callbacks.forEach(function (callback) { callback(o); });
+                } else if (saveCallbacks.length > 0) {
+                    saveQueued = true;
+                }
             },
+            error: saveFailed,
             complete: function () {
+                saveInFlight = false;
                 form.trigger('submitted');
+                if (pendingSubmit) {
+                    const submitter = pendingSubmitter;
+                    pendingSubmit = false;
+                    pendingSubmitter = null;
+                    saveQueued = false;
+                    form.get(0).requestSubmit(submitter || undefined);
+                } else if (saved && saveQueued) {
+                    saveQueued = false;
+                    if (changed) {
+                        requestSave(null, true);
+                    }
+                } else {
+                    saveQueued = false;
+                }
             }
         });
 
@@ -322,7 +378,7 @@ $(document).ready(function() {
     }
 
     Typecho.savePost = function(cb) {
-        if (!changed) {
+        if (!changed && !saveInFlight) {
             cb && cb();
             return;
         }

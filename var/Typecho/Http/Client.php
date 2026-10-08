@@ -43,6 +43,8 @@ class Client
 
     private string $responseUrl = '';
 
+    private ?string $requestUrl = null;
+
     private bool $useCurl = true;
 
     public function setCookie(string $key, $value): Client
@@ -135,8 +137,13 @@ class Client
         return $this;
     }
 
-    public function send(string $url)
+    public function send(?string $url = null)
     {
+        $url = $url ?? $this->requestUrl;
+        if ($url === null) {
+            throw new Exception('Invalid request url');
+        }
+
         $params = Common::parseUrl($url);
         if ($params === []) {
             throw new Exception('Invalid request url');
@@ -340,9 +347,10 @@ class Client
         return $this->responseUrl;
     }
 
-    public static function get(): ?Client
+    public static function get(?string $url = null): ?Client
     {
         $client = new static();
+        $client->requestUrl = $url;
         $client->useCurl = extension_loaded('curl')
             && function_exists('curl_init');
 

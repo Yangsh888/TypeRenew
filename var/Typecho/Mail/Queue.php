@@ -343,7 +343,8 @@ class Queue
         $errors = [];
 
         $transport = self::buildTransport($options);
-        $transport->open();
+        try {
+            $transport->open();
 
         foreach ($candidates as $row) {
             $id = (int) $row['id'];
@@ -381,6 +382,7 @@ class Queue
                 continue;
             }
 
+            try {
             $ok = false;
             $err = '';
 
@@ -434,12 +436,15 @@ class Queue
                 ])->where('id = ? AND status = ? AND lockedUntil = ?', $id, 'processing', $lockedUntil));
             }
 
-            if ($cache->enabled()) {
-                $cache->unlock($cacheLockKey);
+            } finally {
+                if ($cache->enabled()) {
+                    $cache->unlock($cacheLockKey);
+                }
             }
         }
-
-        $transport->close();
+        } finally {
+            $transport->close();
+        }
 
         return [
             'sent' => $sent,

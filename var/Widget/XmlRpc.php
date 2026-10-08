@@ -302,7 +302,12 @@ class XmlRpc extends Contents implements ActionInterface, Hook
             $input['template'] = $content['wp_page_template'];
         }
 
-        if (isset($content['dateCreated'])) {
+        if (isset($content['date_created_gmt']) && $content['date_created_gmt'] instanceof Date) {
+            $timestamp = $this->parseXmlRpcTimestamp($content['date_created_gmt'], new \DateTimeZone('UTC'));
+            if ($timestamp !== null) {
+                $input['created'] = $timestamp;
+            }
+        } elseif (isset($content['dateCreated']) && $content['dateCreated'] instanceof Date) {
             $timestamp = $this->parseXmlRpcTimestamp($content['dateCreated'], $this->options->getTimezoneZone());
             if ($timestamp !== null) {
                 $input['created'] = $timestamp;
@@ -1374,22 +1379,20 @@ class XmlRpc extends Contents implements ActionInterface, Hook
     private function parseXmlRpcTimestamp(Date $date, \DateTimeZone $defaultZone): ?int
     {
         $iso = preg_replace('/\.[0-9]{1,6}(?=Z|[+-]\d{2}:?\d{2}$)/', '', $date->getIso()) ?? $date->getIso();
-        $dateTime = \DateTimeImmutable::createFromFormat('!Ymd\TH:i:s', substr($iso, 0, 17), $defaultZone);
+        $formats = strlen($iso) === 17 ? ['!Ymd\TH:i:s']
+            : (str_ends_with($iso, 'Z') ? ['!Ymd\TH:i:s\Z'] : ['!Ymd\TH:i:sP', '!Ymd\TH:i:sO']);
+        $zone = str_ends_with($iso, 'Z') ? new \DateTimeZone('UTC') : $defaultZone;
 
-        if (!$dateTime instanceof \DateTimeImmutable && strlen($iso) > 17) {
-            $formats = str_ends_with($iso, 'Z')
-                ? ['!Ymd\TH:i:s\Z']
-                : ['!Ymd\TH:i:sP', '!Ymd\TH:i:sO'];
-
-            foreach ($formats as $format) {
-                $dateTime = \DateTimeImmutable::createFromFormat($format, $iso, $defaultZone);
-                if ($dateTime instanceof \DateTimeImmutable) {
-                    break;
-                }
+        foreach ($formats as $format) {
+            $dateTime = \DateTimeImmutable::createFromFormat($format, $iso, $zone);
+            $errors = \DateTimeImmutable::getLastErrors();
+            if ($dateTime instanceof \DateTimeImmutable
+                && ($errors === false || ($errors['warning_count'] === 0 && $errors['error_count'] === 0))) {
+                return $dateTime->getTimestamp();
             }
         }
 
-        return $dateTime instanceof \DateTimeImmutable ? $dateTime->getTimestamp() : null;
+        return null;
     }
 
     private function attachmentPayload(string $text): array

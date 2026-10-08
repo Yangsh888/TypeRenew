@@ -126,7 +126,8 @@ class User extends Users
                 $this->commitLogin($user, $expire);
             }
 
-            if (Password::needsRehash($user['password'])) {
+            if (Password::needsRehash($user['password']) && strlen($password) <= Password::MAX_LENGTH
+                && !str_contains($password, "\0")) {
                 $this->db->query($this->db
                     ->update('table.users')
                     ->rows(['password' => Password::hash($password)])

@@ -242,7 +242,8 @@ class GetText
                         $original = fread($this->STREAM, $this->table_originals[$i * 2 + 1]);
                     }
                     fseek($this->STREAM, $this->table_translations[$i * 2 + 2]);
-                    $translation = fread($this->STREAM, $this->table_translations[$i * 2 + 1]);
+                    $translation = $this->table_translations[$i * 2 + 1] > 0
+                        ? fread($this->STREAM, $this->table_translations[$i * 2 + 1]) : '';
                     $this->cache_translations[$original] = $translation;
                 }
             }

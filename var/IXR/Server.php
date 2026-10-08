@@ -220,6 +220,23 @@ class Server
         return $size >= 0 ? $size : self::DEFAULT_MAX_BODY_SIZE;
     }
 
+    private function requestBody(): string
+    {
+        $maxBodySize = $this->maxBodySize();
+        $body = fopen('php://input', 'rb');
+        if (!is_resource($body)) {
+            return '';
+        }
+
+        $data = $maxBodySize > 0 ? stream_get_contents($body, $maxBodySize + 1) : stream_get_contents($body);
+        fclose($body);
+        if ($maxBodySize > 0 && is_string($data) && strlen($data) > $maxBodySize) {
+            $this->error(-32600, 'server error. request body is too large.');
+        }
+
+        return is_string($data) ? $data : '';
+    }
+
     private function parseIniSize(string $value): int
     {
         $value = trim($value);
@@ -343,7 +360,7 @@ class Server
             $this->error(-32600, 'server error. request body is too large.');
         }
 
-        $message = new Message(file_get_contents('php://input') ?: '');
+        $message = new Message($this->requestBody());
 
         if (!$message->parse()) {
             $this->error(-32700, 'parse error. not well formed');
