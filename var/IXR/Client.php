@@ -27,6 +27,7 @@ class Client
 
     private function rpcCall(string $method, array $args): bool
     {
+        unset($this->error);
         $request = new Request($method, $args);
         $xml = $request->getXml();
 

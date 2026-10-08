@@ -33,7 +33,7 @@ class Message
 
     public function parse(): bool
     {
-        if (trim($this->message) == '') {
+        if (!function_exists('xml_parser_create') || trim($this->message) == '') {
             return false;
         }
 

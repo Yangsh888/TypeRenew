@@ -432,6 +432,13 @@ $(document).ready(function() {
             return false;
         }
 
+        if (saveInFlight) {
+            e.preventDefault();
+            pendingSubmit = true;
+            pendingSubmitter = e.originalEvent && e.originalEvent.submitter ? e.originalEvent.submitter : null;
+            return false;
+        }
+
         form.addClass('submitting');
     });
 

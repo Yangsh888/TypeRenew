@@ -583,7 +583,7 @@ class Request
         $proto = $trusted ? (string) $this->getHeader('X-Forwarded-Proto', '') : '';
         $port = $trusted ? (string) $this->getHeader('X-Forwarded-Port', '') : '';
         if ($proto !== '') {
-            $proto = strtolower($proto);
+            $proto = strtolower(trim(explode(',', $proto, 2)[0]));
         }
 
         return ($proto !== '' && ($proto === 'https' || $proto === 'quic'))

@@ -139,6 +139,10 @@ class Queue
 
     public static function maybeDrain(Db $db, Options $options): void
     {
+        if ((int) ($options->mailEnable ?? 0) !== 1) {
+            return;
+        }
+
         static $called = false;
         if ($called) {
             return;
@@ -316,6 +320,10 @@ class Queue
 
     public static function deliverBatch(Db $db, Options $options, int $limit = 50): array
     {
+        if ((int) ($options->mailEnable ?? 0) !== 1) {
+            return ['sent' => 0, 'failed' => 0, 'errors' => []];
+        }
+
         $limit = max(1, min(200, $limit));
         $now = time();
         $lockedUntil = $now + 900;
@@ -346,102 +354,101 @@ class Queue
         try {
             $transport->open();
 
-        foreach ($candidates as $row) {
-            $id = (int) $row['id'];
-            $attempts = (int) $row['attempts'];
-            $maxAttempts = max(1, min(10, (int) ($options->mailMaxAttempts ?? 3)));
+            foreach ($candidates as $row) {
+                $id = (int) $row['id'];
+                $attempts = (int) $row['attempts'];
+                $maxAttempts = max(1, min(10, (int) ($options->mailMaxAttempts ?? 3)));
 
-            if ($attempts >= $maxAttempts) {
-                $db->query($db->update('table.mail_queue')->rows([
-                    'status' => 'dead',
-                    'lockedUntil' => 0,
-                    'updated' => $now
-                ])->where('id = ? AND status <> ?', $id, 'sent'));
-                continue;
-            }
-
-            $locked = $db->query(
-                $db->update('table.mail_queue')->rows([
-                    'status' => 'processing',
-                    'lockedUntil' => $lockedUntil,
-                    'updated' => $now
-                ])->where('id = ? AND ((status = ? OR status = ?) OR (status = ? AND lockedUntil < ?)) AND (lockedUntil = 0 OR lockedUntil < ?)', $id, 'pending', 'failed', 'processing', $now, $now)
-            );
-
-            if (!$locked) {
-                continue;
-            }
-
-            $cacheLockKey = 'mail:queue:send:' . $id;
-            if ($cache->enabled() && !$cache->tryLock($cacheLockKey, max(60, $lockedUntil - $now))) {
-                $db->query($db->update('table.mail_queue')->rows([
-                    'status' => 'pending',
-                    'lockedUntil' => 0,
-                    'updated' => $now
-                ])->where('id = ? AND status = ? AND lockedUntil = ?', $id, 'processing', $lockedUntil));
-                continue;
-            }
-
-            try {
-            $ok = false;
-            $err = '';
-
-            try {
-                $payload = json_decode((string) $row['payload'], true);
-                if (!is_array($payload)) {
-                    throw new \RuntimeException('Invalid payload');
+                if ($attempts >= $maxAttempts) {
+                    $db->query($db->update('table.mail_queue')->rows([
+                        'status' => 'dead',
+                        'lockedUntil' => 0,
+                        'updated' => $now
+                    ])->where('id = ? AND status <> ?', $id, 'sent'));
+                    continue;
                 }
 
-                $msg = self::buildMessage(
-                    $options,
-                    (string) ($payload['to'] ?? ''),
-                    (string) ($payload['subject'] ?? ''),
-                    (string) ($payload['html'] ?? ''),
-                    (string) ($payload['toName'] ?? ''),
-                    (string) ($payload['text'] ?? '')
+                $locked = $db->query(
+                    $db->update('table.mail_queue')->rows([
+                        'status' => 'processing',
+                        'lockedUntil' => $lockedUntil,
+                        'updated' => $now
+                    ])->where('id = ? AND ((status = ? OR status = ?) OR (status = ? AND lockedUntil < ?)) AND (lockedUntil = 0 OR lockedUntil < ?)', $id, 'pending', 'failed', 'processing', $now, $now)
                 );
 
-                $result = self::sendMessage($msg, $options, $transport);
-                if ($result === true) {
-                    $ok = true;
-                } else {
-                    $err = (string) $result;
+                if (!$locked) {
+                    continue;
                 }
-            } catch (\Throwable $e) {
-                $err = $e->getMessage();
-            }
 
-            if ($ok) {
-                $sent++;
-                $db->query($db->update('table.mail_queue')->rows([
-                    'status' => 'sent',
-                    'lockedUntil' => 0,
-                    'attempts' => $attempts + 1,
-                    'lastError' => '',
-                    'updated' => time()
-                ])->where('id = ? AND status = ? AND lockedUntil = ?', $id, 'processing', $lockedUntil));
-            } else {
-                $failed++;
-                $errors[] = ['id' => $id, 'error' => $err];
-                $nextAttempts = $attempts + 1;
-                $isDead = $nextAttempts >= $maxAttempts;
-                $truncatedErr = mb_substr($err, 0, 500, 'UTF-8');
-                $db->query($db->update('table.mail_queue')->rows([
-                    'status' => $isDead ? 'dead' : 'failed',
-                    'lockedUntil' => 0,
-                    'attempts' => $nextAttempts,
-                    'sendAt' => $isDead ? $now : ($now + self::retryDelay($nextAttempts)),
-                    'lastError' => $truncatedErr,
-                    'updated' => time()
-                ])->where('id = ? AND status = ? AND lockedUntil = ?', $id, 'processing', $lockedUntil));
-            }
+                $cacheLockKey = 'mail:queue:send:' . $id;
+                if ($cache->enabled() && !$cache->tryLock($cacheLockKey, max(60, $lockedUntil - $now))) {
+                    $db->query($db->update('table.mail_queue')->rows([
+                        'status' => 'pending',
+                        'lockedUntil' => 0,
+                        'updated' => $now
+                    ])->where('id = ? AND status = ? AND lockedUntil = ?', $id, 'processing', $lockedUntil));
+                    continue;
+                }
 
-            } finally {
-                if ($cache->enabled()) {
-                    $cache->unlock($cacheLockKey);
+                try {
+                    $ok = false;
+                    $err = '';
+
+                    try {
+                        $payload = json_decode((string) $row['payload'], true);
+                        if (!is_array($payload)) {
+                            throw new \RuntimeException('Invalid payload');
+                        }
+
+                        $msg = self::buildMessage(
+                            $options,
+                            (string) ($payload['to'] ?? ''),
+                            (string) ($payload['subject'] ?? ''),
+                            (string) ($payload['html'] ?? ''),
+                            (string) ($payload['toName'] ?? ''),
+                            (string) ($payload['text'] ?? '')
+                        );
+
+                        $result = self::sendMessage($msg, $options, $transport);
+                        if ($result === true) {
+                            $ok = true;
+                        } else {
+                            $err = (string) $result;
+                        }
+                    } catch (\Throwable $e) {
+                        $err = $e->getMessage();
+                    }
+
+                    if ($ok) {
+                        $sent++;
+                        $db->query($db->update('table.mail_queue')->rows([
+                            'status' => 'sent',
+                            'lockedUntil' => 0,
+                            'attempts' => $attempts + 1,
+                            'lastError' => '',
+                            'updated' => time()
+                        ])->where('id = ? AND status = ? AND lockedUntil = ?', $id, 'processing', $lockedUntil));
+                    } else {
+                        $failed++;
+                        $errors[] = ['id' => $id, 'error' => $err];
+                        $nextAttempts = $attempts + 1;
+                        $isDead = $nextAttempts >= $maxAttempts;
+                        $truncatedErr = mb_substr($err, 0, 500, 'UTF-8');
+                        $db->query($db->update('table.mail_queue')->rows([
+                            'status' => $isDead ? 'dead' : 'failed',
+                            'lockedUntil' => 0,
+                            'attempts' => $nextAttempts,
+                            'sendAt' => $isDead ? $now : ($now + self::retryDelay($nextAttempts)),
+                            'lastError' => $truncatedErr,
+                            'updated' => time()
+                        ])->where('id = ? AND status = ? AND lockedUntil = ?', $id, 'processing', $lockedUntil));
+                    }
+                } finally {
+                    if ($cache->enabled()) {
+                        $cache->unlock($cacheLockKey);
+                    }
                 }
             }
-        }
         } finally {
             $transport->close();
         }

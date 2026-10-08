@@ -5004,7 +5004,20 @@ body.tr-admin #custom-field .add .description {
 
 @media (max-width: 768px) {
     body.tr-admin #custom-field ul.fields .field {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    body.tr-admin #custom-field ul.fields .field-name {
+        flex-wrap: wrap;
+        min-width: 0;
+    }
+
+    body.tr-admin #custom-field ul.fields .field-name input[type=text] {
+        min-width: 0;
+    }
+
+    body.tr-admin #custom-field ul.fields .field-value {
+        min-width: 0;
     }
 
     body.tr-admin #custom-field .add {
