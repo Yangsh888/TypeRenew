@@ -648,6 +648,10 @@ trait EditTrait
 
             $this->applyFields($this->getFields(), $realId);
 
+            if ($realId > 0 && $this->have() && !preg_match("/_draft$/", $this->type)) {
+                $this->applyFields($this->getFields(), $this->cid);
+            }
+
             return $realId;
         }
 
