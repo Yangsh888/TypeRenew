@@ -248,7 +248,7 @@ class Cache
             return null;
         }
 
-        $signature = $trimmed;
+        $signature = $sql;
 
         $tables = $this->queryTables($query, $trimmed);
         if (!empty($tables)) {

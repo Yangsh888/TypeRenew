@@ -216,7 +216,7 @@ class Db
             if ($isWriteSql) {
                 $op = self::WRITE;
                 $table = $this->normalizeInvalidateTable($this->parseWriteTable($query));
-            } elseif ($forceWriteConnection) {
+            } elseif ($forceWriteConnection || $transactionCommand !== null) {
                 $op = self::WRITE;
             }
         } elseif (!is_string($query)) {
@@ -227,16 +227,7 @@ class Db
 
         $sql = $query instanceof Query ? $query->prepare($query) : $query;
 
-        try {
-            $resource = $this->adapter->query($sql, $handle, $op, $action, $table);
-        } catch (\Throwable $e) {
-            if ($transactionCommand === 'commit' || $transactionCommand === 'rollback') {
-                $this->transactionActive = false;
-                $this->flushPendingInvalidations();
-            }
-
-            throw $e;
-        }
+        $resource = $this->adapter->query($sql, $handle, $op, $action, $table);
 
         if ($transactionCommand === 'begin') {
             $this->transactionActive = true;
@@ -324,6 +315,7 @@ class Db
 
     private function transactionCommand(string $sql): ?string
     {
+        $sql = preg_replace('/^\s*(?:(?:\/\*.*?\*\/|--[^\r\n]*(?:\r?\n|$)|#[^\r\n]*(?:\r?\n|$))\s*)*/s', '', $sql) ?? $sql;
         $sql = rtrim(trim($sql), "; \t\n\r\0\x0B");
 
         if (preg_match('/^(?:START\s+TRANSACTION|BEGIN(?:\s+(?:WORK|TRANSACTION))?)$/i', $sql)) {

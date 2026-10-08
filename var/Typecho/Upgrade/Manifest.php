@@ -88,8 +88,13 @@ class Manifest
             return false;
         }
 
-        if (preg_match('#(^|/)\.\.($|/)#', $path)) {
-            return false;
+        foreach (explode('/', str_replace('\\', '/', $path)) as $part) {
+            if ($part === '..' || preg_match('/[\x00-\x1f:]/', $part)) {
+                return false;
+            }
+            if (DIRECTORY_SEPARATOR === '\\' && $part !== '.' && rtrim($part, ' .') !== $part) {
+                return false;
+            }
         }
 
         return true;

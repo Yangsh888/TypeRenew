@@ -43,7 +43,7 @@ class Checkbox extends Element
         }
 
         foreach ($values as $value) {
-            if (isset($this->options[$value])) {
+            if (is_scalar($value) && isset($this->options[$value])) {
                 $this->options[$value]->setAttribute('checked', 'true');
             }
         }

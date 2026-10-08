@@ -641,9 +641,23 @@ class Runner
     private function targetPath(string $relative): string
     {
         $relative = Manifest::normalize($relative);
+        if (!Manifest::validatePath($relative)) {
+            throw new RuntimeException(_t('升级目标路径非法: %s', $relative));
+        }
         $target = $this->rootDir . '/' . $relative;
-        $normalized = str_replace('\\', '/', $target);
-        if (!str_starts_with($normalized, $this->rootDir . '/')) {
+        $parent = $this->findExistingParent(dirname($target));
+        $root = realpath($this->rootDir);
+        $resolved = $parent === null ? false : realpath($parent);
+        if ($root === false || $resolved === false) {
+            throw new RuntimeException(_t('升级目标路径非法: %s', $relative));
+        }
+        $root = str_replace('\\', '/', $root);
+        $resolved = str_replace('\\', '/', $resolved);
+        if (DIRECTORY_SEPARATOR === '\\') {
+            $root = strtolower($root);
+            $resolved = strtolower($resolved);
+        }
+        if ($resolved !== $root && !str_starts_with($resolved, $root . '/')) {
             throw new RuntimeException(_t('升级目标路径非法: %s', $relative));
         }
         return $target;

@@ -142,13 +142,17 @@ class Edit extends Contents implements ActionInterface
 
     protected function getPageOffsetQuery(int $cid, ?string $status = null): string
     {
-        return 'page=' . $this->getPageOffset(
-            'cid',
-            $cid,
-            'attachment',
-            $status,
-            $this->user->pass('editor', true) ? 0 : $this->user->uid
-        );
+        $select = $this->select(['COUNT(cid)' => 'num'])
+            ->where('cid > ? AND type = ?', $cid, 'attachment');
+        if ($status !== null && $status !== '') {
+            $select->where('status = ?', $status);
+        }
+        if (!$this->user->pass('editor', true)) {
+            $select->where('authorId = ?', $this->user->uid);
+        }
+        $row = $this->db->fetchObject($select);
+
+        return 'page=' . (int) ceil(((int) ($row->num ?? 0) + 1) / 20);
     }
 
     public function deleteAttachment()

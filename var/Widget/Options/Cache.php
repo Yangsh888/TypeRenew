@@ -60,6 +60,7 @@ class Cache extends Options implements ActionInterface
 
         $settings['cacheRedisDatabase'] = max(0, min(15, (int) $settings['cacheRedisDatabase']));
 
+        CacheFacade::getInstance()->invalidate();
         $this->persistOptions($settings);
 
         CacheFacade::init([

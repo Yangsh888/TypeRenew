@@ -104,6 +104,11 @@ class Form extends Layout
         if ($error) {
             Cookie::set('__typecho_form_message_' . $id, Common::jsonEncode($error, 0, '{}'));
 
+            foreach ($this->inputs as $name => $input) {
+                if ($input instanceof Element\Password) {
+                    unset($formData[$name]);
+                }
+            }
             Cookie::set('__typecho_form_record_' . $id, Common::jsonEncode($formData, 0, '{}'));
         }
 
@@ -117,7 +122,7 @@ class Form extends Layout
 
         foreach ($params as $param) {
             $input = $this->getInput($param);
-            $result[$param] = $request->get($param, $input && is_array($input->value) ? [] : null);
+            $result[$param] = $request->get($param, $input instanceof Element\Checkbox || ($input && is_array($input->value)) ? [] : null);
         }
 
         return $result;
@@ -131,11 +136,19 @@ class Form extends Layout
 
         if (!empty($record)) {
             $record = json_decode($record, true);
-            $message = json_decode($message, true);
+            $message = json_decode($message ?? '', true);
+            $record = is_array($record) ? $record : [];
+            $message = is_array($message) ? $message : [];
             foreach ($this->inputs as $name => $input) {
-                $input->value($record[$name] ?? $input->value);
+                $value = $record[$name] ?? $input->value;
+                if ($input instanceof Element\Password) {
+                    $value = '';
+                } elseif (is_array($value) && !$input instanceof Element\Checkbox && !is_array($input->value)) {
+                    $value = $input->value;
+                }
+                $input->value($value);
 
-                if (isset($message[$name])) {
+                if (isset($message[$name]) && is_scalar($message[$name])) {
                     $input->message(self::filterMessage($input, (string) $message[$name]));
                 }
             }

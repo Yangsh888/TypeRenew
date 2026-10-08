@@ -152,7 +152,7 @@ class XmlRpc extends Contents implements ActionInterface, Hook
             'permaLink'              => $page->permalink,
             'categories'             => $page->categories,
             'excerpt'                => $page->plainExcerpt,
-            'text_more'              => $more,
+            'text_more'             => $more,
             'mt_allow_comments'      => intval($page->allowComment),
             'mt_allow_pings'         => intval($page->allowPing),
             'wp_slug'                => $page->slug,
@@ -220,7 +220,7 @@ class XmlRpc extends Contents implements ActionInterface, Hook
             $pageStructs[] = [
                 'dateCreated'            => $this->xmlRpcDate($pages->created),
                 'userid'                 => $pages->authorId,
-                'page_id'                => intval($pages->cid),
+                'page_id'               => intval($pages->cid),
                 'page_status'            => $this->typechoToWordpressStatus(
                     ($pages->hasSaved || 'page_draft' == $pages->type) ? 'draft' : $pages->status,
                     'page'
@@ -496,39 +496,23 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         return $authorStructs;
     }
 
-    public function wpSuggestCategories(
-        int $blogId,
-        string $userName,
-        string $password,
-        string $category,
-        int $maxResults = 0
-    ): array {
-        $key = Common::filterSearchQuery($category);
-        $key = '%' . $key . '%';
-        $select = $this->db->select()
-            ->from('table.metas')
-            ->where(
-                'table.metas.type = ? AND (table.metas.name LIKE ? OR slug LIKE ?)',
-                'category',
-                $key,
-                $key
-            );
-
-        if ($maxResults > 0) {
-            $select->limit($maxResults);
-        }
-
+    public function wpSuggestCategories(int $blogId, string $userName, string $password, string $category): array
+    {
+        $select = $this->db->select()->from('table.metas')
+            ->where('type = ?', 'category')
+            ->where('name LIKE ?', '%' . $category . '%')
+            ->limit(10);
         $categories = MetasFrom::alloc(['query' => $select]);
 
-        $categoryStructs = [];
+        $result = [];
         while ($categories->next()) {
-            $categoryStructs[] = [
-                'category_id'   => $categories->mid,
-                'category_name' => $categories->name,
+            $result[] = [
+                'categoryId'   => $categories->mid,
+                'categoryName' => $categories->name
             ];
         }
 
-        return $categoryStructs;
+        return $result;
     }
 
     public function wpGetUsersBlogs(string $userName, string $password): array
@@ -537,7 +521,7 @@ class XmlRpc extends Contents implements ActionInterface, Hook
             [
                 'isAdmin'  => $this->user->pass('administrator', true),
                 'url'      => $this->options->siteUrl,
-                'blogid'   => '1',
+                'blogid'   => 1,
                 'blogName' => $this->options->title,
                 'xmlrpc'   => $this->options->xmlRpcUrl
             ]
@@ -549,35 +533,29 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         return [
             'user_id'      => $this->user->uid,
             'username'     => $this->user->name,
-            'first_name'   => '',
-            'last_name'    => '',
-            'registered'   => $this->xmlRpcDate($this->user->created),
-            'bio'          => '',
-            'email'        => $this->user->mail,
-            'nickname'     => $this->user->screenName,
-            'url'          => $this->user->url,
             'display_name' => $this->user->screenName,
-            'roles'        => $this->user->group
+            'email'        => $this->user->mail,
+            'url'          => $this->user->url
         ];
     }
 
     public function wpGetTags(int $blogId, string $userName, string $password): array
     {
-        $struct = [];
         $tags = Cloud::alloc();
-
+        $result = [];
         while ($tags->next()) {
-            $struct[] = [
-                'tag_id'   => $tags->mid,
-                'name'     => $tags->name,
-                'count'    => $tags->count,
-                'slug'     => $tags->slug,
-                'html_url' => $tags->permalink,
-                'rss_url'  => $tags->feedUrl
+            $result[] = [
+                'tag_id'          => $tags->mid,
+                'name'            => $tags->name,
+                'count'           => $tags->count,
+                'slug'            => $tags->slug,
+                'description'     => $tags->description,
+                'link'            => $tags->permalink,
+                'taxonomy'        => 'post_tag'
             ];
         }
 
-        return $struct;
+        return $result;
     }
 
     public function wpDeleteCategory(int $blogId, string $userName, string $password, int $categoryId): bool
@@ -585,43 +563,41 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         CategoryEdit::alloc(null, ['mid' => $categoryId], function (CategoryEdit $category) {
             $category->deleteCategory();
         });
-
         return true;
     }
 
     public function wpGetCommentCount(int $blogId, string $userName, string $password, int $postId): array
     {
         $stat = Stat::alloc(null, ['cid' => $postId]);
-
         return [
-            'approved'            => $stat->currentPublishedCommentsNum,
+            'approved' => $stat->currentPublishedCommentsNum,
             'awaiting_moderation' => $stat->currentWaitingCommentsNum,
-            'spam'                => $stat->currentSpamCommentsNum,
-            'total_comments'      => $stat->currentCommentsNum
+            'spam' => $stat->currentSpamCommentsNum,
+            'total_comments' => $stat->currentCommentsNum
         ];
     }
 
     public function wpGetPostFormats(int $blogId, string $userName, string $password): array
     {
-        return [
-            'standard' => _t('标准')
-        ];
+        return [];
     }
 
     public function wpGetPostStatusList(int $blogId, string $userName, string $password): array
     {
         return [
+            'publish' => _t('已发布'),
             'draft'   => _t('草稿'),
-            'pending' => _t('待审核'),
-            'publish' => _t('已发布')
+            'private' => _t('私密'),
+            'pending' => _t('待审核')
         ];
     }
 
     public function wpGetPageStatusList(int $blogId, string $userName, string $password): array
     {
         return [
+            'publish' => _t('已发布'),
             'draft'   => _t('草稿'),
-            'publish' => _t('已发布')
+            'private' => _t('私密')
         ];
     }
 
@@ -629,17 +605,15 @@ class XmlRpc extends Contents implements ActionInterface, Hook
     {
         return [
             'hold'    => _t('待审核'),
-            'approve' => _t('显示'),
+            'approve' => _t('已通过'),
             'spam'    => _t('垃圾')
         ];
     }
 
     public function wpGetPageTemplates(int $blogId, string $userName, string $password): array
     {
-        $templates = array_flip($this->getTemplates());
-        $templates['Default'] = '';
-
-        return $templates;
+        $pages = PageEdit::alloc();
+        return $pages->getTemplates();
     }
 
     public function wpGetOptions(int $blogId, string $userName, string $password, array $options = []): array
@@ -689,7 +663,7 @@ class XmlRpc extends Contents implements ActionInterface, Hook
                         $this->db->query(
                             $this->db->update('table.options')
                                 ->rows(['value' => \Utils\Zone::legacyId($timezone)])
-                                ->where('name = ?', 'timezoneId'),
+                                ->where('name = ? AND user = 0', 'timezoneId'),
                             \Typecho\Db::WRITE
                         );
                     }
@@ -697,7 +671,7 @@ class XmlRpc extends Contents implements ActionInterface, Hook
                     if (
                         $this->db->query($this->db->update('table.options')
                             ->rows(['value' => $value])
-                            ->where('name = ?', $optionName)) > 0
+                            ->where('name = ? AND user = 0', $optionName)) > 0
                     ) {
                         $struct[$option]['value'] = $value;
                     }
@@ -887,7 +861,7 @@ class XmlRpc extends Contents implements ActionInterface, Hook
             $input['text'] = $struct['content'];
         }
 
-        $comment = Feedback::alloc(['checkReferer' => false], $input, function (Feedback $comment) {
+        $comment = Feedback::alloc(['checkReferer' => false, 'skipSecurity' => true], $input, function (Feedback $comment) {
             $comment->action();
         });
         return $comment->have() ? $comment->coid : 0;
@@ -983,10 +957,10 @@ class XmlRpc extends Contents implements ActionInterface, Hook
             'mt_allow_comments'      => intval($post->allowComment),
             'mt_allow_pings'         => intval($post->allowPing),
             'mt_keywords'            => implode(', ', $tags),
-            'wp_slug'                => $post->slug,
-            'wp_password'            => $post->password,
-            'wp_author'              => $post->author->name,
-            'wp_author_id'           => $post->authorId,
+            'wp_slug'               => $post->slug,
+            'wp_password'           => $post->password,
+            'wp_author'             => $post->author->name,
+            'wp_author_id'          => $post->authorId,
             'wp_author_display_name' => $post->author->screenName,
             'date_created_gmt'       => $this->xmlRpcGmtDate($post->created),
             'post_status'            => $this->typechoToWordpressStatus($post->status, 'post'),
@@ -1105,7 +1079,6 @@ class XmlRpc extends Contents implements ActionInterface, Hook
                 'date_created_gmt' => $this->xmlRpcGmtDate($posts->created)
             ];
         }
-
         return $postTitleStructs;
     }
 
@@ -1370,18 +1343,18 @@ class XmlRpc extends Contents implements ActionInterface, Hook
 
     private function xmlRpcGmtDate(int $timestamp): Date
     {
-        return new Date($this->options->getUtcDateTime($timestamp)->format('Ymd\TH:i:s\Z'));
+        return new Date($this->options->getUtcDateTime($timestamp)->format('Ymd\\TH:i:s\\Z'));
     }
 
     private function parseXmlRpcTimestamp(Date $date, \DateTimeZone $defaultZone): ?int
     {
         $iso = preg_replace('/\.[0-9]{1,6}(?=Z|[+-]\d{2}:?\d{2}$)/', '', $date->getIso()) ?? $date->getIso();
-        $dateTime = \DateTimeImmutable::createFromFormat('!Ymd\TH:i:s', substr($iso, 0, 17), $defaultZone);
+        $dateTime = \DateTimeImmutable::createFromFormat('!Ymd\\TH:i:s', substr($iso, 0, 17), $defaultZone);
 
         if (!$dateTime instanceof \DateTimeImmutable && strlen($iso) > 17) {
             $formats = str_ends_with($iso, 'Z')
-                ? ['!Ymd\TH:i:s\Z']
-                : ['!Ymd\TH:i:sP', '!Ymd\TH:i:sO'];
+                ? ['!Ymd\\TH:i:s\\Z']
+                : ['!Ymd\\TH:i:sP', '!Ymd\\TH:i:sO'];
 
             foreach ($formats as $format) {
                 $dateTime = \DateTimeImmutable::createFromFormat($format, $iso, $defaultZone);
@@ -1492,7 +1465,7 @@ EOF;
                 'wp.getUsersBlogs'          => [$this, 'wpGetUsersBlogs'],
                 'wp.getTags'                => [$this, 'wpGetTags'],
                 'wp.deleteCategory'         => [$this, 'wpDeleteCategory'],
-                'wp.getCommentCount'        => [$this, 'wpGetCommentCount'],
+                'wp.getCommentCount'       => [$this, 'wpGetCommentCount'],
                 'wp.getPostStatusList'      => [$this, 'wpGetPostStatusList'],
                 'wp.getPageStatusList'      => [$this, 'wpGetPageStatusList'],
                 'wp.getPageTemplates'       => [$this, 'wpGetPageTemplates'],

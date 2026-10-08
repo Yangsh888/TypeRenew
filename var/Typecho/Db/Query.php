@@ -212,7 +212,7 @@ class Query
     public function page(int $page, int $pageSize): Query
     {
         $safePageSize = max($pageSize, 1);
-        $safePage = max(1, min($page, 10000));
+        $safePage = max(1, $page);
         $this->sqlPreBuild['limit'] = $safePageSize;
         $this->sqlPreBuild['offset'] = ($safePage - 1) * $safePageSize;
         return $this;
@@ -334,7 +334,11 @@ class Query
 
         return preg_replace_callback("/#param:([0-9]+)#/", function ($matches) use ($params, $adapter) {
             if (array_key_exists($matches[1], $params)) {
-                return is_null($params[$matches[1]]) ? 'NULL' : $adapter->quoteValue($params[$matches[1]]);
+                $value = $params[$matches[1]];
+                if ($value === null) {
+                    return 'NULL';
+                }
+                return $adapter->quoteValue((string) (is_bool($value) ? (int) $value : $value));
             } else {
                 return $matches[0];
             }

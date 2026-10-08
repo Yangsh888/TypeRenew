@@ -106,10 +106,22 @@ class Helper
     {
         self::options()->{$name} = $value;
 
-        return BaseOptions::alloc()->update(
-            ['value' => is_array($value) ? Common::jsonEncode($value, 0, '{}') : $value],
-            Db::get()->sql()->where('name = ?', $name)
+        $db = Db::get();
+        $storage = BaseOptions::alloc();
+        $value = is_array($value) ? Common::jsonEncode($value, 0, '{}') : $value;
+        $updated = $storage->update(
+            ['value' => $value],
+            $db->sql()->where('name = ?', $name)->where('user = ?', 0)
         );
+
+        if (!$updated && !$db->fetchRow(
+            $db->select('name')->from('table.options')->where('name = ?', $name)->where('user = ?', 0)
+        )) {
+            $storage->insert(['name' => $name, 'user' => 0, 'value' => $value]);
+            return 1;
+        }
+
+        return $updated;
     }
 
     public static function syncArchiveRoutes(array $routingTable, ?string $url = null): array
@@ -284,7 +296,7 @@ class Helper
 
         self::setOption('panelTable', $panelTable);
 
-        return $index !== false ? (int) $index + 10 : -1;
+        return (int) $index + 10;
     }
 
     public static function addPanel(
@@ -327,12 +339,11 @@ class Helper
             unset($panelTable['file'][$key]);
         }
 
-        $return = -1;
+        $return = 0;
         foreach ($panelTable['child'][$index] as $k => $val) {
             if ($val[2] == 'extending.php?panel=' . $fileName) {
                 unset($panelTable['child'][$index][$k]);
                 $return = (int) $k;
-                break;
             }
         }
 

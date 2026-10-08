@@ -37,6 +37,10 @@ trait EditTrait
 
     public function merge(int $mid, string $type, array $metas)
     {
+        if (!$this->db->fetchRow($this->select('mid')->where('mid = ? AND type = ?', $mid, $type)->limit(1))) {
+            return;
+        }
+
         $contents = array_column($this->db->fetchAll($this->db->select('cid')
             ->from('table.relationships')
             ->where('mid = ?', $mid)), 'cid');
@@ -50,6 +54,12 @@ trait EditTrait
         }
         $sources = array_values($sources);
 
+        if (empty($sources)) {
+            return;
+        }
+
+        $sources = array_column($this->db->fetchAll($this->select('mid')
+            ->where('mid IN ? AND type = ?', $sources, $type)), 'mid');
         if (empty($sources)) {
             return;
         }
@@ -81,7 +91,7 @@ trait EditTrait
 
         $this->db->query($this->db->delete('table.relationships')->where('mid IN ?', $sources));
         $this->delete($this->db->sql()->where('mid IN ? AND type = ?', $sources, $type));
-        $this->update(['parent' => $mid], $this->db->sql()->where('parent IN ?', $sources));
+        $this->update(['parent' => $mid], $this->db->sql()->where('parent IN ?', $sources)->where('type = ?', $type));
 
         $num = $this->db->fetchObject($this->db
             ->select(['COUNT(mid)' => 'num'])->from('table.relationships')

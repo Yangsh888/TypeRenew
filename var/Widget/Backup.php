@@ -18,7 +18,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
 class Backup extends BaseOptions implements ActionInterface
 {
     private const MAX_IMPORT_BYTES = 524288000;
-    private const MAX_IMPORT_RECORDS = 200000;
     private const MAX_IMPORT_FIELD_BYTES = 16777216;
     private const MAX_IMPORT_PLUGIN_BYTES = 67108864;
     public const HEADER = '%TYPECHO_BACKUP_XXXX%';
@@ -59,8 +58,6 @@ class Backup extends BaseOptions implements ActionInterface
     private array $lastIds = [];
 
     private array $cleared = [];
-
-    private ?array $pendingLoginUser = null;
 
     private ?array $currentOperator = null;
 
@@ -200,7 +197,16 @@ class Backup extends BaseOptions implements ActionInterface
             foreach ($this->types as $type => $val) {
                 $page = 1;
                 do {
-                    $rows = $db->fetchAll($db->select()->from('table.' . $type)->page($page, 20));
+                    $query = $db->select()->from('table.' . $type)->page($page, 20);
+                    $keys = match ($type) {
+                        'relationships' => ['cid', 'mid'],
+                        'fields' => ['cid', 'name'],
+                        default => [$this->fields[$type][0]],
+                    };
+                    foreach ($keys as $key) {
+                        $query->order($key);
+                    }
+                    $rows = $db->fetchAll($db->query($query));
                     $page++;
 
                     foreach ($rows as $row) {
@@ -319,7 +325,6 @@ class Backup extends BaseOptions implements ActionInterface
                 $this->repairResult = $this->repairData();
             }
 
-            $this->pendingLoginUser = null;
             if ($this->inTransaction) {
                 $this->db->query('COMMIT');
                 $this->inTransaction = false;
@@ -329,11 +334,11 @@ class Backup extends BaseOptions implements ActionInterface
 
             $report = $this->buildReport($payload, $preflight, false, false, $snapshotName, $doRepair, $doSnapshot);
             $messages = $this->reportMessages($report);
-            $this->stashReport($report);
-            Notice::alloc()->set($messages, 'success');
             \Typecho\Cookie::delete('__typecho_uid');
             \Typecho\Cookie::delete('__typecho_authCode');
             \Utils\Session::destroy();
+            $this->stashReport($report);
+            Notice::alloc()->set($messages, 'success');
         } catch (Throwable $e) {
             $rolledBack = false;
             if ($this->inTransaction) {
@@ -471,7 +476,6 @@ class Backup extends BaseOptions implements ActionInterface
 
         $contentCids = [];
         $commentCids = [];
-        $recordCount = 0;
         $pluginBytes = 0;
 
         fseek($fp, $headerSize);
@@ -484,7 +488,7 @@ class Backup extends BaseOptions implements ActionInterface
                 throw new Exception(_t('恢复数据出现错误'));
             }
 
-            if (++$recordCount > self::MAX_IMPORT_RECORDS || $offset > $fileSize - $headerSize) {
+            if ($offset > $fileSize - $headerSize) {
                 fclose($fp);
                 throw new Exception(_t('备份文件格式错误'));
             }
@@ -714,7 +718,6 @@ class Backup extends BaseOptions implements ActionInterface
         $this->cleared = [];
         $this->inTransaction = false;
         $this->transactionSupported = null;
-        $this->pendingLoginUser = null;
         $this->currentOperator = null;
         $this->repairResult = [
             'ownerFixed' => 0,
@@ -1047,7 +1050,7 @@ class Backup extends BaseOptions implements ActionInterface
 
     private function stashReport(array $report): void
     {
-        if (session_status() !== PHP_SESSION_ACTIVE) {
+        if (!\Utils\Session::start()) {
             return;
         }
 
@@ -1162,9 +1165,4 @@ class Backup extends BaseOptions implements ActionInterface
         return empty($user) ? null : $user;
     }
 
-    private function reLogin(array $user): void
-    {
-        User::alloc()->commitLogin($user);
-        $this->pendingLoginUser = null;
-    }
 }
