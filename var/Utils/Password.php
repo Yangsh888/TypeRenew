@@ -49,6 +49,9 @@ class Password
         }
 
         if (self::isModernHash($hash)) {
+            if (str_contains($password, "\0") || (str_starts_with($hash, '$2') && strlen($password) > self::MAX_LENGTH)) {
+                return false;
+            }
             return password_verify($password, $hash);
         }
 
@@ -80,7 +83,7 @@ class Password
 
     private static function isModernHash(string $hash): bool
     {
-        return (password_get_info($hash)['algo'] ?? 0) !== 0;
+        return !empty(password_get_info($hash)['algo']);
     }
 
     private static function allowLegacy(): bool

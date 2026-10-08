@@ -140,6 +140,10 @@ class Runner
 
         for ($i = 0; $i < $zip->numFiles; $i++) {
             $raw = (string) $zip->getNameIndex($i);
+            if (!Manifest::validatePath($raw)) {
+                $zip->close();
+                throw new RuntimeException(_t('升级包包含非法路径: %s', $raw));
+            }
             $entry = Manifest::normalize($raw);
 
             if ($entry === '' || str_ends_with($entry, '/')) {
@@ -277,6 +281,8 @@ class Runner
             }
 
             $this->validateTargets($files, $allowInstall);
+            $this->requireVersionFile($payloadDir, $files, $toVersion);
+            $this->verifyManifestHash($payloadDir, $files, (string) ($manifest['hash'] ?? ''));
             $this->checkWritable($files);
 
             $state['status'] = 'applying';
@@ -666,6 +672,9 @@ class Runner
     private function isAllowed(string $relative, bool $allowInstall): bool
     {
         $relative = Manifest::normalize($relative);
+        if (DIRECTORY_SEPARATOR === '\\') {
+            $relative = strtolower($relative);
+        }
 
         if ($relative === 'config.inc.php') {
             return false;
@@ -675,7 +684,7 @@ class Runner
             return false;
         }
 
-        if (str_starts_with($relative, 'var/Upgrade/')) {
+        if (str_starts_with($relative, DIRECTORY_SEPARATOR === '\\' ? 'var/upgrade/' : 'var/Upgrade/')) {
             return false;
         }
 
@@ -726,12 +735,9 @@ class Runner
                 throw new RuntimeException(_t('升级包版本文件无法读取'));
             }
 
-            $pattern = "/public\\s+const\\s+VERSION\\s*=\\s*'([^']+)'/";
-            if (preg_match($pattern, $content, $m) && isset($m[1])) {
-                $found = (string) $m[1];
-                if ($found !== $toVersion) {
-                    throw new RuntimeException(_t('升级包版本文件与目标版本不一致'));
-                }
+            $pattern = '/public\s+const\s+VERSION\s*=\s*([\'\"])([^\'\"]+)\1/';
+            if (!preg_match($pattern, $content, $m) || $m[2] !== $toVersion) {
+                throw new RuntimeException(_t('升级包版本文件与目标版本不一致'));
             }
         }
     }

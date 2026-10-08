@@ -27,6 +27,10 @@ trait PrepareEditTrait
                 throw new Exception($notFoundMessage, 404);
             }
 
+            if (!$this->allow('edit')) {
+                throw new Exception(_t('没有编辑权限'), 403);
+            }
+
             if ($hasDraft) {
                 $draft = $this->type === $type . '_draft' ? $this->row : $this->db->fetchRow(
                     $this->revisionSelect((int) $this->cid, true),
@@ -38,13 +42,13 @@ trait PrepareEditTrait
                     $draft['slug'] = ltrim($draft['slug'], '@');
                     $draft['type'] = $this->type;
                     $draft['draft'] = $draft;
-                    $draft['cid'] = $this->cid;
-                    $draft['tags'] = $this->db->fetchAll($this->db
+                    $draft['#tags'] = $this->db->fetchAll($this->db
                         ->select()->from('table.metas')
                         ->join('table.relationships', 'table.relationships.mid = table.metas.mid')
                         ->where('table.relationships.cid = ?', $draft['cid'])
                         ->where('table.metas.type = ?', 'tag'), [Metas::alloc(), 'filter']);
 
+                    $draft['cid'] = $this->cid;
                     $this->row = $draft;
                 }
             }

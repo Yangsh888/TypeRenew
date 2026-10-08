@@ -72,6 +72,7 @@ trait EditTrait
 
             $isFieldReadOnly = Contents::pluginHandle()->trigger($plugged)->call('isFieldReadOnly', $name);
             if ($plugged && $isFieldReadOnly) {
+                unset($exists[$name]);
                 continue;
             }
 
@@ -83,6 +84,10 @@ trait EditTrait
         }
 
         foreach ($exists as $name => $value) {
+            $isFieldReadOnly = Contents::pluginHandle()->trigger($plugged)->call('isFieldReadOnly', $name);
+            if ($plugged && $isFieldReadOnly) {
+                continue;
+            }
             $this->db->query($this->db->delete('table.fields')
                 ->where('cid = ? AND name = ?', $cid, $name));
         }

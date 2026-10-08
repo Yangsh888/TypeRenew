@@ -62,7 +62,7 @@ class Edit extends Contents implements ActionInterface
                     ? _t(
                         '文章 "%s" 已计划于 %s 发布，当前可先<a href="%s">预览</a>',
                         $this->title,
-                        $this->date('Y-m-d H:i'),
+                        $this->date->format('Y-m-d H:i'),
                         $this->getAdminPreviewUrl()
                     )
                     : _t('文章 "<a href="%s">%s</a>" 已经发布', $this->permalink, $this->title);

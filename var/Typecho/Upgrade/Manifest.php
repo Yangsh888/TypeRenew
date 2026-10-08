@@ -39,6 +39,9 @@ class Manifest
                 if (!is_string($file)) {
                     throw new RuntimeException(_t('升级包文件路径格式无效'));
                 }
+                if (!self::validatePath($file)) {
+                    throw new RuntimeException(_t('升级包文件路径格式无效'));
+                }
                 $normalized = self::normalize($file);
                 if ($normalized === '') {
                     continue;
@@ -84,12 +87,16 @@ class Manifest
             return false;
         }
 
+        $path = str_replace('\\', '/', $path);
+        while (str_starts_with($path, './')) {
+            $path = substr($path, 2);
+        }
         if (str_starts_with($path, '/') || preg_match('/^[a-zA-Z]:\//', $path)) {
             return false;
         }
 
         foreach (explode('/', str_replace('\\', '/', $path)) as $part) {
-            if ($part === '..' || preg_match('/[\x00-\x1f:]/', $part)) {
+            if ($part === '.' || $part === '..' || preg_match('/[\x00-\x1f:]/', $part)) {
                 return false;
             }
             if (DIRECTORY_SEPARATOR === '\\' && $part !== '.' && rtrim($part, ' .') !== $part) {

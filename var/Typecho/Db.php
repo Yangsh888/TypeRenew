@@ -207,7 +207,7 @@ class Db
             $op = (self::UPDATE == $action || self::DELETE == $action
                 || self::INSERT == $action) ? self::WRITE : self::READ;
         } elseif (is_string($query)) {
-            $isWriteSql = (bool) preg_match('/^\s*(?:(?:\/\*.*?\*\/|--[^\r\n]*(?:\r?\n|$)|#[^\r\n]*(?:\r?\n|$))\s*)*(?:WITH\b[\s\S]*?\b(INSERT|UPDATE|DELETE|REPLACE)\b|INSERT|UPDATE|DELETE|REPLACE|ALTER|DROP|TRUNCATE|CREATE)\b/i', $query);
+            $isWriteSql = (bool) preg_match('/^\s*(?:(?:\/\*.*?\*\/|--[^\r\n]*(?:\r?\n|$)|#[^\r\n]*(?:\r?\n|$))\s*)*(?:WITH\b[\s\S]*?\b(INSERT|UPDATE|DELETE|REPLACE)\b|INSERT|UPDATE|DELETE|REPLACE|ALTER|DROP|TRUNCATE|CREATE)\b/is', $query);
             $transactionCommand = $this->transactionCommand($query);
             $forceWriteConnection = (bool) preg_match(
                 '/^\s*(?:START\s+TRANSACTION|BEGIN|COMMIT|ROLLBACK|SAVEPOINT|RELEASE\s+SAVEPOINT|LOCK\s+TABLES|UNLOCK\s+TABLES|SET\s+TRANSACTION)\b/i',
@@ -228,6 +228,10 @@ class Db
         $sql = $query instanceof Query ? $query->prepare($query) : $query;
 
         $resource = $this->adapter->query($sql, $handle, $op, $action, $table);
+
+        if ($resource === false) {
+            return false;
+        }
 
         if ($transactionCommand === 'begin') {
             $this->transactionActive = true;
@@ -318,7 +322,7 @@ class Db
         $sql = preg_replace('/^\s*(?:(?:\/\*.*?\*\/|--[^\r\n]*(?:\r?\n|$)|#[^\r\n]*(?:\r?\n|$))\s*)*/s', '', $sql) ?? $sql;
         $sql = rtrim(trim($sql), "; \t\n\r\0\x0B");
 
-        if (preg_match('/^(?:START\s+TRANSACTION|BEGIN(?:\s+(?:WORK|TRANSACTION))?)$/i', $sql)) {
+        if (preg_match('/^(?:START\s+TRANSACTION|BEGIN(?:\s+(?:WORK|TRANSACTION|DEFERRED|IMMEDIATE|EXCLUSIVE))?(?:\s+TRANSACTION)?)$/i', $sql)) {
             return 'begin';
         }
 

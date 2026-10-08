@@ -74,8 +74,12 @@ class Admin extends Comments
 
         $this->countSql = clone $select;
 
-        $select->order('table.comments.coid', Db::SORT_DESC)
-            ->page($this->currentPage, $this->parameter->pageSize);
+        $select->order('table.comments.coid', Db::SORT_DESC);
+        if ($this->request->is('offset')) {
+            $select->limit($this->parameter->pageSize)->offset(max(0, $this->request->filter('int')->get('offset')));
+        } else {
+            $select->page($this->currentPage, $this->parameter->pageSize);
+        }
 
         $this->db->fetchAll($select, [$this, 'push']);
 
