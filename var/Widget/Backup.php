@@ -330,8 +330,6 @@ class Backup extends BaseOptions implements ActionInterface
                 $this->inTransaction = false;
             }
 
-            $this->runtimeWarnings[] = _t('恢复完成，但未能自动恢复当前登录态，请使用恢复后的账号重新登录');
-
             $report = $this->buildReport($payload, $preflight, false, false, $snapshotName, $doRepair, $doSnapshot);
             $messages = $this->reportMessages($report);
             \Typecho\Cookie::delete('__typecho_uid');

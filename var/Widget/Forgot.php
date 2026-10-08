@@ -94,6 +94,10 @@ class Forgot extends Users implements ActionInterface
                     ->where('email = ?', $mail)
             );
 
+            if (!$this->sendResetMail($user, $resetUrl, $expires, false)) {
+                throw new \RuntimeException(_t('密码重置邮件入队失败'));
+            }
+
             $this->db->query(
                 $this->db->insert('table.password_resets')->rows([
                     'email' => $mail,
@@ -103,10 +107,6 @@ class Forgot extends Users implements ActionInterface
                     'used' => 0
                 ])
             );
-
-            if (!$this->sendResetMail($user, $resetUrl, $expires)) {
-                throw new \RuntimeException(_t('密码重置邮件入队失败'));
-            }
 
             $this->db->query('COMMIT');
         } catch (\Throwable $throwable) {
@@ -121,11 +121,13 @@ class Forgot extends Users implements ActionInterface
             return;
         }
 
+        Queue::triggerDelivery(Db::get(), $this->options);
+
         Notice::alloc()->set(_t('如果该邮箱已注册，您将收到重置邮件'), 'success');
         $this->response->goBack();
     }
 
-    private function sendResetMail(array $user, string $resetUrl, int $expires): bool
+    private function sendResetMail(array $user, string $resetUrl, int $expires, bool $triggerDelivery = true): bool
     {
         $siteTitle = (string) ($this->options->title ?? 'TypeRenew');
         $siteUrl = (string) ($this->options->siteUrl ?? '');
@@ -145,6 +147,6 @@ class Forgot extends Users implements ActionInterface
 
         $msg = Queue::buildMessage($this->options, (string) ($user['mail'] ?? ''), $subject, $html);
 
-        return Queue::enqueue('reset', $msg, Db::get(), $this->options);
+        return Queue::enqueue('reset', $msg, Db::get(), $this->options, $triggerDelivery);
     }
 }

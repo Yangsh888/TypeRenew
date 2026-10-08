@@ -2128,6 +2128,18 @@ body.tr-admin.tr-sidebar-collapsed .tr-nav > ul > li:focus-within > menu {
     display: block;
 }
 
+@media (min-width: 769px) {
+    body.tr-admin.tr-sidebar-collapsed .tr-nav > ul > li:hover::after,
+    body.tr-admin.tr-sidebar-collapsed .tr-nav > ul > li:focus-within::after {
+        content: "";
+        position: absolute;
+        left: 100%;
+        top: 0;
+        bottom: 0;
+        width: 10px;
+    }
+}
+
 body.tr-admin.tr-sidebar-collapsed .tr-user-meta,
 body.tr-admin.tr-sidebar-collapsed .tr-user-actions {
     display: none;
@@ -6659,7 +6671,7 @@ body.tr-admin #edit-secondary .typecho-post-option + .typecho-post-option {
     }
 
     body.tr-admin.tr-page-write .typecho-post-area > .col-tb-9,
-    body.tr-admin.tr-page-write .typecho-post-area > #edit-secondary.col-tb-3 {
+    body.tr-admin.tr-page-write .typecho-post-area:not(.tr-write-fullscreen) > #edit-secondary.col-tb-3 {
         flex: 0 0 auto;
         width: 100%;
         max-width: none;

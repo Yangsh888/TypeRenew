@@ -248,15 +248,57 @@ class Reading extends Permalink
     {
         $archivePath = rtrim($pattern, '/');
         $archivePagePath = $archivePath . '/page/1';
+        unset($routingTable[0], $routingTable['archive'], $routingTable['archive_page']);
         $parser = new Parser($routingTable);
 
         foreach ($parser->parse() as $name => $route) {
-            if (in_array($name, ['archive', 'archive_page'], true)) {
-                continue;
-            }
-
-            if (preg_match($route['regx'], $archivePath) || preg_match($route['regx'], $archivePagePath)) {
-                return true;
+            foreach ([$archivePath, $archivePagePath] as $path) {
+                if (!preg_match($route['regx'], $path, $matches)) {
+                    continue;
+                }
+                array_shift($matches);
+                if (count($route['params']) !== count($matches)) {
+                    continue;
+                }
+                $params = array_combine($route['params'], $matches);
+                if ($name === 'feedback' && ltrim($route['widget'], '\\') === 'Widget\\Feedback'
+                    && !in_array($params['type'] ?? '', ['comment', 'trackback'], true)) {
+                    continue;
+                }
+                if ($name !== 'page' || ltrim($route['widget'], '\\') !== 'Widget\\Archive') {
+                    return true;
+                }
+                $scope = $this->db->select('cid')->from('table.contents')
+                    ->where('created < ?', $this->options->time)
+                    ->where('status = ? OR status = ? OR (status = ? AND authorId = ?)',
+                        'publish', 'hidden', 'private', $this->user->uid);
+                $select = (clone $scope)->where('type = ?', 'page');
+                if (isset($params['slug'])) {
+                    $select->where('slug = ?', $params['slug']);
+                }
+                if (isset($params['cid'])) {
+                    $select->where('cid = ?', (int) $params['cid']);
+                }
+                if (isset($params['directory'])) {
+                    $segments = preg_split('#/+#', trim($params['directory'], '/'), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+                    $select->where('slug = ?', $segments === [] ? '' : end($segments));
+                }
+                if (isset($params['year'])) {
+                    [$from, $to] = $this->options->getRange(
+                        (int) $params['year'],
+                        isset($params['month']) ? (int) $params['month'] : null,
+                        isset($params['day']) ? (int) $params['day'] : null
+                    );
+                    $select->where('created >= ? AND created < ?', $from, $to);
+                }
+                if ($this->db->fetchRow($select->limit(1))) {
+                    return true;
+                }
+                if (isset($params['slug']) && $this->db->fetchRow(
+                    $scope->where('type = ?', 'post')->where('slug = ?', $params['slug'])->limit(1)
+                )) {
+                    return true;
+                }
             }
         }
 

@@ -33,14 +33,32 @@ class Admin extends Contents
 
         if ($this->request->is('mime')) {
             $mime = (string) $this->request->get('mime');
+            $pageSize = max(1, (int) $this->parameter->pageSize);
+            $offset = $this->request->is('offset')
+                ? max(0, $this->request->filter('int')->get('offset'))
+                : (max(1, $this->currentPage) - 1) * $pageSize;
+            $select->order('table.contents.created', Db::SORT_DESC)->order('table.contents.cid', Db::SORT_DESC);
             $matching = [];
-            foreach ($this->db->fetchAll(clone $select) as $row) {
-                $attachment = json_decode($row['text'], true);
-                if (is_array($attachment) && ($attachment['mime'] ?? '') === $mime) {
-                    $matching[] = $row['cid'];
+            $this->total = 0;
+            for ($start = 0; ; $start += 200) {
+                $rows = $this->db->fetchAll((clone $select)->limit(200)->offset($start));
+                foreach ($rows as $row) {
+                    $attachment = json_decode($row['text'], true);
+                    if (is_array($attachment) && ($attachment['mime'] ?? '') === $mime) {
+                        if ($this->total >= $offset && count($matching) < $pageSize) {
+                            $matching[] = $row;
+                        }
+                        $this->total++;
+                    }
+                }
+                if (count($rows) < 200) {
+                    break;
                 }
             }
-            $select->where('table.contents.cid IN ?', $matching ?: [0]);
+            foreach ($matching as $row) {
+                $this->push($row);
+            }
+            return;
         }
 
         $this->countTotal($select);

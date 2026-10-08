@@ -76,7 +76,7 @@ class Queue
         self::triggerDelivery($db, $options);
     }
 
-    public static function enqueue(string $type, Message $message, Db $db, Options $options): bool
+    public static function enqueue(string $type, Message $message, Db $db, Options $options, bool $triggerDelivery = true): bool
     {
         $now = time();
         $payload = [
@@ -123,11 +123,13 @@ class Queue
             return false;
         }
 
-        self::triggerDelivery($db, $options);
+        if ($triggerDelivery) {
+            self::triggerDelivery($db, $options);
+        }
         return true;
     }
 
-    private static function triggerDelivery(Db $db, Options $options): void
+    public static function triggerDelivery(Db $db, Options $options): void
     {
         $mode = (string) ($options->mailQueueMode ?? 'async');
         if ($mode === 'sync') {
