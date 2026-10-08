@@ -173,16 +173,29 @@ class Upload extends Contents implements ActionInterface
                 $file['name'] = urldecode($file['name']);
             }
 
+            $attachment = $this->attachment;
+            $target = Common::url(
+                $attachment->path,
+                defined('__TYPECHO_UPLOAD_ROOT_DIR__') ? __TYPECHO_UPLOAD_ROOT_DIR__ : __TYPECHO_ROOT_DIR__
+            );
+            $original = is_file($target) ? file_get_contents($target) : false;
             $result = self::modifyHandle($this->toColumn(['cid', 'attachment', 'parent']), $file);
             if (false === $result) {
                 throw new \RuntimeException(_t('附件替换失败，请检查文件类型与目录权限'));
             }
 
-            self::pluginHandle()->call('beforeModify', $result);
+            try {
+                self::pluginHandle()->call('beforeModify', $result);
 
-            $this->update([
-                'text' => Common::jsonEncode($result, 0, '{}')
-            ], $this->db->sql()->where('cid = ?', $this->cid));
+                $this->update([
+                    'text' => Common::jsonEncode($result, 0, '{}')
+                ], $this->db->sql()->where('cid = ?', $this->cid));
+            } catch (\Throwable $e) {
+                if (is_string($original)) {
+                    self::replaceUploadedFile(['bytes' => $original], $target, (string) $attachment->type);
+                }
+                throw $e;
+            }
 
             $this->db->fetchRow($this->select()->where('table.contents.cid = ?', $this->cid)
                 ->where('table.contents.type = ?', 'attachment'), [$this, 'push']);
@@ -410,7 +423,12 @@ class Upload extends Contents implements ActionInterface
                 }
             }
 
-            $insertId = $this->insert($struct);
+            try {
+                $insertId = $this->insert($struct);
+            } catch (\Throwable $e) {
+                self::deleteHandle(['attachment' => $result]);
+                throw $e;
+            }
 
             $this->db->fetchRow($this->select()->where('table.contents.cid = ?', $insertId)
                 ->where('table.contents.type = ?', 'attachment'), [$this, 'push']);
