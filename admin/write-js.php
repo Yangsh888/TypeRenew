@@ -156,7 +156,8 @@ $(document).ready(function() {
         changeVersion = 0,
         saveCallbacks = [],
         pendingSubmit = false,
-        pendingSubmitter = null;
+        pendingSubmitter = null,
+        saveRetryCount = 0;
 
     function refreshActionHeight() {
         const height = actionBar.length > 0 ? Math.ceil(actionBar.outerHeight(true)) : 72;
@@ -269,6 +270,16 @@ $(document).ready(function() {
     }
 
     $(window).bind('beforeunload', function () {
+        <?php if ($options->autoSave): ?>
+        if (saveTimer) {
+            clearTimeout(saveTimer);
+            saveTimer = null;
+        }
+        <?php endif; ?>
+
+        $(window).off('resize', refreshActionHeight);
+        $(window).off('message');
+
         if (changed && !form.hasClass('submitting')) {
             return '<?php _e('内容已经改变尚未保存, 您确认要离开此页面吗?'); ?>';
         }
@@ -321,8 +332,20 @@ $(document).ready(function() {
 
         function saveFailed() {
             changed = true;
-            saveCallbacks = [];
-            autoSave.text('<?php _e('保存失败, 请重试'); ?>');
+            if (saveRetryCount < 3) {
+                saveRetryCount++;
+                const delay = 2000 * saveRetryCount;
+                autoSave.text('<?php _e('保存失败，正在重试'); ?> (' + saveRetryCount + '/3)...');
+                setTimeout(function() {
+                    saveCallbacks = [];
+                    saveInFlight = false;
+                    requestSave(null, markClean);
+                }, delay);
+            } else {
+                saveCallbacks = [];
+                autoSave.text('<?php _e('保存失败, 请重试'); ?>');
+                saveRetryCount = 0;
+            }
         }
 
         $.ajax({
@@ -338,6 +361,7 @@ $(document).ready(function() {
                     return;
                 }
                 saved = true;
+                saveRetryCount = 0;
                 applySaveResult(o);
                 if (markClean && version === changeVersion) {
                     changed = false;
@@ -475,7 +499,17 @@ $(document).ready(function() {
 
         frame.on('load', function () {
             frame.removeClass('preview-loading');
+        }).on('error', function () {
+            frame.removeClass('preview-loading').addClass('preview-error');
+            showNotice('<?php _e('预览加载失败'); ?>', 'error');
         });
+
+        setTimeout(function () {
+            if (frame.hasClass('preview-loading')) {
+                frame.removeClass('preview-loading').addClass('preview-error');
+                showNotice('<?php _e('预览加载超时'); ?>', 'error');
+            }
+        }, 10000);
     }
 
     function cancelPreview() {

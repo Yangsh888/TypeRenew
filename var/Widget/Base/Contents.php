@@ -376,7 +376,7 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
                 return '<a href="' . $url . '" title="' . $title . '">' . $title . '</a>';
             }
         } elseif ($this->hidden) {
-            return '<form class="protected" action="' . $this->security->getTokenUrl($this->permalink)
+            return '<form class="protected" action="' . htmlspecialchars($this->security->getTokenUrl($this->permalink), ENT_QUOTES, 'UTF-8')
                 . '" method="post">' .
                 '<p class="word">' . _t('请输入密码访问') . '</p>' .
                 '<p><input type="password" class="text" name="protectPassword" />

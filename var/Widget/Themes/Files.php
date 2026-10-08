@@ -31,7 +31,7 @@ class Files extends Base
             }
 
             $extension = strtolower((string) $file->getExtension());
-            if (!in_array($extension, ['php', 'js', 'css', 'vbs'], true)) {
+            if (!in_array($extension, ['php', 'js', 'css'], true)) {
                 continue;
             }
 
