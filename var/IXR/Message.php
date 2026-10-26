@@ -167,7 +167,7 @@ class Message
                 break;
         }
         if (isset($value)) {
-            if (count($this->arrayStructs) > 0) {
+            if (!empty($this->arrayStructs)) {
                 if ($this->arrayStructsTypes[count($this->arrayStructsTypes) - 1] == 'struct') {
                     if ($this->currentStructName === []) {
                         $this->arrayStructs[count($this->arrayStructs) - 1][] = $value;
