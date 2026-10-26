@@ -163,7 +163,7 @@ class Db
     {
         $this->selectDb(self::READ);
 
-        return call_user_func_array([$this->sql(), 'select'], $ags ?: ['*']);
+        return $this->sql()->select(...($ags ?: ['*']));
     }
 
     public function update(string $table): Query

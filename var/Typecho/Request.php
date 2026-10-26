@@ -595,7 +595,7 @@ class Request
 
     public function isCli(): bool
     {
-        return php_sapi_name() === 'cli';
+        return PHP_SAPI === 'cli';
     }
 
     public function isGet(): bool
@@ -696,7 +696,7 @@ class Request
         if (empty($this->urlPrefix)) {
             if (defined('__TYPECHO_URL_PREFIX__')) {
                 $this->urlPrefix = __TYPECHO_URL_PREFIX__;
-            } elseif (php_sapi_name() != 'cli') {
+            } elseif (PHP_SAPI !== 'cli') {
                 $this->urlPrefix = ($this->isSecure() ? 'https' : 'http') . '://' . $this->getTrustedHost();
             }
         }

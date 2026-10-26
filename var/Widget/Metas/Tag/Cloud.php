@@ -32,6 +32,6 @@ class Cloud extends Metas
     public function split(...$args)
     {
         array_unshift($args, $this->count);
-        echo call_user_func_array([Common::class, 'splitByCount'], $args);
+        echo Common::splitByCount(...$args);
     }
 }

@@ -71,8 +71,8 @@ LUA;
             return (int) $value;
         }
 
-        $result = unserialize($value, ['allowed_classes' => [\stdClass::class]]);
-        if ($result === false && $value !== serialize(false)) {
+        $result = json_decode($value, true);
+        if ($result === null && $value !== 'null') {
             return null;
         }
 
@@ -87,7 +87,7 @@ LUA;
             return false;
         }
 
-        $payload = is_int($value) ? (string) $value : serialize($value);
+        $payload = is_int($value) ? (string) $value : json_encode($value);
         try {
             if ($ttl > 0) {
                 return (bool) $client->setex($key, $ttl, $payload);
@@ -107,7 +107,7 @@ LUA;
             return false;
         }
 
-        $payload = serialize($value);
+        $payload = json_encode($value);
         try {
             return (bool) $client->set($key, $payload, ['nx', 'ex' => max(1, $ttl)]);
         } catch (\Throwable $e) {

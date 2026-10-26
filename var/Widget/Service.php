@@ -286,6 +286,9 @@ class Service extends BaseOptions implements ActionInterface
         if (!empty($requests)) {
             foreach ($requests as $request) {
                 [$method, $params] = $request;
+                if (!is_string($method) || !preg_match('/^[a-zA-Z]\w*$/', $method) || !is_array($params)) {
+                    continue;
+                }
                 $plugin->call($method, ... $params);
             }
         }
