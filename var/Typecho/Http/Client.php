@@ -233,11 +233,11 @@ class Client
             return strlen($header);
         });
 
-        curl_setopt($ch, CURLOPT_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
-
         foreach ($this->options as $key => $val) {
             curl_setopt($ch, $key, $val);
         }
+
+        curl_setopt($ch, CURLOPT_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
 
         if ($this->safeMode) {
             $address = $this->pinSafeAddress($ch, $params, strtolower((string) ($params['scheme'] ?? 'http')));
