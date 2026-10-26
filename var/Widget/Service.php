@@ -62,7 +62,8 @@ class Service extends BaseOptions implements ActionInterface
 
                 if ($spider) {
                     try {
-                        $spider->setTimeout(self::REQUEST_TIMEOUT);
+                        $spider->setTimeout(self::REQUEST_TIMEOUT)
+                            ->setSafeMode();
                         if (defined('CURLOPT_HTTP_VERSION') && defined('CURL_HTTP_VERSION_1_1')) {
                             $spider->setOption(CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
                         }
@@ -90,7 +91,7 @@ class Service extends BaseOptions implements ActionInterface
                             }
 
                             try {
-                                $xmlrpc = new \IXR\Client($xmlrpcUrl);
+                                $xmlrpc = new \IXR\Client($xmlrpcUrl, null, true);
                                 $xmlrpc->pingback->ping($permalink, $targetUrl);
                             } catch (\IXR\Exception $e) {
                                 $this->reportException('sendPingHandle.pingback', $e);
@@ -116,7 +117,8 @@ class Service extends BaseOptions implements ActionInterface
 
                 if ($client) {
                     try {
-                        $client->setTimeout(self::TRACKBACK_TIMEOUT);
+                        $client->setTimeout(self::TRACKBACK_TIMEOUT)
+                            ->setSafeMode();
                         if (defined('CURLOPT_CONNECTTIMEOUT')) {
                             $client->setOption(CURLOPT_CONNECTTIMEOUT, self::CONNECT_TIMEOUT);
                         }

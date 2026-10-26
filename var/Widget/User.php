@@ -62,7 +62,10 @@ class User extends Users
                     ->limit(1));
 
                 $cookieAuthCode = Cookie::get('__typecho_authCode');
-                if ($user && Common::hashValidate($user['authCode'], $cookieAuthCode)) {
+                if (
+                    $user && null !== $cookieAuthCode && '$T$' == substr($cookieAuthCode, 0, 3)
+                    && Common::hashValidate($user['authCode'], $cookieAuthCode)
+                ) {
                     $this->currentUser = $user;
                     return ($this->hasLogin = true);
                 }

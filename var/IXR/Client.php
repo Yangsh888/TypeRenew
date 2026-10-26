@@ -18,7 +18,8 @@ class Client
 
     public function __construct(
         string $url,
-        ?string $prefix = null
+        ?string $prefix = null,
+        private bool $safeMode = false
     ) {
         $this->url = $url;
         $this->prefix = $prefix;
@@ -40,6 +41,7 @@ class Client
             $client->setHeader('Content-Type', 'text/xml')
                 ->setHeader('User-Agent', self::DEFAULT_USERAGENT)
                 ->setData($xml)
+                ->setSafeMode($this->safeMode)
                 ->send($this->url);
         } catch (HttpClient\Exception $e) {
             $this->error = new Error(-32700, $e->getMessage());
@@ -64,7 +66,7 @@ class Client
 
     public function __get(string $prefix): Client
     {
-        return new self($this->url, $this->prefix . $prefix . '.');
+        return new self($this->url, $this->prefix . $prefix . '.', $this->safeMode);
     }
 
     public function __call($method, $args)
