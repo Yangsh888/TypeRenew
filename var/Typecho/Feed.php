@@ -165,7 +165,7 @@ xml:base="' . $this->xmlText($this->baseUrl) . '"
             $content .= '<title>' . $this->xmlText($title) . '</title>' . self::EOL;
             $content .= '<link>' . $this->xmlText($link) . '</link>' . self::EOL;
             $content .= '<dc:date>' . $this->dateFormat($date) . '</dc:date>' . self::EOL;
-            $content .= '<description>' . $this->xmlText(strip_tags($body)) . '</description>' . self::EOL;
+            $content .= '<description>' . str_replace(']]>', ']]&gt;', $this->xmlText(strip_tags($body))) . '</description>' . self::EOL;
             if (!empty($item['suffix'])) {
                 $content .= $item['suffix'];
             }

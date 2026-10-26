@@ -808,10 +808,27 @@ EOF;
                 return false;
             }
 
-            $host = rtrim($host, '.');
+            if (preg_match('/^\[([a-f0-9:]+)\]$/i', $host, $matches)) {
+                $ipv6 = $matches[1];
+                if (filter_var($ipv6, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) === false) {
+                    return false;
+                }
+                $host = $ipv6;
+            } elseif (preg_match('/^\[/', $host) || preg_match('/\]$/', $host)) {
+                return false;
+            }
+
             $hostLower = strtolower($host);
 
-            if (strpos($host, '..') !== false || $host === '' || $host === '.') {
+            if ($hostLower !== $host && !mb_check_encoding($hostLower, 'ASCII')) {
+                return false;
+            }
+
+            if (preg_match('/\.$/', $hostLower)) {
+                return false;
+            }
+
+            if (strpos($hostLower, '..') !== false || $hostLower === '' || $hostLower === '.') {
                 return false;
             }
 
@@ -819,8 +836,15 @@ EOF;
                 return false;
             }
 
-            if (!mb_check_encoding($host, 'ASCII')) {
+            if (!mb_check_encoding($hostLower, 'ASCII')) {
                 return false;
+            }
+
+            $directIp = filter_var($hostLower, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_IPV6);
+            if ($directIp === false) {
+                if (!preg_match('/^[a-z0-9_-]+(\.[a-z0-9_-]+)*$/', $hostLower)) {
+                    return false;
+                }
             }
 
             $addresses = self::resolveHostAddresses($host);
@@ -925,7 +949,85 @@ EOF;
                     return false;
                 }
 
-                if (preg_match('/^64:ff9b::/i', $address) || preg_match('/^::ffff:/i', $address)) {
+                $denyList = [
+                    '2001:2::/48',
+                    '2001:10::/28',
+                    '2001:20::/28',
+                    '2001:db8::/32',
+                    '3fff::/20'
+                ];
+
+                foreach ($denyList as $range) {
+                    if (self::isInIPv6CIDR($address, $range)) {
+                        return false;
+                    }
+                }
+
+                $embeddedPatterns = [
+                    '/^::([0-9a-f]{1,4}:)?([0-9a-f]{1,4}:)?(\d+\.\d+\.\d+\.\d+)$/i',
+                    '/^::ffff:0:([0-9a-f]{1,4}:)?(\d+\.\d+\.\d+\.\d+)$/i',
+                    '/^64:ff9b::([0-9a-f]{1,4}:)?(\d+\.\d+\.\d+\.\d+)$/i',
+                    '/^2002:([0-9a-f]{1,4}):([0-9a-f]{1,4}):/i',
+                    '/^2001:0?:([0-9a-f]{4}):([0-9a-f]{4}):([0-9a-f]{4}):([0-9a-f]{4}):/i'
+                ];
+
+                foreach ($embeddedPatterns as $pattern) {
+                    if (preg_match($pattern, strtolower($address), $matches)) {
+                        if (isset($matches[3]) && filter_var($matches[3], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+                            return self::isPublicAddress($matches[3]);
+                        }
+
+                        if ($pattern === '/^2002:([0-9a-f]{1,4}):([0-9a-f]{1,4}):/i') {
+                            $ipv4 = hexdec($matches[1]) . '.' . (hexdec($matches[2]) >> 8) . '.'
+                                . (hexdec($matches[2]) & 0xFF) . '.0';
+                            $reconstructed = long2ip(ip2long($ipv4) & 0xFFFF0000);
+                            if ($reconstructed !== false) {
+                                return self::isPublicAddress($reconstructed);
+                            }
+                        }
+
+                        if ($pattern === '/^2001:0?:([0-9a-f]{4}):([0-9a-f]{4}):([0-9a-f]{4}):([0-9a-f]{4}):/i') {
+                            $serverHex = $matches[1] . $matches[2];
+                            $clientHex = $matches[3] . $matches[4];
+                            $serverIp = long2ip(hexdec($serverHex));
+                            $clientIp = long2ip(~hexdec($clientHex) & 0xFFFFFFFF);
+
+                            if ($serverIp !== false && !self::isPublicAddress($serverIp)) {
+                                return false;
+                            }
+                            if ($clientIp !== false && !self::isPublicAddress($clientIp)) {
+                                return false;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        private static function isInIPv6CIDR(string $address, string $cidr): bool
+        {
+            [$subnet, $bits] = explode('/', $cidr);
+            $address = inet_pton($address);
+            $subnet = inet_pton($subnet);
+
+            if ($address === false || $subnet === false) {
+                return false;
+            }
+
+            $bytesToCheck = (int) ($bits / 8);
+            $bitsInLastByte = $bits % 8;
+
+            for ($i = 0; $i < $bytesToCheck; $i++) {
+                if ($address[$i] !== $subnet[$i]) {
+                    return false;
+                }
+            }
+
+            if ($bitsInLastByte > 0) {
+                $mask = ~((1 << (8 - $bitsInLastByte)) - 1) & 0xFF;
+                if ((ord($address[$bytesToCheck]) & $mask) !== (ord($subnet[$bytesToCheck]) & $mask)) {
                     return false;
                 }
             }

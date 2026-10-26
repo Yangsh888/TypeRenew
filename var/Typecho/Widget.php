@@ -62,6 +62,7 @@ abstract class Widget
             $requestObject = new WidgetRequest(Request::getInstance(), isset($request) ? new Config($request) : null);
             $responseObject = new WidgetResponse(Request::getInstance(), Response::getInstance());
             $widget = null;
+            $sandboxException = null;
 
             try {
                 $widget = new $className($requestObject, $responseObject, $params);
@@ -70,7 +71,8 @@ abstract class Widget
                 if ($sandbox && is_callable($disableSandboxOrCallback)) {
                     $disableSandboxOrCallback($widget);
                 }
-            } catch (Terminal) {
+            } catch (Terminal $e) {
+                $sandboxException = $e;
             } finally {
                 if ($sandbox) {
                     Response::getInstance()->endSandbox();
@@ -79,6 +81,9 @@ abstract class Widget
             }
 
             if ($sandbox) {
+                if ($sandboxException !== null && !($sandboxException instanceof Terminal)) {
+                    throw $sandboxException;
+                }
                 return $widget;
             }
 

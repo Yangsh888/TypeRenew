@@ -37,20 +37,8 @@ class Message
             return false;
         }
 
-        $count = 0;
-        while (true) {
-            if ($count >= 10) {
-                return false;
-            }
-
-            $pos = strpos($this->message, '<!DOCTYPE');
-            if ($pos !== false) {
-                $this->message = substr($this->message, 0, $pos)
-                    . substr($this->message, strpos($this->message, '>', $pos) + 1);
-                $count ++;
-            } else {
-                break;
-            }
+        if (stripos($this->message, '<!DOCTYPE') !== false) {
+            return false;
         }
 
         $parser = xml_parser_create();
@@ -61,7 +49,7 @@ class Message
             return false;
         }
 
-        if ($this->messageType === '') {
+        if ($this->messageType === '' || !in_array($this->messageType, ['methodCall', 'methodResponse', 'fault'], true)) {
             return false;
         }
 

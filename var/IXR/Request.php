@@ -8,10 +8,21 @@ class Request
 
     public function __construct(string $method, array $args)
     {
+        $escapedMethod = htmlspecialchars(
+            $method,
+            ENT_QUOTES | ENT_SUBSTITUTE | ENT_XML1,
+            'UTF-8'
+        );
+        $escapedMethod = preg_replace(
+            '/[^\x{9}\x{A}\x{D}\x{20}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]/u',
+            '',
+            $escapedMethod
+        ) ?? '';
+
         $this->xml = <<<EOD
 <?xml version="1.0"?>
 <methodCall>
-<methodName>{$method}</methodName>
+<methodName>{$escapedMethod}</methodName>
 <params>
 
 EOD;
