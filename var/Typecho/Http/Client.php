@@ -233,30 +233,28 @@ class Client
             return strlen($header);
         });
 
+        curl_setopt($ch, CURLOPT_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
+
         foreach ($this->options as $key => $val) {
             curl_setopt($ch, $key, $val);
         }
 
         if ($this->safeMode) {
-            $addresses = Common::resolveHostAddresses($host);
-            if (empty($addresses)) {
-                unset($ch);
-                throw new Exception('Cannot resolve safe address for host');
-            }
-            $this->resolvedIp = $addresses[0];
-
-            $port = $params['port'] ?? (strtolower((string) ($params['scheme'] ?? '')) === 'https' ? 443 : 80);
-            if (defined('CURLOPT_RESOLVE')) {
-                curl_setopt($ch, CURLOPT_RESOLVE, ["{$host}:{$port}:{$this->resolvedIp}"]);
-            }
-            curl_setopt($ch, CURLOPT_PROXY, null);
-            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
-            curl_setopt($ch, CURLOPT_FORBID_REUSE, true);
+            $address = $this->pinSafeAddress($ch, $params, strtolower((string) ($params['scheme'] ?? 'http')));
         }
 
         $response = curl_exec($ch);
+
+        if (
+            false !== $response && isset($address)
+            && inet_pton(curl_getinfo($ch, CURLINFO_PRIMARY_IP)) !== inet_pton($address)
+        ) {
+            $response = false;
+            $error = 'Unsafe request host';
+        }
+
         if (false === $response) {
-            $error = curl_error($ch);
+            $error = $error ?? curl_error($ch);
             unset($ch);
             throw new Exception($error, 500);
         }
@@ -340,6 +338,32 @@ class Client
 
         $this->responseUrl = $url;
         $this->responseBody = $response;
+    }
+
+    private function pinSafeAddress($ch, array $params, string $scheme): string
+    {
+        $host = $params['host'] ?? '';
+        $address = '.' == substr($host, -1) ? null : Common::resolveSafeHost($host);
+
+        if (null === $address) {
+            throw new Exception('Unsafe request host', 403);
+        }
+
+        if (false === filter_var(trim($host, '[]'), FILTER_VALIDATE_IP)) {
+            $port = $params['port'] ?? ('https' == $scheme ? 443 : 80);
+            $resolve = [];
+
+            foreach (array_unique([$host, strtolower($host)]) as $name) {
+                $resolve[] = $name . ':' . $port . ':' . $address;
+            }
+
+            curl_setopt($ch, CURLOPT_RESOLVE, $resolve);
+        }
+
+        curl_setopt($ch, CURLOPT_PROXY, '');
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
+
+        return $address;
     }
 
     private static function canUseStreams(): bool

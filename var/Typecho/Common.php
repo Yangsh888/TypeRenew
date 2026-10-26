@@ -624,8 +624,12 @@ EOF;
             return 'v2:' . $ts . ':' . $nonce . ':' . $sig;
         }
 
-        public static function timeTokenValidate(string $token, string $secret, int $timeout = 5): bool
+        public static function timeTokenValidate(?string $token, string $secret, int $timeout = 5): bool
         {
+            if (!is_string($token)) {
+                return false;
+            }
+
             $token = trim($token);
             if (strpos($token, 'v2:') === 0) {
                 $parts = explode(':', $token, 4);
@@ -802,70 +806,70 @@ EOF;
 
         public static function checkSafeHost(string $host): bool
         {
-            $host = trim($host);
-
-            if ($host === '' || $host === 'localhost' || $host === 'localhost.localdomain') {
-                return false;
-            }
-
-            if (!mb_check_encoding($host, 'ASCII')) {
-                return false;
-            }
-
-            $address = gethostbyname($host);
-            $inet = inet_pton($address);
-
-            if (false === $inet) {
-                $records = @dns_get_record($host, DNS_AAAA);
-
-                if (empty($records)) {
-                    return false;
-                }
-
-                $address = $records[0]['ipv6'];
-                $inet = inet_pton($address);
-            }
-
-            return filter_var(
-                $address,
-                FILTER_VALIDATE_IP,
-                FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE
-            ) !== false;
+            return null !== self::resolveSafeHost($host);
         }
 
-        public static function resolveHostAddresses(string $host): array
+        public static function resolveSafeHost(string $host): ?string
         {
-            $directIp = filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_IPV6);
-            if ($directIp !== false) {
-                return [$directIp];
+            $host = strtolower(trim($host, '[]'));
+
+            if ('' === $host || 'localhost' == $host || '.localhost' == substr($host, -10)) {
+                return null;
             }
 
-            $addresses = [];
-
-            $ipv4s = gethostbynamel($host);
-            if (is_array($ipv4s)) {
-                foreach ($ipv4s as $ip) {
-                    $validated = filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4);
-                    if ($validated !== false) {
-                        $addresses[] = $validated;
-                    }
+            if (false !== filter_var($host, FILTER_VALIDATE_IP)) {
+                $addresses = [$host];
+            } else {
+                $labels = explode('.', rtrim($host, '.'));
+                if (preg_match("/^(0x[0-9a-f]*|[0-9]+)$/", end($labels))) {
+                    return null;
                 }
-            }
 
-            if (function_exists('dns_get_record')) {
+                $addresses = gethostbynamel($host) ?: [];
                 $records = @dns_get_record($host, DNS_AAAA);
-                if (is_array($records)) {
+
+                if (!empty($records)) {
                     foreach ($records as $record) {
-                        $ipv6 = (string) ($record['ipv6'] ?? '');
-                        $validated = filter_var($ipv6, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6);
-                        if ($validated !== false) {
-                            $addresses[] = $validated;
+                        if (isset($record['ipv6'])) {
+                            $addresses[] = $record['ipv6'];
                         }
                     }
                 }
             }
 
-            return array_values(array_unique($addresses));
+            if (empty($addresses)) {
+                return null;
+            }
+
+            foreach ($addresses as $address) {
+                $inet = inet_pton($address);
+
+                if (
+                    false !== $inet && 16 == strlen($inet)
+                    && (substr($inet, 0, 12) === str_repeat("\0", 10) . "\xff\xff"
+                        || substr($inet, 0, 12) === str_repeat("\0", 12))
+                ) {
+                    $address = inet_ntop(substr($inet, 12));
+                }
+
+                if (
+                    false === filter_var(
+                        $address,
+                        FILTER_VALIDATE_IP,
+                        FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE
+                    )
+                ) {
+                    return null;
+                }
+            }
+
+            return $addresses[0];
+        }
+
+        public static function resolveHostAddresses(string $host): array
+        {
+            $safe = self::resolveSafeHost($host);
+            return $safe !== null ? [$safe] : [];
         }
 
         public static function mimeContentType(string $fileName): string
