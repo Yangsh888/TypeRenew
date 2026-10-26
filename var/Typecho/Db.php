@@ -484,6 +484,9 @@ class Db
                 if ($cached === null) {
                     return null;
                 }
+                if (is_array($cached)) {
+                    $cached = (object) $cached;
+                }
                 if ($cached instanceof \stdClass) {
                     return $filter ? $filter($cached) : $cached;
                 }
@@ -495,6 +498,9 @@ class Db
                 if ($cache->waitFor($cacheKey, $waited, 6, 50000)) {
                     if ($waited === null) {
                         return null;
+                    }
+                    if (is_array($waited)) {
+                        $waited = (object) $waited;
                     }
                     if ($waited instanceof \stdClass) {
                         return $filter ? $filter($waited) : $waited;
