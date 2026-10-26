@@ -310,12 +310,27 @@ class Server
             return $value instanceof $name;
         }
 
+        if ($name === 'int') {
+            $value = intval($value);
+            return true;
+        }
+        if ($name === 'float') {
+            $value = floatval($value);
+            return true;
+        }
+        if ($name === 'bool') {
+            $value = (bool) $value;
+            return true;
+        }
+        if ($name === 'string') {
+            if (is_array($value) || (is_object($value) && !method_exists($value, '__toString'))) {
+                return false;
+            }
+            $value = (string) $value;
+            return true;
+        }
+
         return match ($name) {
-            'int' => settype($value, 'integer'),
-            'float' => settype($value, 'double'),
-            'bool' => settype($value, 'boolean'),
-            'string' => !is_array($value) && (!is_object($value) || method_exists($value, '__toString'))
-                && settype($value, 'string'),
             'array' => is_array($value),
             'object' => is_object($value),
             'callable' => is_callable($value),
@@ -350,10 +365,6 @@ class Server
 
     public function serve()
     {
-        if (!function_exists('xml_parser_create')) {
-            $this->error(-32600, 'server error. XML extension is required.');
-        }
-
         $contentLength = isset($_SERVER['CONTENT_LENGTH']) ? (int) $_SERVER['CONTENT_LENGTH'] : 0;
         $maxBodySize = $this->maxBodySize();
         if ($maxBodySize > 0 && $contentLength > 0 && $contentLength > $maxBodySize) {

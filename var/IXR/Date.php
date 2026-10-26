@@ -53,6 +53,11 @@ class Date
 
     private function parseIso(string $iso)
     {
+        if (preg_match('/^(\d{4})-?(\d{2})-?(\d{2})T(\d{2}):?(\d{2}):?(\d{2})(?:[.,]\d+)?(.*)$/', $iso, $matches)) {
+            [, $this->year, $this->month, $this->day, $this->hour, $this->minute, $this->second, $this->timezone] = $matches;
+            return;
+        }
+
         $this->year = substr($iso, 0, 4);
         $this->month = substr($iso, 4, 2);
         $this->day = substr($iso, 6, 2);

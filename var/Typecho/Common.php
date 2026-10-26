@@ -694,17 +694,17 @@ EOF;
             $cut = [];
 
             while ($length > 0) {
-                $len = rand(0, min($max, $length));
-                $rand = "'" . self::randString(rand(1, $max)) . "'";
+                $len = random_int(0, min($max, $length));
+                $rand = "'" . self::randString(random_int(1, $max)) . "'";
 
                 if ($len > 0) {
                     $val = "'" . substr($value, $offset, $len) . "'";
-                    $result[] = rand(0, 1) ? "//{$rand}\n{$val}" : "{$val}//{$rand}\n";
+                    $result[] = random_int(0, 1) ? "//{$rand}\n{$val}" : "{$val}//{$rand}\n";
                 } else {
-                    if (rand(0, 1)) {
-                        $result[] = rand(0, 1) ? "''///*{$rand}*/{$rand}\n" : "/* {$rand}//{$rand} */''";
+                    if (random_int(0, 1)) {
+                        $result[] = random_int(0, 1) ? "''///*{$rand}*/{$rand}\n" : "/* {$rand}//{$rand} */''";
                     } else {
-                        $result[] = rand(0, 1) ? "//{$rand}\n{$rand}" : "{$rand}//{$rand}\n";
+                        $result[] = random_int(0, 1) ? "//{$rand}\n{$rand}" : "{$rand}//{$rand}\n";
                         $cut[] = [$offset, strlen($rand) - 2 + $offset];
                     }
                 }
@@ -713,8 +713,8 @@ EOF;
                 $length -= $len;
             }
 
-            $name = '_' . self::randString(rand(3, 7));
-            $cutName = '_' . self::randString(rand(3, 7));
+            $name = '_' . self::randString(random_int(3, 7));
+            $cutName = '_' . self::randString(random_int(3, 7));
             $var = implode('+', $result);
             $cutVar = json_encode($cut);
             return "(function () {
@@ -804,61 +804,33 @@ EOF;
         {
             $host = trim($host);
 
-            if (preg_match('/%[0-9a-fA-F]{2}/', $host)) {
+            if ($host === '' || $host === 'localhost' || $host === 'localhost.localdomain') {
                 return false;
             }
 
-            if (preg_match('/^\[([a-f0-9:]+)\]$/i', $host, $matches)) {
-                $ipv6 = $matches[1];
-                if (filter_var($ipv6, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) === false) {
+            if (!mb_check_encoding($host, 'ASCII')) {
+                return false;
+            }
+
+            $address = gethostbyname($host);
+            $inet = inet_pton($address);
+
+            if (false === $inet) {
+                $records = @dns_get_record($host, DNS_AAAA);
+
+                if (empty($records)) {
                     return false;
                 }
-                $host = $ipv6;
-            } elseif (preg_match('/^\[/', $host) || preg_match('/\]$/', $host)) {
-                return false;
+
+                $address = $records[0]['ipv6'];
+                $inet = inet_pton($address);
             }
 
-            $hostLower = strtolower($host);
-
-            if ($hostLower !== $host && !mb_check_encoding($hostLower, 'ASCII')) {
-                return false;
-            }
-
-            if (preg_match('/\.$/', $hostLower)) {
-                return false;
-            }
-
-            if (strpos($hostLower, '..') !== false || $hostLower === '' || $hostLower === '.') {
-                return false;
-            }
-
-            if ($hostLower === 'localhost' || $hostLower === 'localhost.localdomain') {
-                return false;
-            }
-
-            if (!mb_check_encoding($hostLower, 'ASCII')) {
-                return false;
-            }
-
-            $directIp = filter_var($hostLower, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_IPV6);
-            if ($directIp === false) {
-                if (!preg_match('/^[a-z0-9_-]+(\.[a-z0-9_-]+)*$/', $hostLower)) {
-                    return false;
-                }
-            }
-
-            $addresses = self::resolveHostAddresses($host);
-            if (empty($addresses)) {
-                return false;
-            }
-
-            foreach ($addresses as $address) {
-                if (!self::isPublicAddress($address)) {
-                    return false;
-                }
-            }
-
-            return true;
+            return filter_var(
+                $address,
+                FILTER_VALIDATE_IP,
+                FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE
+            ) !== false;
         }
 
         public static function resolveHostAddresses(string $host): array
@@ -878,16 +850,10 @@ EOF;
                         $addresses[] = $validated;
                     }
                 }
-            } else {
-                $ipv4 = gethostbyname($host);
-                $validated = filter_var($ipv4, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4);
-                if ($validated !== false) {
-                    $addresses[] = $validated;
-                }
             }
 
             if (function_exists('dns_get_record')) {
-                $records = dns_get_record($host, DNS_AAAA);
+                $records = @dns_get_record($host, DNS_AAAA);
                 if (is_array($records)) {
                     foreach ($records as $record) {
                         $ipv6 = (string) ($record['ipv6'] ?? '');
@@ -900,151 +866,6 @@ EOF;
             }
 
             return array_values(array_unique($addresses));
-        }
-
-        private static function isPublicAddress(string $address): bool
-        {
-            if (
-                filter_var(
-                    $address,
-                    FILTER_VALIDATE_IP,
-                    FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE
-                ) === false
-            ) {
-                return false;
-            }
-
-            if (filter_var($address, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) !== false) {
-                $privateRanges = [
-                    '0.0.0.0/8',
-                    '10.0.0.0/8',
-                    '100.64.0.0/10',
-                    '127.0.0.0/8',
-                    '169.254.0.0/16',
-                    '172.16.0.0/12',
-                    '192.0.0.0/24',
-                    '192.0.2.0/24',
-                    '192.88.99.0/24',
-                    '192.168.0.0/16',
-                    '198.18.0.0/15',
-                    '198.51.100.0/24',
-                    '203.0.113.0/24',
-                    '224.0.0.0/4',
-                    '240.0.0.0/4'
-                ];
-
-                foreach ($privateRanges as $range) {
-                    if (self::isInCIDR($address, $range)) {
-                        return false;
-                    }
-                }
-            } elseif (filter_var($address, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) !== false) {
-                $addr = inet_pton($address);
-                if ($addr === false) {
-                    return false;
-                }
-
-                $firstByte = ord($addr[0]);
-                if (($firstByte & 0xE0) !== 0x20) {
-                    return false;
-                }
-
-                $denyList = [
-                    '2001:2::/48',
-                    '2001:10::/28',
-                    '2001:20::/28',
-                    '2001:db8::/32',
-                    '3fff::/20'
-                ];
-
-                foreach ($denyList as $range) {
-                    if (self::isInIPv6CIDR($address, $range)) {
-                        return false;
-                    }
-                }
-
-                $embeddedPatterns = [
-                    '/^::([0-9a-f]{1,4}:)?([0-9a-f]{1,4}:)?(\d+\.\d+\.\d+\.\d+)$/i',
-                    '/^::ffff:0:([0-9a-f]{1,4}:)?(\d+\.\d+\.\d+\.\d+)$/i',
-                    '/^64:ff9b::([0-9a-f]{1,4}:)?(\d+\.\d+\.\d+\.\d+)$/i',
-                    '/^2002:([0-9a-f]{1,4}):([0-9a-f]{1,4}):/i',
-                    '/^2001:0?:([0-9a-f]{4}):([0-9a-f]{4}):([0-9a-f]{4}):([0-9a-f]{4}):/i'
-                ];
-
-                foreach ($embeddedPatterns as $pattern) {
-                    if (preg_match($pattern, strtolower($address), $matches)) {
-                        if (isset($matches[3]) && filter_var($matches[3], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
-                            return self::isPublicAddress($matches[3]);
-                        }
-
-                        if ($pattern === '/^2002:([0-9a-f]{1,4}):([0-9a-f]{1,4}):/i') {
-                            $ipv4 = hexdec($matches[1]) . '.' . (hexdec($matches[2]) >> 8) . '.'
-                                . (hexdec($matches[2]) & 0xFF) . '.0';
-                            $reconstructed = long2ip(ip2long($ipv4) & 0xFFFF0000);
-                            if ($reconstructed !== false) {
-                                return self::isPublicAddress($reconstructed);
-                            }
-                        }
-
-                        if ($pattern === '/^2001:0?:([0-9a-f]{4}):([0-9a-f]{4}):([0-9a-f]{4}):([0-9a-f]{4}):/i') {
-                            $serverHex = $matches[1] . $matches[2];
-                            $clientHex = $matches[3] . $matches[4];
-                            $serverIp = long2ip(hexdec($serverHex));
-                            $clientIp = long2ip(~hexdec($clientHex) & 0xFFFFFFFF);
-
-                            if ($serverIp !== false && !self::isPublicAddress($serverIp)) {
-                                return false;
-                            }
-                            if ($clientIp !== false && !self::isPublicAddress($clientIp)) {
-                                return false;
-                            }
-                        }
-                    }
-                }
-            }
-
-            return true;
-        }
-
-        private static function isInIPv6CIDR(string $address, string $cidr): bool
-        {
-            [$subnet, $bits] = explode('/', $cidr);
-            $address = inet_pton($address);
-            $subnet = inet_pton($subnet);
-
-            if ($address === false || $subnet === false) {
-                return false;
-            }
-
-            $bytesToCheck = (int) ($bits / 8);
-            $bitsInLastByte = $bits % 8;
-
-            for ($i = 0; $i < $bytesToCheck; $i++) {
-                if ($address[$i] !== $subnet[$i]) {
-                    return false;
-                }
-            }
-
-            if ($bitsInLastByte > 0) {
-                $mask = ~((1 << (8 - $bitsInLastByte)) - 1) & 0xFF;
-                if ((ord($address[$bytesToCheck]) & $mask) !== (ord($subnet[$bytesToCheck]) & $mask)) {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        private static function isInCIDR(string $ip, string $cidr): bool
-        {
-            [$subnet, $bits] = explode('/', $cidr);
-            $ip = ip2long($ip);
-            $subnet = ip2long($subnet);
-            if ($ip === false || $subnet === false) {
-                return false;
-            }
-            $mask = -1 << (32 - (int) $bits);
-            return ($ip & $mask) === ($subnet & $mask);
         }
 
         public static function mimeContentType(string $fileName): string

@@ -37,7 +37,7 @@ class Value
             case 'double':
                 return '<double>' . $this->data . '</double>';
             case 'string':
-                return '<string>' . $this->escapeString($this->data) . '</string>';
+                return '<string>' . self::escape((string) $this->data) . '</string>';
             case 'array':
                 $return = '<array><data>' . "\n";
                 foreach ($this->data as $item) {
@@ -48,7 +48,7 @@ class Value
             case 'struct':
                 $return = '<struct>' . "\n";
                 foreach ($this->data as $name => $value) {
-                    $return .= '  <member><name>' . $this->escapeString($name) . '</name><value>';
+                    $return .= '  <member><name>' . self::escape((string) $name) . '</name><value>';
                     $return .= $value->getXml() . "</value></member>\n";
                 }
                 $return .= '</struct>';
@@ -58,7 +58,12 @@ class Value
                 return $this->data->getXml();
         }
 
-        return '<string>' . $this->escapeString($this->data) . '</string>';
+        return '<string>' . self::escape((string) $this->data) . '</string>';
+    }
+
+    public static function escape(string $text): string
+    {
+        return htmlspecialchars($text, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
     }
 
     private function calculateType(): string
@@ -82,6 +87,10 @@ class Value
             $this->data = get_object_vars($this->data);
             return 'struct';
         }
+        if (is_string($this->data) && !preg_match('//u', $this->data)) {
+            $this->data = new Base64($this->data);
+            return 'base64';
+        }
         if (!is_array($this->data)) {
             return 'string';
         }
@@ -99,20 +108,5 @@ class Value
             $expected++;
         }
         return false;
-    }
-
-    private function escapeString($value): string
-    {
-        $escaped = htmlspecialchars(
-            (string) $value,
-            ENT_QUOTES | ENT_SUBSTITUTE | ENT_XML1,
-            'UTF-8'
-        );
-
-        return preg_replace(
-            '/[^\x{9}\x{A}\x{D}\x{20}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]/u',
-            '',
-            $escaped
-        ) ?? '';
     }
 }

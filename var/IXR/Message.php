@@ -16,16 +16,6 @@ class Message
 
     public array $params = [];
 
-    private array $arrayStructs = [];
-
-    private array $arrayStructsTypes = [];
-
-    private array $currentStructName = [];
-
-    private array $valueTypes = [];
-
-    private string $currentTagContents = '';
-
     public function __construct(string $message)
     {
         $this->message = $message;
@@ -33,150 +23,125 @@ class Message
 
     public function parse(): bool
     {
-        if (!function_exists('xml_parser_create') || trim($this->message) == '') {
+        $this->message = preg_replace('/<\?xml(.*)?\?' . '>/', '', $this->message);
+
+        if (trim($this->message) == '') {
             return false;
         }
 
-        if (stripos($this->message, '<!DOCTYPE') !== false) {
+        $document = new \DOMDocument();
+
+        $useErrors = libxml_use_internal_errors(true);
+        $loaded = $document->loadXML($this->message, LIBXML_NONET);
+        libxml_clear_errors();
+        libxml_use_internal_errors($useErrors);
+
+        if (
+            !$loaded || $document->doctype !== null
+            || !in_array($document->documentElement->nodeName, ['methodCall', 'methodResponse'], true)
+        ) {
             return false;
         }
 
-        $parser = xml_parser_create();
-        xml_parser_set_option($parser, XML_OPTION_CASE_FOLDING, false);
-        xml_set_element_handler($parser, [$this, 'tagOpen'], [$this, 'tagClose']);
-        xml_set_character_data_handler($parser, [$this, 'cdata']);
-        if (!xml_parse($parser, $this->message, true)) {
-            return false;
-        }
+        $root = $document->documentElement;
+        $this->messageType = $root->nodeName;
 
-        if ($this->messageType === '' || !in_array($this->messageType, ['methodCall', 'methodResponse', 'fault'], true)) {
-            return false;
-        }
-
-        if ($this->messageType === 'fault') {
-            if (!isset($this->params[0]) || !is_array($this->params[0])) {
-                return false;
+        foreach ($this->children($root) as $child) {
+            switch ($child->nodeName) {
+                case 'methodName':
+                    $this->methodName = trim($child->textContent);
+                    break;
+                case 'params':
+                    foreach ($this->children($child, 'param') as $param) {
+                        $this->addParam($param);
+                    }
+                    break;
+                case 'fault':
+                    $this->messageType = 'fault';
+                    $this->addParam($child);
+                    break;
             }
-
-            $fault = $this->params[0];
-            $this->faultCode = (int) ($fault['faultCode'] ?? 0);
-            $this->faultString = (string) ($fault['faultString'] ?? '');
         }
+
+        if ($this->messageType == 'fault') {
+            $this->faultCode = intval($this->params[0]['faultCode'] ?? 0);
+            $this->faultString = (string) ($this->params[0]['faultString'] ?? '');
+        }
+
         return true;
     }
 
-    private function tagOpen($parser, string $tag, $attr)
+    private function addParam(\DOMElement $element)
     {
-        switch ($tag) {
-            case 'methodCall':
-            case 'methodResponse':
-            case 'fault':
-                $this->messageType = $tag;
-                break;
-            /* Deal with stacks of arrays and structs */
-            case 'data':    // data is to all intents and puposes more interesting than array
-                $this->arrayStructsTypes[] = 'array';
-                $this->arrayStructs[] = [];
-                break;
-            case 'struct':
-                $this->arrayStructsTypes[] = 'struct';
-                $this->arrayStructs[] = [];
-                break;
-            case 'value':
-                $this->valueTypes[] = false;
-                break;
+        $value = $this->children($element, 'value')[0] ?? null;
+
+        if (isset($value)) {
+            $this->params[] = $this->parseValue($value);
         }
     }
 
-    private function cdata($parser, string $cdata)
+    private function parseValue(\DOMElement $value)
     {
-        $this->currentTagContents .= $cdata;
-    }
+        $typed = $this->children($value)[0] ?? null;
 
-    private function tagClose($parser, string $tag)
-    {
-        switch ($tag) {
+        if (!isset($typed)) {
+            return $value->textContent;
+        }
+
+        $text = $typed->textContent;
+
+        switch ($typed->localName) {
             case 'int':
             case 'i4':
-                $value = (int) trim($this->currentTagContents);
-                $this->currentTagContents = '';
-                $this->markTypedValue();
-                break;
+            case 'i8':
+                return (int) trim($text);
             case 'double':
-                $value = (float) trim($this->currentTagContents);
-                $this->currentTagContents = '';
-                $this->markTypedValue();
-                break;
+                return (float) trim($text);
             case 'string':
-                $value = $this->currentTagContents;
-                $this->currentTagContents = '';
-                $this->markTypedValue();
-                break;
+                return $text;
             case 'dateTime.iso8601':
-                $value = new Date(trim($this->currentTagContents));
-                $this->currentTagContents = '';
-                $this->markTypedValue();
-                break;
-            case 'value':
-                $typed = array_pop($this->valueTypes);
-                if ($typed === false) {
-                    $value = $this->currentTagContents;
-                    $this->currentTagContents = '';
-                }
-                break;
+                return new Date(trim($text));
             case 'boolean':
-                $boolean = strtolower(trim($this->currentTagContents));
-                $value = in_array($boolean, ['1', 'true'], true);
-                $this->currentTagContents = '';
-                $this->markTypedValue();
-                break;
+                $text = trim($text);
+                return strtolower($text) == 'false' ? false : (bool) $text;
             case 'base64':
-                $value = base64_decode($this->currentTagContents);
-                $this->currentTagContents = '';
-                $this->markTypedValue();
-                break;
-            /* Deal with stacks of arrays and structs */
-            case 'data':
+                return base64_decode($text);
+            case 'nil':
+                return null;
             case 'struct':
-                $value = array_pop($this->arrayStructs);
-                array_pop($this->arrayStructsTypes);
-                $this->markTypedValue();
-                break;
-            case 'member':
-                array_pop($this->currentStructName);
-                break;
-            case 'name':
-                $this->currentStructName[] = trim($this->currentTagContents);
-                $this->currentTagContents = '';
-                break;
-            case 'methodName':
-                $this->methodName = trim($this->currentTagContents);
-                $this->currentTagContents = '';
-                break;
-        }
-        if (isset($value)) {
-            if (!empty($this->arrayStructs)) {
-                if ($this->arrayStructsTypes[count($this->arrayStructsTypes) - 1] == 'struct') {
-                    if ($this->currentStructName === []) {
-                        $this->arrayStructs[count($this->arrayStructs) - 1][] = $value;
-                    } else {
-                        $this->arrayStructs[count($this->arrayStructs) - 1]
-                            [$this->currentStructName[count($this->currentStructName) - 1]] = $value;
+                $struct = [];
+                foreach ($this->children($typed, 'member') as $member) {
+                    $name = $this->children($member, 'name')[0] ?? null;
+                    $memberValue = $this->children($member, 'value')[0] ?? null;
+
+                    if (isset($name, $memberValue)) {
+                        $struct[trim($name->textContent)] = $this->parseValue($memberValue);
                     }
-                } else {
-                    $this->arrayStructs[count($this->arrayStructs) - 1][] = $value;
                 }
-            } else {
-                $this->params[] = $value;
-            }
+                return $struct;
+            case 'array':
+                $array = [];
+                foreach ($this->children($typed, 'data') as $data) {
+                    foreach ($this->children($data, 'value') as $item) {
+                        $array[] = $this->parseValue($item);
+                    }
+                }
+                return $array;
+            default:
+                return $text;
         }
     }
 
-    private function markTypedValue(): void
+    private function children(\DOMElement $element, ?string $name = null): array
     {
-        $index = count($this->valueTypes) - 1;
-        if ($index >= 0) {
-            $this->valueTypes[$index] = true;
+        $children = [];
+
+        foreach ($element->childNodes as $child) {
+            if ($child instanceof \DOMElement && (!isset($name) || $child->nodeName == $name)) {
+                $children[] = $child;
+            }
         }
+
+        return $children;
     }
 }

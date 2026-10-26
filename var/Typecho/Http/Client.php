@@ -245,14 +245,12 @@ class Client
             }
             $this->resolvedIp = $addresses[0];
 
-            curl_setopt($ch, CURLOPT_URL, $url);
-            $port = $params['port'] ?? (strtolower($params['scheme']) === 'https' ? 443 : 80);
+            $port = $params['port'] ?? (strtolower((string) ($params['scheme'] ?? '')) === 'https' ? 443 : 80);
             if (defined('CURLOPT_RESOLVE')) {
                 curl_setopt($ch, CURLOPT_RESOLVE, ["{$host}:{$port}:{$this->resolvedIp}"]);
             }
             curl_setopt($ch, CURLOPT_PROXY, null);
             curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
-            curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
             curl_setopt($ch, CURLOPT_FORBID_REUSE, true);
         }
 

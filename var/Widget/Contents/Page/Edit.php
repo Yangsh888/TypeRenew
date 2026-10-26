@@ -45,6 +45,10 @@ class Edit extends Contents implements ActionInterface
         $contents['parent'] = $this->getParent();
         $contents = $this->normalizeWriteContents($contents);
 
+        if (isset($contents['template']) && !$this->isValidTemplate((string) $contents['template'])) {
+            throw new Exception(_t('页面模板不存在'), 403);
+        }
+
         $contents = self::pluginHandle()->filter('write', $contents, $this);
 
         if ($this->request->is('do=publish')) {
