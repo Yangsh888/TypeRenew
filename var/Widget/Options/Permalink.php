@@ -143,7 +143,7 @@ class Permalink extends Options implements ActionInterface
 
             $hasWrote = false;
 
-            if (!file_exists(__TYPECHO_ROOT_DIR__ . '/.htaccess') && strpos(php_sapi_name(), 'apache') !== false) {
+            if (!file_exists(__TYPECHO_ROOT_DIR__ . '/.htaccess') && strpos(PHP_SAPI, 'apache') !== false) {
                 if (is_writable(__TYPECHO_ROOT_DIR__)) {
                     $parsed = \Typecho\Common::parseUrl((string) $this->options->siteUrl);
                     $basePath = empty($parsed['path']) ? '/' : $parsed['path'];
@@ -276,7 +276,7 @@ RewriteRule . {$basePath}index.php [L]
                 $errorStr = _t('重写功能检测失败，请检查你的服务器设置');
 
                 if (
-                    strpos(php_sapi_name(), 'apache') !== false
+                    strpos(PHP_SAPI, 'apache') !== false
                     && !file_exists(__TYPECHO_ROOT_DIR__ . '/.htaccess')
                     && !is_writable(__TYPECHO_ROOT_DIR__)
                 ) {
