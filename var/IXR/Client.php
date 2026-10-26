@@ -4,7 +4,6 @@ namespace IXR;
 
 use Typecho\Http\Client as HttpClient;
 
-#[\AllowDynamicProperties]
 class Client
 {
     private const DEFAULT_USERAGENT = 'Typecho XML-RPC PHP Library';

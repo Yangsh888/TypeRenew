@@ -4,11 +4,9 @@ namespace IXR;
 
 use Typecho\Widget\Exception as WidgetException;
 
-#[\AllowDynamicProperties]
 class Server
 {
-    private const DEFAULT_MAX_BODY_SIZE = 8388608;
-    private const MAX_MULTICALLS = 100;
+    public const MAX_REQUEST_SIZE = 10485760;
 
     private array $callbacks;
 
@@ -38,29 +36,10 @@ class Server
 
     public function multiCall(array $methodcalls): array
     {
-        if (count($methodcalls) > self::MAX_MULTICALLS) {
-            throw new Exception('system.multicall accepts at most ' . self::MAX_MULTICALLS . ' calls', -32600);
-        }
-
         $return = [];
         foreach ($methodcalls as $call) {
-            if (!is_array($call) || !isset($call['methodName']) || !is_string($call['methodName'])) {
-                $return[] = [
-                    'faultCode' => -32600,
-                    'faultString' => 'Invalid system.multicall entry',
-                ];
-                continue;
-            }
-
             $method = $call['methodName'];
-            $params = $call['params'] ?? [];
-            if (!is_array($params)) {
-                $return[] = [
-                    'faultCode' => -32602,
-                    'faultString' => 'Invalid system.multicall params',
-                ];
-                continue;
-            }
+            $params = $call['params'];
 
             if ($method == 'system.multicall') {
                 $result = new Error(-32600, 'Recursive calls to system.multicall are forbidden');
@@ -90,7 +69,6 @@ class Server
         try {
             $ref = new \ReflectionMethod($object, $method);
             $doc = $ref->getDocComment();
-
             return $doc ?: '';
         } catch (\ReflectionException $e) {
             return '';
@@ -119,13 +97,6 @@ class Server
         [$object, $objectMethod] = $method;
 
         try {
-            if (!$this->isPositionalArgs($args)) {
-                return new Error(
-                    -32602,
-                    'server error. requested class method "' . $methodName . '" params must be positional.'
-                );
-            }
-
             $ref = new \ReflectionMethod($object, $objectMethod);
             $requiredArgs = $ref->getNumberOfRequiredParameters();
             if (count($args) < $requiredArgs) {
@@ -187,79 +158,6 @@ class Server
         }
     }
 
-    private function isPositionalArgs(array $args): bool
-    {
-        return $args === [] || array_keys($args) === range(0, count($args) - 1);
-    }
-
-    private function error($error, ?string $message = null)
-    {
-        if (!$error instanceof Error) {
-            $error = new Error($error, $message);
-        }
-
-        $this->output($error->getXml());
-    }
-
-    private function output(string $xml)
-    {
-        $xml = '<?xml version="1.0"?>' . "\n" . $xml;
-        $length = strlen($xml);
-        header('Connection: close');
-        header('Content-Length: ' . $length);
-        header('Content-Type: text/xml');
-        header('Date: ' . date('r'));
-        echo $xml;
-        exit;
-    }
-
-    private function maxBodySize(): int
-    {
-        $size = $this->parseIniSize((string) ini_get('post_max_size'));
-
-        return $size >= 0 ? $size : self::DEFAULT_MAX_BODY_SIZE;
-    }
-
-    private function requestBody(): string
-    {
-        $maxBodySize = $this->maxBodySize();
-        $body = fopen('php://input', 'rb');
-        if (!is_resource($body)) {
-            return '';
-        }
-
-        $data = $maxBodySize > 0 ? stream_get_contents($body, $maxBodySize + 1) : stream_get_contents($body);
-        fclose($body);
-        if ($maxBodySize > 0 && is_string($data) && strlen($data) > $maxBodySize) {
-            $this->error(-32600, 'server error. request body is too large.');
-        }
-
-        return is_string($data) ? $data : '';
-    }
-
-    private function parseIniSize(string $value): int
-    {
-        $value = trim($value);
-        if ($value === '') {
-            return -1;
-        }
-
-        $unit = strtolower(substr($value, -1));
-        if (ctype_alpha($unit)) {
-            $number = (float) substr($value, 0, -1);
-        } else {
-            $number = (float) $value;
-            $unit = '';
-        }
-
-        return (int) match ($unit) {
-            'g' => $number * 1024 * 1024 * 1024,
-            'm' => $number * 1024 * 1024,
-            'k' => $number * 1024,
-            default => $number,
-        };
-    }
-
     private function coerceArgument(&$value, \ReflectionType $type): bool
     {
         if ($type instanceof \ReflectionNamedType) {
@@ -274,22 +172,7 @@ class Server
                     return true;
                 }
             }
-
             return false;
-        }
-
-        if ($type instanceof \ReflectionIntersectionType) {
-            if (!is_object($value)) {
-                return false;
-            }
-
-            foreach ($type->getTypes() as $candidateType) {
-                if (!$this->matchNamedType($value, $candidateType)) {
-                    return false;
-                }
-            }
-
-            return true;
         }
 
         return true;
@@ -310,34 +193,56 @@ class Server
             return $value instanceof $name;
         }
 
-        if ($name === 'int') {
-            $value = intval($value);
-            return true;
+        switch ($name) {
+            case 'int':
+                $value = intval($value);
+                return true;
+            case 'float':
+                $value = floatval($value);
+                return true;
+            case 'bool':
+                $value = (bool) $value;
+                return true;
+            case 'string':
+                if (is_array($value) || (is_object($value) && !method_exists($value, '__toString'))) {
+                    return false;
+                }
+                $value = (string) $value;
+                return true;
+            case 'array':
+                return is_array($value);
+            case 'object':
+                return is_object($value);
+            case 'callable':
+                return is_callable($value);
+            case 'iterable':
+                return is_iterable($value);
+            case 'null':
+                return $value === null;
+            default:
+                return true;
         }
-        if ($name === 'float') {
-            $value = floatval($value);
-            return true;
-        }
-        if ($name === 'bool') {
-            $value = (bool) $value;
-            return true;
-        }
-        if ($name === 'string') {
-            if (is_array($value) || (is_object($value) && !method_exists($value, '__toString'))) {
-                return false;
-            }
-            $value = (string) $value;
-            return true;
+    }
+
+    private function error($error, ?string $message = null): string
+    {
+        if (!$error instanceof Error) {
+            $error = new Error($error, $message);
         }
 
-        return match ($name) {
-            'array' => is_array($value),
-            'object' => is_object($value),
-            'callable' => is_callable($value),
-            'iterable' => is_iterable($value),
-            'null' => $value === null,
-            default => true,
-        };
+        return $error->getXml();
+    }
+
+    private function output(string $xml)
+    {
+        $xml = '<?xml version="1.0"?>' . "\n" . $xml;
+        $length = strlen($xml);
+        header('Connection: close');
+        header('Content-Length: ' . $length);
+        header('Content-Type: text/xml');
+        header('Date: ' . date('r'));
+        echo $xml;
+        exit;
     }
 
     private function hasMethod(string $method): bool
@@ -363,43 +268,48 @@ class Server
         ];
     }
 
-    public function serve()
+    public function handle(string $xml): string
     {
-        $contentLength = isset($_SERVER['CONTENT_LENGTH']) ? (int) $_SERVER['CONTENT_LENGTH'] : 0;
-        $maxBodySize = $this->maxBodySize();
-        if ($maxBodySize > 0 && $contentLength > 0 && $contentLength > $maxBodySize) {
-            $this->error(-32600, 'server error. request body is too large.');
+        if (strlen($xml) > self::MAX_REQUEST_SIZE) {
+            return $this->error(-32700, 'parse error. request too large');
         }
 
-        $message = new Message($this->requestBody());
+        $message = new Message($xml);
 
         if (!$message->parse()) {
-            $this->error(-32700, 'parse error. not well formed');
+            return $this->error(-32700, 'parse error. not well formed');
         } elseif ($message->messageType != 'methodCall') {
-            $this->error(-32600, 'server error. invalid xml-rpc. not conforming to spec. Request must be a methodCall');
+            return $this->error(
+                -32600,
+                'server error. invalid xml-rpc. not conforming to spec. Request must be a methodCall'
+            );
         }
 
         $result = $this->call($message->methodName, $message->params);
+
         if ($result instanceof Error) {
-            $this->error($result);
+            return $this->error($result);
         }
 
         $r = new Value($result);
         $resultXml = $r->getXml();
 
-        $xml = <<<EOD
+        return <<<EOD
 <methodResponse>
-  <params>
-    <param>
-      <value>
-        $resultXml
-      </value>
-    </param>
-  </params>
+    <params>
+        <param>
+            <value>
+                $resultXml
+            </value>
+        </param>
+    </params>
 </methodResponse>
-
 EOD;
+    }
 
-        $this->output($xml);
+    public function serve()
+    {
+        $xml = file_get_contents('php://input', false, null, 0, self::MAX_REQUEST_SIZE + 1);
+        $this->output($this->handle($xml ?: ''));
     }
 }
