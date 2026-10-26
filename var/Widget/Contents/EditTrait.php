@@ -736,6 +736,12 @@ trait EditTrait
             $contents['text'] = '<!--markdown-->' . (string) ($contents['text'] ?? '');
         }
 
+        if (isset($contents['template']) && $contents['template'] !== null) {
+            if (!$this->isValidTemplate($contents['template'])) {
+                $contents['template'] = '';
+            }
+        }
+
         return $contents;
     }
 
