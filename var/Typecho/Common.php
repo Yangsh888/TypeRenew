@@ -105,7 +105,7 @@ namespace Typecho {
     class Common
     {
         public const SOFTWARE = 'TypeRenew';
-        public const VERSION = '1.6.1';
+        public const VERSION = '1.6.2';
 
         public static function generator(?string $version = null): string
         {
@@ -802,8 +802,24 @@ EOF;
 
         public static function checkSafeHost(string $host): bool
         {
-            $host = trim(strtolower($host));
-            if ($host === '' || $host === 'localhost' || $host === 'localhost.localdomain') {
+            $host = trim($host);
+
+            if (preg_match('/%[0-9a-fA-F]{2}/', $host)) {
+                return false;
+            }
+
+            $host = rtrim($host, '.');
+            $hostLower = strtolower($host);
+
+            if (strpos($host, '..') !== false || $host === '' || $host === '.') {
+                return false;
+            }
+
+            if ($hostLower === 'localhost' || $hostLower === 'localhost.localdomain') {
+                return false;
+            }
+
+            if (!mb_check_encoding($host, 'ASCII')) {
                 return false;
             }
 
@@ -813,13 +829,7 @@ EOF;
             }
 
             foreach ($addresses as $address) {
-                if (
-                    filter_var(
-                        $address,
-                        FILTER_VALIDATE_IP,
-                        FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE
-                    ) === false
-                ) {
+                if (!self::isPublicAddress($address)) {
                     return false;
                 }
             }
@@ -827,7 +837,7 @@ EOF;
             return true;
         }
 
-        private static function resolveHostAddresses(string $host): array
+        public static function resolveHostAddresses(string $host): array
         {
             $directIp = filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_IPV6);
             if ($directIp !== false) {
@@ -866,6 +876,73 @@ EOF;
             }
 
             return array_values(array_unique($addresses));
+        }
+
+        private static function isPublicAddress(string $address): bool
+        {
+            if (
+                filter_var(
+                    $address,
+                    FILTER_VALIDATE_IP,
+                    FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE
+                ) === false
+            ) {
+                return false;
+            }
+
+            if (filter_var($address, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) !== false) {
+                $privateRanges = [
+                    '0.0.0.0/8',
+                    '10.0.0.0/8',
+                    '100.64.0.0/10',
+                    '127.0.0.0/8',
+                    '169.254.0.0/16',
+                    '172.16.0.0/12',
+                    '192.0.0.0/24',
+                    '192.0.2.0/24',
+                    '192.88.99.0/24',
+                    '192.168.0.0/16',
+                    '198.18.0.0/15',
+                    '198.51.100.0/24',
+                    '203.0.113.0/24',
+                    '224.0.0.0/4',
+                    '240.0.0.0/4'
+                ];
+
+                foreach ($privateRanges as $range) {
+                    if (self::isInCIDR($address, $range)) {
+                        return false;
+                    }
+                }
+            } elseif (filter_var($address, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) !== false) {
+                $addr = inet_pton($address);
+                if ($addr === false) {
+                    return false;
+                }
+
+                $firstByte = ord($addr[0]);
+                if (($firstByte & 0xE0) !== 0x20) {
+                    return false;
+                }
+
+                if (preg_match('/^64:ff9b::/i', $address) || preg_match('/^::ffff:/i', $address)) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static function isInCIDR(string $ip, string $cidr): bool
+        {
+            [$subnet, $bits] = explode('/', $cidr);
+            $ip = ip2long($ip);
+            $subnet = ip2long($subnet);
+            if ($ip === false || $subnet === false) {
+                return false;
+            }
+            $mask = -1 << (32 - (int) $bits);
+            return ($ip & $mask) === ($subnet & $mask);
         }
 
         public static function mimeContentType(string $fileName): string
