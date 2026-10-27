@@ -1,4 +1,4 @@
-# English (United States) translation for TypeRenew 1.6.1.
+# English (United States) translation for TypeRenew 1.6.2.
 # This file is distributed under the same license as the TypeRenew package (GPL-2.0).
 msgid ""
 msgstr ""
@@ -6454,37 +6454,37 @@ msgid "；"
 msgstr "; "
 
 msgid "%d个分类"
-msgstr ""
+msgstr "%d categories"
 
 msgid "%d个页面"
-msgstr ""
+msgstr "%d pages"
 
 msgid "保存失败，正在重试"
-msgstr ""
+msgstr "Save failed, retrying"
 
 msgid "预览加载失败"
-msgstr ""
+msgstr "Preview failed to load"
 
 msgid "预览加载超时"
-msgstr ""
+msgstr "Preview load timed out"
 
 msgid "File not found"
-msgstr ""
+msgstr "File not found"
 
 msgid "%d秒前"
-msgstr ""
+msgstr "%d seconds ago"
 
 msgid "%d分钟前"
-msgstr ""
+msgstr "%d minutes ago"
 
 msgid "%d小时前"
-msgstr ""
+msgstr "%d hours ago"
 
 msgid "%d天前"
-msgstr ""
+msgstr "%d days ago"
 
 msgid "备份文件写入失败，请检查磁盘空间"
-msgstr ""
+msgstr "Backup file write failed, please check disk space"
 
 msgid "页面模板不存在"
-msgstr ""
+msgstr "Page template does not exist"
