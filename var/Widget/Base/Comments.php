@@ -184,7 +184,7 @@ class Comments extends Base implements QueryInterface, RowFilterInterface, Prima
             . htmlspecialchars($this->author, ENT_QUOTES, 'UTF-8') . '</a>';
     }
 
-    public function gravatar(int $size = 32, ?string $default = null, $highRes = false)
+    public function gravatar(int $size = 32, ?string $default = null, bool $highRes = false)
     {
         if ($this->options->commentsAvatar && 'comment' == $this->type) {
             $rating = $this->options->commentsAvatarRating;

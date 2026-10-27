@@ -68,7 +68,7 @@ class Security extends Base
         return Common::url($this->getTokenUrl($path), $this->options->rootUrl);
     }
 
-    public function getTokenUrl($path, ?string $url = null): string
+    public function getTokenUrl(string $path, ?string $url = null): string
     {
         $parts = Common::parseUrl((string) $path);
         if ($parts === [] && $path !== '') {

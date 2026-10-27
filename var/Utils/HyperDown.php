@@ -142,6 +142,7 @@ class HyperDown
 
     private function parse(string $text, bool $inline = false, int $offset = 0): string
     {
+        $lines = [];
         $blocks = $this->parseBlock($text, $lines);
         $html = '';
 

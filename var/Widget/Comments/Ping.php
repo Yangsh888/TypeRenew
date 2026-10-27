@@ -63,14 +63,14 @@ class Ping extends Comments
             echo $parsedSinglePingOptions->before;
 
             while ($this->next()) {
-                $this->singlePingCallback($parsedSinglePingOptions);
+                $this->singlePing($parsedSinglePingOptions);
             }
 
             echo $parsedSinglePingOptions->after;
         }
     }
 
-    private function singlePingCallback(Config $singlePingOptions): void
+    public function singlePing(Config $singlePingOptions): void
     {
         if ($this->customSinglePingCallback) {
             singlePing($this, $singlePingOptions);

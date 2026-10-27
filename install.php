@@ -294,7 +294,7 @@ function install_unavailable(?string $message = null): void
     exit(1);
 }
 
-function install_raise_error($error, $config = null)
+function install_raise_error($error, mixed $config = null)
 {
     if (install_is_cli()) {
         if (is_array($error)) {
