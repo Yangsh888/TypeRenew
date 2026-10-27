@@ -128,7 +128,7 @@ class Server
                 }
             }
 
-            $result = call_user_func_array($method, $args);
+            $result = $method(...$args);
 
             if (isset($this->hook)) {
                 $this->hook->afterRpcCall($methodName, $result);

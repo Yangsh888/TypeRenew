@@ -120,7 +120,7 @@ class Validate
                 $params[1] = $data[$key];
                 $params = array_slice($params, 1);
 
-                if (!call_user_func_array(is_callable($method) ? $method : [$this, $method], $params)) {
+                if (!(is_callable($method) ? $method : [$this, $method])(...$params)) {
                     $result[$key] = $message;
                     break;
                 }
