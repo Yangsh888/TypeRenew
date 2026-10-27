@@ -26,7 +26,7 @@ class Form extends Layout
 
     private array $inputs = [];
 
-    public function __construct($action = null, $method = self::GET_METHOD, $enctype = self::STANDARD_ENCODE)
+    public function __construct(mixed $action = null, mixed $method = self::GET_METHOD, mixed $enctype = self::STANDARD_ENCODE)
     {
         parent::__construct('form');
 

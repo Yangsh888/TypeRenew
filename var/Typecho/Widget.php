@@ -20,7 +20,7 @@ abstract class Widget
     protected Config $parameter;
     protected array $row = [];
 
-    public function __construct(WidgetRequest $request, WidgetResponse $response, $params = null)
+    public function __construct(WidgetRequest $request, WidgetResponse $response, mixed $params = null)
     {
         $this->request = $request;
         $this->response = $response;
@@ -39,9 +39,9 @@ abstract class Widget
 
     public static function widget(
         string $alias,
-        $params = null,
-        $request = null,
-        $disableSandboxOrCallback = true
+        mixed $params = null,
+        mixed $request = null,
+        mixed $disableSandboxOrCallback = true
     ): Widget {
         [$className] = explode('@', $alias);
         $key = Common::nativeClassName($alias);
@@ -93,16 +93,16 @@ abstract class Widget
         return self::$widgetPool[$key];
     }
 
-    public static function alloc($params = null, $request = null, $disableSandboxOrCallback = true): Widget
+    public static function alloc(mixed $params = null, mixed $request = null, mixed $disableSandboxOrCallback = true): Widget
     {
         return self::widget(static::class, $params, $request, $disableSandboxOrCallback);
     }
 
     public static function allocWithAlias(
         ?string $alias,
-        $params = null,
-        $request = null,
-        $disableSandboxOrCallback = true
+        mixed $params = null,
+        mixed $request = null,
+        mixed $disableSandboxOrCallback = true
     ): Widget {
         return self::widget(
             static::class . (isset($alias) ? '@' . $alias : ''),

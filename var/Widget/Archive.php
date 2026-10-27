@@ -454,7 +454,7 @@ class Archive extends Contents
         }
     }
 
-    public function content($more = null)
+    public function content(mixed $more = null)
     {
         parent::content($this->is('single') ? false : $more);
     }
@@ -464,7 +464,7 @@ class Archive extends Contents
         string $next = '&raquo;',
         int $splitPage = 3,
         string $splitWord = '...',
-        $template = ''
+        mixed $template = ''
     ) {
         if ($this->have()) {
             $hasNav = false;
@@ -915,7 +915,7 @@ EOF;
         }
     }
 
-    public function archiveTitle($defines = null, string $before = ' &raquo; ', string $end = ''): void
+    public function archiveTitle(mixed $defines = null, string $before = ' &raquo; ', string $end = ''): void
     {
         if ($this->archiveTitle) {
             $define = '%s';

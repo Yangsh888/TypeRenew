@@ -60,7 +60,7 @@ class Request
         return $this->has($key);
     }
 
-    public function get(string $key, $default = null, ?bool &$exists = true)
+    public function get(string $key, mixed $default = null, ?bool &$exists = true)
     {
         $this->request->proxy($this->params);
         try {
@@ -138,7 +138,7 @@ class Request
         return $this->request->getUrlPrefix();
     }
 
-    public function makeUriByRequest($parameter = null): string
+    public function makeUriByRequest(mixed $parameter = null): string
     {
         return $this->request->makeUriByRequest($parameter);
     }

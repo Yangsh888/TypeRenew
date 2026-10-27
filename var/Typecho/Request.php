@@ -92,7 +92,7 @@ class Request
         return $value;
     }
 
-    public function get(string $key, $default = null, ?bool &$exists = true)
+    public function get(string $key, mixed $default = null, ?bool &$exists = true)
     {
         $value = $this->fetch($key, $found);
 
@@ -203,7 +203,7 @@ class Request
         return $this->getUrlPrefix() . $this->getRequestUri();
     }
 
-    public function makeUriByRequest($parameter = null): string
+    public function makeUriByRequest(mixed $parameter = null): string
     {
         $requestUri = $this->getRequestUrl();
         $parts = Common::parseUrl($requestUri);

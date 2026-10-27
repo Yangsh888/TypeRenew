@@ -50,7 +50,7 @@ class Rows extends Contents
         return $this->db->fetchAll($select);
     }
 
-    public function listPages($pageOptions = null)
+    public function listPages(mixed $pageOptions = null)
     {
         $pageOptions = Config::factory($pageOptions);
         $pageOptions->setDefault([

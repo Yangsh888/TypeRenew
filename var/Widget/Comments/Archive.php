@@ -207,7 +207,7 @@ class Archive extends Comments
         }
     }
 
-    public function listComments($singleCommentOptions = null)
+    public function listComments(mixed $singleCommentOptions = null)
     {
         $this->singleCommentOptions = Config::factory($singleCommentOptions);
         $this->singleCommentOptions->setDefault([

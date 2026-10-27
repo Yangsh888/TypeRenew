@@ -1286,7 +1286,7 @@ class HyperDown
         );
     }
 
-    private function startBlock($type, $start, $value = null): HyperDown
+    private function startBlock(mixed $type, mixed $start, mixed $value = null): HyperDown
     {
         $this->_pos++;
         $this->_current = $type;
@@ -1302,7 +1302,7 @@ class HyperDown
         return $this;
     }
 
-    private function isBlock($type, $value = null): bool
+    private function isBlock(mixed $type, mixed $value = null): bool
     {
         return $this->_current == $type
             && (null === $value || $this->_blocks[$this->_pos][3] == $value);
@@ -1313,7 +1313,7 @@ class HyperDown
         return $this->_blocks[$this->_pos] ?? null;
     }
 
-    private function setBlock($to = null, $value = null): HyperDown
+    private function setBlock(mixed $to = null, mixed $value = null): HyperDown
     {
         if (null !== $to) {
             $this->_blocks[$this->_pos][2] = $to;
@@ -1326,7 +1326,7 @@ class HyperDown
         return $this;
     }
 
-    private function backBlock($step, $type, $value = null): HyperDown
+    private function backBlock(mixed $step, mixed $type, mixed $value = null): HyperDown
     {
         if ($this->_pos < 0) {
             return $this->startBlock($type, 0, $value);

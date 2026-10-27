@@ -46,7 +46,7 @@ class Ping extends Comments
         $this->db->fetchAll($select, [$this, 'push']);
     }
 
-    public function listPings($singlePingOptions = null)
+    public function listPings(mixed $singlePingOptions = null)
     {
         if ($this->have()) {
             $parsedSinglePingOptions = Config::factory($singlePingOptions);

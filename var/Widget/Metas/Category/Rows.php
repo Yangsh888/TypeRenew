@@ -20,7 +20,7 @@ class Rows extends Metas
         $this->pushAll($this->getRows($this->orders, (int) $this->parameter->ignore));
     }
 
-    public function listCategories($categoryOptions = null)
+    public function listCategories(mixed $categoryOptions = null)
     {
         $categoryOptions = Config::factory($categoryOptions);
         $categoryOptions->setDefault([

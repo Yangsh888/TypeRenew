@@ -14,7 +14,7 @@ class Router
 
     private static bool $matched = false;
 
-    public static function match(string $pathInfo, $parameter = null, bool $once = true)
+    public static function match(string $pathInfo, mixed $parameter = null, bool $once = true)
     {
         $previousMatched = self::$matched;
         $previousCurrent = self::$current;
