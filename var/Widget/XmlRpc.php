@@ -1330,7 +1330,12 @@ class XmlRpc extends Contents implements ActionInterface, Hook
             return true;
         }
 
-        $records = @dns_get_record($host, DNS_AAAA);
+        set_error_handler(static function (): bool {
+            return true;
+        });
+        $records = dns_get_record($host, DNS_AAAA);
+        restore_error_handler();
+
         if (!is_array($records) || empty($records)) {
             return false;
         }

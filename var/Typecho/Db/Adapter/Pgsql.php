@@ -21,11 +21,16 @@ class Pgsql implements Adapter
 
     public function connect(Config $config)
     {
-        $quote = static fn($value): string => "'" . str_replace(['\\', "'"], ['\\\\', "\\'"], (string) $value) . "'";
+        $escape = static fn($value): string => str_replace(["\\", "'"], ["\\\\", "\\'"], (string) $value);
 
-        $dsn = 'host=' . $quote($config->host) . ' port=' . $quote($config->port)
-            . ' dbname=' . $quote($config->database) . ' user=' . $quote($config->user)
-            . ' password=' . $quote($config->password);
+        $dsn = sprintf(
+            "host='%s' port='%s' dbname='%s' user='%s' password='%s'",
+            $escape($config->host),
+            $escape($config->port),
+            $escape($config->database),
+            $escape($config->user),
+            $escape($config->password)
+        );
 
         if ($config->sslVerify) {
             $dsn .= ' sslmode=verify-full';

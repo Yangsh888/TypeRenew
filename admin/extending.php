@@ -20,6 +20,20 @@ if ($panelFile === null) {
     throw new \Typecho\Plugin\Exception(_t('页面不存在'), 404);
 }
 
+$panelAccess = 'administrator';
+foreach ($panelTable['child'] ?? [] as $children) {
+    foreach ($children as $child) {
+        if (isset($child[2]) && str_contains((string) $child[2], 'panel=' . urlencode($panel))) {
+            $panelAccess = $child[3] ?? 'administrator';
+            break 2;
+        }
+    }
+}
+
+if (!$user->pass($panelAccess)) {
+    throw new \Typecho\Widget\Exception(_t('权限不足'), 403);
+}
+
 ob_start();
 require_once $panelFile;
 $panelOutput = (string) ob_get_clean();

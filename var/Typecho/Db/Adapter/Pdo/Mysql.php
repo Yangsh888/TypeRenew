@@ -38,11 +38,16 @@ class Mysql extends Pdo
             }
         }
 
-        $dsn = !empty($config->dsn)
-            ? $config->dsn
-            : (strpos((string) $config->host, '/') !== false
-                ? "mysql:dbname={$config->database};unix_socket={$config->host}"
-                : "mysql:dbname={$config->database};host={$config->host};port={$config->port}");
+        if (!empty($config->dsn)) {
+            $dsn = (string) $config->dsn;
+            if (!str_starts_with($dsn, 'mysql:')) {
+                throw new ConnectionException('Invalid PDO DSN');
+            }
+        } elseif (strpos((string) $config->host, '/') !== false) {
+            $dsn = "mysql:dbname={$config->database};unix_socket={$config->host}";
+        } else {
+            $dsn = "mysql:dbname={$config->database};host={$config->host};port={$config->port}";
+        }
 
         $pdo = new \PDO(
             $dsn,

@@ -44,6 +44,10 @@ namespace Typecho {
                 $alias = empty($alias) ? Common::nativeClassName($className) : $alias;
                 $path = str_replace('\\', '/', $className);
             }
+
+            if (str_contains($path, '..')) {
+                return;
+            }
         } elseif (strpos($className, '_') !== false || $isAlias) {
             $isPlugin = !$isAlias && !preg_match("/^(Typecho|Widget|IXR)_/", $className);
 
@@ -55,6 +59,10 @@ namespace Typecho {
                     : '\\' . str_replace('_', '\\', $className);
 
                 $path = str_replace('\\', '/', $alias);
+            }
+
+            if (str_contains($path, '..')) {
+                return;
             }
         } else {
             $path = $className;
@@ -745,7 +753,7 @@ EOF;
 
         public static function extractBackupBuffer($fp, ?int &$offset, string $version)
         {
-            $realMetaLen = $version == 'FILE' ? 6 : 8;
+            $realMetaLen = $version === 'FILE' ? 6 : 8;
 
             $meta = fread($fp, $realMetaLen);
             $offset += $realMetaLen;
@@ -755,7 +763,7 @@ EOF;
             }
 
             [$type, $headerLen, $bodyLen]
-                = array_values(unpack($version == 'FILE' ? 'v3' : 'v1type/v1headerLen/V1bodyLen', $meta));
+                = array_values(unpack($version === 'FILE' ? 'v3' : 'v1type/v1headerLen/V1bodyLen', $meta));
 
             $stat = fstat($fp);
             if (!is_array($stat) || !isset($stat['size']) || $headerLen > $stat['size'] - $offset - 32) {
@@ -826,9 +834,14 @@ EOF;
                 }
 
                 $addresses = gethostbynamel($host) ?: [];
-                $records = @dns_get_record($host, DNS_AAAA);
 
-                if (!empty($records)) {
+                set_error_handler(static function (): bool {
+                    return true;
+                });
+                $records = dns_get_record($host, DNS_AAAA);
+                restore_error_handler();
+
+                if (!empty($records) && is_array($records)) {
                     foreach ($records as $record) {
                         if (isset($record['ipv6'])) {
                             $addresses[] = $record['ipv6'];

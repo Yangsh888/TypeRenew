@@ -623,6 +623,8 @@ class Ajax extends BaseOptions implements ActionInterface
             $this->response->goBack();
         }
 
+        $this->security->protect();
+
         $this->on($this->request->is('do=remoteCallback'))->remoteCallback();
         $this->on($this->request->is('do=feed'))->feed();
         $this->on($this->request->is('do=pluginVersion'))->pluginVersion();

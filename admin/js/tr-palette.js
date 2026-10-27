@@ -10,7 +10,7 @@
     const list = document.getElementById('trCmdList');
     const hint = document.getElementById('trCmdHint');
     const btn = document.getElementById('trCmdBtn');
-    if (!wrap || !overlay || !input || !list || !hint) return;
+    if (!wrap || !overlay || !input || !list || !hint || !btn) return;
 
     const STORAGE_KEY_RECENT = 'trCmdRecent';
     const STORAGE_KEY_HISTORY = 'trCmdHistory';

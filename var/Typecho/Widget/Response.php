@@ -74,17 +74,22 @@ class Response
 
     public function throwFile($file, ?string $contentType = null)
     {
+        $realFile = realpath($file);
+        if ($realFile === false || !is_readable($realFile) || !is_file($realFile)) {
+            $this->response->setStatus(404)->throwContent(_t('File not found'), 'text/plain');
+        }
+
         if (!empty($contentType)) {
             $this->response->setContentType($contentType);
         }
 
-        $length = filesize($file);
+        $length = filesize($realFile);
         if ($length !== false) {
             $this->response->setHeader('Content-Length', (string) $length);
         }
 
-        $this->response->addResponder(function () use ($file) {
-            readfile($file);
+        $this->response->addResponder(function () use ($realFile) {
+            readfile($realFile);
         })->respond();
     }
 
