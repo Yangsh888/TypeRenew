@@ -2,7 +2,7 @@
 # This file is distributed under the same license as the TypeRenew package (GPL-2.0).
 msgid ""
 msgstr ""
-"Project-Id-Version: TypeRenew 1.6.1\n"
+"Project-Id-Version: TypeRenew 1.6.2\n"
 "Report-Msgid-Bugs-To: https://github.com/Yangsh888/TypeRenew/issues\n"
 "Language-Team: TypeRenew Team\n"
 "Language: en_US\n"
