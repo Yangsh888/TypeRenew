@@ -6452,3 +6452,39 @@ msgstr ": "
 #: admin/upgrade.php:384 var/Widget/Plugins/Edit.php:131 var/Widget/Upgrade/Package.php:31
 msgid "；"
 msgstr "; "
+
+msgid "%d个分类"
+msgstr ""
+
+msgid "%d个页面"
+msgstr ""
+
+msgid "保存失败，正在重试"
+msgstr ""
+
+msgid "预览加载失败"
+msgstr ""
+
+msgid "预览加载超时"
+msgstr ""
+
+msgid "File not found"
+msgstr ""
+
+msgid "%d秒前"
+msgstr ""
+
+msgid "%d分钟前"
+msgstr ""
+
+msgid "%d小时前"
+msgstr ""
+
+msgid "%d天前"
+msgstr ""
+
+msgid "备份文件写入失败，请检查磁盘空间"
+msgstr ""
+
+msgid "页面模板不存在"
+msgstr ""

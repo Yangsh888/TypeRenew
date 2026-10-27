@@ -6449,3 +6449,183 @@ msgstr ""
 #: admin/upgrade.php:384 var/Widget/Plugins/Edit.php:131 var/Widget/Upgrade/Package.php:31
 msgid "；"
 msgstr ""
+
+#: admin\copyright.php:6
+msgid "基于 <a href=\"https://typecho.org/\">Typecho</a> 开发，由 <a href=\"https://www.typerenew.com\">%s</a> 焕新呈现，版本 %s"
+msgstr ""
+
+#: admin\custom-fields.php:71
+msgid "自定义字段可以扩展你的模板功能, 使用方法参见 <a href=\"https://docs.typecho.org/help/custom-fields\">帮助文档</a>"
+msgstr ""
+
+#: admin\manage-categories.php:85
+msgid "%d个分类"
+msgstr ""
+
+#: admin\manage-pages.php:105
+msgid "%d个页面"
+msgstr ""
+
+#: admin\options-mail.php:154
+msgid "sign = sha256_hmac(\"{ts}|deliver\", 投递密钥)"
+msgstr ""
+
+#: admin\themes.php:38
+msgid "检测到您之前使用的 \"%s\" 外观文件不存在，您可以重新上传此外观或者启用其他外观。"
+msgstr ""
+
+#: admin\write-js.php:338
+msgid "保存失败，正在重试"
+msgstr ""
+
+#: admin\write-js.php:504
+msgid "预览加载失败"
+msgstr ""
+
+#: admin\write-js.php:510
+msgid "预览加载超时"
+msgstr ""
+
+#: admin\write-page.php:156
+msgid "本页面由 <a href=\"%s\">%s</a> 创建"
+msgstr ""
+
+#: admin\write-post.php:148
+msgid "本文由 <a href=\"%s\">%s</a> 撰写"
+msgstr ""
+
+#: install\Mysql.php:7
+msgid "对于本地环境，通常使用 \"%s\"，本质是指向本地服务器的域名，MySQL 连接时采用 Socket 方式，性能更佳；而 “127.0.0.1” 则是本地回环 IP 地址，通过 TCP/IP 方式连接"
+msgstr ""
+
+#: install\Mysql.php:15
+msgid "为保障数据库安全，不推荐使用 \"%s\"，建议您为当前项目创建专属的数据库账户并使用"
+msgstr ""
+
+#: install\Pgsql.php:6
+msgid "对于本地环境，通常使用 \"%s\"，本质是指向本地服务器的域名，PgSQL 连接时采用 Socket 方式，性能更佳；而 “127.0.0.1” 则是本地回环 IP 地址，通过 TCP/IP 方式连接"
+msgstr ""
+
+#: install\Pgsql.php:13
+msgid "您可能会使用 \"%s\""
+msgstr ""
+
+#: install\SQLite.php:7
+msgid "\"%s\" 是我们为您自动生成的地址"
+msgstr ""
+
+#: var\Typecho\Widget\Response.php:80
+msgid "File not found"
+msgstr ""
+
+#: var\Utils\Zone.php:196
+msgid "%d秒前"
+msgstr ""
+
+#: var\Utils\Zone.php:200
+msgid "%d分钟前"
+msgstr ""
+
+#: var\Utils\Zone.php:204
+msgid "%d小时前"
+msgstr ""
+
+#: var\Utils\Zone.php:213
+msgid "%d天前"
+msgstr ""
+
+#: var\Widget\Backup.php:194
+msgid "备份文件写入失败，请检查磁盘空间"
+msgstr ""
+
+#: var\Widget\Contents\Attachment\Edit.php:85
+msgid "文件 <a href=\"%s\">%s</a> 已经被更新"
+msgstr ""
+
+#: var\Widget\Contents\EditTrait.php:756
+msgid "草稿 \"%s\" 已经被保存"
+msgstr ""
+
+#: var\Widget\Contents\Page\Edit.php:49
+msgid "页面模板不存在"
+msgstr ""
+
+#: var\Widget\Contents\Page\Edit.php:69
+msgid "页面 \"<a href=\"%s\">%s</a>\" 已经发布"
+msgstr ""
+
+#: var\Widget\Contents\Post\Edit.php:68
+msgid "文章 \"<a href=\"%s\">%s</a>\" 已经发布"
+msgstr ""
+
+#: var\Widget\Contents\Post\Edit.php:70
+msgid "文章 \"%s\" 等待审核"
+msgstr ""
+
+#: var\Widget\Metas\Category\Edit.php:115
+msgid "分类 <a href=\"%s\">%s</a> 已经被增加"
+msgstr ""
+
+#: var\Widget\Metas\Category\Edit.php:290
+msgid "分类 <a href=\"%s\">%s</a> 已经被更新"
+msgstr ""
+
+#: var\Widget\Metas\Category\Edit.php:408
+msgid "<a href=\"%s\">%s</a> 已经被设为默认分类"
+msgstr ""
+
+#: var\Widget\Metas\Tag\Edit.php:96
+msgid "标签 <a href=\"%s\">%s</a> 已经被增加"
+msgstr ""
+
+#: var\Widget\Metas\Tag\Edit.php:196
+msgid "标签 <a href=\"%s\">%s</a> 已经被更新"
+msgstr ""
+
+#: var\Widget\Options\Discussion.php:102
+msgid "具体写法请参考 <a href=\"https://www.php.net/manual/zh/function.date.php\">PHP 日期格式写法</a>"
+msgstr ""
+
+#: var\Widget\Options\Discussion.php:131
+msgid "对评论者个人主页链接使用 <a href=\"https://en.wikipedia.org/wiki/Nofollow\">nofollow 属性</a>"
+msgstr ""
+
+#: var\Widget\Options\Discussion.php:132
+msgid "启用 <a href=\"https://gravatar.com\">Gravatar</a> 头像服务, 最高显示评级为 %s 的头像"
+msgstr ""
+
+#: var\Widget\Options\General.php:135
+msgid "选择\"自定义域名\"后，在下方填写自定义镜像域名（仅域名，不含 https:// 前缀和路径）。"
+msgstr ""
+
+#: var\Widget\Options\General.php:144
+msgid "仅当上方选择\"自定义域名\"时填写，例如 raw.example.com"
+msgstr ""
+
+#: var\Widget\Options\General.php:344
+msgid "请以半角逗号 \",\" 分割多个关键字"
+msgstr ""
+
+#: var\Widget\Options\General.php:429
+msgid "用逗号 \",\" 将后缀名隔开, 例如: %s"
+msgstr ""
+
+#: var\Widget\Options\Reading.php:95
+msgid "具体写法，请参考 <a href=\"https://www.php.net/manual/zh/function.date.php\">PHP 日期格式写法</a>"
+msgstr ""
+
+#: var\Widget\Plugins\Edit.php:139
+msgid "<a href=\"%s\">%s</a> 无法在此版本的typecho下正常工作"
+msgstr ""
+
+#: var\Widget\Users\Edit.php:119
+msgid "具体的权限分配表请<a href=\"https://docs.typecho.org/develop/acl\">参考这里</a>."
+msgstr ""
+
+#: var\Widget\Users\Profile.php:39
+msgid "使用 <a href=\"https://daringfireball.net/projects/markdown/\">Markdown</a> 语法能够使您的撰写过程更加简便直观"
+msgstr ""
+
+#: var\Widget\Users\Profile.php:49
+msgid "对于完全支持 <a href=\"https://daringfireball.net/projects/markdown/\">Markdown</a> 语法写作的离线编辑器，打开此选项后将避免内容被转换为 HTML"
+msgstr ""

@@ -86,7 +86,7 @@ class Security extends Base
         return Common::buildUrl($parts);
     }
 
-    public function adminUrl($path)
+    public function adminUrl(string $path)
     {
         echo $this->getAdminUrl($path);
     }
@@ -96,12 +96,12 @@ class Security extends Base
         return Common::url($this->getTokenUrl($path), $this->options->adminUrl);
     }
 
-    public function index($path)
+    public function index(string $path)
     {
         echo $this->getIndex($path);
     }
 
-    public function getIndex($path): string
+    public function getIndex(string $path): string
     {
         return Common::url($this->getTokenUrl($path), $this->options->index);
     }
