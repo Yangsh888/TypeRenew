@@ -41,7 +41,7 @@ class Mysql extends Pdo
         if (!empty($config->dsn)) {
             $dsn = (string) $config->dsn;
             if (!str_starts_with($dsn, 'mysql:')) {
-                throw new ConnectionException('Invalid PDO DSN');
+                throw new \Typecho\Db\Adapter\ConnectionException('Invalid PDO DSN');
             }
         } elseif (strpos((string) $config->host, '/') !== false) {
             $dsn = "mysql:dbname={$config->database};unix_socket={$config->host}";

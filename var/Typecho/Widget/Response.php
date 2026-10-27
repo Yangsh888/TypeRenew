@@ -76,7 +76,8 @@ class Response
     {
         $realFile = realpath($file);
         if ($realFile === false || !is_readable($realFile) || !is_file($realFile)) {
-            $this->response->setStatus(404)->throwContent(_t('File not found'), 'text/plain');
+            $this->response->setStatus(404);
+            $this->throwContent(_t('File not found'), 'text/plain');
         }
 
         if (!empty($contentType)) {
