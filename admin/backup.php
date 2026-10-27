@@ -1,5 +1,6 @@
 <?php
 include 'common.php';
+$user->pass('administrator', true);
 include 'header.php';
 include 'menu.php';
 

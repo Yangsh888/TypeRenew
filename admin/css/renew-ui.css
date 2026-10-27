@@ -2197,7 +2197,7 @@ body.tr-admin.tr-sidebar-collapsed .tr-user-actions {
 .tr-dist {
     margin-top: 14px;
     display: grid;
-    grid-template-columns: 160px 1fr;
+    grid-template-columns: minmax(120px, auto) 1fr;
     gap: 14px;
     align-items: center;
 }
@@ -2281,11 +2281,7 @@ body.tr-admin.tr-sidebar-collapsed .tr-user-actions {
     }
 
     .tr-topbar-right > .tr-pill:not(.tr-pill-accent):last-child > span {
-        display: none;
-    }
-
-    .tr-topbar-right > .tr-pill:not(.tr-pill-accent):last-child {
-        padding: 0 10px;
+        display: inline;
     }
 
     .tr-topbar-heading {
@@ -4512,6 +4508,7 @@ body.tr-admin select {
     background: var(--tr-control-bg);
     box-shadow: var(--tr-control-shadow);
     font-size: var(--tr-control-font);
+    max-width: 100%;
 }
 
 body.tr-admin input[type=text],

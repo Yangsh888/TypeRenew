@@ -57,12 +57,16 @@ class Mysql extends Pdo
         );
 
         if ($config->charset) {
+            $charset = (string) $config->charset;
+            if (!preg_match('/^[A-Za-z0-9_-]+$/', $charset)) {
+                throw new \Typecho\Db\Adapter\ConnectionException('Invalid charset identifier');
+            }
             $collation = $this->resolveCollation(
-                (string) $config->charset,
+                $charset,
                 (string) $pdo->getAttribute(\PDO::ATTR_SERVER_VERSION)
             );
-            $sql = "SET NAMES '{$config->charset}'";
-            if ($collation !== null) {
+            $sql = "SET NAMES '{$charset}'";
+            if ($collation !== null && preg_match('/^[A-Za-z0-9_-]+$/', $collation)) {
                 $sql .= " COLLATE '{$collation}'";
             }
             $pdo->exec($sql);

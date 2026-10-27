@@ -58,10 +58,14 @@ class Mysqli implements Adapter
                 $this->dbLink = $mysqli;
 
                 if ($config->charset) {
-                    $this->dbLink->set_charset($config->charset);
-                    $collation = $this->resolveCollation((string) $config->charset, (string) $this->dbLink->server_info);
-                    if ($collation !== null) {
-                        $this->dbLink->query("SET NAMES '{$config->charset}' COLLATE '{$collation}'");
+                    $charset = (string) $config->charset;
+                    if (!preg_match('/^[A-Za-z0-9_-]+$/', $charset)) {
+                        throw new ConnectionException('Invalid charset identifier');
+                    }
+                    $this->dbLink->set_charset($charset);
+                    $collation = $this->resolveCollation($charset, (string) $this->dbLink->server_info);
+                    if ($collation !== null && preg_match('/^[A-Za-z0-9_-]+$/', $collation)) {
+                        $this->dbLink->query("SET NAMES '{$charset}' COLLATE '{$collation}'");
                     }
                 }
             } catch (mysqli_sql_exception $e) {

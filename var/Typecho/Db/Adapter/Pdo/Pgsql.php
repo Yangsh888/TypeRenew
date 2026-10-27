@@ -46,7 +46,11 @@ class Pgsql extends Pdo
         );
 
         if ($config->charset) {
-            $pdo->exec("SET NAMES '{$config->charset}'");
+            $charset = (string) $config->charset;
+            if (!preg_match('/^[A-Za-z0-9_-]+$/', $charset)) {
+                throw new \Typecho\Db\Adapter\ConnectionException('Invalid charset identifier');
+            }
+            $pdo->exec("SET NAMES '{$charset}'");
         }
 
         return $pdo;

@@ -379,7 +379,7 @@
         svg.setAttribute('class', 'tr-ico tr-cmd-ico');
         svg.setAttribute('aria-hidden', 'true');
         const use = document.createElementNS('http://www.w3.org/2000/svg', 'use');
-        use.setAttributeNS('http://www.w3.org/1999/xlink', 'href', iconsUrl + '#' + iconId);
+        use.setAttribute('href', iconsUrl + '#' + iconId);
         svg.appendChild(use);
         return svg;
     }

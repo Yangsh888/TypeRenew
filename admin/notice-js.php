@@ -46,7 +46,7 @@ if (isset($_COOKIE[session_name()]) && \Utils\Session::start()) {
                             node.parentNode.replaceChild(plain, node);
                             return;
                         }
-                        if (!/^(https?:\/\/|\/|#)/i.test(href)) {
+                        if (!/^(https?:\/\/|\/|#|mailto:|tel:)/i.test(href)) {
                             href = 'https://' + href.replace(/^\/+/, '');
                         }
                         node.setAttribute('href', href);
