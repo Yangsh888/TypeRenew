@@ -296,7 +296,6 @@ class Service extends BaseOptions implements ActionInterface
 
     public function action()
     {
-        $this->security->protect();
         $this->on($this->request->is('do=ping'))->sendPingHandle();
         $this->on($this->request->is('do=async'))->asyncHandle();
     }
