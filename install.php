@@ -1088,10 +1088,10 @@ function install_step_2_perform()
                 ->addRule('dbPort', 'isInteger', _t('数据库端口必须是整数'))
                 ->addRule('dbUser', 'required', _t('数据库用户名不能为空'))
                 ->addRule('dbCharset', 'required', _t('数据库字符集不能为空'))
-                ->addRule('dbCharset', 'enum', _t('数据库字符集仅支持 utf8mb4'), ['utf8mb4'])
+                ->addRule('dbCharset', 'enum', _t('数据库字符集仅支持 utf8 或 utf8mb4'), ['utf8mb4', 'utf8'])
                 ->addRule('dbDatabase', 'required', _t('数据库名不能为空'))
                 ->addRule('dbEngine', 'required', _t('数据表引擎不能为空'))
-                ->addRule('dbEngine', 'enum', _t('数据表引擎仅支持 InnoDB'), ['InnoDB'])
+                ->addRule('dbEngine', 'enum', _t('数据表引擎仅支持 InnoDB 或 MyISAM'), ['InnoDB', 'MyISAM'])
                 ->addRule('dbSslCa', static function (?string $path): bool {
                     return empty($path) || file_exists((string) $path);
                 }, _t('SSL CA 证书路径无效'))

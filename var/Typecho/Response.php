@@ -238,7 +238,7 @@ class Response
         }
 
         $name = str_replace(' ', '-', ucwords(str_replace('-', ' ', $name)));
-        $this->headers[$name] = $value;
+        $this->headers[$name] = str_replace(["\r", "\n"], '', $value);
         return $this;
     }
 

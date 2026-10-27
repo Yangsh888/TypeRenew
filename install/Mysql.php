@@ -47,9 +47,10 @@
         <li>
             <label class="typecho-label" for="dbCharset"><?php _e('数据库编码'); ?></label>
             <select name="dbCharset" id="dbCharset">
-                <option value="utf8mb4">utf8mb4</option>
+                <option value="utf8mb4" selected>utf8mb4</option>
+                <option value="utf8">utf8</option>
             </select>
-            <p class="description"><?php _e('仅支持使用 utf8mb4，以更好兼容 MySQL 5.7/8.0+ 与现代字符集场景'); ?></p>
+            <p class="description"><?php _e('推荐使用 utf8mb4 以兼容现代字符集，旧环境可选择 utf8'); ?></p>
         </li>
     </ul>
 
@@ -57,9 +58,10 @@
         <li>
             <label class="typecho-label" for="dbEngine"><?php _e('数据库引擎'); ?></label>
             <select name="dbEngine" id="dbEngine">
-                <option value="InnoDB">InnoDB</option>
+                <option value="InnoDB" selected>InnoDB</option>
+                <option value="MyISAM">MyISAM</option>
             </select>
-            <p class="description"><?php _e('仅支持使用 InnoDB，以保持事务、索引与 MySQL 8 兼容性的一致性'); ?></p>
+            <p class="description"><?php _e('推荐使用 InnoDB 以支持事务与 MySQL 8 兼容，旧环境可选择 MyISAM'); ?></p>
         </li>
     </ul>
 
