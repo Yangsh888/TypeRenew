@@ -315,17 +315,22 @@ class XmlRpc extends Contents implements ActionInterface, Hook
         }
 
         if (!empty($content['categories']) && is_array($content['categories'])) {
-            foreach ($content['categories'] as $category) {
-                if (
-                    !$this->db->fetchRow($this->db->select('mid')
-                        ->from('table.metas')->where('type = ? AND name = ?', 'category', $category))
-                ) {
-                    $this->wpNewCategory($blogId, $userName, $password, ['name' => $category]);
+            $categoryNames = array_values(array_unique(array_map('trim', $content['categories'])));
+            $existing = [];
+            if ($categoryNames !== []) {
+                $rows = $this->db->fetchAll($this->db->select('mid', 'name')
+                    ->from('table.metas')
+                    ->where('type = ?', 'category')
+                    ->where('name IN ?', $categoryNames));
+                foreach ($rows as $row) {
+                    $existing[$row['name']] = (int) $row['mid'];
                 }
-
-                $input['category'][] = $this->db->fetchObject($this->db->select('mid')
-                    ->from('table.metas')->where('type = ? AND name = ?', 'category', $category)
-                    ->limit(1))->mid;
+            }
+            foreach ($categoryNames as $category) {
+                if (!isset($existing[$category])) {
+                    $existing[$category] = $this->wpNewCategory($blogId, $userName, $password, ['name' => $category]);
+                }
+                $input['category'][] = $existing[$category];
             }
         }
 

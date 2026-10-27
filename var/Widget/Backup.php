@@ -187,11 +187,19 @@ class Backup extends BaseOptions implements ActionInterface
         }, 'application/octet-stream');
     }
 
+    private function safeFwrite($fp, string $data): void
+    {
+        $written = @fwrite($fp, $data);
+        if ($written === false || $written !== strlen($data)) {
+            throw new \RuntimeException(_t('备份文件写入失败，请检查磁盘空间'));
+        }
+    }
+
     private function writeBackupFile($fp): void
     {
         try {
             $header = str_replace('XXXX', self::HEADER_VERSION, self::HEADER);
-            fwrite($fp, $header);
+            $this->safeFwrite($fp, $header);
             $db = $this->db;
 
             foreach ($this->types as $type => $val) {
@@ -210,13 +218,13 @@ class Backup extends BaseOptions implements ActionInterface
                     $page++;
 
                     foreach ($rows as $row) {
-                        fwrite($fp, $this->buildBuffer($val, $this->applyFields($type, $row, false)));
+                        $this->safeFwrite($fp, $this->buildBuffer($val, $this->applyFields($type, $row, false)));
                     }
                 } while (count($rows) == 20);
             }
 
             self::pluginHandle()->call('export', $fp);
-            fwrite($fp, $header);
+            $this->safeFwrite($fp, $header);
         } finally {
             if (is_resource($fp)) {
                 fclose($fp);
