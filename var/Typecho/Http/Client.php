@@ -180,6 +180,9 @@ class Client
 
         $url = Common::buildUrl($params);
         if (!$this->useCurl) {
+            if ($this->safeMode) {
+                throw new Exception('Safe mode requires curl extension');
+            }
             $this->sendWithStreams($url);
             return;
         }
