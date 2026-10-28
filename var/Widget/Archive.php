@@ -77,10 +77,6 @@ class Archive extends Contents
         ]);
 
         if (null == $parameter->type) {
-            if (!isset(Router::$current)) {
-                throw new WidgetException('Archive type is not set', 500);
-            }
-
             $parameter->type = Router::$current;
         } else {
             $this->invokeFromOutside = true;
@@ -953,7 +949,7 @@ EOF;
         }
 
         if (!$valid && !empty($this->archiveType)) {
-            if (!empty($this->archiveSlug)) {
+            if (!empty($this->archiveSlug) && preg_match('/^[\w\-]+$/', $this->archiveSlug)) {
                 $themeFile = $this->archiveType . '/' . $this->archiveSlug . '.php';
                 if (file_exists($this->themeDir . $themeFile)) {
                     $this->themeFile = $themeFile;
@@ -1246,7 +1242,7 @@ EOF;
             $parent = ContentsFrom::allocWithAlias($this->parent, ['cid' => $this->parent]);
             $this->archiveType = $parent->type;
         } else {
-            [$this->archiveType] = explode('_', $this->type);
+            [$this->archiveType] = explode('_', (string) $this->type);
         }
 
         $this->archiveSlug = ('post' == $this->archiveType || 'attachment' == $this->archiveType)

@@ -260,11 +260,7 @@
         }
     });
 
-    if (mq.addEventListener) {
-        mq.addEventListener('change', initState);
-    } else if (mq.addListener) {
-        mq.addListener(initState);
-    }
+    mq.addEventListener('change', initState);
 
     const initProfileCards = () => {
         if (!body.classList.contains('tr-page-profile')) {

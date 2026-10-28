@@ -212,7 +212,11 @@ class Feed extends Contents
                     'excerpt'         => $archive->plainExcerpt,
                     'category'        => $archive->categories,
                     'comments'        => $archive->commentsNum,
-                    'commentsFeedUrl' => Common::url($archive->path, $feed->getFeedUrl()),
+                    'commentsFeedUrl' => match ($feed->getType()) {
+                        FeedGenerator::ATOM1 => $archive->feedAtomUrl,
+                        FeedGenerator::RSS1 => $archive->feedRssUrl,
+                        default => $archive->feedUrl,
+                    },
                     'suffix'          => $suffix
                 ]);
                 $this->streamFlush();

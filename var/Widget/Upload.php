@@ -49,8 +49,14 @@ class Upload extends Contents implements ActionInterface
         }
 
         $relativePath = str_replace('\\', '/', trim($relativePath));
-        if ($relativePath === '' || str_contains($relativePath, "\0") || str_contains($relativePath, '..')) {
+        if ($relativePath === '' || str_contains($relativePath, "\0")) {
             return false;
+        }
+
+        foreach (explode('/', $relativePath) as $segment) {
+            if ($segment === '..') {
+                return false;
+            }
         }
 
         $uploadDir = str_replace('\\', '/', (string) (defined('__TYPECHO_UPLOAD_DIR__') ? __TYPECHO_UPLOAD_DIR__ : self::UPLOAD_DIR));
@@ -171,6 +177,9 @@ class Upload extends Contents implements ActionInterface
 
             if ($this->request->isAjax()) {
                 $file['name'] = urldecode($file['name']);
+                if (str_contains($file['name'], "\0")) {
+                    throw new \RuntimeException(_t('文件名包含非法字符'));
+                }
             }
 
             $attachment = $this->attachment;
@@ -395,6 +404,9 @@ class Upload extends Contents implements ActionInterface
 
             if ($this->request->isAjax()) {
                 $file['name'] = urldecode($file['name']);
+                if (str_contains($file['name'], "\0")) {
+                    throw new \RuntimeException(_t('文件名包含非法字符'));
+                }
             }
             $result = self::uploadHandle($file);
 

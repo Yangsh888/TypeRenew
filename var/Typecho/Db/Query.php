@@ -213,6 +213,11 @@ class Query
     {
         $safePageSize = max($pageSize, 1);
         $safePage = max(1, $page);
+        $maxPage = (int) (PHP_INT_MAX / $safePageSize);
+        if ($safePage > $maxPage) {
+            $safePage = $maxPage;
+        }
+
         $this->sqlPreBuild['limit'] = $safePageSize;
         $this->sqlPreBuild['offset'] = ($safePage - 1) * $safePageSize;
         return $this;

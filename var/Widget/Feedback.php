@@ -323,7 +323,13 @@ class Feedback extends Comments implements ActionInterface
 
         $refererPort = (int) ($refererPart['port'] ?? 0);
         $currentPort = (int) ($currentPart['port'] ?? 0);
-        if (($refererPort !== 0 || $currentPort !== 0) && $refererPort !== $currentPort) {
+        $refererScheme = strtolower((string) ($refererPart['scheme'] ?? ''));
+        $currentScheme = strtolower((string) ($currentPart['scheme'] ?? ''));
+        $refererDefaultPort = ($refererScheme === 'https') ? 443 : 80;
+        $currentDefaultPort = ($currentScheme === 'https') ? 443 : 80;
+        $normalizedRefererPort = $refererPort ?: $refererDefaultPort;
+        $normalizedCurrentPort = $currentPort ?: $currentDefaultPort;
+        if ($normalizedRefererPort !== $normalizedCurrentPort) {
             return false;
         }
 
