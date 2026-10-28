@@ -949,7 +949,7 @@ EOF;
         }
 
         if (!$valid && !empty($this->archiveType)) {
-            if (!empty($this->archiveSlug) && preg_match('/^[\w\-]+$/', $this->archiveSlug)) {
+            if (!empty($this->archiveSlug)) {
                 $themeFile = $this->archiveType . '/' . $this->archiveSlug . '.php';
                 if (file_exists($this->themeDir . $themeFile)) {
                     $this->themeFile = $themeFile;
