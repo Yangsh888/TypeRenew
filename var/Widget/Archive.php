@@ -414,15 +414,15 @@ class Archive extends Contents
             require_once $functionsFile;
         }
 
+        if ($loadTheme && function_exists('themeInit')) {
+            themeInit($this);
+        }
+
         if (isset($handles[$this->parameter->type])) {
             $handle = $handles[$this->parameter->type];
             $this->{$handle}($select, $hasPushed);
         } else {
             $hasPushed = self::pluginHandle()->call('handle', $this->parameter->type, $this, $select);
-        }
-
-        if ($loadTheme && function_exists('themeInit')) {
-            themeInit($this);
         }
 
         if ($hasPushed) {
