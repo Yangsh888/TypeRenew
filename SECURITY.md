@@ -10,8 +10,9 @@ TypeRenew 仅对 **最新的正式发布版本** 提供安全更新与维护，�
 
 如果您发现了一个安全漏洞，请通过以下 **私有渠道** 进行报告，切勿公开披露：
 
-1.  **GitHub Security Advisories**：通过本项目仓库的 “Security” 选项卡，点击 “Report a vulnerability” 来创建私密的安全报告。
-2.  **QQ 交流群**：添加项目 QQ 交流群（1073739854），联系群内的管理人员进行报告。
+1.  **补天漏洞响应平台**：推荐通过奇安信补天平台提交漏洞报告，厂商主页地址：[https://www.butian.net/Company/64925](https://www.butian.net/Company/64925)
+2.  **GitHub Security Advisories**：通过本项目仓库的 “Security” 选项卡，点击 “Report a vulnerability” 来创建私密的安全报告。
+3.  **QQ 交流群**：添加项目 QQ 交流群（1073739854），联系群内的管理人员进行报告。
 
 请勿在公开的 Issues 讨论区、其他论坛或社交媒体上报告安全漏洞，以免在修复完成前造成风险扩散。
 
@@ -63,8 +64,9 @@ We take the security of TypeRenew seriously and appreciate the efforts of securi
 
 If you discover a security vulnerability, please report it through the following **private channels**. **DO NOT** disclose it publicly:
 
-1.  **GitHub Security Advisories**: Use the "Security" tab in this repository and click "Report a vulnerability" to create a private security advisory.
-2.  **QQ Group**: Join the project QQ group (1073739854) and contact the administrators within the group to report the issue.
+1.  **Butian Vulnerability Platform**: We recommend submitting vulnerability reports through the Qi An Xin Butian platform. Vendor page: [https://www.butian.net/Company/64925](https://www.butian.net/Company/64925)
+2.  **GitHub Security Advisories**: Use the "Security" tab in this repository and click "Report a vulnerability" to create a private security advisory.
+3.  **QQ Group**: Join the project QQ group (1073739854) and contact the administrators within the group to report the issue.
 
 Please do not report security vulnerabilities through public Issue discussions, forums, or social media to prevent the risk from spreading before a fix is available.
 
