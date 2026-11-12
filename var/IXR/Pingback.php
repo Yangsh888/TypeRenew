@@ -28,7 +28,8 @@ class Pingback
         }
 
         try {
-            $client->setTimeout(5);
+            $client->setTimeout(5)
+                ->setSafeMode();
             if (defined('CURLOPT_FOLLOWLOCATION')) {
                 $client->setOption(CURLOPT_FOLLOWLOCATION, false);
             }
